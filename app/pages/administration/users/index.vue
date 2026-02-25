@@ -433,6 +433,12 @@ watchDebounced(
   { debounce: 350, maxWait: 1200 },
 )
 
+
+function handleSortChange() {
+  page.value = 1
+  void loadUsers()
+}
+
 onMounted(async () => {
   await authStore.ensureRolesLoaded()
   await loadUsers()
@@ -451,51 +457,56 @@ onMounted(async () => {
         </div>
       </div>
 
-      <AdminPageError :message="apiError" />
 
-      <v-row class="mb-2" dense>
-        <v-col cols="12" md="4">
-          <v-text-field
-            v-model="search"
-            label="Recherche"
-            prepend-inner-icon="mdi-magnify"
-            density="comfortable"
-            hide-details
-            clearable
-          />
-        </v-col>
-        <v-col cols="12" md="4">
-          <v-text-field
-            v-model="roleFilter"
-            label="Filtre rôle"
-            prepend-inner-icon="mdi-shield-account-outline"
-            density="comfortable"
-            hide-details
-            clearable
-          />
-        </v-col>
-        <v-col cols="12" md="4">
-          <v-text-field
-            v-model="groupFilter"
-            label="Filtre groupe"
-            prepend-inner-icon="mdi-account-group-outline"
-            density="comfortable"
-            hide-details
-            clearable
-          />
-        </v-col>
-      </v-row>
-
-      <v-data-table-server
-        v-model:page="page"
-        v-model:items-per-page="itemsPerPage"
-        :headers="headers"
-        :items="users"
-        :items-length="totalUsers"
+      <AdminTable
+        :columns="headers"
+        :rows="users"
         :loading="loading"
-        item-value="id"
+        :total="totalUsers"
+        :page="page"
+        :page-size="itemsPerPage"
+        :error="apiError"
+        @update:page="page = $event"
+        @update:page-size="itemsPerPage = $event"
+        @sort-change="handleSortChange"
+        @row-click="showUserDetails(String($event.id ?? ''))"
       >
-        <template #item.roles="{ item }">
+        <template #toolbar>
+          <v-row class="mb-2" dense>
+            <v-col cols="12" md="4">
+              <v-text-field
+                v-model="search"
+                label="Recherche"
+                prepend-inner-icon="mdi-magnify"
+                density="comfortable"
+                hide-details
+                clearable
+              />
+            </v-col>
+            <v-col cols="12" md="4">
+              <v-text-field
+                v-model="roleFilter"
+                label="Filtre rôle"
+                prepend-inner-icon="mdi-shield-account-outline"
+                density="comfortable"
+                hide-details
+                clearable
+              />
+            </v-col>
+            <v-col cols="12" md="4">
+              <v-text-field
+                v-model="groupFilter"
+                label="Filtre groupe"
+                prepend-inner-icon="mdi-account-group-outline"
+                density="comfortable"
+                hide-details
+                clearable
+              />
+            </v-col>
+          </v-row>
+        </template>
+
+        <template #cell:roles="{ item }">
           <div class="d-flex flex-wrap ga-1">
             <v-chip
               v-for="roleName in item.roles"
@@ -509,7 +520,7 @@ onMounted(async () => {
           </div>
         </template>
 
-        <template #item.userGroups="{ item }">
+        <template #cell:userGroups="{ item }">
           <div class="d-flex flex-wrap ga-1">
             <v-chip
               v-for="groupName in item.userGroups"
@@ -523,38 +534,39 @@ onMounted(async () => {
           </div>
         </template>
 
-        <template #item.actions="{ item }">
-          <div class="d-flex ga-1">
-            <PermissionGate :allowed="canShow">
-              <v-btn
-                size="small"
-                icon="mdi-eye-outline"
-                variant="text"
-                color="info"
-                @click="showUserDetails(item.id)"
-              />
-            </PermissionGate>
-            <PermissionGate :allowed="canEdit">
-              <v-btn
-                size="small"
-                icon="mdi-pencil-outline"
-                variant="text"
-                color="warning"
-                @click="openEditDialog(item)"
-              />
-            </PermissionGate>
-            <PermissionGate :allowed="canDelete">
-              <v-btn
-                size="small"
-                icon="mdi-delete-outline"
-                variant="text"
-                color="error"
-                @click="deleteUser(item)"
-              />
-            </PermissionGate>
-          </div>
+        <template #row-actions="{ item }">
+          <PermissionGate :allowed="canShow">
+            <v-btn
+              size="small"
+              icon="mdi-eye-outline"
+              variant="text"
+              color="info"
+              aria-label="Voir les détails utilisateur"
+              @click.stop="showUserDetails(item.id)"
+            />
+          </PermissionGate>
+          <PermissionGate :allowed="canEdit">
+            <v-btn
+              size="small"
+              icon="mdi-pencil-outline"
+              variant="text"
+              color="warning"
+              aria-label="Éditer utilisateur"
+              @click.stop="openEditDialog(item)"
+            />
+          </PermissionGate>
+          <PermissionGate :allowed="canDelete">
+            <v-btn
+              size="small"
+              icon="mdi-delete-outline"
+              variant="text"
+              color="error"
+              aria-label="Supprimer utilisateur"
+              @click.stop="deleteUser(item)"
+            />
+          </PermissionGate>
         </template>
-      </v-data-table-server>
+      </AdminTable>
     </v-card>
 
     <DialogConfirm ref="dialogDelete" />
