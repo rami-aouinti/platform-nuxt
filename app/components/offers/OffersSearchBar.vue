@@ -22,42 +22,44 @@ function resetFilters() {
 <template>
   <client-only v-if="props.appBarTeleport">
     <teleport to="#app-bar">
-      <div class="offers-search-bar__teleport-content">
-        <v-text-field
-          v-model="query"
-          class="offers-search-bar__query-field"
-          label="Jobtitel oder Stichwort"
-          hide-details
-          variant="outlined"
-          density="compact"
-          rounded
-          prepend-inner-icon="mdi-magnify"
-        />
-        <v-text-field
-          v-model="location"
-          class="offers-search-bar__query-field"
-          label="Ort oder Remote"
-          hide-details
-          variant="outlined"
-          density="compact"
-          rounded
-          prepend-inner-icon="mdi-map-marker-outline"
-        />
-        <v-btn
-          class="offers-search-bar__reset"
-          variant="text"
-          @click="resetFilters"
-        >
-          Reset
-        </v-btn>
-        <v-btn
-          class="offers-search-bar__cta mx-4"
-          color="primary"
-          rounded
-          @click="emit('search')"
-        >
-          Filter
-        </v-btn>
+      <div class="d-flex justify-content-center mx-4">
+          <v-text-field
+            v-model="query"
+            class="offers-search-bar__query-field mx-1"
+            label="Jobtitel oder Stichwort"
+            hide-details
+            variant="outlined"
+            density="compact"
+            rounded
+            prepend-inner-icon="mdi-magnify"
+            style="min-width: 250px;"
+          />
+          <v-text-field
+            v-model="location"
+            class="offers-search-bar__query-field mx-1"
+            label="Ort oder Remote"
+            hide-details
+            variant="outlined"
+            density="compact"
+            rounded
+            prepend-inner-icon="mdi-map-marker-outline"
+            style="min-width: 250px;"
+          />
+          <v-btn
+            class="offers-search-bar__reset mx-1"
+            variant="text"
+            @click="resetFilters"
+          >
+            Reset
+          </v-btn>
+          <v-btn
+            class="offers-search-bar__cta mx-1"
+            color="primary"
+            rounded
+            @click="emit('search')"
+          >
+            Filter
+          </v-btn>
       </div>
     </teleport>
   </client-only>
