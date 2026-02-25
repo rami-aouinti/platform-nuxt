@@ -39,7 +39,7 @@ const emit = defineEmits<{
           size="large"
           @click="emit('search')"
         >
-          Jobs finden
+          Filter
         </v-btn>
       </div>
     </teleport>
@@ -108,7 +108,7 @@ const emit = defineEmits<{
         size="large"
         @click="emit('search')"
       >
-        Jobs finden
+        Filter
       </v-btn>
     </div>
   </section>
