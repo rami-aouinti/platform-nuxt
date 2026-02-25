@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import type { DataTableHeader } from 'vuetify'
 
+import AdminEmptyState from '~/components/admin/ui/AdminEmptyState.vue'
+import AdminErrorState from '~/components/admin/ui/AdminErrorState.vue'
+
 type AdminRow = Record<string, unknown>
 
 const props = withDefaults(

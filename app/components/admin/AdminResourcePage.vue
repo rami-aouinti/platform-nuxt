@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import type { DataTableHeader } from 'vuetify'
 
+import AdminCard from '~/components/admin/ui/AdminCard.vue'
+import AdminToolbar from '~/components/admin/ui/AdminToolbar.vue'
+
 type AdminRow = Record<string, unknown>
 
 type FilterConfig = {
