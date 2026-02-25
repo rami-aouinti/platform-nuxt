@@ -3,6 +3,8 @@ const props = defineProps<{
   title?: string
   subtitle?: string
   appBarTeleport?: boolean
+  showFilterDrawerButton?: boolean
+  filterDrawerOpen?: boolean
 }>()
 
 const query = defineModel<string>('query', { default: '' })
@@ -10,6 +12,7 @@ const location = defineModel<string>('location', { default: '' })
 
 const emit = defineEmits<{
   search: []
+  filter: []
 }>()
 
 function resetFilters() {
@@ -57,6 +60,16 @@ function resetFilters() {
             color="primary"
             rounded
             @click="emit('search')"
+          >
+            Filter
+          </v-btn>
+          <v-btn
+            v-if="props.showFilterDrawerButton"
+            class="mx-1"
+            :variant="props.filterDrawerOpen ? 'flat' : 'outlined'"
+            :color="props.filterDrawerOpen ? 'primary' : undefined"
+            prepend-icon="mdi-filter-variant"
+            @click="emit('filter')"
           >
             Filter
           </v-btn>
