@@ -6,6 +6,7 @@ import AdminCard from '~/components/admin/ui/AdminCard.vue'
 import AdminToolbar from '~/components/admin/ui/AdminToolbar.vue'
 import AdminErrorState from '~/components/admin/ui/AdminErrorState.vue'
 import AdminEmptyState from '~/components/admin/ui/AdminEmptyState.vue'
+import { buildApiPlatformQuery } from '../../../../services/admin/_shared'
 import { HttpRequestError } from '../../../../services/http/client'
 import { jobOffersService, type JobOffer } from '../../../../services/admin/job-offers'
 
@@ -95,10 +96,14 @@ async function loadRows() {
 
   try {
     const response = await jobOffersService.list({
-      page: page.value,
-      pageSize: pageSize.value,
-      search: search.value || undefined,
-      filters: { status: filters.value.status || undefined },
+      ...buildApiPlatformQuery({
+        page: page.value,
+        pageSize: pageSize.value,
+        search: search.value,
+        sortBy: 'title',
+        sortOrder: 'asc',
+        filters: { status: filters.value.status || undefined },
+      }),
     })
 
     rows.value = response.data
