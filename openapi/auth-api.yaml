@@ -28,17 +28,17 @@ paths:
               examples:
                 default:
                   value:
-                    id: usr_123
+                    id: 550e8400-e29b-41d4-a716-446655440000
                     username: jdoe
                     email: john.doe@example.com
                     firstName: John
                     lastName: Doe
                     displayName: John Doe
                     roles:
-                      - id: admin
+                      - id: 0f8fad5b-d9cb-469f-a165-70867728950e
                         label: Administrator
                     groups:
-                      - platform-admin
+                      - aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -56,10 +56,10 @@ paths:
               examples:
                 default:
                   value:
-                    id: usr_123
+                    id: 550e8400-e29b-41d4-a716-446655440000
                     username: jdoe
                     roles:
-                      - id: admin
+                      - id: 0f8fad5b-d9cb-469f-a165-70867728950e
                         label: Administrator
                         description: Full access
         '401':
@@ -79,11 +79,11 @@ paths:
               examples:
                 default:
                   value:
-                    id: usr_123
+                    id: 550e8400-e29b-41d4-a716-446655440000
                     username: jdoe
                     groups:
-                      - platform-admin
-                      - support
+                      - aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee
+                      - 11111111-2222-4333-8444-555555555555
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -117,13 +117,13 @@ paths:
               schema:
                 type: array
                 items:
-                  type: string
+                  $ref: '#/components/schemas/RoleId'
               examples:
                 default:
                   value:
-                    - admin
-                    - manager
-                    - viewer
+                    - 0f8fad5b-d9cb-469f-a165-70867728950e
+                    - 7c9e6679-7425-40de-944b-e07fc1f90ae7
+                    - 16fd2706-8baf-433b-82eb-8c7fada847da
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -143,7 +143,7 @@ paths:
               examples:
                 default:
                   value:
-                    - id: support
+                    - id: 0f8fad5b-d9cb-469f-a165-70867728950e
                       label: Support Agent
                       description: Support operations
         '401':
@@ -159,7 +159,8 @@ paths:
           required: true
           schema:
             type: string
-            pattern: '^(?!count$|ids$|inherited$)[A-Za-z][A-Za-z0-9_-]*$'
+            format: uuid
+            pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'
       responses:
         '200':
           description: Role details
@@ -170,7 +171,7 @@ paths:
               examples:
                 default:
                   value:
-                    id: admin
+                    id: 0f8fad5b-d9cb-469f-a165-70867728950e
                     label: Administrator
                     description: Full access to back-office features
         '400':
@@ -199,7 +200,7 @@ paths:
                 default:
                   value:
                     data:
-                      - id: notif_1
+                      - id: 8b6f7c77-4255-4b9a-9f2a-ef8ccf4dd171
                         title: Session expiring soon
                         message: Your session expires in 5 minutes.
                         type: warning
@@ -223,7 +224,7 @@ paths:
           in: path
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/CompanyId'
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PageSize'
       responses:
@@ -237,13 +238,13 @@ paths:
                 default:
                   value:
                     data:
-                      - userId: usr_123
+                      - userId: 550e8400-e29b-41d4-a716-446655440000
                         email: john.doe@example.com
                         firstName: John
                         lastName: Doe
                         role: owner
                         status: active
-                      - userId: usr_456
+                      - userId: 6ba7b810-9dad-41d1-80b4-00c04fd430c8
                         email: jane.smith@example.com
                         firstName: Jane
                         lastName: Smith
@@ -428,7 +429,7 @@ components:
       type: object
       properties:
         id:
-          type: string
+          $ref: '#/components/schemas/RoleId'
         label:
           type: string
         description:
@@ -439,7 +440,7 @@ components:
       type: object
       properties:
         id:
-          type: string
+          $ref: '#/components/schemas/UserId'
         username:
           type: string
       additionalProperties: true
@@ -480,7 +481,7 @@ components:
             groups:
               type: array
               items:
-                type: string
+                $ref: '#/components/schemas/UserGroupId'
 
     UserDetail:
       allOf:
@@ -499,7 +500,7 @@ components:
         - createdAt
       properties:
         id:
-          type: string
+          $ref: '#/components/schemas/NotificationId'
         title:
           type: string
         message:
@@ -535,7 +536,7 @@ components:
         - status
       properties:
         userId:
-          type: string
+          $ref: '#/components/schemas/UserId'
         email:
           type: string
           format: email
@@ -590,7 +591,37 @@ components:
         provider:
           type: string
         accountId:
-          type: string
+          $ref: '#/components/schemas/SocialAccountId'
         connectedAt:
           type: string
           format: date-time
+
+    UserId:
+      type: string
+      format: uuid
+      pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'
+
+    UserGroupId:
+      type: string
+      format: uuid
+      pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'
+
+    RoleId:
+      type: string
+      format: uuid
+      pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'
+
+    NotificationId:
+      type: string
+      format: uuid
+      pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'
+
+    CompanyId:
+      type: string
+      format: uuid
+      pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'
+
+    SocialAccountId:
+      type: string
+      format: uuid
+      pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'
