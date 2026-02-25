@@ -1,6 +1,6 @@
 import type { H3Event } from 'h3'
 
-type ProxyHttpMethod = 'GET' | 'PUT' | 'PATCH' | 'DELETE'
+type ProxyHttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
 function parseUpstreamErrorPayload(payload: unknown): string | null {
   if (typeof payload === 'string' && payload.length > 0) {
@@ -59,7 +59,7 @@ export async function proxyAuthApiRequest(
 ) {
   const authorization = getHeader(event, 'authorization')
   const upstreamCandidates = getUpstreamCandidates(event)
-  const body = method === 'GET' || method === 'DELETE' ? undefined : await readBody(event)
+  const body = ['GET', 'DELETE'].includes(method) ? undefined : await readBody(event)
 
   let lastError: unknown
 
