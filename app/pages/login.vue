@@ -5,7 +5,10 @@ definePageMeta({
 })
 
 const authStore = useAuthStore()
-const { errorMessage, isConnected, loading } = storeToRefs(authStore)
+const { isAuthenticated } = storeToRefs(authStore)
+
+const loading = ref(false)
+const errorMessage = ref('')
 
 const form = reactive({
   username: '',
@@ -16,20 +19,26 @@ const hasCredentials = computed(() => {
   return Boolean(form.username.trim()) && Boolean(form.password)
 })
 
-onMounted(() => {
-  authStore.initializeFromStorage()
-})
-
 async function login() {
   if (!hasCredentials.value || loading.value) {
     return
   }
 
-  const success = await authStore.login(form.username, form.password)
+  loading.value = true
+  errorMessage.value = ''
 
-  if (success) {
+  try {
+    await authStore.login(form.username, form.password)
+    await authStore.fetchProfileData()
     form.password = ''
     await navigateTo('/homepage')
+  } catch (error) {
+    const message = error instanceof Error ? error.message : ''
+    errorMessage.value = message
+      ? `Connexion échouée : ${message}`
+      : 'Connexion échouée : identifiants invalides ou API inaccessible.'
+  } finally {
+    loading.value = false
   }
 }
 
@@ -88,7 +97,7 @@ function logout() {
           </v-alert>
 
           <v-alert
-            v-if="isConnected"
+            v-if="isAuthenticated"
             type="success"
             variant="tonal"
             border="start"
@@ -104,7 +113,7 @@ function logout() {
             size="large"
             class="text-none font-weight-bold mb-3"
             :loading="loading"
-            :disabled="!hasCredentials || isConnected"
+            :disabled="!hasCredentials || isAuthenticated"
           >
             Login
           </v-btn>
@@ -114,7 +123,7 @@ function logout() {
             variant="outlined"
             size="large"
             class="text-none"
-            :disabled="!isConnected"
+            :disabled="!isAuthenticated"
             @click="logout"
           >
             Logout
@@ -128,7 +137,8 @@ function logout() {
 <style scoped>
 .login-page {
   min-height: calc(100vh - 64px);
-  background: radial-gradient(circle at 10% 20%, rgb(209 233 255 / 65%), transparent 42%),
+  background:
+    radial-gradient(circle at 10% 20%, rgb(209 233 255 / 65%), transparent 42%),
     radial-gradient(circle at 90% 15%, rgb(213 174 255 / 35%), transparent 38%),
     linear-gradient(135deg, rgb(250 251 255 / 90%), rgb(238 244 255 / 95%));
 }
