@@ -4,23 +4,25 @@ const COMPANIES_BASE_PATH = '/api/v1/companies'
 
 export interface Company {
   id: Id
-  name: string
-  legalName?: string
-  vatNumber?: string
-  status?: 'active' | 'inactive'
+  legalName: string
+  slug: string
+  status: 'active' | 'inactive'
+  mainAddress: string
+  owner: string
 }
 
 export interface CreateCompanyRequest {
-  name: string
-  legalName?: string
-  vatNumber?: string
+  legalName: string
+  slug: string
+  status: Company['status']
+  mainAddress: string
 }
 
 export interface UpdateCompanyRequest {
-  name?: string
   legalName?: string
-  vatNumber?: string
-  status?: 'active' | 'inactive'
+  slug?: string
+  status?: Company['status']
+  mainAddress?: string
 }
 
 export type PatchCompanyRequest = PatchPayload
