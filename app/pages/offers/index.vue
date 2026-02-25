@@ -32,7 +32,7 @@ const search = ref('')
 const columns: DataTableHeader[] = [
   { title: 'ID', key: 'id' },
   { title: 'Titre', key: 'title' },
-  { title: 'Entreprise', key: 'companyId' },
+  { title: 'Entreprise', key: 'company' },
   { title: 'Statut', key: 'status' },
   { title: 'Description', key: 'description' },
 ]
@@ -52,13 +52,13 @@ function toErrorMessage(errorValue: unknown) {
 }
 
 function statusMeta(status: string) {
-  if (status === 'published') return { label: 'Publiée', tone: 'success' as const }
+  if (status === 'open') return { label: 'Ouverte', tone: 'success' as const }
   if (status === 'closed') return { label: 'Fermée', tone: 'error' as const }
   return { label: 'Brouillon', tone: 'warning' as const }
 }
 
 function canApply(row: Record<string, unknown>) {
-  return String(row.status ?? '') === 'published'
+  return String(row.status ?? '') === 'open'
 }
 
 async function loadRows() {
@@ -74,7 +74,7 @@ async function loadRows() {
         search: search.value,
         sortBy: 'title',
         sortOrder: 'asc',
-        filters: { status: 'published' },
+        filters: { status: 'open' },
       }),
     })
 
@@ -94,7 +94,7 @@ async function loadRows() {
 
 async function apply(row: Record<string, unknown>) {
   if (!canApply(row)) {
-    Notify.error('Seules les offres publiées sont ouvertes aux candidatures.')
+    Notify.error('Seules les offres ouvertes sont disponibles pour candidater.')
     return
   }
 
@@ -121,7 +121,7 @@ onMounted(loadRows)
 
 <template>
   <AdminCard>
-    <AdminToolbar title="Offres disponibles" description="Consulter les offres publiées et postuler en un clic.">
+    <AdminToolbar title="Offres disponibles" description="Consulter les offres ouvertes et postuler en un clic.">
       <template #actions>
         <v-btn variant="tonal" prepend-icon="mdi-refresh" @click="loadRows">Recharger</v-btn>
       </template>
@@ -146,7 +146,7 @@ onMounted(loadRows)
       <AdminEmptyState
         v-if="pageState === 'empty'"
         title="Aucune offre disponible"
-        message="Aucune offre publiée ne correspond à la recherche courante."
+        message="Aucune offre ouverte ne correspond à la recherche courante."
       />
 
       <AdminTable

@@ -43,8 +43,10 @@ const applyCoverLetter = ref('')
 
 const columns: DataTableHeader[] = [
   { title: 'ID', key: 'id' },
-  { title: 'Offer', key: 'offerId' },
-  { title: 'Candidate', key: 'candidateId' },
+  { title: 'Offer', key: 'jobOffer' },
+  { title: 'Candidate', key: 'candidate' },
+  { title: 'Cover letter', key: 'coverLetter' },
+  { title: 'CV', key: 'cvUrl' },
   { title: 'Status', key: 'status' },
 ]
 
@@ -129,7 +131,9 @@ async function applyToOffer() {
   actionLoading.value = true
 
   try {
-    await jobApplicationsService.apply(applyOfferId.value.trim())
+    await jobApplicationsService.apply(applyOfferId.value.trim(), {
+      coverLetter: applyCoverLetter.value.trim() || undefined,
+    })
     Notify.success('Candidature envoyée.')
     applyDialog.value = false
     applyOfferId.value = ''
@@ -225,6 +229,14 @@ onMounted(async () => {
         @update:page="page = $event"
         @update:page-size="pageSize = $event"
       >
+        <template #cell:coverLetter="{ value }">
+          <span class="text-body-2">{{ String(value || '-').slice(0, 80) }}</span>
+        </template>
+
+        <template #cell:cvUrl="{ value }">
+          <span class="text-body-2">{{ value ? 'Renseigné' : '-' }}</span>
+        </template>
+
         <template #cell:status="{ value }">
           <AdminBadge :status="statusMeta(String(value)).tone" :label="statusMeta(String(value)).label" />
         </template>

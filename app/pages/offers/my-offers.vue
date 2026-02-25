@@ -23,7 +23,7 @@ type OfferForm = {
   title: string
   slug: string
   description: string
-  companyId: string
+  company: string
   status: JobOffer['status']
 }
 
@@ -39,12 +39,12 @@ const search = ref('')
 
 const dialogDelete = useTemplateRef('dialogDelete')
 const editDialog = ref(false)
-const editing = ref<OfferForm>({ title: '', slug: '', description: '', companyId: '', status: 'draft' })
+const editing = ref<OfferForm>({ title: '', slug: '', description: '', company: '', status: 'draft' })
 
 const columns: DataTableHeader[] = [
   { title: 'ID', key: 'id' },
   { title: 'Titre', key: 'title' },
-  { title: 'Entreprise', key: 'companyId' },
+  { title: 'Entreprise', key: 'company' },
   { title: 'Statut', key: 'status' },
   { title: 'Slug', key: 'slug' },
 ]
@@ -64,7 +64,7 @@ function toErrorMessage(errorValue: unknown) {
 }
 
 function statusMeta(status: string) {
-  if (status === 'published') return { label: 'Publiée', tone: 'success' as const }
+  if (status === 'open') return { label: 'Ouverte', tone: 'success' as const }
   if (status === 'closed') return { label: 'Fermée', tone: 'error' as const }
   return { label: 'Brouillon', tone: 'warning' as const }
 }
@@ -75,7 +75,7 @@ function openEdit(row: Record<string, unknown>) {
     title: String(row.title ?? ''),
     slug: String(row.slug ?? ''),
     description: String(row.description ?? ''),
-    companyId: String(row.companyId ?? ''),
+    company: String(row.company ?? ''),
     status: String(row.status ?? 'draft') as JobOffer['status'],
   }
   editDialog.value = true
@@ -117,7 +117,7 @@ async function saveOffer() {
     return
   }
 
-  if (!editing.value.title || !editing.value.slug || !editing.value.companyId) {
+  if (!editing.value.title || !editing.value.slug || !editing.value.company) {
     Notify.error('Titre, slug et entreprise sont obligatoires.')
     return
   }
@@ -129,7 +129,7 @@ async function saveOffer() {
       title: editing.value.title,
       slug: editing.value.slug,
       description: editing.value.description,
-      companyId: editing.value.companyId,
+      company: editing.value.company,
       status: editing.value.status,
     })
     Notify.success('Offre mise à jour.')
@@ -233,12 +233,12 @@ onMounted(loadRows)
         <v-card-text class="admin-form pt-4">
           <v-text-field v-model="editing.title" label="Titre" class="mb-2" />
           <v-text-field v-model="editing.slug" label="Slug" class="mb-2" />
-          <v-text-field v-model="editing.companyId" label="ID entreprise" class="mb-2" />
+          <v-text-field v-model="editing.company" label="ID entreprise" class="mb-2" />
           <v-select
             v-model="editing.status"
             :items="[
               { title: 'Brouillon', value: 'draft' },
-              { title: 'Publiée', value: 'published' },
+              { title: 'Ouverte', value: 'open' },
               { title: 'Fermée', value: 'closed' },
             ]"
             label="Statut"

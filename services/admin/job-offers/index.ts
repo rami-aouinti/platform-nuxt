@@ -7,8 +7,8 @@ export interface JobOffer {
   title: string
   slug: string
   description: string
-  status: 'draft' | 'published' | 'closed'
-  companyId: Id
+  status: 'draft' | 'open' | 'closed'
+  company: Id
 }
 
 export interface CreateJobOfferRequest {
@@ -16,7 +16,7 @@ export interface CreateJobOfferRequest {
   slug: string
   description: string
   status: JobOffer['status']
-  companyId: Id
+  company: Id
 }
 
 export interface UpdateJobOfferRequest {
@@ -24,7 +24,7 @@ export interface UpdateJobOfferRequest {
   slug?: string
   description?: string
   status?: JobOffer['status']
-  companyId?: Id
+  company?: Id
 }
 
 export type PatchJobOfferRequest = PatchPayload

@@ -5,23 +5,35 @@ const JOB_APPLICATIONS_BASE_PATH = '/api/v1/job-applications'
 
 export interface JobApplication {
   id: Id
-  offerId: Id
-  candidateId: Id
+  jobOffer: Id
+  candidate: Id
   status: 'pending' | 'accepted' | 'rejected' | 'withdrawn'
   coverLetter?: string
+  cvUrl?: string
+  attachments?: string[]
 }
 
 export interface CreateJobApplicationRequest {
-  offerId: Id
-  candidateId: Id
+  jobOffer: Id
+  candidate: Id
   coverLetter?: string
+  cvUrl?: string
+  attachments?: string[]
+}
+
+export interface ApplyToJobOfferRequest {
+  coverLetter?: string
+  cvUrl?: string
+  attachments?: string[]
 }
 
 export interface UpdateJobApplicationRequest {
-  offerId?: Id
-  candidateId?: Id
+  jobOffer?: Id
+  candidate?: Id
   status?: JobApplication['status']
   coverLetter?: string
+  cvUrl?: string
+  attachments?: string[]
 }
 
 export type PatchJobApplicationRequest = PatchPayload
@@ -35,8 +47,8 @@ const jobApplicationsCrudService = createAdminCrudService<
 
 export const jobApplicationsService = {
   ...jobApplicationsCrudService,
-  apply(offerId: Id) {
-    return httpPost<JobApplication, Record<string, never>>(`/api/v1/job-offers/${offerId}/apply`, {})
+  apply(jobOffer: Id, payload: ApplyToJobOfferRequest = {}) {
+    return httpPost<JobApplication, ApplyToJobOfferRequest>(`/api/v1/job-offers/${jobOffer}/apply`, payload)
   },
   accept(id: Id) {
     return httpPatch<JobApplication, Record<string, never>>(`${JOB_APPLICATIONS_BASE_PATH}/${id}/accept`, {})
