@@ -1,31 +1,16 @@
 <script setup lang="ts">
-import { FORBIDDEN_MESSAGE } from '~/utils/permissions/messages'
 import type { DataTableHeader } from 'vuetify'
 import { storeToRefs } from 'pinia'
-import { useAuthStore } from '~/stores/auth'
 import { Notify } from '~/stores/notification'
+import { useAuthStore } from '~/stores/auth'
 import { canManageUsers, isRoot } from '~/utils/permissions/admin'
-import {
-  DEFAULT_TIMEZONE,
-  LANGUAGE_VALUES,
-  LOCALE_VALUES,
-  USER_TEXT_MAX_LENGTH,
-  USER_TEXT_MIN_LENGTH,
-  type Language,
-  type Locale,
-} from '~~/services/admin/users'
 
 type UserRecord = {
   id: string
   username: string
   email: string
-  firstName: string
-  lastName: string
-  language: Language
-  locale: Locale
-  timezone: string
-  roles: string[]
-  userGroups: string[]
+  roles: string
+  userGroups: string
 }
 
 definePageMeta({
@@ -34,6 +19,7 @@ definePageMeta({
   drawerIndex: 71,
   requiresAuth: true,
   requiresAdmin: true,
+  layout: 'administration',
   middleware: ['auth', 'admin-access'],
   adminPermission: 'manageUsers',
 })
@@ -42,632 +28,176 @@ const authStore = useAuthStore()
 const { roles } = storeToRefs(authStore)
 
 const loading = ref(false)
-const apiError = ref<string | null>(null)
-const users = ref<UserRecord[]>([])
-const totalUsers = ref(0)
-const availableIds = ref<string[]>([])
-
+const error = ref<string | null>(null)
+const rows = ref<UserRecord[]>([])
+const total = ref(0)
 const page = ref(1)
-const itemsPerPage = ref(10)
+const pageSize = ref(10)
 const search = ref('')
-const roleFilter = ref('')
-const groupFilter = ref('')
+const filters = ref<Record<string, string>>({ role: '', group: '' })
 
-const selectedUser = ref<UserRecord | null>(null)
-const editUser = ref<UserRecord | null>(null)
-const showDialog = ref(false)
-const editDialog = ref(false)
-const editSaving = ref(false)
-const formErrors = ref<Partial<Record<keyof UserRecord, string>>>({})
+const canCreate = computed(() => isRoot(roles.value))
+const canEdit = computed(() => isRoot(roles.value))
+const canDelete = computed(() => isRoot(roles.value))
+const canShow = computed(() => canManageUsers(roles.value))
 
-const languageOptions = [...LANGUAGE_VALUES]
-const localeOptions = [...LOCALE_VALUES]
-
-const headers: DataTableHeader[] = [
+const columns: DataTableHeader[] = [
   { title: 'ID', key: 'id' },
   { title: 'Username', key: 'username' },
   { title: 'Email', key: 'email' },
   { title: 'Rôles', key: 'roles' },
   { title: 'Groupes', key: 'userGroups' },
-  { title: 'Actions', key: 'actions', sortable: false },
 ]
 
-const canShow = computed(() => canManageUsers(roles.value))
-const canEdit = computed(() => isRoot(roles.value))
-const canDelete = computed(() => isRoot(roles.value))
-
-const editDisabledMessage = 'Action réservée aux utilisateurs ROLE_ROOT.'
-const deleteDisabledMessage = 'Action réservée aux utilisateurs ROLE_ROOT.'
-
-function normalizeUsers(payload: unknown): UserRecord[] {
-  const records = Array.isArray(payload)
+function normalize(payload: unknown): UserRecord[] {
+  const list = Array.isArray(payload)
     ? payload
-    : payload &&
-        typeof payload === 'object' &&
-        Array.isArray((payload as { items?: unknown[] }).items)
+    : payload && typeof payload === 'object' && Array.isArray((payload as { items?: unknown[] }).items)
       ? (payload as { items: unknown[] }).items
-      : payload &&
-          typeof payload === 'object' &&
-          Array.isArray((payload as { data?: unknown[] }).data)
+      : payload && typeof payload === 'object' && Array.isArray((payload as { data?: unknown[] }).data)
         ? (payload as { data: unknown[] }).data
         : []
 
-  return records.map((entry) => {
+  return list.map((entry, index) => {
     const row = entry as Record<string, unknown>
-    const rolesValue = Array.isArray(row.roles) ? row.roles.map(String) : []
-    const userGroupsValue = Array.isArray(row.userGroups)
-      ? row.userGroups.map((group) => {
-          if (typeof group === 'string') {
-            return group
-          }
-          if (group && typeof group === 'object' && 'name' in group) {
-            return String((group as { name: unknown }).name)
-          }
-          return String(group)
-        })
-      : Array.isArray(row.groups)
-        ? row.groups.map((group) => {
-            if (typeof group === 'string') {
-              return group
-            }
-            if (group && typeof group === 'object' && 'name' in group) {
-              return String((group as { name: unknown }).name)
-            }
-            return String(group)
-          })
-        : []
+    const roleList = Array.isArray(row.roles) ? row.roles.map(String) : []
+    const groupList = Array.isArray(row.userGroups) ? row.userGroups.map(String) : []
 
     return {
-      id: String(row.id ?? row.uuid ?? ''),
-      username: String(row.username ?? row.userName ?? ''),
+      id: String(row.id ?? row.uuid ?? index),
+      username: String(row.username ?? ''),
       email: String(row.email ?? ''),
-      firstName: String(row.firstName ?? ''),
-      lastName: String(row.lastName ?? ''),
-      language: (LANGUAGE_VALUES.includes(
-        String(row.language ?? 'en') as Language,
-      )
-        ? String(row.language ?? 'en')
-        : 'en') as Language,
-      locale: (LOCALE_VALUES.includes(String(row.locale ?? 'en') as Locale)
-        ? String(row.locale ?? 'en')
-        : 'en') as Locale,
-      timezone: String(row.timezone ?? DEFAULT_TIMEZONE),
-      roles: rolesValue,
-      userGroups: userGroupsValue,
+      roles: roleList.join(', '),
+      userGroups: groupList.join(', '),
     }
   })
 }
 
-function validateBoundedText(value: string, fieldLabel: string) {
-  const trimmedValue = value.trim()
-
-  if (
-    trimmedValue.length < USER_TEXT_MIN_LENGTH ||
-    trimmedValue.length > USER_TEXT_MAX_LENGTH
-  ) {
-    return `${fieldLabel} doit contenir entre ${USER_TEXT_MIN_LENGTH} et ${USER_TEXT_MAX_LENGTH} caractères.`
+function toError(errorValue: unknown) {
+  if (isError(errorValue) && typeof errorValue.statusMessage === 'string') {
+    return errorValue.statusMessage
   }
 
-  return ''
+  if (errorValue instanceof Error) {
+    return errorValue.message
+  }
+
+  return 'Erreur API.'
 }
 
-function validateEditUserForm(record: UserRecord) {
-  const errors: Partial<Record<keyof UserRecord, string>> = {}
-
-  if (!record.id.trim()) {
-    errors.id = 'ID utilisateur requis.'
-  }
-
-  errors.username = validateBoundedText(record.username, 'Username')
-  errors.firstName = validateBoundedText(record.firstName, 'First name')
-  errors.lastName = validateBoundedText(record.lastName, 'Last name')
-
-  if (!record.roles.length) {
-    errors.roles = 'Au moins un rôle est requis.'
-  }
-
-  if (!record.userGroups.length) {
-    errors.userGroups = 'Au moins un groupe est requis.'
-  }
-
-  if (!record.timezone.trim()) {
-    errors.timezone = 'Timezone requise.'
-  }
-
-  if (!LANGUAGE_VALUES.includes(record.language)) {
-    errors.language = 'Language invalide.'
-  }
-
-  if (!LOCALE_VALUES.includes(record.locale)) {
-    errors.locale = 'Locale invalide.'
-  }
-
-  formErrors.value = errors
-  return Object.values(errors).every((message) => !message)
-}
-
-function mapValidationErrors(
-  error: unknown,
-): Partial<Record<keyof UserRecord, string>> {
-  if (!isError(error) || !error.data || typeof error.data !== 'object') {
-    return {}
-  }
-
-  const details = (error.data as { details?: unknown }).details
-  if (!Array.isArray(details)) {
-    return {}
-  }
-
-  const fieldAliases: Record<string, keyof UserRecord> = {
-    groups: 'userGroups',
-  }
-
-  const mapped: Partial<Record<keyof UserRecord, string>> = {}
-
-  for (const detail of details) {
-    if (!detail || typeof detail !== 'object') {
-      continue
-    }
-
-    const fieldRaw = String((detail as { field?: unknown }).field ?? '')
-    const field = (fieldAliases[fieldRaw] ?? fieldRaw) as keyof UserRecord
-    const issue = String((detail as { issue?: unknown }).issue ?? '')
-
-    if (field && issue) {
-      mapped[field] = issue
-    }
-  }
-
-  return mapped
-}
-
-function toErrorMessage(error: unknown) {
-  if (isError(error) && error.statusCode === 403) {
-    return FORBIDDEN_MESSAGE
-  }
-
-  if (isError(error) && typeof error.statusMessage === 'string') {
-    return error.statusMessage
-  }
-
-  if (error instanceof Error) {
-    return error.message
-  }
-
-  return 'Une erreur API est survenue.'
-}
-
-async function loadUsers() {
+async function loadRows() {
   loading.value = true
-  apiError.value = null
+  error.value = null
 
   try {
     const query = {
       page: page.value,
-      limit: itemsPerPage.value,
+      limit: pageSize.value,
       search: search.value || undefined,
-      role: roleFilter.value || undefined,
-      group: groupFilter.value || undefined,
+      role: filters.value.role || undefined,
+      group: filters.value.group || undefined,
     }
 
-    const [listResponse, countResponse, idsResponse] = await Promise.all([
+    const [listResponse, countResponse] = await Promise.all([
       $fetch('/api/user', { query }),
       $fetch('/api/user/count'),
-      $fetch('/api/user/ids'),
     ])
 
-    users.value = normalizeUsers(listResponse)
-    totalUsers.value =
-      typeof countResponse === 'number'
-        ? countResponse
-        : Number(
-            (countResponse as { count?: number })?.count ?? users.value.length,
-          )
-
-    availableIds.value = Array.isArray(idsResponse)
-      ? idsResponse.map(String)
-      : []
-  } catch (error) {
-    apiError.value = toErrorMessage(error)
-    Notify.error(apiError.value)
+    rows.value = normalize(listResponse)
+    total.value = typeof countResponse === 'number'
+      ? countResponse
+      : Number((countResponse as { count?: number })?.count ?? rows.value.length)
+  } catch (errorValue) {
+    error.value = toError(errorValue)
   } finally {
     loading.value = false
   }
 }
 
-async function showUserDetails(id: string) {
-  try {
-    const response = await $fetch(`/api/user/${encodeURIComponent(id)}`)
-    const normalized = normalizeUsers([response])[0] ?? null
-    selectedUser.value = normalized
-    showDialog.value = true
-  } catch (error) {
-    const backendValidationErrors = mapValidationErrors(error)
-
-    if (Object.keys(backendValidationErrors).length > 0) {
-      formErrors.value = {
-        ...formErrors.value,
-        ...backendValidationErrors,
-      }
-      Notify.error(
-        'La validation backend a échoué. Vérifiez les champs du formulaire.',
-      )
-      return
-    }
-
-    Notify.error(toErrorMessage(error))
-  }
+async function createRow() {
+  Notify.info('TODO: brancher le flux de création utilisateur.')
 }
 
-async function openEditDialog(user: UserRecord) {
-  formErrors.value = {}
+async function saveEdit(row: Record<string, unknown>) {
   try {
-    const response = await $fetch(`/api/user/${encodeURIComponent(user.id)}`)
-    editUser.value = normalizeUsers([response])[0] ?? null
-    editDialog.value = true
-  } catch (error) {
-    const backendValidationErrors = mapValidationErrors(error)
-
-    if (Object.keys(backendValidationErrors).length > 0) {
-      formErrors.value = {
-        ...formErrors.value,
-        ...backendValidationErrors,
-      }
-      Notify.error(
-        'La validation backend a échoué. Vérifiez les champs du formulaire.',
-      )
-      return
-    }
-
-    Notify.error(toErrorMessage(error))
-  }
-}
-
-async function saveEdit() {
-  if (!editUser.value) {
-    return
-  }
-
-  editSaving.value = true
-
-  const payload: UserRecord = {
-    ...editUser.value,
-    username: editUser.value.username.trim(),
-    firstName: editUser.value.firstName.trim(),
-    lastName: editUser.value.lastName.trim(),
-    timezone: editUser.value.timezone.trim() || DEFAULT_TIMEZONE,
-  }
-
-  if (!validateEditUserForm(payload)) {
-    Notify.error('Le formulaire contient des erreurs de validation.')
-    editSaving.value = false
-    return
-  }
-
-  formErrors.value = {}
-
-  try {
-    await $fetch(`/api/user/${encodeURIComponent(editUser.value.id)}` as any, {
+    await $fetch(`/api/user/${encodeURIComponent(String(row.id ?? ''))}` as any, {
       method: 'PATCH' as any,
       body: {
-        id: payload.id,
-        username: payload.username,
-        email: payload.email,
-        firstName: payload.firstName,
-        lastName: payload.lastName,
-        language: payload.language,
-        locale: payload.locale,
-        timezone: payload.timezone || DEFAULT_TIMEZONE,
-        roles: payload.roles,
-        userGroups: payload.userGroups,
+        username: row.username,
+        email: row.email,
       },
     })
 
     Notify.success('Utilisateur mis à jour.')
-    editDialog.value = false
-    await loadUsers()
-  } catch (error) {
-    const backendValidationErrors = mapValidationErrors(error)
-
-    if (Object.keys(backendValidationErrors).length > 0) {
-      formErrors.value = {
-        ...formErrors.value,
-        ...backendValidationErrors,
-      }
-      Notify.error(
-        'La validation backend a échoué. Vérifiez les champs du formulaire.',
-      )
-      return
-    }
-
-    Notify.error(toErrorMessage(error))
-  } finally {
-    editSaving.value = false
+    await loadRows()
+  } catch (errorValue) {
+    Notify.error(toError(errorValue))
   }
 }
 
-const dialogDelete = useTemplateRef('dialogDelete')
-
-async function deleteUser(user: UserRecord) {
-  const confirmed = await dialogDelete.value?.open(
-    `Supprimer l’utilisateur ${user.username} ?`,
-  )
-
-  if (!confirmed) {
-    return
-  }
-
+async function deleteRow(row: Record<string, unknown>) {
   try {
-    await $fetch(`/api/user/${encodeURIComponent(user.id)}` as any, {
+    await $fetch(`/api/user/${encodeURIComponent(String(row.id ?? ''))}` as any, {
       method: 'DELETE' as any,
     })
 
     Notify.success('Utilisateur supprimé.')
-    await loadUsers()
-  } catch (error) {
-    const backendValidationErrors = mapValidationErrors(error)
-
-    if (Object.keys(backendValidationErrors).length > 0) {
-      formErrors.value = {
-        ...formErrors.value,
-        ...backendValidationErrors,
-      }
-      Notify.error(
-        'La validation backend a échoué. Vérifiez les champs du formulaire.',
-      )
-      return
-    }
-
-    Notify.error(toErrorMessage(error))
+    await loadRows()
+  } catch (errorValue) {
+    Notify.error(toError(errorValue))
   }
 }
 
-watch([page, itemsPerPage], async () => {
-  await loadUsers()
-})
-
-watchDebounced(
-  [search, roleFilter, groupFilter],
-  async () => {
-    page.value = 1
-    await loadUsers()
-  },
-  { debounce: 350, maxWait: 1200 },
-)
-
-
-function handleSortChange() {
-  page.value = 1
-  void loadUsers()
-}
+watch([page, pageSize], loadRows)
+watchDebounced([search, filters], loadRows, { debounce: 300, maxWait: 1000 })
 
 onMounted(async () => {
   await authStore.ensureRolesLoaded()
-  await loadUsers()
+  await loadRows()
 })
 </script>
 
 <template>
-  <v-container fluid class="pa-6">
-    <v-card rounded="xl" elevation="6" class="pa-6">
-      <div
-        class="d-flex flex-wrap justify-space-between align-center ga-4 mb-4"
-      >
-        <h1 class="text-h4 font-weight-bold">Administration · Users</h1>
-        <div class="text-caption text-medium-emphasis">
-          Total: {{ totalUsers }} · IDs reçus: {{ availableIds.length }}
-        </div>
-      </div>
-
-
-      <AdminTable
-        :columns="headers"
-        :rows="users"
-        :loading="loading"
-        :total="totalUsers"
-        :page="page"
-        :page-size="itemsPerPage"
-        :error="apiError"
-        @update:page="page = $event"
-        @update:page-size="itemsPerPage = $event"
-        @sort-change="handleSortChange"
-        @row-click="showUserDetails(String($event.id ?? ''))"
-      >
-        <template #toolbar>
-          <v-row class="mb-2" dense>
-            <v-col cols="12" md="4">
-              <v-text-field
-                v-model="search"
-                label="Recherche"
-                prepend-inner-icon="mdi-magnify"
-                density="comfortable"
-                hide-details
-                clearable
-              />
-            </v-col>
-            <v-col cols="12" md="4">
-              <v-text-field
-                v-model="roleFilter"
-                label="Filtre rôle"
-                prepend-inner-icon="mdi-shield-account-outline"
-                density="comfortable"
-                hide-details
-                clearable
-              />
-            </v-col>
-            <v-col cols="12" md="4">
-              <v-text-field
-                v-model="groupFilter"
-                label="Filtre groupe"
-                prepend-inner-icon="mdi-account-group-outline"
-                density="comfortable"
-                hide-details
-                clearable
-              />
-            </v-col>
-          </v-row>
-        </template>
-
-        <template #cell:roles="{ item }">
-          <div class="d-flex flex-wrap ga-1">
-            <v-chip
-              v-for="roleName in item.roles"
-              :key="roleName"
-              size="small"
-              color="primary"
-              variant="tonal"
-            >
-              {{ roleName }}
-            </v-chip>
-          </div>
-        </template>
-
-        <template #cell:userGroups="{ item }">
-          <div class="d-flex flex-wrap ga-1">
-            <v-chip
-              v-for="groupName in item.userGroups"
-              :key="groupName"
-              size="small"
-              color="secondary"
-              variant="tonal"
-            >
-              {{ groupName }}
-            </v-chip>
-          </div>
-        </template>
-
-        <template #row-actions="{ item }">
-          <v-btn
-            v-if="canShow"
-            size="small"
-            icon="mdi-eye-outline"
-            variant="text"
-            color="info"
-            aria-label="Voir les détails utilisateur"
-            @click.stop="showUserDetails(String(item.id ?? ''))"
-          />
-
-          <v-tooltip :text="editDisabledMessage" :disabled="canEdit">
-            <template #activator="{ props: tooltipProps }">
-              <span v-bind="tooltipProps">
-                <v-btn
-                  size="small"
-                  icon="mdi-pencil-outline"
-                  variant="text"
-                  color="warning"
-                  aria-label="Éditer utilisateur"
-                  :disabled="!canEdit"
-                  @click.stop="openEditDialog(item as UserRecord)"
-                />
-              </span>
-            </template>
-          </v-tooltip>
-
-          <v-tooltip :text="deleteDisabledMessage" :disabled="canDelete">
-            <template #activator="{ props: tooltipProps }">
-              <span v-bind="tooltipProps">
-                <v-btn
-                  size="small"
-                  icon="mdi-delete-outline"
-                  variant="text"
-                  color="error"
-                  aria-label="Supprimer utilisateur"
-                  :disabled="!canDelete"
-                  @click.stop="deleteUser(item as UserRecord)"
-                />
-              </span>
-            </template>
-          </v-tooltip>
-        </template>
-      </AdminTable>
-    </v-card>
-
-    <DialogConfirm ref="dialogDelete" />
-
-    <v-dialog v-model="showDialog" max-width="620">
-      <v-card v-if="selectedUser">
-        <v-card-title>Détails utilisateur</v-card-title>
-        <v-card-text>
-          <div><strong>ID:</strong> {{ selectedUser.id }}</div>
-          <div><strong>Username:</strong> {{ selectedUser.username }}</div>
-          <div><strong>Email:</strong> {{ selectedUser.email }}</div>
-          <div>
-            <strong>Rôles:</strong> {{ selectedUser.roles.join(', ') || '-' }}
-          </div>
-          <div>
-            <strong>Groupes:</strong>
-            {{ selectedUser.userGroups.join(', ') || '-' }}
-          </div>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn color="primary" @click="showDialog = false">Fermer</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <v-dialog v-model="editDialog" max-width="640">
-      <v-card v-if="editUser">
-        <v-card-title>Éditer utilisateur</v-card-title>
-        <v-card-text class="pt-4">
-          <v-text-field
-            v-model="editUser.username"
-            label="Username"
-            class="mb-2"
-            :error-messages="formErrors.username"
-          />
-          <v-text-field
-            v-model="editUser.firstName"
-            label="First name"
-            class="mb-2"
-            :error-messages="formErrors.firstName"
-          />
-          <v-text-field
-            v-model="editUser.lastName"
-            label="Last name"
-            class="mb-2"
-            :error-messages="formErrors.lastName"
-          />
-          <v-select
-            v-model="editUser.language"
-            :items="languageOptions"
-            label="Language"
-            class="mb-2"
-            :error-messages="formErrors.language"
-          />
-          <v-select
-            v-model="editUser.locale"
-            :items="localeOptions"
-            label="Locale"
-            class="mb-2"
-            :error-messages="formErrors.locale"
-          />
-          <v-text-field
-            v-model="editUser.timezone"
-            label="Timezone"
-            class="mb-2"
-            :placeholder="DEFAULT_TIMEZONE"
-            :error-messages="formErrors.timezone"
-          />
-          <v-text-field v-model="editUser.email" label="Email" />
-          <div v-if="formErrors.roles" class="text-caption text-error mt-2">
-            {{ formErrors.roles }}
-          </div>
-          <div
-            v-if="formErrors.userGroups"
-            class="text-caption text-error mt-1"
-          >
-            {{ formErrors.userGroups }}
-          </div>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="editDialog = false">Annuler</v-btn>
-          <v-btn color="primary" :loading="editSaving" @click="saveEdit"
-            >Enregistrer</v-btn
-          >
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-  </v-container>
+  <AdminResourcePage
+    title="Users"
+    description="Référence CRUD admin (liste/consultation/édition/suppression) pilotée par permissions."
+    :columns="columns"
+    :rows="rows"
+    :loading="loading"
+    :error="error"
+    :total="total"
+    :page="page"
+    :page-size="pageSize"
+    :search="search"
+    :filters="filters"
+    :filter-configs="[
+      { key: 'role', label: 'Filtre rôle', icon: 'mdi-shield-account-outline' },
+      { key: 'group', label: 'Filtre groupe', icon: 'mdi-account-group-outline' },
+    ]"
+    :detail-fields="[
+      { key: 'id', label: 'ID' },
+      { key: 'username', label: 'Username' },
+      { key: 'email', label: 'Email' },
+      { key: 'roles', label: 'Rôles' },
+      { key: 'userGroups', label: 'Groupes' },
+    ]"
+    :editable-fields="[
+      { key: 'username', label: 'Username' },
+      { key: 'email', label: 'Email' },
+    ]"
+    :can-show="canShow"
+    :can-create="canCreate"
+    :can-edit="canEdit"
+    :can-delete="canDelete"
+    resource-name="l'utilisateur"
+    create-label="Créer un user"
+    @update:page="page = $event"
+    @update:page-size="pageSize = $event"
+    @update:search="search = $event"
+    @update:filters="filters = $event"
+    @create="createRow"
+    @save-edit="saveEdit"
+    @row-delete="deleteRow"
+    @refresh="loadRows"
+  />
 </template>

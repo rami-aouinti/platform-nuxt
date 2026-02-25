@@ -1,16 +1,34 @@
 <script setup lang="ts">
+import type { DataTableHeader } from 'vuetify'
+import { Notify } from '~/stores/notification'
+
+type Company = { id: string; name: string; legalName: string; status: string }
+
 definePageMeta({
   icon: 'mdi-domain',
   title: 'Companies',
   drawerIndex: 74,
   requiresAuth: true,
-  middleware: ['auth'],
+  requiresAdmin: true,
+  layout: 'administration',
+  middleware: ['auth', 'admin-access'],
 })
 
-type Company = { id: string; name: string; legalName?: string; status?: string }
-
-const loading = ref(false)
 const rows = ref<Company[]>([])
+const loading = ref(false)
+const error = ref<string | null>(null)
+const total = ref(0)
+const page = ref(1)
+const pageSize = ref(10)
+const search = ref('')
+const filters = ref<Record<string, string>>({ status: '' })
+
+const columns: DataTableHeader[] = [
+  { title: 'ID', key: 'id' },
+  { title: 'Name', key: 'name' },
+  { title: 'Legal name', key: 'legalName' },
+  { title: 'Status', key: 'status' },
+]
 
 function normalize(payload: unknown): Company[] {
   const list = Array.isArray(payload)
@@ -32,37 +50,68 @@ function normalize(payload: unknown): Company[] {
   })
 }
 
-async function loadCompanies() {
+async function loadRows() {
   loading.value = true
+  error.value = null
   try {
-    rows.value = normalize(await $fetch('/api/companies'))
+    const response = await $fetch('/api/companies', {
+      query: { search: search.value || undefined, status: filters.value.status || undefined, page: page.value, limit: pageSize.value },
+    })
+    rows.value = normalize(response)
+    total.value = rows.value.length
+  } catch (errorValue) {
+    error.value = errorValue instanceof Error ? errorValue.message : 'Erreur API.'
   } finally {
     loading.value = false
   }
 }
 
-onMounted(loadCompanies)
+function createRow() {
+  Notify.info('TODO: brancher la création de société.')
+}
+
+watch([page, pageSize], loadRows)
+watchDebounced([search, filters], loadRows, { debounce: 300, maxWait: 1000 })
+
+onMounted(loadRows)
 </script>
 
 <template>
-  <v-container fluid class="pa-6">
-    <v-card rounded="xl" elevation="6" class="pa-6">
-      <div class="d-flex align-center justify-space-between mb-4">
-        <h1 class="text-h4 font-weight-bold">Companies</h1>
-        <v-btn prepend-icon="mdi-refresh" :loading="loading" @click="loadCompanies">Recharger</v-btn>
-      </div>
-
-      <v-table>
-        <thead>
-          <tr><th>ID</th><th>Name</th><th>Legal name</th><th>Status</th><th /></tr>
-        </thead>
-        <tbody>
-          <tr v-for="item in rows" :key="item.id">
-            <td>{{ item.id }}</td><td>{{ item.name }}</td><td>{{ item.legalName || '-' }}</td><td>{{ item.status || '-' }}</td>
-            <td><v-btn size="small" variant="text" :to="`/administration/companies/${item.id}`">Détail</v-btn></td>
-          </tr>
-        </tbody>
-      </v-table>
-    </v-card>
-  </v-container>
+  <AdminResourcePage
+    title="Companies"
+    description="Prototype standardisé companies (toolbar + table + détail + édition + suppression)."
+    :columns="columns"
+    :rows="rows"
+    :loading="loading"
+    :error="error"
+    :total="total"
+    :page="page"
+    :page-size="pageSize"
+    :search="search"
+    :filters="filters"
+    :filter-configs="[{ key: 'status', label: 'Filtre statut', icon: 'mdi-filter' }]"
+    :detail-fields="[
+      { key: 'id', label: 'ID' },
+      { key: 'name', label: 'Name' },
+      { key: 'legalName', label: 'Legal name' },
+      { key: 'status', label: 'Status' },
+    ]"
+    :editable-fields="[
+      { key: 'name', label: 'Name' },
+      { key: 'legalName', label: 'Legal name' },
+      { key: 'status', label: 'Status' },
+    ]"
+    :can-show="true"
+    :can-create="true"
+    :can-edit="true"
+    :can-delete="true"
+    resource-name="la société"
+    create-label="Créer une société"
+    @update:page="page = $event"
+    @update:page-size="pageSize = $event"
+    @update:search="search = $event"
+    @update:filters="filters = $event"
+    @create="createRow"
+    @refresh="loadRows"
+  />
 </template>
