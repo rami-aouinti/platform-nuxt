@@ -3,13 +3,27 @@ import type { DataTableHeader } from 'vuetify'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth'
 import { Notify } from '~/stores/notification'
+import {
+  DEFAULT_TIMEZONE,
+  LANGUAGE_VALUES,
+  LOCALE_VALUES,
+  USER_TEXT_MAX_LENGTH,
+  USER_TEXT_MIN_LENGTH,
+  type Language,
+  type Locale,
+} from '~~/services/admin/users'
 
 type UserRecord = {
   id: string
   username: string
   email: string
+  firstName: string
+  lastName: string
+  language: Language
+  locale: Locale
+  timezone: string
   roles: string[]
-  groups: string[]
+  userGroups: string[]
 }
 
 definePageMeta({
@@ -41,13 +55,17 @@ const editUser = ref<UserRecord | null>(null)
 const showDialog = ref(false)
 const editDialog = ref(false)
 const editSaving = ref(false)
+const formErrors = ref<Partial<Record<keyof UserRecord, string>>>({})
+
+const languageOptions = [...LANGUAGE_VALUES]
+const localeOptions = [...LOCALE_VALUES]
 
 const headers: DataTableHeader[] = [
   { title: 'ID', key: 'id' },
   { title: 'Username', key: 'username' },
   { title: 'Email', key: 'email' },
   { title: 'Rôles', key: 'roles' },
-  { title: 'Groupes', key: 'groups' },
+  { title: 'Groupes', key: 'userGroups' },
   { title: 'Actions', key: 'actions', sortable: false },
 ]
 
@@ -66,11 +84,11 @@ function normalizeUsers(payload: unknown): UserRecord[] {
         ? (payload as { data: unknown[] }).data
         : []
 
-  return records.map((entry, index) => {
+  return records.map((entry) => {
     const row = entry as Record<string, unknown>
     const rolesValue = Array.isArray(row.roles) ? row.roles.map(String) : []
-    const groupsValue = Array.isArray(row.groups)
-      ? row.groups.map((group) => {
+    const userGroupsValue = Array.isArray(row.userGroups)
+      ? row.userGroups.map((group) => {
           if (typeof group === 'string') {
             return group
           }
@@ -79,16 +97,111 @@ function normalizeUsers(payload: unknown): UserRecord[] {
           }
           return String(group)
         })
-      : []
+      : Array.isArray(row.groups)
+        ? row.groups.map((group) => {
+            if (typeof group === 'string') {
+              return group
+            }
+            if (group && typeof group === 'object' && 'name' in group) {
+              return String((group as { name: unknown }).name)
+            }
+            return String(group)
+          })
+        : []
 
     return {
-      id: String(row.id ?? row.uuid ?? index),
+      id: String(row.id ?? row.uuid ?? ''),
       username: String(row.username ?? row.userName ?? ''),
       email: String(row.email ?? ''),
+      firstName: String(row.firstName ?? ''),
+      lastName: String(row.lastName ?? ''),
+      language: (LANGUAGE_VALUES.includes(String(row.language ?? 'en') as Language) ? String(row.language ?? 'en') : 'en') as Language,
+      locale: (LOCALE_VALUES.includes(String(row.locale ?? 'en') as Locale) ? String(row.locale ?? 'en') : 'en') as Locale,
+      timezone: String(row.timezone ?? DEFAULT_TIMEZONE),
       roles: rolesValue,
-      groups: groupsValue,
+      userGroups: userGroupsValue,
     }
   })
+}
+
+
+
+function validateBoundedText(value: string, fieldLabel: string) {
+  const trimmedValue = value.trim()
+
+  if (trimmedValue.length < USER_TEXT_MIN_LENGTH || trimmedValue.length > USER_TEXT_MAX_LENGTH) {
+    return `${fieldLabel} doit contenir entre ${USER_TEXT_MIN_LENGTH} et ${USER_TEXT_MAX_LENGTH} caractères.`
+  }
+
+  return ''
+}
+
+function validateEditUserForm(record: UserRecord) {
+  const errors: Partial<Record<keyof UserRecord, string>> = {}
+
+  if (!record.id.trim()) {
+    errors.id = 'ID utilisateur requis.'
+  }
+
+  errors.username = validateBoundedText(record.username, 'Username')
+  errors.firstName = validateBoundedText(record.firstName, 'First name')
+  errors.lastName = validateBoundedText(record.lastName, 'Last name')
+
+  if (!record.roles.length) {
+    errors.roles = 'Au moins un rôle est requis.'
+  }
+
+  if (!record.userGroups.length) {
+    errors.userGroups = 'Au moins un groupe est requis.'
+  }
+
+  if (!record.timezone.trim()) {
+    errors.timezone = 'Timezone requise.'
+  }
+
+  if (!LANGUAGE_VALUES.includes(record.language)) {
+    errors.language = 'Language invalide.'
+  }
+
+  if (!LOCALE_VALUES.includes(record.locale)) {
+    errors.locale = 'Locale invalide.'
+  }
+
+  formErrors.value = errors
+  return Object.values(errors).every((message) => !message)
+}
+
+function mapValidationErrors(error: unknown): Partial<Record<keyof UserRecord, string>> {
+  if (!isError(error) || !error.data || typeof error.data !== 'object') {
+    return {}
+  }
+
+  const details = (error.data as { details?: unknown }).details
+  if (!Array.isArray(details)) {
+    return {}
+  }
+
+  const fieldAliases: Record<string, keyof UserRecord> = {
+    groups: 'userGroups',
+  }
+
+  const mapped: Partial<Record<keyof UserRecord, string>> = {}
+
+  for (const detail of details) {
+    if (!detail || typeof detail !== 'object') {
+      continue
+    }
+
+    const fieldRaw = String((detail as { field?: unknown }).field ?? '')
+    const field = (fieldAliases[fieldRaw] ?? fieldRaw) as keyof UserRecord
+    const issue = String((detail as { issue?: unknown }).issue ?? '')
+
+    if (field && issue) {
+      mapped[field] = issue
+    }
+  }
+
+  return mapped
 }
 
 function toErrorMessage(error: unknown) {
@@ -148,16 +261,39 @@ async function showUserDetails(id: string) {
     selectedUser.value = normalized
     showDialog.value = true
   } catch (error) {
+    const backendValidationErrors = mapValidationErrors(error)
+
+    if (Object.keys(backendValidationErrors).length > 0) {
+      formErrors.value = {
+        ...formErrors.value,
+        ...backendValidationErrors,
+      }
+      Notify.error('La validation backend a échoué. Vérifiez les champs du formulaire.')
+      return
+    }
+
     Notify.error(toErrorMessage(error))
   }
 }
 
 async function openEditDialog(user: UserRecord) {
+  formErrors.value = {}
   try {
     const response = await $fetch(`/api/user/${encodeURIComponent(user.id)}`)
     editUser.value = normalizeUsers([response])[0] ?? null
     editDialog.value = true
   } catch (error) {
+    const backendValidationErrors = mapValidationErrors(error)
+
+    if (Object.keys(backendValidationErrors).length > 0) {
+      formErrors.value = {
+        ...formErrors.value,
+        ...backendValidationErrors,
+      }
+      Notify.error('La validation backend a échoué. Vérifiez les champs du formulaire.')
+      return
+    }
+
     Notify.error(toErrorMessage(error))
   }
 }
@@ -169,12 +305,36 @@ async function saveEdit() {
 
   editSaving.value = true
 
+  const payload: UserRecord = {
+    ...editUser.value,
+    username: editUser.value.username.trim(),
+    firstName: editUser.value.firstName.trim(),
+    lastName: editUser.value.lastName.trim(),
+    timezone: editUser.value.timezone.trim() || DEFAULT_TIMEZONE,
+  }
+
+  if (!validateEditUserForm(payload)) {
+    Notify.error('Le formulaire contient des erreurs de validation.')
+    editSaving.value = false
+    return
+  }
+
+  formErrors.value = {}
+
   try {
     await $fetch(`/api/user/${encodeURIComponent(editUser.value.id)}` as any, {
       method: 'PATCH' as any,
       body: {
-        username: editUser.value.username,
-        email: editUser.value.email,
+        id: payload.id,
+        username: payload.username,
+        email: payload.email,
+        firstName: payload.firstName,
+        lastName: payload.lastName,
+        language: payload.language,
+        locale: payload.locale,
+        timezone: payload.timezone || DEFAULT_TIMEZONE,
+        roles: payload.roles,
+        userGroups: payload.userGroups,
       },
     })
 
@@ -182,6 +342,17 @@ async function saveEdit() {
     editDialog.value = false
     await loadUsers()
   } catch (error) {
+    const backendValidationErrors = mapValidationErrors(error)
+
+    if (Object.keys(backendValidationErrors).length > 0) {
+      formErrors.value = {
+        ...formErrors.value,
+        ...backendValidationErrors,
+      }
+      Notify.error('La validation backend a échoué. Vérifiez les champs du formulaire.')
+      return
+    }
+
     Notify.error(toErrorMessage(error))
   } finally {
     editSaving.value = false
@@ -207,6 +378,17 @@ async function deleteUser(user: UserRecord) {
     Notify.success('Utilisateur supprimé.')
     await loadUsers()
   } catch (error) {
+    const backendValidationErrors = mapValidationErrors(error)
+
+    if (Object.keys(backendValidationErrors).length > 0) {
+      formErrors.value = {
+        ...formErrors.value,
+        ...backendValidationErrors,
+      }
+      Notify.error('La validation backend a échoué. Vérifiez les champs du formulaire.')
+      return
+    }
+
     Notify.error(toErrorMessage(error))
   }
 }
@@ -306,10 +488,10 @@ onMounted(async () => {
           </div>
         </template>
 
-        <template #item.groups="{ item }">
+        <template #item.userGroups="{ item }">
           <div class="d-flex flex-wrap ga-1">
             <v-chip
-              v-for="groupName in item.groups"
+              v-for="groupName in item.userGroups"
               :key="groupName"
               size="small"
               color="secondary"
@@ -361,7 +543,7 @@ onMounted(async () => {
           <div><strong>Username:</strong> {{ selectedUser.username }}</div>
           <div><strong>Email:</strong> {{ selectedUser.email }}</div>
           <div><strong>Rôles:</strong> {{ selectedUser.roles.join(', ') || '-' }}</div>
-          <div><strong>Groupes:</strong> {{ selectedUser.groups.join(', ') || '-' }}</div>
+          <div><strong>Groupes:</strong> {{ selectedUser.userGroups.join(', ') || '-' }}</div>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -374,8 +556,51 @@ onMounted(async () => {
       <v-card v-if="editUser">
         <v-card-title>Éditer utilisateur</v-card-title>
         <v-card-text class="pt-4">
-          <v-text-field v-model="editUser.username" label="Username" class="mb-2" />
-          <v-text-field v-model="editUser.email" label="Email" />
+          <v-text-field
+            v-model="editUser.username"
+            label="Username"
+            class="mb-2"
+            :error-messages="formErrors.username"
+          />
+          <v-text-field
+            v-model="editUser.firstName"
+            label="First name"
+            class="mb-2"
+            :error-messages="formErrors.firstName"
+          />
+          <v-text-field
+            v-model="editUser.lastName"
+            label="Last name"
+            class="mb-2"
+            :error-messages="formErrors.lastName"
+          />
+          <v-select
+            v-model="editUser.language"
+            :items="languageOptions"
+            label="Language"
+            class="mb-2"
+            :error-messages="formErrors.language"
+          />
+          <v-select
+            v-model="editUser.locale"
+            :items="localeOptions"
+            label="Locale"
+            class="mb-2"
+            :error-messages="formErrors.locale"
+          />
+          <v-text-field
+            v-model="editUser.timezone"
+            label="Timezone"
+            class="mb-2"
+            :placeholder="DEFAULT_TIMEZONE"
+            :error-messages="formErrors.timezone"
+          />
+          <v-text-field
+            v-model="editUser.email"
+            label="Email"
+          />
+          <div v-if="formErrors.roles" class="text-caption text-error mt-2">{{ formErrors.roles }}</div>
+          <div v-if="formErrors.userGroups" class="text-caption text-error mt-1">{{ formErrors.userGroups }}</div>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
