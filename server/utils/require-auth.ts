@@ -1,9 +1,10 @@
 import type { H3Event } from 'h3'
+import { resolveAuthorizationHeader } from './authorization'
 
 export function requireAuthenticatedRequest(event: H3Event) {
-  const authorization = getHeader(event, 'authorization')
+  const authorization = resolveAuthorizationHeader(event)
 
-  if (!authorization || !authorization.trim().toLowerCase().startsWith('bearer ')) {
+  if (!authorization) {
     throw createError({
       statusCode: 401,
       statusMessage: 'Unauthorized.',
