@@ -2,7 +2,7 @@
 import { useDisplay } from 'vuetify'
 import { Notify } from '~/stores/notification'
 import { buildApiPlatformQuery } from '../../../services/admin/_shared'
-import { HttpRequestError } from '../../../services/http/client'
+import { httpGet, HttpRequestError } from '../../../services/http/client'
 import { jobApplicationsService, type JobApplication } from '../../../services/admin/job-applications'
 
 definePageMeta({
@@ -86,19 +86,21 @@ async function loadRows() {
   forbidden.value = false
 
   try {
-    const response = await jobApplicationsService.list({
-      ...buildApiPlatformQuery({
-        page: page.value,
-        pageSize: pageSize.value,
-        search: search.value,
-        sortBy: 'id',
-        sortOrder: 'desc',
-        filters: { status: filters.value.status || undefined },
-      }),
+    const response = await httpGet<JobApplication[]>('/api/job-applications', {
+      query: {
+        ...buildApiPlatformQuery({
+          page: page.value,
+          pageSize: pageSize.value,
+          search: search.value,
+          sortBy: 'id',
+          sortOrder: 'desc',
+          filters: { status: filters.value.status || undefined },
+        }),
+      },
     })
 
-    rows.value = response.data
-    const firstOffer = response.data.at(0)
+    rows.value = Array.isArray(response) ? response : []
+    const firstOffer = rows.value.at(0)
     if (!selectedId.value && firstOffer) {
       selectedId.value = String(firstOffer.id)
     }
