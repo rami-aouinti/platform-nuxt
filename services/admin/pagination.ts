@@ -13,8 +13,11 @@ export interface PaginatedResponse<T> {
 interface LegacyPaginatedResponse<T> {
   data?: T[]
   items?: T[]
+  member?: T[]
+  'hydra:member'?: T[]
   total?: number
   totalItems?: number
+  'hydra:totalItems'?: number
 }
 
 export function normalizePaginatedResponse<TItem>(
@@ -32,8 +35,19 @@ export function normalizePaginatedResponse<TItem>(
     }
   }
 
-  const collection = response.data ?? response.items ?? []
-  const totalItems = Number(response.totalItems ?? response.total ?? collection.length)
+  const collection =
+    response.data ??
+    response.items ??
+    response.member ??
+    response['hydra:member'] ??
+    []
+
+  const totalItems = Number(
+    response.totalItems ??
+      response.total ??
+      response['hydra:totalItems'] ??
+      collection.length,
+  )
 
   return {
     data: collection,
