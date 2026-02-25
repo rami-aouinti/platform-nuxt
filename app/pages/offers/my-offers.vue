@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { useDisplay } from 'vuetify'
 import { Notify } from '~/stores/notification'
-import { buildApiPlatformQuery } from '../../../services/admin/_shared'
-import { HttpRequestError } from '../../../services/http/client'
 import {
-  jobOffersService,
-  listMyJobOffers,
-  type JobOffer,
-} from '../../../services/admin/job-offers/index'
+  buildApiPlatformQuery,
+  normalizeListQuery,
+} from '../../../services/admin/_shared'
+import { httpGet, HttpRequestError } from '../../../services/http/client'
+import { normalizePaginatedResponse } from '../../../services/admin/pagination'
+import * as jobOffersApi from '../../../services/admin/job-offers'
+import type { JobOffer } from '../../../services/admin/job-offers'
 
 definePageMeta({
   icon: 'mdi-briefcase-edit-outline',
@@ -25,6 +26,8 @@ type OfferForm = {
   company: string
   status: JobOffer['status']
 }
+
+const jobOffersService = jobOffersApi.jobOffersService
 
 const rows = ref<JobOffer[]>([])
 const loading = ref(false)
@@ -157,13 +160,26 @@ function openEdit(offerId: string) {
   editDialog.value = true
 }
 
+async function listMyOffers(query: Record<string, unknown>) {
+  if (
+    'listMyJobOffers' in jobOffersApi &&
+    typeof jobOffersApi.listMyJobOffers === 'function'
+  ) {
+    return jobOffersApi.listMyJobOffers(query)
+  }
+
+  return httpGet('/api/job-offers/my', {
+    query: normalizeListQuery(query),
+  }).then((response) => normalizePaginatedResponse<JobOffer>(response))
+}
+
 async function loadRows() {
   loading.value = true
   error.value = null
   forbidden.value = false
 
   try {
-    const response = await listMyJobOffers({
+    const response = await listMyOffers({
       ...buildApiPlatformQuery({
         page: page.value,
         pageSize: pageSize.value,
