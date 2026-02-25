@@ -13,7 +13,7 @@ const normalized = computed(() => Math.max(0, Math.min(100, props.value)))
 <template>
   <div class="offer-match-gauge">
     <div class="offer-match-gauge__top">
-      <span class="offer-match-gauge__label">{{ label }}</span>
+      <span class="offer-match-gauge__label">{{ props.label }}</span>
       <span class="offer-match-gauge__value">{{ normalized }}%</span>
     </div>
     <div class="offer-match-gauge__bar">
