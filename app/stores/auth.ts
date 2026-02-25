@@ -19,6 +19,16 @@ type AuthGroup = {
 
 const AUTH_TOKEN_STORAGE_KEY = 'auth_token'
 const AUTH_TOKEN_COOKIE_KEY = 'auth_token'
+const AUTH_STATE_STORAGE_KEY = 'auth_state'
+const AUTH_STATE_MAX_AGE_MS = 5 * 60 * 1000
+
+type StoredAuthState = {
+  token: string
+  profile: AuthProfile | null
+  groups: AuthGroup[]
+  roles: string[]
+  cachedAt: number
+}
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref<string | null>(null)
@@ -30,6 +40,68 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isAuthenticated = computed(() => Boolean(token.value))
   const hasAdminAccess = computed(() => canAccessAdmin(roles.value))
+
+
+  function clearPersistedAuthState() {
+    if (!import.meta.client) {
+      return
+    }
+
+    sessionStorage.removeItem(AUTH_STATE_STORAGE_KEY)
+  }
+
+  function persistAuthState() {
+    if (!import.meta.client) {
+      return
+    }
+
+    if (!token.value) {
+      clearPersistedAuthState()
+      return
+    }
+
+    const authState: StoredAuthState = {
+      token: token.value,
+      profile: profile.value,
+      groups: groups.value,
+      roles: roles.value,
+      cachedAt: Date.now(),
+    }
+
+    sessionStorage.setItem(AUTH_STATE_STORAGE_KEY, JSON.stringify(authState))
+  }
+
+  function hydrateAuthStateFromCache() {
+    if (!import.meta.client || !token.value) {
+      return false
+    }
+
+    const rawState = sessionStorage.getItem(AUTH_STATE_STORAGE_KEY)
+
+    if (!rawState) {
+      return false
+    }
+
+    try {
+      const authState = JSON.parse(rawState) as StoredAuthState
+      const isExpired = Date.now() - authState.cachedAt > AUTH_STATE_MAX_AGE_MS
+      const hasMatchingToken = authState.token === token.value
+
+      if (isExpired || !hasMatchingToken) {
+        clearPersistedAuthState()
+        return false
+      }
+
+      profile.value = authState.profile
+      groups.value = authState.groups
+      roles.value = authState.roles
+
+      return true
+    } catch {
+      clearPersistedAuthState()
+      return false
+    }
+  }
 
   function persistToken() {
     if (!import.meta.client) {
@@ -97,6 +169,7 @@ export const useAuthStore = defineStore('auth', () => {
       profile.value = profileResponse
       groups.value = groupsResponse
       roles.value = rolesResponse
+      persistAuthState()
     } catch (error) {
       rolesError.value = 'Impossible de charger les rôles utilisateur.'
       throw error
@@ -123,6 +196,7 @@ export const useAuthStore = defineStore('auth', () => {
         headers: authHeaders(),
       })
       roles.value = rolesResponse
+      persistAuthState()
       return roles.value
     } catch (error) {
       rolesError.value = 'Impossible de charger les rôles utilisateur.'
@@ -139,6 +213,7 @@ export const useAuthStore = defineStore('auth', () => {
     roles.value = []
     rolesError.value = null
     rolesLoading.value = false
+    clearPersistedAuthState()
   }
 
   async function initAuth() {
@@ -154,6 +229,10 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     setToken(storedToken)
+
+    if (hydrateAuthStateFromCache()) {
+      return
+    }
 
     try {
       await fetchProfileData()
@@ -178,3 +257,4 @@ export const useAuthStore = defineStore('auth', () => {
     initAuth,
   }
 })
+
