@@ -1,11 +1,6 @@
 <script setup lang="ts">
-import type { DataTableHeader } from 'vuetify'
+import { useDisplay } from 'vuetify'
 import { Notify } from '~/stores/notification'
-import AdminBadge from '~/components/admin/ui/AdminBadge.vue'
-import AdminCard from '~/components/admin/ui/AdminCard.vue'
-import AdminToolbar from '~/components/admin/ui/AdminToolbar.vue'
-import AdminErrorState from '~/components/admin/ui/AdminErrorState.vue'
-import AdminEmptyState from '~/components/admin/ui/AdminEmptyState.vue'
 import { buildApiPlatformQuery } from '../../../services/admin/_shared'
 import { HttpRequestError } from '../../../services/http/client'
 import { jobApplicationsService, type JobApplication } from '../../../services/admin/job-applications'
@@ -23,18 +18,28 @@ const loading = ref(false)
 const actionLoading = ref(false)
 const error = ref<string | null>(null)
 const forbidden = ref(false)
-const total = ref(0)
 const page = ref(1)
 const pageSize = ref(10)
 const search = ref('')
+const location = ref('')
+const selectedId = ref('')
 const filters = ref({ status: '' })
+const selectedFilters = ref<Record<string, string[]>>({})
+const mobileFilters = ref(false)
 
-const columns: DataTableHeader[] = [
-  { title: 'ID', key: 'id' },
-  { title: 'Offre', key: 'jobOffer' },
-  { title: 'Lettre', key: 'coverLetter' },
-  { title: 'CV', key: 'cvUrl' },
-  { title: 'Statut', key: 'status' },
+const { mdAndDown } = useDisplay()
+
+const filterSections = [
+  {
+    key: 'status',
+    title: 'Status',
+    items: [
+      { label: 'En attente', value: 'pending', count: 5 },
+      { label: 'Acceptée', value: 'accepted', count: 2 },
+      { label: 'Rejetée', value: 'rejected', count: 3 },
+      { label: 'Retirée', value: 'withdrawn', count: 1 },
+    ],
+  },
 ]
 
 const pageState = computed(() => {
@@ -44,6 +49,19 @@ const pageState = computed(() => {
   if (!rows.value.length) return 'empty'
   return 'ready'
 })
+
+const mappedOffers = computed(() => rows.value.map((row, index) => ({
+  id: String(row.id),
+  title: `Candidature #${row.id}`,
+  company: String(row.jobOffer),
+  matchingScore: 72 + (index % 3) * 8,
+  location: location.value || 'Remote',
+  salary: row.cvUrl ? 'CV joint' : 'Sans CV',
+  tags: [row.status, row.coverLetter ? 'Lettre jointe' : 'Sans lettre'],
+  status: statusMeta(row.status).label,
+})))
+
+const selectedOffer = computed(() => mappedOffers.value.find(offer => offer.id === selectedId.value) ?? mappedOffers.value[0])
 
 function toErrorMessage(errorValue: unknown) {
   if (errorValue instanceof HttpRequestError) return errorValue.message
@@ -58,8 +76,8 @@ function statusMeta(status: string) {
   return { label: 'En attente', tone: 'warning' as const }
 }
 
-function canWithdraw(row: Record<string, unknown>) {
-  return String(row.status ?? '') === 'pending'
+function canWithdraw(row: JobApplication) {
+  return row.status === 'pending'
 }
 
 async function loadRows() {
@@ -80,7 +98,10 @@ async function loadRows() {
     })
 
     rows.value = response.data
-    total.value = response.meta?.totalItems ?? response.data.length
+    const firstOffer = response.data.at(0)
+    if (!selectedId.value && firstOffer) {
+      selectedId.value = String(firstOffer.id)
+    }
   } catch (errorValue) {
     if (errorValue instanceof HttpRequestError && errorValue.statusCode === 403) {
       forbidden.value = true
@@ -93,8 +114,9 @@ async function loadRows() {
   }
 }
 
-async function withdraw(item: Record<string, unknown>) {
-  if (!canWithdraw(item)) {
+async function withdraw(offerId: string) {
+  const item = rows.value.find(row => String(row.id) === offerId)
+  if (!item || !canWithdraw(item)) {
     Notify.error('Seules les candidatures en attente peuvent être retirées.')
     return
   }
@@ -102,7 +124,7 @@ async function withdraw(item: Record<string, unknown>) {
   actionLoading.value = true
 
   try {
-    await jobApplicationsService.withdraw(String(item.id))
+    await jobApplicationsService.withdraw(offerId)
     Notify.success('Candidature retirée.')
     await loadRows()
   } catch (errorValue) {
@@ -113,93 +135,91 @@ async function withdraw(item: Record<string, unknown>) {
 }
 
 watch([page, pageSize], loadRows)
-watchDebounced([search, filters], () => {
+watchDebounced([search, location, filters], () => {
   page.value = 1
   void loadRows()
 }, { debounce: 300, maxWait: 1000 })
+
+watch(selectedFilters, (value) => {
+  filters.value.status = value.status?.[0] || ''
+}, { deep: true })
 
 onMounted(loadRows)
 </script>
 
 <template>
-  <AdminCard>
-    <AdminToolbar title="Mes candidatures" description="Suivre vos candidatures et retirer celles en attente.">
-      <template #actions>
-        <v-btn variant="tonal" prepend-icon="mdi-refresh" @click="loadRows">Recharger</v-btn>
-      </template>
-    </AdminToolbar>
+  <main class="offers-board-page">
+    <OffersSearchBar
+      v-model:query="search"
+      v-model:location="location"
+      title="Mes candidatures"
+      subtitle="Suivez vos candidatures avec une vue détaillée par carte."
+      @search="loadRows"
+    />
 
-    <template v-if="pageState === 'forbidden'">
-      <v-sheet class="pa-6 text-center" rounded="lg" border>
-        <div class="text-h6 mb-2">403 · Accès refusé</div>
-        <p class="text-medium-emphasis mb-4">Vous n'êtes pas autorisé à consulter vos candidatures.</p>
-      </v-sheet>
-    </template>
-
-    <AdminErrorState v-else-if="pageState === 'error'" :message="error || 'Erreur API.'" :can-retry="true" @retry="loadRows" />
-
-    <template v-else>
-      <v-row dense class="mb-2">
-        <v-col cols="12" md="5">
-          <v-text-field v-model="search" label="Recherche" prepend-inner-icon="mdi-magnify" hide-details clearable />
-        </v-col>
-        <v-col cols="12" md="4">
-          <v-select
-            v-model="filters.status"
-            :items="[
-              { title: 'Tous', value: '' },
-              { title: 'En attente', value: 'pending' },
-              { title: 'Acceptée', value: 'accepted' },
-              { title: 'Rejetée', value: 'rejected' },
-              { title: 'Retirée', value: 'withdrawn' },
-            ]"
-            label="Statut"
-            hide-details
-          />
-        </v-col>
-      </v-row>
-
-      <AdminEmptyState
-        v-if="pageState === 'empty'"
-        title="Aucune candidature"
-        message="Vous n'avez pas encore postulé à une offre ou aucun résultat ne correspond aux filtres."
+    <div class="offers-board-page__layout">
+      <OffersFiltersSidebar
+        v-if="!mdAndDown"
+        v-model="selectedFilters"
+        title="Filtrer"
+        :sections="filterSections"
       />
 
-      <AdminTable
-        v-else
-        :columns="columns"
-        :rows="rows"
-        :loading="loading"
-        :total="total"
-        :page="page"
-        :page-size="pageSize"
-        @update:page="page = $event"
-        @update:page-size="pageSize = $event"
-      >
-        <template #cell:coverLetter="{ value }">
-          <span class="text-body-2">{{ String(value || '-').slice(0, 80) }}</span>
-        </template>
+      <section class="offers-board-page__content">
+        <div v-if="mdAndDown" class="offers-board-page__mobile-tools">
+          <v-btn variant="outlined" prepend-icon="mdi-filter-variant" @click="mobileFilters = true">Filter</v-btn>
+        </div>
 
-        <template #cell:cvUrl="{ value }">
-          <span class="text-body-2">{{ value ? 'Renseigné' : '-' }}</span>
-        </template>
+        <v-alert v-if="pageState === 'forbidden'" type="error" variant="tonal">403 · Accès refusé.</v-alert>
+        <v-alert v-else-if="pageState === 'error'" type="error" variant="tonal">{{ error || 'Erreur API.' }}</v-alert>
+        <v-skeleton-loader v-else-if="pageState === 'loading'" type="article, article" />
+        <v-alert v-else-if="pageState === 'empty'" type="info" variant="tonal">Aucune candidature.</v-alert>
 
-        <template #cell:status="{ value }">
-          <AdminBadge :status="statusMeta(String(value)).tone" :label="statusMeta(String(value)).label" />
-        </template>
+        <div v-else class="offers-board-page__grid">
+          <div class="offers-board-page__list">
+            <OfferListCard
+              v-for="offer in mappedOffers"
+              :key="offer.id"
+              :offer="offer"
+              :active="selectedOffer?.id === offer.id"
+              action-label="Retirer"
+              action-icon="mdi-undo"
+              @select="selectedId = $event"
+              @action="withdraw"
+            />
+          </div>
 
-        <template #row-actions="{ item }">
-          <v-btn
-            v-if="canWithdraw(item)"
-            size="small"
-            variant="text"
-            color="warning"
-            icon="mdi-undo"
-            :loading="actionLoading"
-            @click.stop="withdraw(item)"
+          <OfferDetailsPanel
+            v-if="selectedOffer"
+            :title="selectedOffer.title"
+            :company="selectedOffer.company"
+            :location="selectedOffer.location"
+            :salary="selectedOffer.salary"
+            :description="'Consultez le statut de votre candidature et les prochaines étapes du process.'"
+            :highlights="[
+              'Candidature transmise au recruteur',
+              'Profil évalué selon les critères du poste',
+              'Retour attendu sous 5 jours ouvrés',
+            ]"
+            :requirements="['CV à jour', 'Portfolio ou références', 'Disponibilité communiquée']"
+            :perks="['Notifications en temps réel', 'Suivi des étapes', 'Historique centralisé']"
           />
-        </template>
-      </AdminTable>
-    </template>
-  </AdminCard>
+        </div>
+      </section>
+    </div>
+
+    <v-navigation-drawer v-model="mobileFilters" temporary location="right" width="320">
+      <div class="pa-4">
+        <OffersFiltersSidebar
+          v-model="selectedFilters"
+          title="Filtrer"
+          :sections="filterSections"
+        />
+      </div>
+    </v-navigation-drawer>
+
+    <v-overlay :model-value="actionLoading" class="align-center justify-center">
+      <v-progress-circular indeterminate color="primary" />
+    </v-overlay>
+  </main>
 </template>

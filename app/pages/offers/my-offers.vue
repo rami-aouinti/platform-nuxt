@@ -1,11 +1,6 @@
 <script setup lang="ts">
-import type { DataTableHeader } from 'vuetify'
+import { useDisplay } from 'vuetify'
 import { Notify } from '~/stores/notification'
-import AdminBadge from '~/components/admin/ui/AdminBadge.vue'
-import AdminCard from '~/components/admin/ui/AdminCard.vue'
-import AdminToolbar from '~/components/admin/ui/AdminToolbar.vue'
-import AdminErrorState from '~/components/admin/ui/AdminErrorState.vue'
-import AdminEmptyState from '~/components/admin/ui/AdminEmptyState.vue'
 import { buildApiPlatformQuery } from '../../../services/admin/_shared'
 import { HttpRequestError } from '../../../services/http/client'
 import { jobOffersService, type JobOffer } from '../../../services/admin/job-offers'
@@ -32,22 +27,43 @@ const loading = ref(false)
 const actionLoading = ref(false)
 const error = ref<string | null>(null)
 const forbidden = ref(false)
-const total = ref(0)
 const page = ref(1)
 const pageSize = ref(10)
 const search = ref('')
-
-const dialogDelete = useTemplateRef('dialogDelete')
+const location = ref('')
+const selectedId = ref('')
 const editDialog = ref(false)
-const editing = ref<OfferForm>({ title: '', slug: '', description: '', company: '', status: 'draft' })
 
-const columns: DataTableHeader[] = [
-  { title: 'ID', key: 'id' },
-  { title: 'Titre', key: 'title' },
-  { title: 'Entreprise', key: 'company' },
-  { title: 'Statut', key: 'status' },
-  { title: 'Slug', key: 'slug' },
+const editing = ref<OfferForm>({ title: '', slug: '', description: '', company: '', status: 'draft' })
+const dialogDelete = useTemplateRef('dialogDelete')
+const { mdAndDown } = useDisplay()
+
+const filterSections = [
+  {
+    key: 'status',
+    title: 'Statut',
+    items: [
+      { label: 'Brouillon', value: 'draft', count: 10 },
+      { label: 'Ouverte', value: 'open', count: 14 },
+      { label: 'Fermée', value: 'closed', count: 4 },
+    ],
+  },
 ]
+const selectedFilters = ref<Record<string, string[]>>({})
+const mobileFilters = ref(false)
+
+const mappedOffers = computed(() => rows.value.map((row, index) => ({
+  id: String(row.id),
+  title: row.title,
+  company: String(row.company),
+  matchingScore: 71 + (index % 5) * 4,
+  location: location.value || 'Paris',
+  salary: '55.000€ - 80.000€',
+  tags: [row.slug, row.status],
+  status: row.status,
+})))
+
+const selectedOffer = computed(() => mappedOffers.value.find(offer => offer.id === selectedId.value) ?? mappedOffers.value[0])
 
 const pageState = computed(() => {
   if (forbidden.value) return 'forbidden'
@@ -63,20 +79,17 @@ function toErrorMessage(errorValue: unknown) {
   return 'Erreur API.'
 }
 
-function statusMeta(status: string) {
-  if (status === 'open') return { label: 'Ouverte', tone: 'success' as const }
-  if (status === 'closed') return { label: 'Fermée', tone: 'error' as const }
-  return { label: 'Brouillon', tone: 'warning' as const }
-}
+function openEdit(offerId: string) {
+  const row = rows.value.find(item => String(item.id) === offerId)
+  if (!row) return
 
-function openEdit(row: Record<string, unknown>) {
   editing.value = {
-    id: String(row.id ?? ''),
-    title: String(row.title ?? ''),
-    slug: String(row.slug ?? ''),
-    description: String(row.description ?? ''),
-    company: String(row.company ?? ''),
-    status: String(row.status ?? 'draft') as JobOffer['status'],
+    id: String(row.id),
+    title: row.title,
+    slug: row.slug,
+    description: row.description,
+    company: String(row.company),
+    status: row.status,
   }
   editDialog.value = true
 }
@@ -98,7 +111,10 @@ async function loadRows() {
     })
 
     rows.value = response.data
-    total.value = response.meta?.totalItems ?? response.data.length
+    const firstOffer = response.data.at(0)
+    if (!selectedId.value && firstOffer) {
+      selectedId.value = String(firstOffer.id)
+    }
   } catch (errorValue) {
     if (errorValue instanceof HttpRequestError && errorValue.statusCode === 403) {
       forbidden.value = true
@@ -117,13 +133,7 @@ async function saveOffer() {
     return
   }
 
-  if (!editing.value.title || !editing.value.slug || !editing.value.company) {
-    Notify.error('Titre, slug et entreprise sont obligatoires.')
-    return
-  }
-
   actionLoading.value = true
-
   try {
     await jobOffersService.update(editing.value.id, {
       title: editing.value.title,
@@ -142,7 +152,10 @@ async function saveOffer() {
   }
 }
 
-async function deleteOffer(row: Record<string, unknown>) {
+async function deleteOffer(offerId: string) {
+  const row = rows.value.find(item => String(item.id) === offerId)
+  if (!row) return
+
   const identifier = String(row.title || row.id)
   const confirmed = await dialogDelete.value?.open(`Supprimer l'offre ${identifier} ?`, {
     confirmationLabel: `Saisissez ${identifier} pour confirmer`,
@@ -154,7 +167,7 @@ async function deleteOffer(row: Record<string, unknown>) {
   actionLoading.value = true
 
   try {
-    await jobOffersService.remove(String(row.id))
+    await jobOffersService.remove(offerId)
     Notify.success('Offre supprimée.')
     await loadRows()
   } catch (errorValue) {
@@ -165,7 +178,7 @@ async function deleteOffer(row: Record<string, unknown>) {
 }
 
 watch([page, pageSize], loadRows)
-watchDebounced(search, () => {
+watchDebounced([search, location], () => {
   page.value = 1
   void loadRows()
 }, { debounce: 300, maxWait: 1000 })
@@ -174,63 +187,91 @@ onMounted(loadRows)
 </script>
 
 <template>
-  <AdminCard>
-    <AdminToolbar title="Mes offres" description="Gérer les offres que vous avez créées.">
-      <template #actions>
-        <v-btn variant="tonal" prepend-icon="mdi-refresh" @click="loadRows">Recharger</v-btn>
-      </template>
-    </AdminToolbar>
+  <main class="offers-board-page">
+    <OffersSearchBar
+      v-model:query="search"
+      v-model:location="location"
+      title="Mes offres publiées"
+      subtitle="Pilotez vos annonces dans une interface orientée cartes."
+      @search="loadRows"
+    />
 
-    <template v-if="pageState === 'forbidden'">
-      <v-sheet class="pa-6 text-center" rounded="lg" border>
-        <div class="text-h6 mb-2">403 · Accès refusé</div>
-        <p class="text-medium-emphasis mb-4">Vous n'êtes pas autorisé à gérer ces offres.</p>
-      </v-sheet>
-    </template>
-
-    <AdminErrorState v-else-if="pageState === 'error'" :message="error || 'Erreur API.'" :can-retry="true" @retry="loadRows" />
-
-    <template v-else>
-      <v-row dense class="mb-2">
-        <v-col cols="12" md="5">
-          <v-text-field v-model="search" label="Recherche" prepend-inner-icon="mdi-magnify" hide-details clearable />
-        </v-col>
-      </v-row>
-
-      <AdminEmptyState
-        v-if="pageState === 'empty'"
-        title="Aucune offre"
-        message="Vous n'avez pas encore d'offre à gérer."
+    <div class="offers-board-page__layout">
+      <OffersFiltersSidebar
+        v-if="!mdAndDown"
+        v-model="selectedFilters"
+        title="Segments"
+        :sections="filterSections"
       />
 
-      <AdminTable
-        v-else
-        :columns="columns"
-        :rows="rows"
-        :loading="loading"
-        :total="total"
-        :page="page"
-        :page-size="pageSize"
-        @update:page="page = $event"
-        @update:page-size="pageSize = $event"
-      >
-        <template #cell:status="{ value }">
-          <AdminBadge :status="statusMeta(String(value)).tone" :label="statusMeta(String(value)).label" />
-        </template>
+      <section class="offers-board-page__content">
+        <div v-if="mdAndDown" class="offers-board-page__mobile-tools">
+          <v-btn variant="outlined" prepend-icon="mdi-filter-variant" @click="mobileFilters = true">Filter</v-btn>
+        </div>
 
-        <template #row-actions="{ item }">
-          <v-btn size="small" icon="mdi-pencil-outline" variant="text" color="warning" :loading="actionLoading" @click.stop="openEdit(item)" />
-          <v-btn size="small" icon="mdi-delete-outline" variant="text" color="error" :loading="actionLoading" @click.stop="deleteOffer(item)" />
-        </template>
-      </AdminTable>
-    </template>
+        <v-alert v-if="pageState === 'forbidden'" type="error" variant="tonal">403 · Accès refusé.</v-alert>
+        <v-alert v-else-if="pageState === 'error'" type="error" variant="tonal">{{ error || 'Erreur API.' }}</v-alert>
+        <v-skeleton-loader v-else-if="pageState === 'loading'" type="article, article" />
+        <v-alert v-else-if="pageState === 'empty'" type="info" variant="tonal">Aucune offre à gérer.</v-alert>
+
+        <div v-else class="offers-board-page__grid">
+          <div class="offers-board-page__list">
+            <OfferListCard
+              v-for="offer in mappedOffers"
+              :key="offer.id"
+              :offer="offer"
+              :active="selectedOffer?.id === offer.id"
+              action-label="Modifier"
+              action-icon="mdi-pencil-outline"
+              @select="selectedId = $event"
+              @action="openEdit"
+            />
+            <v-btn
+              v-if="selectedOffer"
+              variant="text"
+              color="error"
+              prepend-icon="mdi-delete-outline"
+              @click="deleteOffer(selectedOffer.id)"
+            >
+              Supprimer l'offre sélectionnée
+            </v-btn>
+          </div>
+
+          <OfferDetailsPanel
+            v-if="selectedOffer"
+            :title="selectedOffer.title"
+            :company="selectedOffer.company"
+            :location="selectedOffer.location"
+            :salary="selectedOffer.salary"
+            :description="editing.description || 'Mettez à jour votre description pour présenter la mission.'"
+            :highlights="[
+              'Ajuster les missions pour refléter le besoin actuel',
+              'Vérifier les prérequis et la stack technique',
+              'Mettre à jour les informations de rémunération',
+            ]"
+            :requirements="['Expérience adaptée au poste', 'Bon niveau de communication', 'Autonomie et sens de l\'organisation']"
+            :perks="['Télétravail possible', 'Prime annuelle', 'Mutuelle premium']"
+          />
+        </div>
+      </section>
+    </div>
+
+    <v-navigation-drawer v-model="mobileFilters" temporary location="right" width="320">
+      <div class="pa-4">
+        <OffersFiltersSidebar
+          v-model="selectedFilters"
+          title="Segments"
+          :sections="filterSections"
+        />
+      </div>
+    </v-navigation-drawer>
 
     <DialogConfirm ref="dialogDelete" />
 
     <v-dialog v-model="editDialog" max-width="760">
       <v-card>
         <v-card-title>Modifier l'offre</v-card-title>
-        <v-card-text class="admin-form pt-4">
+        <v-card-text class="pt-4">
           <v-text-field v-model="editing.title" label="Titre" class="mb-2" />
           <v-text-field v-model="editing.slug" label="Slug" class="mb-2" />
           <v-text-field v-model="editing.company" label="ID entreprise" class="mb-2" />
@@ -253,5 +294,5 @@ onMounted(loadRows)
         </v-card-actions>
       </v-card>
     </v-dialog>
-  </AdminCard>
+  </main>
 </template>
