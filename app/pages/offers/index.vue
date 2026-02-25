@@ -328,19 +328,21 @@ onMounted(loadRows)
         >
 
         <div v-else class="offers-board-page__grid">
-          <div class="offers-board-page__list">
-            <OffersOfferListCard
-              v-for="offer in mappedOffers"
-              :key="offer.id"
-              :offer="offer"
-              :active="selectedOffer?.id === offer.id"
-              :favorited="favorites.includes(offer.id)"
-              action-label="Schnell bewerben"
-              action-icon="mdi-send-outline"
-              @select="selectedId = $event"
-              @favorite="toggleFavorite"
-              @action="apply"
-            />
+          <div class="offers-board-page__list-card">
+            <div class="offers-board-page__list">
+              <OffersOfferListCard
+                v-for="offer in mappedOffers"
+                :key="offer.id"
+                :offer="offer"
+                :active="selectedOffer?.id === offer.id"
+                :favorited="favorites.includes(offer.id)"
+                action-label="Schnell bewerben"
+                action-icon="mdi-send-outline"
+                @select="selectedId = $event"
+                @favorite="toggleFavorite"
+                @action="apply"
+              />
+            </div>
           </div>
 
           <OffersOfferDetailsPanel
