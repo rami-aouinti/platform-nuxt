@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import { useDisplay } from 'vuetify'
 import { Notify } from '~/stores/notification'
-import {
-  httpGet,
-  HttpRequestError,
-} from '../../../services/http/client'
+import { httpGet, HttpRequestError } from '../../../services/http/client'
 import { jobApplicationsService } from '../../../services/admin/job-applications'
 import type { JobOffer } from '../../../services/admin/job-offers/index'
 
@@ -183,8 +180,14 @@ const mappedOffers = computed(() =>
     publishedAtLabel: formatRelativeDate(row.publishedAt),
     tags: [
       asLabel(row.jobCategory),
-      ...(row.skills || []).slice(0, 2).map((value) => asLabel(value)).filter(Boolean),
-      ...(row.languages || []).slice(0, 1).map((value) => asLabel(value)).filter(Boolean),
+      ...(row.skills || [])
+        .slice(0, 2)
+        .map((value) => asLabel(value))
+        .filter(Boolean),
+      ...(row.languages || [])
+        .slice(0, 1)
+        .map((value) => asLabel(value))
+        .filter(Boolean),
     ].filter(Boolean) as string[],
     status: row.status === 'open' ? 'Offen' : row.status,
   })),
@@ -224,7 +227,9 @@ async function loadRows() {
     }
 
     const normalizedWhere = Object.fromEntries(
-      Object.entries(where).filter(([, value]) => value !== undefined && value !== null && value !== ''),
+      Object.entries(where).filter(
+        ([, value]) => value !== undefined && value !== null && value !== '',
+      ),
     )
 
     const data = await httpGet<unknown>('/api/job-offers', {
@@ -295,17 +300,19 @@ onMounted(loadRows)
       v-model:location="location"
       title="Finde deinen nächsten Job"
       subtitle="Entdecke passende Rollen mit modernem Job-Board Layout."
+      app-bar-teleport
       @search="loadRows"
     />
 
-    <div class="offers-board-page__layout">
-      <OffersFiltersSidebar
-        v-if="!mdAndDown"
-        v-model="selectedFilters"
-        title="Filter"
-        :sections="filterSections"
-      />
+    <OffersFiltersSidebar
+      v-if="!mdAndDown"
+      v-model="selectedFilters"
+      title="Filter"
+      horizontal
+      :sections="filterSections"
+    />
 
+    <div class="offers-board-page__layout">
       <section class="offers-board-page__content">
         <div v-if="mdAndDown" class="offers-board-page__mobile-tools">
           <v-btn
