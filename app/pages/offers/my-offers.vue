@@ -7,7 +7,7 @@ import type { JobOffer } from '../../../services/admin/job-offers/index'
 
 definePageMeta({
   icon: 'mdi-briefcase-edit-outline',
-  title: 'Mes offres',
+  title: 'My Offers',
   drawerIndex: 21,
   requiresAuth: true,
   middleware: ['auth'],

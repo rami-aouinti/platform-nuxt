@@ -22,7 +22,8 @@ const emit = defineEmits<{
           label="Jobtitel oder Stichwort"
           hide-details
           variant="outlined"
-          density="comfortable"
+          density="compact"
+          rounded
           prepend-inner-icon="mdi-magnify"
         />
         <v-text-field
@@ -30,13 +31,14 @@ const emit = defineEmits<{
           label="Ort oder Remote"
           hide-details
           variant="outlined"
-          density="comfortable"
+          density="compact"
+          rounded
           prepend-inner-icon="mdi-map-marker-outline"
         />
         <v-btn
-          class="offers-search-bar__cta"
+          class="offers-search-bar__cta mx-4"
           color="primary"
-          size="large"
+          size="small"
           @click="emit('search')"
         >
           Filter

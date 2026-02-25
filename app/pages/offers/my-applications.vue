@@ -10,7 +10,7 @@ import {
 
 definePageMeta({
   icon: 'mdi-account-check-outline',
-  title: 'Mes candidatures',
+  title: 'My Applications',
   drawerIndex: 23,
   requiresAuth: true,
   middleware: ['auth'],
