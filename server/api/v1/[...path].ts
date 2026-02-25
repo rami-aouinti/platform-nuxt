@@ -1,5 +1,6 @@
 import { proxyAuthApiRequest } from '../../utils/auth-api-proxy'
 import { requireAuthenticatedRequest } from '../../utils/require-auth'
+import { buildQuerySuffixFromQuery } from '../../utils/upstream-query'
 
 type ProxyHttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
@@ -41,28 +42,8 @@ export default defineEventHandler(async (event) => {
 
   requireAuthenticatedRequest(event)
 
-  const rawQuery = getQuery(event)
-  const searchParams = new URLSearchParams()
-
-  for (const [key, value] of Object.entries(rawQuery)) {
-    if (Array.isArray(value)) {
-      for (const item of value) {
-        if (item !== undefined && item !== null) {
-          searchParams.append(key, String(item))
-        }
-      }
-      continue
-    }
-
-    if (value !== undefined && value !== null) {
-      searchParams.set(key, String(value))
-    }
-  }
-
-  const queryString = searchParams.toString()
-  const upstreamPath = queryString
-    ? `/api/v1/${normalizedPath}?${queryString}`
-    : `/api/v1/${normalizedPath}`
+  const suffix = buildQuerySuffixFromQuery(getQuery(event))
+  const upstreamPath = `/api/v1/${normalizedPath}${suffix}`
 
   return await proxyAuthApiRequest(event, upstreamPath, method)
 })

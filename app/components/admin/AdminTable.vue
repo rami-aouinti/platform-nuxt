@@ -9,7 +9,7 @@ type AdminRow = Record<string, unknown>
 const props = withDefaults(
   defineProps<{
     columns: DataTableHeader[]
-    rows: AdminRow[]
+    rows?: AdminRow[]
     loading?: boolean
     total?: number
     page?: number
@@ -20,6 +20,7 @@ const props = withDefaults(
     emptyMessage?: string
   }>(),
   {
+    rows: () => [],
     loading: false,
     total: 0,
     page: 1,
@@ -72,7 +73,7 @@ const headers = computed<DataTableHeader[]>(() => {
   ]
 })
 
-const totalRows = computed(() => props.total || props.rows.length)
+const totalRows = computed(() => props.total ?? props.rows.length)
 
 function getCellValue(row: AdminRow, columnKey: string) {
   return row[columnKey]
