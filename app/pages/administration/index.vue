@@ -1,8 +1,13 @@
 <script setup lang="ts">
+import { storeToRefs } from 'pinia'
 import AdminBadge from '~/components/admin/ui/AdminBadge.vue'
 import AdminCard from '~/components/admin/ui/AdminCard.vue'
-import AdminEmptyState from '~/components/admin/ui/AdminEmptyState.vue'
 import AdminToolbar from '~/components/admin/ui/AdminToolbar.vue'
+import { useAuthStore } from '~/stores/auth'
+import {
+  hasAdminPermission,
+  type AdminPermission,
+} from '~/utils/permissions/admin'
 
 definePageMeta({
   icon: 'mdi-shield-crown-outline',
@@ -13,23 +18,127 @@ definePageMeta({
   layout: 'administration',
   middleware: ['auth', 'admin-access'],
 })
+
+const authStore = useAuthStore()
+const { roles } = storeToRefs(authStore)
+
+const links = [
+  {
+    title: 'Users',
+    to: '/administration/users',
+    icon: 'mdi-account-multiple-outline',
+    description: 'Gérer les utilisateurs de la plateforme.',
+    permission: 'manageUsers' as AdminPermission,
+  },
+  {
+    title: 'User Groups',
+    to: '/administration/user-groups',
+    icon: 'mdi-account-group-outline',
+    description: 'Organiser les utilisateurs en groupes.',
+    permission: 'manageUsers' as AdminPermission,
+  },
+  {
+    title: 'Roles',
+    to: '/administration/roles',
+    icon: 'mdi-shield-account-outline',
+    description: 'Configurer les rôles et permissions.',
+    permission: 'admin' as AdminPermission,
+  },
+  {
+    title: 'Api Keys',
+    to: '/administration/api-keys',
+    icon: 'mdi-key-variant',
+    description: 'Administrer les clés API.',
+    permission: 'manageApiKeys' as AdminPermission,
+  },
+  {
+    title: 'Companies',
+    to: '/administration/companies',
+    icon: 'mdi-domain',
+    description: 'Maintenir le référentiel entreprises.',
+    permission: 'admin' as AdminPermission,
+  },
+  {
+    title: 'Candidates',
+    to: '/administration/candidates',
+    icon: 'mdi-account-search',
+    description: 'Gérer le vivier de candidats.',
+    permission: 'admin' as AdminPermission,
+  },
+  {
+    title: 'Notifications',
+    to: '/administration/notifications',
+    icon: 'mdi-bell-outline',
+    description: 'Consulter et administrer les notifications.',
+    permission: 'admin' as AdminPermission,
+  },
+]
+
+const scopedLinks = computed(() =>
+  links.map((entry) => ({
+    ...entry,
+    disabled: !hasAdminPermission(roles.value, entry.permission),
+  })),
+)
+
+const hasAnyLink = computed(() => scopedLinks.value.some((entry) => !entry.disabled))
+
+onMounted(async () => {
+  await authStore.ensureRolesLoaded()
+})
 </script>
 
 <template>
   <AdminCard>
     <AdminToolbar
       title="Administration"
-      description="Prototype de navigation admin avec pages ressources prêtes à connecter aux APIs métier."
+      description="Accédez rapidement à chaque ressource d'administration depuis cette page."
     >
       <template #actions>
         <AdminBadge status="info" label="Prototype" />
       </template>
     </AdminToolbar>
 
-    <AdminEmptyState
-      icon="mdi-view-dashboard-outline"
-      title="Sélectionnez une ressource"
-      message="Utilisez la sidebar pour ouvrir Users, User Groups, Roles, Api Keys, Companies, Candidates ou Notifications."
+    <v-row class="mt-1" dense>
+      <v-col
+        v-for="entry in scopedLinks"
+        :key="entry.to"
+        cols="12"
+        sm="6"
+        lg="4"
+      >
+        <v-card rounded="lg" variant="outlined" class="h-100 d-flex flex-column">
+          <v-card-title class="d-flex align-center ga-2">
+            <v-icon :icon="entry.icon" />
+            <span>{{ entry.title }}</span>
+          </v-card-title>
+
+          <v-card-text class="text-medium-emphasis">{{ entry.description }}</v-card-text>
+
+          <v-spacer />
+
+          <v-card-actions>
+            <v-btn
+              block
+              color="primary"
+              variant="tonal"
+              :to="entry.disabled ? undefined : entry.to"
+              :disabled="entry.disabled"
+            >
+              Ouvrir
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <v-alert
+      v-if="!hasAnyLink"
+      class="mt-4"
+      type="warning"
+      variant="tonal"
+      title="Aucun accès disponible"
+      text="Votre rôle ne permet pas d'ouvrir une ressource d'administration."
     />
   </AdminCard>
 </template>
