@@ -1,25 +1,22 @@
 import { useAuthStore } from '~/stores/auth'
-
-const ROOT_ROLE = 'ROLE_ROOT'
-const ADMIN_ROLE = 'ROLE_ADMIN'
-
-function hasRole(roles: string[], role: string) {
-  return roles.includes(role)
-}
+import {
+  canAccessAdmin,
+  canManageApiKeys,
+  canManageUsers,
+  isRoot,
+} from '~/utils/permissions/admin'
 
 export function useAdminPermissions() {
   const authStore = useAuthStore()
 
   const isAuthenticated = computed(() => authStore.isAuthenticated)
-  const isRoot = computed(() => hasRole(authStore.roles, ROOT_ROLE))
-  const isAdmin = computed(() => hasRole(authStore.roles, ADMIN_ROLE))
-
-  const rootOnly = computed(() => isRoot.value)
-  const adminOnly = computed(() => isRoot.value || isAdmin.value)
+  const rootOnly = computed(() => isRoot(authStore.roles))
+  const adminOnly = computed(() => canAccessAdmin(authStore.roles))
   const authenticated = computed(() => isAuthenticated.value)
 
-  const canListUsers = computed(() => adminOnly.value)
-  const canEditUsers = computed(() => rootOnly.value)
+  const canListUsers = computed(() => canManageUsers(authStore.roles))
+  const canEditUsers = computed(() => isRoot(authStore.roles))
+  const canUseApiKeys = computed(() => canManageApiKeys(authStore.roles))
 
   return {
     rootOnly,
@@ -27,5 +24,6 @@ export function useAdminPermissions() {
     authenticated,
     canListUsers,
     canEditUsers,
+    canUseApiKeys,
   }
 }

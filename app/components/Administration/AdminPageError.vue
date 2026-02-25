@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { FORBIDDEN_MESSAGE } from '~/utils/permissions/messages'
 const props = withDefaults(
   defineProps<{
     message?: string | null
@@ -16,7 +17,7 @@ const resolvedMessage = computed(() => {
   }
 
   if (props.statusCode === 403) {
-    return 'Accès refusé (403) : vous n’avez pas les permissions nécessaires pour cette action.'
+    return FORBIDDEN_MESSAGE
   }
 
   return 'Une erreur est survenue.'
@@ -25,7 +26,7 @@ const resolvedMessage = computed(() => {
 
 <template>
   <v-alert
-    v-if="message || statusCode"
+    v-if="props.message || props.statusCode"
     type="error"
     variant="tonal"
     density="comfortable"

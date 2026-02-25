@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth'
+import { hasAdminPermission, type AdminPermission } from '~/utils/permissions/admin'
 
 import type { RouteRecordRaw } from 'vue-router'
 
@@ -8,7 +9,7 @@ const { item } = defineProps<{
   item: RouteRecordRaw
 }>()
 const authStore = useAuthStore()
-const { isAuthenticated, hasAdminAccess, rolesLoading } = storeToRefs(authStore)
+const { isAuthenticated, rolesLoading } = storeToRefs(authStore)
 
 const visibleChildren = computed(() =>
   item.children
@@ -23,7 +24,8 @@ const visibleChildren = computed(() =>
         return false
       }
 
-      return hasAdminAccess.value
+      const permission = (child.meta?.adminPermission as AdminPermission | undefined) ?? 'admin'
+      return hasAdminPermission(authStore.roles, permission)
     })
     .sort((a, b) => (a.meta?.drawerIndex ?? 99) - (b.meta?.drawerIndex ?? 98)),
 )

@@ -8,7 +8,7 @@ const props = withDefaults(
   }>(),
   {
     mode: 'hide',
-    message: 'Accès refusé pour cette section.',
+    message: 'Accès refusé : vous ne disposez pas des permissions nécessaires.',
     alertType: 'warning',
   },
 )

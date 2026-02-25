@@ -1,3 +1,5 @@
+import { canAccessAdmin } from '~/utils/permissions/admin'
+
 type AuthProfile = {
   id: string | number
   username: string
@@ -16,7 +18,6 @@ type AuthGroup = {
 }
 
 const AUTH_TOKEN_STORAGE_KEY = 'auth_token'
-const ADMIN_ROLES = ['ROLE_ROOT', 'ROLE_ADMIN'] as const
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref<string | null>(null)
@@ -27,9 +28,7 @@ export const useAuthStore = defineStore('auth', () => {
   const rolesError = ref<string | null>(null)
 
   const isAuthenticated = computed(() => Boolean(token.value))
-  const hasAdminAccess = computed(() =>
-    ADMIN_ROLES.some((role) => roles.value.includes(role)),
-  )
+  const hasAdminAccess = computed(() => canAccessAdmin(roles.value))
 
   function persistToken() {
     if (!import.meta.client) {

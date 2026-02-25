@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { FORBIDDEN_MESSAGE } from '~/utils/permissions/messages'
 import { Notify } from '~/stores/notification'
 import { useInternalEventTracking } from '~/composables/useInternalEventTracking'
 import type { Id } from '~~/services/admin/_shared'
@@ -56,6 +57,7 @@ const patchForm = reactive({
 })
 
 const { track } = useInternalEventTracking()
+const manageDisabledMessage = 'Action réservée aux utilisateurs ROLE_ROOT.'
 
 function ensureRoot() {
   if (props.isRoot) {
@@ -108,7 +110,7 @@ function normalizeCount(payload: unknown, fallback: number) {
 
 function toErrorMessage(error: unknown): string {
   if (isError(error) && error.statusCode === 403) {
-    return 'Accès refusé (403) : vous n’avez pas les permissions nécessaires pour cette action.'
+    return FORBIDDEN_MESSAGE
   }
 
   if (error instanceof Error) {
@@ -337,13 +339,18 @@ onMounted(async () => {
         />
       </v-col>
       <v-col cols="12" md="6" class="d-flex align-center">
-        <v-btn
-          v-if="isRoot"
-          color="primary"
-          :loading="busy"
-          @click="createApiKey"
-          >Create</v-btn
-        >
+        <v-tooltip :text="manageDisabledMessage" :disabled="isRoot">
+          <template #activator="{ props: tooltipProps }">
+            <span v-bind="tooltipProps">
+              <v-btn
+                color="primary"
+                :loading="busy"
+                :disabled="!isRoot"
+                @click="createApiKey"
+              >Create</v-btn>
+            </span>
+          </template>
+        </v-tooltip>
       </v-col>
     </v-row>
 
@@ -359,20 +366,28 @@ onMounted(async () => {
     />
 
     <div class="d-flex ga-2 flex-wrap mb-4">
-      <v-btn
-        v-if="isRoot"
-        :disabled="!selectedId"
-        :loading="busy"
-        @click="fetchById"
-        >getById</v-btn
-      >
-      <v-btn
-        v-if="isRoot"
-        :disabled="!selectedId"
-        :loading="busy"
-        @click="removeById"
-        >delete</v-btn
-      >
+      <v-tooltip :text="manageDisabledMessage" :disabled="isRoot">
+        <template #activator="{ props: tooltipProps }">
+          <span v-bind="tooltipProps">
+            <v-btn
+              :disabled="!selectedId || !isRoot"
+              :loading="busy"
+              @click="fetchById"
+            >getById</v-btn>
+          </span>
+        </template>
+      </v-tooltip>
+      <v-tooltip :text="manageDisabledMessage" :disabled="isRoot">
+        <template #activator="{ props: tooltipProps }">
+          <span v-bind="tooltipProps">
+            <v-btn
+              :disabled="!selectedId || !isRoot"
+              :loading="busy"
+              @click="removeById"
+            >delete</v-btn>
+          </span>
+        </template>
+      </v-tooltip>
     </div>
 
     <v-row dense>
@@ -406,13 +421,17 @@ onMounted(async () => {
         />
       </v-col>
       <v-col cols="12" md="4" class="d-flex align-center">
-        <v-btn
-          v-if="isRoot"
-          :disabled="!selectedId"
-          :loading="busy"
-          @click="updateById"
-          >update</v-btn
-        >
+        <v-tooltip :text="manageDisabledMessage" :disabled="isRoot">
+          <template #activator="{ props: tooltipProps }">
+            <span v-bind="tooltipProps">
+              <v-btn
+                :disabled="!selectedId || !isRoot"
+                :loading="busy"
+                @click="updateById"
+              >update</v-btn>
+            </span>
+          </template>
+        </v-tooltip>
       </v-col>
     </v-row>
 
@@ -433,13 +452,17 @@ onMounted(async () => {
         />
       </v-col>
       <v-col cols="12" md="4" class="d-flex align-center">
-        <v-btn
-          v-if="isRoot"
-          :disabled="!selectedId"
-          :loading="busy"
-          @click="patchById"
-          >patch</v-btn
-        >
+        <v-tooltip :text="manageDisabledMessage" :disabled="isRoot">
+          <template #activator="{ props: tooltipProps }">
+            <span v-bind="tooltipProps">
+              <v-btn
+                :disabled="!selectedId || !isRoot"
+                :loading="busy"
+                @click="patchById"
+              >patch</v-btn>
+            </span>
+          </template>
+        </v-tooltip>
       </v-col>
     </v-row>
 

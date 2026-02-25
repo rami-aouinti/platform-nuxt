@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import ApiKeysManager from '~/components/Administration/ApiKeysManager.vue'
+import { canManageApiKeys } from '~/utils/permissions/admin'
 import { useAuthStore } from '~/stores/auth'
 import { apiKeysV1Service, apiKeysV2Service } from '~~/services/admin'
 
@@ -11,13 +12,14 @@ definePageMeta({
   requiresAuth: true,
   requiresAdmin: true,
   middleware: ['auth', 'admin-access'],
+  adminPermission: 'manageApiKeys',
 })
 
 const authStore = useAuthStore()
 const { roles } = storeToRefs(authStore)
 const activeVersion = ref<'v1' | 'v2'>('v1')
 
-const isRoot = computed(() => roles.value.includes('ROLE_ROOT'))
+const isRoot = computed(() => canManageApiKeys(roles.value))
 
 onMounted(async () => {
   await authStore.ensureRolesLoaded()
