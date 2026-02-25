@@ -1,12 +1,7 @@
 <script setup lang="ts">
 import { useDisplay } from 'vuetify'
 import { Notify } from '~/stores/notification'
-import {
-  buildApiPlatformQuery,
-  normalizeListQuery,
-} from '../../../services/admin/_shared'
 import { httpGet, HttpRequestError } from '../../../services/http/client'
-import { normalizePaginatedResponse } from '../../../services/admin/pagination'
 import * as jobOffersApi from '../../../services/admin/job-offers/index'
 import type { JobOffer } from '../../../services/admin/job-offers/index'
 
@@ -160,17 +155,11 @@ function openEdit(offerId: string) {
   editDialog.value = true
 }
 
-async function listMyOffers(query: Record<string, unknown>) {
-  if (
-    'listMyJobOffers' in jobOffersApi &&
-    typeof jobOffersApi.listMyJobOffers === 'function'
-  ) {
-    return jobOffersApi.listMyJobOffers(query)
-  }
-
-  return httpGet('/api/job-offers/my', {
-    query: normalizeListQuery(query),
-  }).then((response) => normalizePaginatedResponse<JobOffer>(response))
+async function listMyOffers(query: Record<string, string | number>) {
+  const payload = await httpGet<JobOffer[]>('/api/job-offers/my', {
+    query,
+  })
+  return Array.isArray(payload) ? payload : []
 }
 
 async function loadRows() {
@@ -179,31 +168,34 @@ async function loadRows() {
   forbidden.value = false
 
   try {
+    const where = {
+      status: firstFilter('status'),
+      location: location.value || undefined,
+      remoteMode: firstFilter('remoteMode'),
+      salaryMin: firstFilter('salaryMin'),
+      salaryMax: firstFilter('salaryMax'),
+      skills: firstFilter('skills'),
+      languages: firstFilter('languages'),
+      city: firstFilter('city'),
+      region: firstFilter('region'),
+      jobCategory: firstFilter('jobCategory'),
+      publishedWithinDays: firstFilter('publishedWithinDays'),
+    }
+
+    const normalizedWhere = Object.fromEntries(
+      Object.entries(where).filter(([, value]) => value !== undefined && value !== null && value !== ''),
+    )
+
     const response = await listMyOffers({
-      ...buildApiPlatformQuery({
-        page: page.value,
-        pageSize: pageSize.value,
-        search: search.value,
-        sortBy: 'publishedAt',
-        sortOrder: 'desc',
-        filters: {
-          status: firstFilter('status'),
-          location: location.value || undefined,
-          remoteMode: firstFilter('remoteMode'),
-          salaryMin: firstFilter('salaryMin'),
-          salaryMax: firstFilter('salaryMax'),
-          skills: firstFilter('skills'),
-          languages: firstFilter('languages'),
-          city: firstFilter('city'),
-          region: firstFilter('region'),
-          jobCategory: firstFilter('jobCategory'),
-          publishedWithinDays: firstFilter('publishedWithinDays'),
-        },
-      }),
+      where: JSON.stringify(normalizedWhere),
+      order: 'publishedAt:desc',
+      limit: pageSize.value,
+      offset: Math.max(page.value - 1, 0) * pageSize.value,
+      ...(search.value.trim() ? { search: search.value.trim() } : {}),
     })
 
-    rows.value = response.data
-    const firstOffer = response.data.at(0)
+    rows.value = response
+    const firstOffer = rows.value.at(0)
     if (!selectedId.value && firstOffer) {
       selectedId.value = String(firstOffer.id)
     }

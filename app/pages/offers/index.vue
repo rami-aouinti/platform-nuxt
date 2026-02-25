@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { useDisplay } from 'vuetify'
 import { Notify } from '~/stores/notification'
-import { buildApiPlatformQuery } from '../../../services/admin/_shared'
-import { HttpRequestError } from '../../../services/http/client'
-import { jobApplicationsService } from '../../../services/admin/job-applications'
 import {
-  jobOffersService,
-  type JobOffer,
-} from '../../../services/admin/job-offers/index'
+  httpGet,
+  HttpRequestError,
+} from '../../../services/http/client'
+import { jobApplicationsService } from '../../../services/admin/job-applications'
+import type { JobOffer } from '../../../services/admin/job-offers/index'
 
 definePageMeta({
   icon: 'mdi-briefcase-search-outline',
@@ -172,32 +171,37 @@ async function loadRows() {
   forbidden.value = false
 
   try {
-    const response = await jobOffersService.list({
-      ...buildApiPlatformQuery({
-        page: page.value,
-        pageSize: pageSize.value,
-        search: search.value,
-        sortBy: 'publishedAt',
-        sortOrder: 'desc',
-        filters: {
-          status: 'open',
-          location: location.value || undefined,
-          remoteMode: firstFilter('remoteMode'),
-          employmentType: firstFilter('employmentType'),
-          salaryMin: firstFilter('salaryMin'),
-          salaryMax: firstFilter('salaryMax'),
-          skills: firstFilter('skills'),
-          languages: firstFilter('languages'),
-          city: firstFilter('city'),
-          region: firstFilter('region'),
-          jobCategory: firstFilter('jobCategory'),
-          publishedWithinDays: firstFilter('publishedWithinDays'),
-        },
-      }),
+    const where = {
+      status: 'open',
+      location: location.value || undefined,
+      remoteMode: firstFilter('remoteMode'),
+      employmentType: firstFilter('employmentType'),
+      salaryMin: firstFilter('salaryMin'),
+      salaryMax: firstFilter('salaryMax'),
+      skills: firstFilter('skills'),
+      languages: firstFilter('languages'),
+      city: firstFilter('city'),
+      region: firstFilter('region'),
+      jobCategory: firstFilter('jobCategory'),
+      publishedWithinDays: firstFilter('publishedWithinDays'),
+    }
+
+    const normalizedWhere = Object.fromEntries(
+      Object.entries(where).filter(([, value]) => value !== undefined && value !== null && value !== ''),
+    )
+
+    const data = await httpGet<JobOffer[]>('/api/job-offers', {
+      query: {
+        where: JSON.stringify(normalizedWhere),
+        order: 'publishedAt:desc',
+        limit: pageSize.value,
+        offset: Math.max(page.value - 1, 0) * pageSize.value,
+        ...(search.value.trim() ? { search: search.value.trim() } : {}),
+      },
     })
 
-    rows.value = response.data
-    const firstOffer = response.data.at(0)
+    rows.value = Array.isArray(data) ? data : []
+    const firstOffer = rows.value.at(0)
     if (!selectedId.value && firstOffer) {
       selectedId.value = String(firstOffer.id)
     }
