@@ -4,7 +4,10 @@ import { Notify } from '~/stores/notification'
 import { buildApiPlatformQuery } from '../../../services/admin/_shared'
 import { HttpRequestError } from '../../../services/http/client'
 import { jobApplicationsService } from '../../../services/admin/job-applications'
-import { jobOffersService, type JobOffer } from '../../../services/admin/job-offers'
+import {
+  jobOffersService,
+  type JobOffer,
+} from '../../../services/admin/job-offers'
 
 definePageMeta({
   icon: 'mdi-briefcase-search-outline',
@@ -32,21 +35,30 @@ const { mdAndDown } = useDisplay()
 
 const filterSections = [
   {
-    key: 'type',
+    key: 'employmentType',
     title: 'Anstellungsart',
     items: [
-      { label: 'Vollzeit', value: 'full-time', count: 35 },
-      { label: 'Teilzeit', value: 'part-time', count: 12 },
-      { label: 'Freelance', value: 'freelance', count: 8 },
+      { label: 'Vollzeit', value: 'full-time' },
+      { label: 'Teilzeit', value: 'part-time' },
+      { label: 'Freelance', value: 'freelance' },
     ],
   },
   {
-    key: 'mode',
+    key: 'remoteMode',
     title: 'Arbeitsmodell',
     items: [
-      { label: 'Remote', value: 'remote', count: 25 },
-      { label: 'Hybrid', value: 'hybrid', count: 18 },
-      { label: 'Vor Ort', value: 'onsite', count: 10 },
+      { label: 'Remote', value: 'remote' },
+      { label: 'Hybrid', value: 'hybrid' },
+      { label: 'Vor Ort', value: 'onsite' },
+    ],
+  },
+  {
+    key: 'publishedWithinDays',
+    title: 'Publication',
+    items: [
+      { label: '24h', value: '1' },
+      { label: '7 jours', value: '7' },
+      { label: '30 jours', value: '30' },
     ],
   },
 ]
@@ -59,20 +71,94 @@ const pageState = computed(() => {
   return 'ready'
 })
 
-const mappedOffers = computed(() => rows.value.map((row, index) => ({
-  id: String(row.id),
-  title: row.title,
-  company: String(row.company),
-  matchingScore: 76 + (index % 4) * 5,
-  matchingLabel: 'Passt hervorragend',
-  location: location.value || 'Berlin',
-  workMode: 'Hybrid',
-  salary: '60.000€ - 85.000€',
-  tags: ['TypeScript', 'Vue', 'API'],
-  status: row.status === 'open' ? 'Offen' : row.status,
-})))
+function firstFilter(key: string) {
+  return selectedFilters.value[key]?.[0]
+}
 
-const selectedOffer = computed(() => mappedOffers.value.find(offer => offer.id === selectedId.value) ?? mappedOffers.value[0])
+function resolveCompanyName(offer: JobOffer) {
+  if (typeof offer.company === 'string')
+    return offer.companyName || offer.company
+  return (
+    offer.companyName || offer.company?.name || String(offer.company?.id || '')
+  )
+}
+
+function formatEmploymentType(offer: JobOffer) {
+  const key = offer.employmentType || offer.workTime
+  const labels: Record<string, string> = {
+    'full-time': 'Vollzeit',
+    'part-time': 'Teilzeit',
+    freelance: 'Freelance',
+    intern: 'Praktikum',
+    contract: 'Befristet',
+  }
+  return key ? labels[key] || key : 'Vollzeit'
+}
+
+function formatSalary(offer: JobOffer) {
+  if (!offer.salaryMin && !offer.salaryMax) return 'Gehalt auf Anfrage'
+  const currency = offer.salaryCurrency || 'EUR'
+  const min =
+    typeof offer.salaryMin === 'number'
+      ? offer.salaryMin.toLocaleString('de-DE')
+      : undefined
+  const max =
+    typeof offer.salaryMax === 'number'
+      ? offer.salaryMax.toLocaleString('de-DE')
+      : undefined
+  const range = min && max ? `${min} - ${max}` : min || max || ''
+  const periodMap: Record<string, string> = {
+    yearly: ' / an',
+    monthly: ' / mois',
+    weekly: ' / semaine',
+    daily: ' / jour',
+    hourly: ' / heure',
+  }
+  return `${range} ${currency}${periodMap[offer.salaryPeriod || 'yearly'] || ''}`.trim()
+}
+
+function formatRelativeDate(input?: string) {
+  if (!input) return undefined
+  const date = new Date(input)
+  if (Number.isNaN(date.getTime())) return undefined
+  const days = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24))
+  if (days <= 0) return "Aujourd'hui"
+  if (days === 1) return 'Hier'
+  if (days < 7) return `Il y a ${days} jours`
+  const weeks = Math.floor(days / 7)
+  if (weeks < 5) return `Il y a ${weeks} sem.`
+  return new Intl.DateTimeFormat('fr-FR').format(date)
+}
+
+const mappedOffers = computed(() =>
+  rows.value.map((row, index) => ({
+    id: String(row.id),
+    title: row.title,
+    company: resolveCompanyName(row),
+    matchingScore: 76 + (index % 4) * 5,
+    matchingLabel: 'Passt hervorragend',
+    location:
+      row.location ||
+      [row.city, row.region].filter(Boolean).join(', ') ||
+      location.value ||
+      'Standort flexibel',
+    workMode: row.remoteMode || formatEmploymentType(row),
+    salary: formatSalary(row),
+    publishedAtLabel: formatRelativeDate(row.publishedAt),
+    tags: [
+      row.jobCategory,
+      ...(row.skills || []).slice(0, 2),
+      ...(row.languages || []).slice(0, 1),
+    ].filter(Boolean) as string[],
+    status: row.status === 'open' ? 'Offen' : row.status,
+  })),
+)
+
+const selectedOffer = computed(
+  () =>
+    mappedOffers.value.find((offer) => offer.id === selectedId.value) ??
+    mappedOffers.value[0],
+)
 
 function toErrorMessage(errorValue: unknown) {
   if (errorValue instanceof HttpRequestError) return errorValue.message
@@ -91,9 +177,22 @@ async function loadRows() {
         page: page.value,
         pageSize: pageSize.value,
         search: search.value,
-        sortBy: 'title',
-        sortOrder: 'asc',
-        filters: { status: 'open' },
+        sortBy: 'publishedAt',
+        sortOrder: 'desc',
+        filters: {
+          status: 'open',
+          location: location.value || undefined,
+          remoteMode: firstFilter('remoteMode'),
+          employmentType: firstFilter('employmentType'),
+          salaryMin: firstFilter('salaryMin'),
+          salaryMax: firstFilter('salaryMax'),
+          skills: firstFilter('skills'),
+          languages: firstFilter('languages'),
+          city: firstFilter('city'),
+          region: firstFilter('region'),
+          jobCategory: firstFilter('jobCategory'),
+          publishedWithinDays: firstFilter('publishedWithinDays'),
+        },
       }),
     })
 
@@ -103,7 +202,10 @@ async function loadRows() {
       selectedId.value = String(firstOffer.id)
     }
   } catch (errorValue) {
-    if (errorValue instanceof HttpRequestError && errorValue.statusCode === 403) {
+    if (
+      errorValue instanceof HttpRequestError &&
+      errorValue.statusCode === 403
+    ) {
       forbidden.value = true
       return
     }
@@ -128,15 +230,19 @@ async function apply(offerId: string) {
 
 function toggleFavorite(offerId: string) {
   favorites.value = favorites.value.includes(offerId)
-    ? favorites.value.filter(id => id !== offerId)
+    ? favorites.value.filter((id) => id !== offerId)
     : [...favorites.value, offerId]
 }
 
 watch([page, pageSize], loadRows)
-watchDebounced([search, location], () => {
-  page.value = 1
-  void loadRows()
-}, { debounce: 300, maxWait: 1000 })
+watchDebounced(
+  [search, location, selectedFilters],
+  () => {
+    page.value = 1
+    void loadRows()
+  },
+  { debounce: 300, maxWait: 1000 },
+)
 
 onMounted(loadRows)
 </script>
@@ -161,13 +267,30 @@ onMounted(loadRows)
 
       <section class="offers-board-page__content">
         <div v-if="mdAndDown" class="offers-board-page__mobile-tools">
-          <v-btn variant="outlined" prepend-icon="mdi-filter-variant" @click="mobileFilters = true">Filter</v-btn>
+          <v-btn
+            variant="outlined"
+            prepend-icon="mdi-filter-variant"
+            @click="mobileFilters = true"
+            >Filter</v-btn
+          >
         </div>
 
-        <v-alert v-if="pageState === 'forbidden'" type="error" variant="tonal">403 · Accès refusé.</v-alert>
-        <v-alert v-else-if="pageState === 'error'" type="error" variant="tonal">{{ error || 'Erreur API.' }}</v-alert>
-        <v-skeleton-loader v-else-if="pageState === 'loading'" type="article, article, article" />
-        <v-alert v-else-if="pageState === 'empty'" type="info" variant="tonal">Aucune offre disponible.</v-alert>
+        <v-alert v-if="pageState === 'forbidden'" type="error" variant="tonal"
+          >403 · Accès refusé.</v-alert
+        >
+        <v-alert
+          v-else-if="pageState === 'error'"
+          type="error"
+          variant="tonal"
+          >{{ error || 'Erreur API.' }}</v-alert
+        >
+        <v-skeleton-loader
+          v-else-if="pageState === 'loading'"
+          type="article, article, article"
+        />
+        <v-alert v-else-if="pageState === 'empty'" type="info" variant="tonal"
+          >Aucune offre disponible.</v-alert
+        >
 
         <div v-else class="offers-board-page__grid">
           <div class="offers-board-page__list">
