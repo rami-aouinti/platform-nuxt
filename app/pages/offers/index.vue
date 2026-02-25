@@ -298,8 +298,6 @@ onMounted(loadRows)
     <OffersSearchBar
       v-model:query="search"
       v-model:location="location"
-      title="Finde deinen nächsten Job"
-      subtitle="Entdecke passende Rollen mit modernem Job-Board Layout."
       app-bar-teleport
       @search="loadRows"
     />

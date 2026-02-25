@@ -109,10 +109,6 @@
   opacity: 0.75;
 }
 
-.offers-search-bar--app-bar .offers-search-bar__form--teleport {
-  display: none;
-}
-
 .offers-search-bar__teleport-content {
   display: grid;
   grid-template-columns: minmax(220px, 1fr) minmax(220px, 1fr) auto;
