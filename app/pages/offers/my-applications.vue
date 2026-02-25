@@ -179,7 +179,7 @@ onMounted(loadRows)
 
         <div v-else class="offers-board-page__grid">
           <div class="offers-board-page__list">
-            <OfferListCard
+            <OffersOfferListCard
               v-for="offer in mappedOffers"
               :key="offer.id"
               :offer="offer"
@@ -191,7 +191,7 @@ onMounted(loadRows)
             />
           </div>
 
-          <OfferDetailsPanel
+          <OffersOfferDetailsPanel
             v-if="selectedOffer"
             :title="selectedOffer.title"
             :company="selectedOffer.company"
