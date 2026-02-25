@@ -84,6 +84,8 @@
   background: var(--offers-surface);
   border: 1px solid var(--offers-border);
   border-radius: var(--offers-radius-lg);
+  position: sticky;
+  top: 88px;
   max-height: calc(100vh - 120px);
   overflow-y: auto;
   padding: var(--offers-space-3);
@@ -329,6 +331,9 @@
   }
   .offers-board-page__grid {
     grid-template-columns: 1fr;
+  }
+  .offers-board-page__list-card {
+    position: static;
   }
 }
 
