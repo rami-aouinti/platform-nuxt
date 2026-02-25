@@ -1,5 +1,40 @@
 import type { H3Event } from 'h3'
 
+type ProxyHttpMethod = 'GET' | 'PUT' | 'PATCH' | 'DELETE'
+
+function parseUpstreamErrorPayload(payload: unknown): string | null {
+  if (typeof payload === 'string' && payload.length > 0) {
+    return payload
+  }
+
+  if (payload && typeof payload === 'object') {
+    const candidateKeys = ['message', 'detail', 'error', 'title'] as const
+
+    for (const key of candidateKeys) {
+      const value = (payload as Record<string, unknown>)[key]
+      if (typeof value === 'string' && value.length > 0) {
+        return value
+      }
+    }
+  }
+
+  return null
+}
+
+async function parseUpstreamResponse(response: Response) {
+  if (response.status === 204) {
+    return null
+  }
+
+  const contentType = response.headers.get('content-type') ?? ''
+
+  if (contentType.includes('application/json')) {
+    return await response.json()
+  }
+
+  return await response.text()
+}
+
 function getUpstreamCandidates(event: H3Event): string[] {
   const config = useRuntimeConfig(event)
 
@@ -14,8 +49,17 @@ function getUpstreamCandidates(event: H3Event): string[] {
 }
 
 export async function proxyAuthApiGet(event: H3Event, path: string) {
+  return await proxyAuthApiRequest(event, path, 'GET')
+}
+
+export async function proxyAuthApiRequest(
+  event: H3Event,
+  path: string,
+  method: ProxyHttpMethod,
+) {
   const authorization = getHeader(event, 'authorization')
   const upstreamCandidates = getUpstreamCandidates(event)
+  const body = method === 'GET' || method === 'DELETE' ? undefined : await readBody(event)
 
   let lastError: unknown
 
@@ -24,12 +68,16 @@ export async function proxyAuthApiGet(event: H3Event, path: string) {
 
     try {
       const response = await fetch(targetURL, {
-        method: 'GET',
+        method,
         headers: authorization
           ? {
               authorization,
+              ...(body ? { 'content-type': 'application/json' } : {}),
             }
-          : undefined,
+          : body
+            ? { 'content-type': 'application/json' }
+            : undefined,
+        ...(body ? { body: JSON.stringify(body) } : {}),
       })
 
       if (response.status === 401) {
@@ -40,25 +88,37 @@ export async function proxyAuthApiGet(event: H3Event, path: string) {
         })
       }
 
+      if (response.status === 403) {
+        const errorPayload = await parseUpstreamResponse(response)
+        throw createError({
+          statusCode: 403,
+          statusMessage: 'Forbidden.',
+          message:
+            parseUpstreamErrorPayload(errorPayload) ??
+            'Vous n’êtes pas autorisé à effectuer cette action.',
+        })
+      }
+
+      if (response.status >= 400 && response.status < 500) {
+        const errorPayload = await parseUpstreamResponse(response)
+        throw createError({
+          statusCode: response.status,
+          statusMessage: response.statusText || 'Upstream request failed.',
+          message:
+            parseUpstreamErrorPayload(errorPayload) ??
+            `Upstream responded with HTTP ${response.status}.`,
+        })
+      }
+
       if (!response.ok) {
         lastError = new Error(`Upstream responded with HTTP ${response.status}.`)
         continue
       }
 
-      if (response.status === 204) {
-        return null
-      }
-
-      const contentType = response.headers.get('content-type') ?? ''
-
-      if (contentType.includes('application/json')) {
-        return await response.json()
-      }
-
-      return await response.text()
+      return await parseUpstreamResponse(response)
     }
     catch (error) {
-      if (isError(error) && error.statusCode === 401) {
+      if (isError(error) && error.statusCode && error.statusCode < 500) {
         throw error
       }
 
