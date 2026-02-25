@@ -4,13 +4,25 @@ export type Id = string
 
 export type SortOrder = 'asc' | 'desc'
 
+export type ListFilterValue = string | number | boolean | null | undefined
+
+type LegacyFilters = Record<string, ListFilterValue>
+
 export interface ListQuery {
+  where?: Record<string, ListFilterValue>
+  order?: string
+  limit?: number
+  offset?: number
+  search?: string
+
+  /**
+   * Legacy params kept for backward compatibility.
+   */
   page?: number
   pageSize?: number
-  search?: string
   sortBy?: string
   sortOrder?: SortOrder
-  filters?: Record<string, string | number | boolean | null | undefined>
+  filters?: LegacyFilters
 }
 
 export interface PaginatedResponse<T> {
@@ -31,6 +43,50 @@ export interface PatchPayload {
   [key: string]: unknown
 }
 
+export interface BuildApiPlatformQueryInput {
+  page: number
+  pageSize: number
+  search?: string
+  sortBy?: string
+  sortOrder?: SortOrder
+  filters?: LegacyFilters
+}
+
+function cleanFilters(filters: LegacyFilters = {}) {
+  return Object.fromEntries(
+    Object.entries(filters).filter(([, value]) => value !== undefined && value !== null && value !== ''),
+  )
+}
+
+/**
+ * Convention de query unifiée pour l'admin:
+ * - pagination via `limit` et `offset`
+ * - filtres via `where` JSON stringifié
+ * - tri via `order` (`field:asc|desc`)
+ * - recherche plein texte via `search`
+ */
+export function buildApiPlatformQuery(input: BuildApiPlatformQueryInput): ListQuery {
+  const {
+    page,
+    pageSize,
+    search,
+    sortBy,
+    sortOrder = 'desc',
+    filters = {},
+  } = input
+
+  const where = cleanFilters(filters)
+  const trimmedSearch = search?.trim()
+
+  return {
+    limit: pageSize,
+    offset: Math.max(page - 1, 0) * pageSize,
+    search: trimmedSearch || undefined,
+    where: Object.keys(where).length ? where : undefined,
+    order: sortBy ? `${sortBy}:${sortOrder}` : undefined,
+  }
+}
+
 export interface AdminCrudService<TItem, TCreate, TUpdate, TPatch extends PatchPayload> {
   list: (query?: ListQuery) => Promise<PaginatedResponse<TItem>>
   count: () => Promise<CountResponse>
@@ -44,21 +100,38 @@ export interface AdminCrudService<TItem, TCreate, TUpdate, TPatch extends PatchP
 
 export function normalizeListQuery(query: ListQuery = {}) {
   const {
+    where,
+    order,
+    limit,
+    offset,
+    search,
+
     page,
     pageSize,
-    search,
     sortBy,
     sortOrder,
     filters = {},
   } = query
 
+  const resolvedLimit = limit ?? pageSize
+  const resolvedOffset = offset ?? ((page && resolvedLimit) ? Math.max(page - 1, 0) * resolvedLimit : undefined)
+  const resolvedOrder = order ?? (sortBy ? `${sortBy}:${sortOrder ?? 'asc'}` : undefined)
+
+  const whereObject = {
+    ...cleanFilters(filters),
+    ...(where ?? {}),
+  }
+
+  const normalizedWhere = Object.keys(whereObject).length
+    ? JSON.stringify(whereObject)
+    : undefined
+
   return {
-    ...(page ? { page } : {}),
-    ...(pageSize ? { pageSize } : {}),
+    ...(normalizedWhere ? { where: normalizedWhere } : {}),
+    ...(resolvedOrder ? { order: resolvedOrder } : {}),
+    ...(resolvedLimit ? { limit: resolvedLimit } : {}),
+    ...(resolvedOffset !== undefined ? { offset: resolvedOffset } : {}),
     ...(search ? { search } : {}),
-    ...(sortBy ? { sortBy } : {}),
-    ...(sortOrder ? { sortOrder } : {}),
-    ...filters,
   }
 }
 

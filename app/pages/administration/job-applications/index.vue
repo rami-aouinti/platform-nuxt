@@ -9,6 +9,7 @@ import AdminCard from '~/components/admin/ui/AdminCard.vue'
 import AdminToolbar from '~/components/admin/ui/AdminToolbar.vue'
 import AdminErrorState from '~/components/admin/ui/AdminErrorState.vue'
 import AdminEmptyState from '~/components/admin/ui/AdminEmptyState.vue'
+import { buildApiPlatformQuery } from '../../../../services/admin/_shared'
 import { HttpRequestError } from '../../../../services/http/client'
 import { jobApplicationsService, type JobApplication } from '../../../../services/admin/job-applications'
 
@@ -90,10 +91,14 @@ async function loadRows() {
 
   try {
     const response = await jobApplicationsService.list({
-      page: page.value,
-      pageSize: pageSize.value,
-      search: search.value || undefined,
-      filters: { status: filters.value.status || undefined },
+      ...buildApiPlatformQuery({
+        page: page.value,
+        pageSize: pageSize.value,
+        search: search.value,
+        sortBy: 'id',
+        sortOrder: 'desc',
+        filters: { status: filters.value.status || undefined },
+      }),
     })
 
     rows.value = response.data

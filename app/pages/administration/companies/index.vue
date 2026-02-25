@@ -2,6 +2,7 @@
 import type { DataTableHeader } from 'vuetify'
 import { Notify } from '~/stores/notification'
 import { companiesService, type Company, type CreateCompanyRequest, type UpdateCompanyRequest } from '../../../../services/admin/companies'
+import { buildApiPlatformQuery } from '../../../../services/admin/_shared'
 import { HttpRequestError } from '../../../../services/http/client'
 
 definePageMeta({
@@ -61,12 +62,16 @@ async function loadRows() {
 
   try {
     const response = await companiesService.list({
-      page: page.value,
-      pageSize: pageSize.value,
-      search: search.value || undefined,
-      filters: {
-        status: filters.value.status || undefined,
-      },
+      ...buildApiPlatformQuery({
+        page: page.value,
+        pageSize: pageSize.value,
+        search: search.value,
+        sortBy: 'legalName',
+        sortOrder: 'asc',
+        filters: {
+          status: filters.value.status || undefined,
+        },
+      }),
     })
 
     rows.value = response.data
