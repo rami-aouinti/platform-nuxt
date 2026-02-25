@@ -179,3 +179,11 @@ html.dark,
     font-size: var(--admin-text-size-form-input);
   }
 }
+
+.app-bar__portal {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: flex-end;
+  margin-right: 12px;
+}
