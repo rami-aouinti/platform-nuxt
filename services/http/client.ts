@@ -1,5 +1,6 @@
-import { useRuntimeConfig } from '#imports'
+import { navigateTo, useRuntimeConfig } from '#imports'
 import { useAuthStore } from '~/stores/auth'
+import { Notify } from '~/stores/notification'
 import type { FetchContext, FetchOptions } from 'ofetch'
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
@@ -24,7 +25,9 @@ export class HttpRequestError extends Error {
 
 function toHttpError(context: FetchContext & { response?: Response }) {
   const statusCode = context.response?.status ?? 500
-  const details = context.error?.data ?? context.response?._data
+  const details =
+    (context.error as { data?: unknown } | undefined)?.data ??
+    context.response?._data
 
   if (statusCode === 401) {
     return new HttpRequestError({
@@ -57,6 +60,26 @@ function toHttpError(context: FetchContext & { response?: Response }) {
   })
 }
 
+function handleGlobalHttpError(error: HttpRequestError) {
+  if (!import.meta.client) {
+    return
+  }
+
+  const authStore = useAuthStore()
+
+  if (error.statusCode === 401) {
+    authStore.logout()
+    Notify.error('Session expirée. Veuillez vous reconnecter.')
+    void navigateTo('/login')
+    return
+  }
+
+  if (error.statusCode === 403) {
+    Notify.error('Accès refusé pour cette action.')
+    void navigateTo('/403?reason=unauthorized')
+  }
+}
+
 const apiClient = $fetch.create({
   onRequest({ options }) {
     const config = useRuntimeConfig()
@@ -69,67 +92,67 @@ const apiClient = $fetch.create({
       return
     }
 
-    options.headers = {
-      ...(options.headers || {}),
-      Authorization: `Bearer ${token}`,
-    }
+    const headers = new Headers(
+      (options.headers ?? undefined) as HeadersInit | undefined,
+    )
+    headers.set('Authorization', `Bearer ${token}`)
+    options.headers = headers
   },
   onResponseError(context) {
-    throw toHttpError(context)
+    const error = toHttpError(context)
+    handleGlobalHttpError(error)
+    throw error
   },
 })
 
 export function httpRequest<T>(
   method: HttpMethod,
   url: string,
-  options: FetchOptions<'json'> = {},
+  options: FetchOptions = {},
 ) {
-  return apiClient<T>(url, {
-    ...options,
-    method,
-  })
+  return (apiClient as any)(url, {
+    ...(options as FetchOptions),
+    method: method.toLowerCase(),
+  }) as Promise<T>
 }
 
-export function httpGet<T>(url: string, options: FetchOptions<'json'> = {}) {
+export function httpGet<T>(url: string, options: FetchOptions = {}) {
   return httpRequest<T>('GET', url, options)
 }
 
 export function httpPost<TResponse, TBody>(
   url: string,
   body: TBody,
-  options: FetchOptions<'json'> = {},
+  options: FetchOptions = {},
 ) {
   return httpRequest<TResponse>('POST', url, {
     ...options,
-    body,
+    body: body as FetchOptions['body'],
   })
 }
 
 export function httpPut<TResponse, TBody>(
   url: string,
   body: TBody,
-  options: FetchOptions<'json'> = {},
+  options: FetchOptions = {},
 ) {
   return httpRequest<TResponse>('PUT', url, {
     ...options,
-    body,
+    body: body as FetchOptions['body'],
   })
 }
 
 export function httpPatch<TResponse, TBody>(
   url: string,
   body: TBody,
-  options: FetchOptions<'json'> = {},
+  options: FetchOptions = {},
 ) {
   return httpRequest<TResponse>('PATCH', url, {
     ...options,
-    body,
+    body: body as FetchOptions['body'],
   })
 }
 
-export function httpDelete<TResponse>(
-  url: string,
-  options: FetchOptions<'json'> = {},
-) {
+export function httpDelete<TResponse>(url: string, options: FetchOptions = {}) {
   return httpRequest<TResponse>('DELETE', url, options)
 }

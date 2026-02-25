@@ -206,17 +206,12 @@ onMounted(async () => {
         </v-btn>
       </div>
 
-      <v-alert
-        v-if="!canShow"
-        type="warning"
-        variant="tonal"
-        density="comfortable"
+      <PermissionGate
+        :allowed="canShow"
+        mode="alert"
+        message="Accès réservé aux utilisateurs ROLE_ADMIN et ROLE_ROOT."
         class="mb-4"
       >
-        Accès réservé aux utilisateurs ROLE_ADMIN et ROLE_ROOT.
-      </v-alert>
-
-      <template v-else>
         <v-row class="mb-4" dense>
           <v-col cols="12" md="4">
             <v-card variant="tonal" rounded="lg" class="pa-4">
@@ -243,15 +238,7 @@ onMounted(async () => {
           </v-col>
         </v-row>
 
-        <v-alert
-          v-if="apiError"
-          type="error"
-          variant="tonal"
-          density="comfortable"
-          class="mb-4"
-        >
-          {{ apiError }}
-        </v-alert>
+        <AdminPageError :message="apiError" />
 
         <v-row dense>
           <v-col cols="12" md="5">
@@ -347,7 +334,7 @@ onMounted(async () => {
             </v-card>
           </v-col>
         </v-row>
-      </template>
+      </PermissionGate>
     </v-card>
   </v-container>
 </template>

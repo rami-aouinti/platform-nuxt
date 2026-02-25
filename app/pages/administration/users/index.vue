@@ -70,7 +70,9 @@ const headers: DataTableHeader[] = [
 ]
 
 const canShow = computed(() =>
-  ['ROLE_ADMIN', 'ROLE_ROOT'].some((roleName) => roles.value.includes(roleName)),
+  ['ROLE_ADMIN', 'ROLE_ROOT'].some((roleName) =>
+    roles.value.includes(roleName),
+  ),
 )
 const canEdit = computed(() => roles.value.includes('ROLE_ROOT'))
 const canDelete = computed(() => roles.value.includes('ROLE_ROOT'))
@@ -78,9 +80,13 @@ const canDelete = computed(() => roles.value.includes('ROLE_ROOT'))
 function normalizeUsers(payload: unknown): UserRecord[] {
   const records = Array.isArray(payload)
     ? payload
-    : payload && typeof payload === 'object' && Array.isArray((payload as { items?: unknown[] }).items)
+    : payload &&
+        typeof payload === 'object' &&
+        Array.isArray((payload as { items?: unknown[] }).items)
       ? (payload as { items: unknown[] }).items
-      : payload && typeof payload === 'object' && Array.isArray((payload as { data?: unknown[] }).data)
+      : payload &&
+          typeof payload === 'object' &&
+          Array.isArray((payload as { data?: unknown[] }).data)
         ? (payload as { data: unknown[] }).data
         : []
 
@@ -115,8 +121,14 @@ function normalizeUsers(payload: unknown): UserRecord[] {
       email: String(row.email ?? ''),
       firstName: String(row.firstName ?? ''),
       lastName: String(row.lastName ?? ''),
-      language: (LANGUAGE_VALUES.includes(String(row.language ?? 'en') as Language) ? String(row.language ?? 'en') : 'en') as Language,
-      locale: (LOCALE_VALUES.includes(String(row.locale ?? 'en') as Locale) ? String(row.locale ?? 'en') : 'en') as Locale,
+      language: (LANGUAGE_VALUES.includes(
+        String(row.language ?? 'en') as Language,
+      )
+        ? String(row.language ?? 'en')
+        : 'en') as Language,
+      locale: (LOCALE_VALUES.includes(String(row.locale ?? 'en') as Locale)
+        ? String(row.locale ?? 'en')
+        : 'en') as Locale,
       timezone: String(row.timezone ?? DEFAULT_TIMEZONE),
       roles: rolesValue,
       userGroups: userGroupsValue,
@@ -124,12 +136,13 @@ function normalizeUsers(payload: unknown): UserRecord[] {
   })
 }
 
-
-
 function validateBoundedText(value: string, fieldLabel: string) {
   const trimmedValue = value.trim()
 
-  if (trimmedValue.length < USER_TEXT_MIN_LENGTH || trimmedValue.length > USER_TEXT_MAX_LENGTH) {
+  if (
+    trimmedValue.length < USER_TEXT_MIN_LENGTH ||
+    trimmedValue.length > USER_TEXT_MAX_LENGTH
+  ) {
     return `${fieldLabel} doit contenir entre ${USER_TEXT_MIN_LENGTH} et ${USER_TEXT_MAX_LENGTH} caractères.`
   }
 
@@ -171,7 +184,9 @@ function validateEditUserForm(record: UserRecord) {
   return Object.values(errors).every((message) => !message)
 }
 
-function mapValidationErrors(error: unknown): Partial<Record<keyof UserRecord, string>> {
+function mapValidationErrors(
+  error: unknown,
+): Partial<Record<keyof UserRecord, string>> {
   if (!isError(error) || !error.data || typeof error.data !== 'object') {
     return {}
   }
@@ -243,9 +258,13 @@ async function loadUsers() {
     totalUsers.value =
       typeof countResponse === 'number'
         ? countResponse
-        : Number((countResponse as { count?: number })?.count ?? users.value.length)
+        : Number(
+            (countResponse as { count?: number })?.count ?? users.value.length,
+          )
 
-    availableIds.value = Array.isArray(idsResponse) ? idsResponse.map(String) : []
+    availableIds.value = Array.isArray(idsResponse)
+      ? idsResponse.map(String)
+      : []
   } catch (error) {
     apiError.value = toErrorMessage(error)
     Notify.error(apiError.value)
@@ -268,7 +287,9 @@ async function showUserDetails(id: string) {
         ...formErrors.value,
         ...backendValidationErrors,
       }
-      Notify.error('La validation backend a échoué. Vérifiez les champs du formulaire.')
+      Notify.error(
+        'La validation backend a échoué. Vérifiez les champs du formulaire.',
+      )
       return
     }
 
@@ -290,7 +311,9 @@ async function openEditDialog(user: UserRecord) {
         ...formErrors.value,
         ...backendValidationErrors,
       }
-      Notify.error('La validation backend a échoué. Vérifiez les champs du formulaire.')
+      Notify.error(
+        'La validation backend a échoué. Vérifiez les champs du formulaire.',
+      )
       return
     }
 
@@ -349,7 +372,9 @@ async function saveEdit() {
         ...formErrors.value,
         ...backendValidationErrors,
       }
-      Notify.error('La validation backend a échoué. Vérifiez les champs du formulaire.')
+      Notify.error(
+        'La validation backend a échoué. Vérifiez les champs du formulaire.',
+      )
       return
     }
 
@@ -385,7 +410,9 @@ async function deleteUser(user: UserRecord) {
         ...formErrors.value,
         ...backendValidationErrors,
       }
-      Notify.error('La validation backend a échoué. Vérifiez les champs du formulaire.')
+      Notify.error(
+        'La validation backend a échoué. Vérifiez les champs du formulaire.',
+      )
       return
     }
 
@@ -415,22 +442,16 @@ onMounted(async () => {
 <template>
   <v-container fluid class="pa-6">
     <v-card rounded="xl" elevation="6" class="pa-6">
-      <div class="d-flex flex-wrap justify-space-between align-center ga-4 mb-4">
+      <div
+        class="d-flex flex-wrap justify-space-between align-center ga-4 mb-4"
+      >
         <h1 class="text-h4 font-weight-bold">Administration · Users</h1>
         <div class="text-caption text-medium-emphasis">
           Total: {{ totalUsers }} · IDs reçus: {{ availableIds.length }}
         </div>
       </div>
 
-      <v-alert
-        v-if="apiError"
-        type="error"
-        variant="tonal"
-        density="comfortable"
-        class="mb-4"
-      >
-        {{ apiError }}
-      </v-alert>
+      <AdminPageError :message="apiError" />
 
       <v-row class="mb-2" dense>
         <v-col cols="12" md="4">
@@ -504,30 +525,33 @@ onMounted(async () => {
 
         <template #item.actions="{ item }">
           <div class="d-flex ga-1">
-            <v-btn
-              size="small"
-              icon="mdi-eye-outline"
-              variant="text"
-              color="info"
-              :disabled="!canShow"
-              @click="showUserDetails(item.id)"
-            />
-            <v-btn
-              size="small"
-              icon="mdi-pencil-outline"
-              variant="text"
-              color="warning"
-              :disabled="!canEdit"
-              @click="openEditDialog(item)"
-            />
-            <v-btn
-              size="small"
-              icon="mdi-delete-outline"
-              variant="text"
-              color="error"
-              :disabled="!canDelete"
-              @click="deleteUser(item)"
-            />
+            <PermissionGate :allowed="canShow">
+              <v-btn
+                size="small"
+                icon="mdi-eye-outline"
+                variant="text"
+                color="info"
+                @click="showUserDetails(item.id)"
+              />
+            </PermissionGate>
+            <PermissionGate :allowed="canEdit">
+              <v-btn
+                size="small"
+                icon="mdi-pencil-outline"
+                variant="text"
+                color="warning"
+                @click="openEditDialog(item)"
+              />
+            </PermissionGate>
+            <PermissionGate :allowed="canDelete">
+              <v-btn
+                size="small"
+                icon="mdi-delete-outline"
+                variant="text"
+                color="error"
+                @click="deleteUser(item)"
+              />
+            </PermissionGate>
           </div>
         </template>
       </v-data-table-server>
@@ -542,8 +566,13 @@ onMounted(async () => {
           <div><strong>ID:</strong> {{ selectedUser.id }}</div>
           <div><strong>Username:</strong> {{ selectedUser.username }}</div>
           <div><strong>Email:</strong> {{ selectedUser.email }}</div>
-          <div><strong>Rôles:</strong> {{ selectedUser.roles.join(', ') || '-' }}</div>
-          <div><strong>Groupes:</strong> {{ selectedUser.userGroups.join(', ') || '-' }}</div>
+          <div>
+            <strong>Rôles:</strong> {{ selectedUser.roles.join(', ') || '-' }}
+          </div>
+          <div>
+            <strong>Groupes:</strong>
+            {{ selectedUser.userGroups.join(', ') || '-' }}
+          </div>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -595,17 +624,23 @@ onMounted(async () => {
             :placeholder="DEFAULT_TIMEZONE"
             :error-messages="formErrors.timezone"
           />
-          <v-text-field
-            v-model="editUser.email"
-            label="Email"
-          />
-          <div v-if="formErrors.roles" class="text-caption text-error mt-2">{{ formErrors.roles }}</div>
-          <div v-if="formErrors.userGroups" class="text-caption text-error mt-1">{{ formErrors.userGroups }}</div>
+          <v-text-field v-model="editUser.email" label="Email" />
+          <div v-if="formErrors.roles" class="text-caption text-error mt-2">
+            {{ formErrors.roles }}
+          </div>
+          <div
+            v-if="formErrors.userGroups"
+            class="text-caption text-error mt-1"
+          >
+            {{ formErrors.userGroups }}
+          </div>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
           <v-btn variant="text" @click="editDialog = false">Annuler</v-btn>
-          <v-btn color="primary" :loading="editSaving" @click="saveEdit">Enregistrer</v-btn>
+          <v-btn color="primary" :loading="editSaving" @click="saveEdit"
+            >Enregistrer</v-btn
+          >
         </v-card-actions>
       </v-card>
     </v-dialog>
