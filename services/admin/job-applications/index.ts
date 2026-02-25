@@ -1,5 +1,5 @@
 import { type Id, type PatchPayload, createAdminCrudService } from '../_shared'
-import { httpPost } from '../../http/client'
+import { httpPatch, httpPost } from '../../http/client'
 
 const JOB_APPLICATIONS_BASE_PATH = '/api/v1/job-applications'
 
@@ -36,17 +36,15 @@ const jobApplicationsCrudService = createAdminCrudService<
 export const jobApplicationsService = {
   ...jobApplicationsCrudService,
   apply(offerId: Id) {
-    return httpPost<JobApplication, { offerId: Id }>(`${JOB_APPLICATIONS_BASE_PATH}/apply`, {
-      offerId,
-    })
+    return httpPost<JobApplication, Record<string, never>>(`/api/v1/job-offers/${offerId}/apply`, {})
   },
   accept(id: Id) {
-    return httpPost<JobApplication, Record<string, never>>(`${JOB_APPLICATIONS_BASE_PATH}/${id}/accept`, {})
+    return httpPatch<JobApplication, Record<string, never>>(`${JOB_APPLICATIONS_BASE_PATH}/${id}/accept`, {})
   },
   reject(id: Id) {
-    return httpPost<JobApplication, Record<string, never>>(`${JOB_APPLICATIONS_BASE_PATH}/${id}/reject`, {})
+    return httpPatch<JobApplication, Record<string, never>>(`${JOB_APPLICATIONS_BASE_PATH}/${id}/reject`, {})
   },
   withdraw(id: Id) {
-    return httpPost<JobApplication, Record<string, never>>(`${JOB_APPLICATIONS_BASE_PATH}/${id}/withdraw`, {})
+    return httpPatch<JobApplication, Record<string, never>>(`${JOB_APPLICATIONS_BASE_PATH}/${id}/withdraw`, {})
   },
 }
