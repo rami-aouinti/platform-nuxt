@@ -377,7 +377,7 @@ onMounted(loadRows)
       :scrim="smAndDown"
       floating
       location="right"
-      width="350"
+      width="300"
     >
       <div>
         <OffersFiltersSidebar

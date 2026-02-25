@@ -111,13 +111,9 @@
 }
 
 .offers-filters-sidebar {
-  background: var(--offers-surface);
-  border: 1px solid var(--offers-border);
-  border-radius: var(--offers-radius-lg);
-  padding: var(--offers-space-3);
+  border-radius: var(--offers-radius-xl);
   position: sticky;
   top: 88px;
-  margin-bottom: var(--offers-space-4);
 }
 .offers-filters-sidebar h3 {
   margin: 0 0 var(--offers-space-3);

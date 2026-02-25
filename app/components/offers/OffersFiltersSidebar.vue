@@ -35,8 +35,6 @@ function isSelected(sectionKey: string, value: string) {
     class="offers-filters-sidebar"
     :class="{ 'offers-filters-sidebar--horizontal': props.horizontal }"
   >
-    <h3>{{ props.title || 'Filter' }}</h3>
-
     <template v-if="props.horizontal">
       <div class="offers-filters-sidebar__horizontal-sections">
         <section
