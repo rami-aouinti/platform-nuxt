@@ -2,7 +2,7 @@
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth'
 
-import { mergeProps } from 'vue'
+import type { HTMLAttributes } from 'vue'
 
 const theme = useTheme()
 const drawer = useState('drawer')
@@ -42,6 +42,25 @@ const userDisplayName = computed(() => {
 function logout() {
   authStore.logout()
 }
+
+function createActivatorProps(menu: HTMLAttributes, tooltip: HTMLAttributes): HTMLAttributes {
+  const menuOnClick = menu.onClick
+  const tooltipOnClick = tooltip.onClick
+
+  return {
+    ...menu,
+    ...tooltip,
+    onClick(event: Event) {
+      if (typeof menuOnClick === 'function') {
+        menuOnClick(event as PointerEvent)
+      }
+
+      if (typeof tooltipOnClick === 'function') {
+        tooltipOnClick(event as PointerEvent)
+      }
+    },
+  }
+}
 </script>
 
 <template>
@@ -73,7 +92,7 @@ function logout() {
       <template #activator="{ props: menu }">
         <v-tooltip location="bottom">
           <template #activator="{ props: tooltip }">
-            <v-btn icon v-bind="mergeProps(menu, tooltip)" class="ml-1">
+            <v-btn icon v-bind="createActivatorProps(menu, tooltip)" class="ml-1">
               <v-icon icon="mdi-account-circle" size="36" />
             </v-btn>
           </template>
