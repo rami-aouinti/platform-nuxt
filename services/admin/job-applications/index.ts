@@ -1,7 +1,7 @@
 import { type Id, type PatchPayload, createAdminCrudService } from '../_shared'
 import { httpPatch, httpPost } from '../../http/client'
 
-const JOB_APPLICATIONS_BASE_PATH = '/api/v1/job-applications'
+const JOB_APPLICATIONS_BASE_PATH = '/api/job-applications'
 
 export interface JobApplication {
   id: Id
@@ -48,7 +48,7 @@ const jobApplicationsCrudService = createAdminCrudService<
 export const jobApplicationsService = {
   ...jobApplicationsCrudService,
   apply(jobOffer: Id, payload: ApplyToJobOfferRequest = {}) {
-    return httpPost<JobApplication, ApplyToJobOfferRequest>(`/api/v1/job-offers/${jobOffer}/apply`, payload)
+    return httpPost<JobApplication, ApplyToJobOfferRequest>(`/api/job-offers/${jobOffer}/apply`, payload)
   },
   accept(id: Id) {
     return httpPatch<JobApplication, Record<string, never>>(`${JOB_APPLICATIONS_BASE_PATH}/${id}/accept`, {})
