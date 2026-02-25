@@ -54,9 +54,13 @@ const canManage = computed(() => roles.value.includes('ROLE_ROOT'))
 function normalizeGroups(payload: unknown): UserGroupRecord[] {
   const records = Array.isArray(payload)
     ? payload
-    : payload && typeof payload === 'object' && Array.isArray((payload as { items?: unknown[] }).items)
+    : payload &&
+        typeof payload === 'object' &&
+        Array.isArray((payload as { items?: unknown[] }).items)
       ? (payload as { items: unknown[] }).items
-      : payload && typeof payload === 'object' && Array.isArray((payload as { data?: unknown[] }).data)
+      : payload &&
+          typeof payload === 'object' &&
+          Array.isArray((payload as { data?: unknown[] }).data)
         ? (payload as { data: unknown[] }).data
         : []
 
@@ -94,7 +98,9 @@ function cleanBody(group: UserGroupRecord | typeof newGroup) {
     description: group.description.trim(),
   }
 
-  return Object.fromEntries(Object.entries(payload).filter(([, value]) => value.length > 0))
+  return Object.fromEntries(
+    Object.entries(payload).filter(([, value]) => value.length > 0),
+  )
 }
 
 async function loadGroups() {
@@ -118,9 +124,13 @@ async function loadGroups() {
     totalGroups.value =
       typeof countResponse === 'number'
         ? countResponse
-        : Number((countResponse as { count?: number })?.count ?? groups.value.length)
+        : Number(
+            (countResponse as { count?: number })?.count ?? groups.value.length,
+          )
 
-    availableIds.value = Array.isArray(idsResponse) ? idsResponse.map(String) : []
+    availableIds.value = Array.isArray(idsResponse)
+      ? idsResponse.map(String)
+      : []
   } catch (error) {
     apiError.value = toErrorMessage(error)
     Notify.error(apiError.value)
@@ -196,7 +206,9 @@ async function deleteGroup(group: UserGroupRecord) {
     return
   }
 
-  const confirmed = await dialogDelete.value?.open(`Supprimer le groupe ${group.name || group.id} ?`)
+  const confirmed = await dialogDelete.value?.open(
+    `Supprimer le groupe ${group.name || group.id} ?`,
+  )
 
   if (!confirmed) {
     return
@@ -236,32 +248,27 @@ onMounted(async () => {
 <template>
   <v-container fluid class="pa-6">
     <v-card rounded="xl" elevation="6" class="pa-6">
-      <div class="d-flex flex-wrap justify-space-between align-center ga-4 mb-4">
+      <div
+        class="d-flex flex-wrap justify-space-between align-center ga-4 mb-4"
+      >
         <h1 class="text-h4 font-weight-bold">Administration · User groups</h1>
         <div class="d-flex align-center ga-2 flex-wrap">
           <div class="text-caption text-medium-emphasis">
             Total: {{ totalGroups }} · IDs reçus: {{ availableIds.length }}
           </div>
-          <v-btn
-            color="primary"
-            prepend-icon="mdi-plus"
-            :disabled="!canManage"
-            @click="openCreateDialog"
-          >
-            Créer
-          </v-btn>
+          <PermissionGate :allowed="canManage">
+            <v-btn
+              color="primary"
+              prepend-icon="mdi-plus"
+              @click="openCreateDialog"
+            >
+              Créer
+            </v-btn>
+          </PermissionGate>
         </div>
       </div>
 
-      <v-alert
-        v-if="apiError"
-        type="error"
-        variant="tonal"
-        density="comfortable"
-        class="mb-4"
-      >
-        {{ apiError }}
-      </v-alert>
+      <AdminPageError :message="apiError" />
 
       <v-text-field
         v-model="search"
@@ -291,22 +298,24 @@ onMounted(async () => {
               color="info"
               :to="`/administration/user-groups/${item.id}`"
             />
-            <v-btn
-              size="small"
-              icon="mdi-pencil-outline"
-              variant="text"
-              color="warning"
-              :disabled="!canManage"
-              @click="openEditDialog(item)"
-            />
-            <v-btn
-              size="small"
-              icon="mdi-delete-outline"
-              variant="text"
-              color="error"
-              :disabled="!canManage"
-              @click="deleteGroup(item)"
-            />
+            <PermissionGate :allowed="canManage">
+              <v-btn
+                size="small"
+                icon="mdi-pencil-outline"
+                variant="text"
+                color="warning"
+                @click="openEditDialog(item)"
+              />
+            </PermissionGate>
+            <PermissionGate :allowed="canManage">
+              <v-btn
+                size="small"
+                icon="mdi-delete-outline"
+                variant="text"
+                color="error"
+                @click="deleteGroup(item)"
+              />
+            </PermissionGate>
           </div>
         </template>
       </v-data-table-server>
@@ -320,12 +329,18 @@ onMounted(async () => {
         <v-card-text class="pt-4">
           <v-text-field v-model="newGroup.id" label="ID" class="mb-2" />
           <v-text-field v-model="newGroup.name" label="Nom" class="mb-2" />
-          <v-textarea v-model="newGroup.description" label="Description" rows="3" />
+          <v-textarea
+            v-model="newGroup.description"
+            label="Description"
+            rows="3"
+          />
         </v-card-text>
         <v-card-actions>
           <v-spacer />
           <v-btn variant="text" @click="createDialog = false">Annuler</v-btn>
-          <v-btn color="primary" :loading="saving" @click="createGroup">Créer</v-btn>
+          <v-btn color="primary" :loading="saving" @click="createGroup"
+            >Créer</v-btn
+          >
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -334,14 +349,25 @@ onMounted(async () => {
       <v-card v-if="editGroup">
         <v-card-title>Éditer le groupe</v-card-title>
         <v-card-text class="pt-4">
-          <v-text-field v-model="editGroup.id" label="ID" class="mb-2" disabled />
+          <v-text-field
+            v-model="editGroup.id"
+            label="ID"
+            class="mb-2"
+            disabled
+          />
           <v-text-field v-model="editGroup.name" label="Nom" class="mb-2" />
-          <v-textarea v-model="editGroup.description" label="Description" rows="3" />
+          <v-textarea
+            v-model="editGroup.description"
+            label="Description"
+            rows="3"
+          />
         </v-card-text>
         <v-card-actions>
           <v-spacer />
           <v-btn variant="text" @click="editDialog = false">Annuler</v-btn>
-          <v-btn color="primary" :loading="saving" @click="saveEdit">Enregistrer</v-btn>
+          <v-btn color="primary" :loading="saving" @click="saveEdit"
+            >Enregistrer</v-btn
+          >
         </v-card-actions>
       </v-card>
     </v-dialog>

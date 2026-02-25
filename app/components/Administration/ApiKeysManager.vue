@@ -227,7 +227,10 @@ async function patchById() {
   busy.value = true
 
   try {
-    const value = patchForm.field === 'enabled' ? patchForm.value === 'true' : patchForm.value
+    const value =
+      patchForm.field === 'enabled'
+        ? patchForm.value === 'true'
+        : patchForm.value
 
     await props.service.patch(selectedId.value, {
       [patchForm.field]: value,
@@ -280,34 +283,30 @@ onMounted(async () => {
   <v-card variant="tonal" rounded="lg" class="pa-4">
     <div class="d-flex justify-space-between align-center flex-wrap ga-2 mb-3">
       <div>
-        <div class="text-overline">{{ version.toUpperCase() }} · {{ apiPrefix }}</div>
+        <div class="text-overline">
+          {{ version.toUpperCase() }} · {{ apiPrefix }}
+        </div>
         <div class="text-h6">Gestion API keys</div>
       </div>
       <v-chip color="error" size="small" variant="tonal">ROOT only</v-chip>
     </div>
 
-    <v-alert
-      v-if="!isRoot"
-      type="warning"
-      variant="tonal"
-      density="comfortable"
+    <PermissionGate
+      :allowed="isRoot"
+      mode="alert"
+      message="Toutes les opérations sont bloquées sans le rôle ROLE_ROOT."
       class="mb-3"
-    >
-      Toutes les opérations sont bloquées sans le rôle ROLE_ROOT.
-    </v-alert>
+    />
 
-    <v-alert
-      v-if="apiError"
-      type="error"
-      variant="tonal"
-      density="comfortable"
-      class="mb-3"
-    >
-      {{ apiError }}
-    </v-alert>
+    <AdminPageError :message="apiError" />
 
     <div class="d-flex align-center ga-2 mb-4 flex-wrap">
-      <v-btn color="primary" prepend-icon="mdi-refresh" :loading="loading" @click="loadInventory">
+      <v-btn
+        color="primary"
+        prepend-icon="mdi-refresh"
+        :loading="loading"
+        @click="loadInventory"
+      >
         Recharger list/count/ids
       </v-btn>
       <span class="text-caption text-medium-emphasis">
@@ -317,7 +316,11 @@ onMounted(async () => {
 
     <v-row dense>
       <v-col cols="12" md="6">
-        <v-text-field v-model="createForm.label" label="Create · label" density="comfortable" />
+        <v-text-field
+          v-model="createForm.label"
+          label="Create · label"
+          density="comfortable"
+        />
       </v-col>
       <v-col cols="12" md="6">
         <v-text-field
@@ -334,7 +337,13 @@ onMounted(async () => {
         />
       </v-col>
       <v-col cols="12" md="6" class="d-flex align-center">
-        <v-btn color="primary" :disabled="!isRoot" :loading="busy" @click="createApiKey">Create</v-btn>
+        <v-btn
+          v-if="isRoot"
+          color="primary"
+          :loading="busy"
+          @click="createApiKey"
+          >Create</v-btn
+        >
       </v-col>
     </v-row>
 
@@ -350,13 +359,29 @@ onMounted(async () => {
     />
 
     <div class="d-flex ga-2 flex-wrap mb-4">
-      <v-btn :disabled="!isRoot || !selectedId" :loading="busy" @click="fetchById">getById</v-btn>
-      <v-btn :disabled="!isRoot || !selectedId" :loading="busy" @click="removeById">delete</v-btn>
+      <v-btn
+        v-if="isRoot"
+        :disabled="!selectedId"
+        :loading="busy"
+        @click="fetchById"
+        >getById</v-btn
+      >
+      <v-btn
+        v-if="isRoot"
+        :disabled="!selectedId"
+        :loading="busy"
+        @click="removeById"
+        >delete</v-btn
+      >
     </div>
 
     <v-row dense>
       <v-col cols="12" md="6">
-        <v-text-field v-model="updateForm.label" label="Update · label" density="comfortable" />
+        <v-text-field
+          v-model="updateForm.label"
+          label="Update · label"
+          density="comfortable"
+        />
       </v-col>
       <v-col cols="12" md="6">
         <v-text-field
@@ -366,7 +391,12 @@ onMounted(async () => {
         />
       </v-col>
       <v-col cols="12" md="4">
-        <v-switch v-model="updateForm.enabled" label="Update · enabled" inset hide-details />
+        <v-switch
+          v-model="updateForm.enabled"
+          label="Update · enabled"
+          inset
+          hide-details
+        />
       </v-col>
       <v-col cols="12" md="4">
         <v-text-field
@@ -376,7 +406,13 @@ onMounted(async () => {
         />
       </v-col>
       <v-col cols="12" md="4" class="d-flex align-center">
-        <v-btn :disabled="!isRoot || !selectedId" :loading="busy" @click="updateById">update</v-btn>
+        <v-btn
+          v-if="isRoot"
+          :disabled="!selectedId"
+          :loading="busy"
+          @click="updateById"
+          >update</v-btn
+        >
       </v-col>
     </v-row>
 
@@ -390,17 +426,29 @@ onMounted(async () => {
         />
       </v-col>
       <v-col cols="12" md="4">
-        <v-text-field v-model="patchForm.value" label="Patch · value" density="comfortable" />
+        <v-text-field
+          v-model="patchForm.value"
+          label="Patch · value"
+          density="comfortable"
+        />
       </v-col>
       <v-col cols="12" md="4" class="d-flex align-center">
-        <v-btn :disabled="!isRoot || !selectedId" :loading="busy" @click="patchById">patch</v-btn>
+        <v-btn
+          v-if="isRoot"
+          :disabled="!selectedId"
+          :loading="busy"
+          @click="patchById"
+          >patch</v-btn
+        >
       </v-col>
     </v-row>
 
     <v-card v-if="selectedItem" variant="outlined" rounded="lg" class="mt-4">
       <v-card-title class="text-subtitle-2">Réponse getById</v-card-title>
       <v-card-text>
-        <pre class="text-caption">{{ JSON.stringify(selectedItem, null, 2) }}</pre>
+        <pre class="text-caption">{{
+          JSON.stringify(selectedItem, null, 2)
+        }}</pre>
       </v-card-text>
     </v-card>
   </v-card>
