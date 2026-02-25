@@ -1,4 +1,4 @@
-import { navigateTo, useRuntimeConfig } from '#imports'
+import { navigateTo } from '#imports'
 import { useAuthStore } from '~/stores/auth'
 import { Notify } from '~/stores/notification'
 import type { FetchContext, FetchOptions } from 'ofetch'
@@ -125,10 +125,11 @@ function readTokenFromCookie() {
 
 const apiClient = $fetch.create({
   onRequest({ options }) {
-    const config = useRuntimeConfig()
     const authStore = useAuthStore()
 
-    options.baseURL = config.public.authApiBase
+    // Route all app API calls through Nuxt server endpoints (/api/*),
+    // which proxy to the upstream auth API with consistent auth handling.
+    options.baseURL = ''
 
     const token = authStore.token ?? readTokenFromCookie()
     if (!token) {
