@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { storeToRefs } from 'pinia'
+import { useAuthStore } from '~/stores/auth'
+
 definePageMeta({
   icon: 'mdi-lock-check-outline',
   title: 'Login',
