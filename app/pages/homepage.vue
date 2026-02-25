@@ -48,7 +48,7 @@ async function login() {
   errorMessage.value = ''
 
   try {
-    const response = await $fetch<{ token?: string }>('http://localhost/api/v1/auth/get_token', {
+    const response = await $fetch<{ token?: string }>('/api/auth/get_token', {
       method: 'POST',
       body: {
         username: form.username,
@@ -65,8 +65,11 @@ async function login() {
     syncToken(response.token)
     form.password = ''
   }
-  catch {
-    errorMessage.value = 'Connexion échouée : identifiants invalides ou API inaccessible.'
+  catch (error) {
+    const message = error instanceof Error ? error.message : ''
+    errorMessage.value = message
+      ? `Connexion échouée : ${message}`
+      : 'Connexion échouée : identifiants invalides ou API inaccessible.'
     syncToken('')
   }
   finally {
