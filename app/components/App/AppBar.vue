@@ -25,7 +25,8 @@ const isDark = computed({
   },
 })
 const authStore = useAuthStore()
-const { isAuthenticated, profile, hasAdminAccess, rolesLoading } = storeToRefs(authStore)
+const { isAuthenticated, profile, hasAdminAccess, rolesLoading } =
+  storeToRefs(authStore)
 
 const userDisplayName = computed(() => {
   const currentProfile = profile.value
@@ -34,7 +35,8 @@ const userDisplayName = computed(() => {
     return 'User'
   }
 
-  const fullName = `${currentProfile.firstName ?? ''} ${currentProfile.lastName ?? ''}`.trim()
+  const fullName =
+    `${currentProfile.firstName ?? ''} ${currentProfile.lastName ?? ''}`.trim()
 
   return fullName || currentProfile.username || 'User'
 })
@@ -43,7 +45,10 @@ function logout() {
   authStore.logout()
 }
 
-function createActivatorProps(menu: HTMLAttributes, tooltip: HTMLAttributes): HTMLAttributes {
+function createActivatorProps(
+  menu: HTMLAttributes,
+  tooltip: HTMLAttributes,
+): HTMLAttributes {
   const menuOnClick = menu.onClick
   const tooltipOnClick = tooltip.onClick
 
@@ -68,7 +73,7 @@ function createActivatorProps(menu: HTMLAttributes, tooltip: HTMLAttributes): HT
     <v-app-bar-nav-icon @click="drawer = !drawer" />
     <v-breadcrumbs :items="breadcrumbs" />
     <v-spacer />
-    <div id="app-bar" />
+    <div id="app-bar" class="app-bar__portal" />
     <v-switch
       v-model="isDark"
       color=""
@@ -92,7 +97,11 @@ function createActivatorProps(menu: HTMLAttributes, tooltip: HTMLAttributes): HT
       <template #activator="{ props: menu }">
         <v-tooltip location="bottom">
           <template #activator="{ props: tooltip }">
-            <v-btn icon v-bind="createActivatorProps(menu, tooltip)" class="ml-1">
+            <v-btn
+              icon
+              v-bind="createActivatorProps(menu, tooltip)"
+              class="ml-1"
+            >
               <v-icon icon="mdi-account-circle" size="36" />
             </v-btn>
           </template>
