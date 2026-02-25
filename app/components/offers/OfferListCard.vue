@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import OfferMatchGauge from './OfferMatchGauge.vue'
+
 export type OfferCardData = {
   id: string
   title: string
