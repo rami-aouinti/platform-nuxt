@@ -3,6 +3,8 @@ import type { DataTableHeader } from 'vuetify'
 import { storeToRefs } from 'pinia'
 import { Notify } from '~/stores/notification'
 import { useAuthStore } from '~/stores/auth'
+import { apiKeysV1Service } from '../../../services/admin/api-keys/v1'
+import { apiKeysV2Service } from '../../../services/admin/api-keys/v2'
 import { canManageApiKeys } from '~/utils/permissions/admin'
 
 type ApiKeyRecord = { id: string; name: string; prefix: string; createdAt: string; status: string }
@@ -30,6 +32,10 @@ const pageSize = ref(10)
 const search = ref('')
 const filters = ref<Record<string, string>>({ status: '' })
 
+const apiKeysService = apiKeysV2Service
+
+type ApiKeysService = typeof apiKeysV2Service | typeof apiKeysV1Service
+
 const isRoot = computed(() => canManageApiKeys(roles.value))
 
 const columns: DataTableHeader[] = [
@@ -53,26 +59,57 @@ function normalize(payload: unknown): ApiKeyRecord[] {
     const row = entry as Record<string, unknown>
     return {
       id: String(row.id ?? row.uuid ?? index),
-      name: String(row.name ?? row.label ?? ''),
-      prefix: String(row.prefix ?? row.tokenPrefix ?? ''),
-      createdAt: String(row.createdAt ?? ''),
-      status: String(row.status ?? 'active'),
+      name: String(row.label ?? row.name ?? ''),
+      prefix: String(row.keyPrefix ?? row.tokenPrefix ?? row.prefix ?? ''),
+      createdAt: String(row.createdAt ?? row.created_at ?? ''),
+      status: String(row.enabled === false ? 'disabled' : row.status ?? 'active'),
     }
   })
+}
+
+function toError(errorValue: unknown) {
+  if (errorValue instanceof Error) {
+    return errorValue.message
+  }
+
+  return 'Erreur API.'
+}
+
+async function loadWithFallback<T>(run: (service: ApiKeysService) => Promise<T>) {
+  try {
+    return await run(apiKeysService)
+  } catch (errorValue) {
+    if (isError(errorValue) && errorValue.statusCode === 404) {
+      return run(apiKeysV1Service)
+    }
+
+    throw errorValue
+  }
 }
 
 async function loadRows() {
   loading.value = true
   error.value = null
   try {
-    const response = await $fetch('/api/api-keys', {
-      query: { search: search.value || undefined, status: filters.value.status || undefined, page: page.value, limit: pageSize.value },
-    })
+    const listQuery = {
+      page: page.value,
+      pageSize: pageSize.value,
+      search: search.value || undefined,
+      filters: {
+        status: filters.value.status || undefined,
+      },
+    }
 
-    rows.value = normalize(response)
-    total.value = rows.value.length
+    const [listResponse, countResponse, idsResponse] = await Promise.all([
+      loadWithFallback((service) => service.list(listQuery)),
+      loadWithFallback<{ count: number }>((service) => service.count()),
+      loadWithFallback<string[]>((service) => service.ids()),
+    ])
+
+    rows.value = normalize(listResponse)
+    total.value = Number(countResponse.count ?? idsResponse.length ?? rows.value.length)
   } catch (errorValue) {
-    error.value = errorValue instanceof Error ? errorValue.message : 'Erreur API.'
+    error.value = toError(errorValue)
   } finally {
     loading.value = false
   }
