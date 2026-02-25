@@ -1,4 +1,9 @@
 <script setup lang="ts">
+import AdminBadge from '~/components/admin/ui/AdminBadge.vue'
+import AdminCard from '~/components/admin/ui/AdminCard.vue'
+import AdminEmptyState from '~/components/admin/ui/AdminEmptyState.vue'
+import AdminToolbar from '~/components/admin/ui/AdminToolbar.vue'
+
 definePageMeta({
   icon: 'mdi-shield-crown-outline',
   title: 'Administration',
