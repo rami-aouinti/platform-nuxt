@@ -40,7 +40,7 @@ const emit = defineEmits<{
         <v-btn
           class="offers-search-bar__cta mx-4"
           color="primary"
-          size="small"
+          rounded
           @click="emit('search')"
         >
           Filter

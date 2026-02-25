@@ -61,7 +61,6 @@
 .offers-search-bar__cta {
   background-color: var(--offers-primary) !important;
   color: rgb(var(--v-theme-on-primary)) !important;
-  border-radius: 12px !important;
 }
 
 .offers-board-page__layout {
