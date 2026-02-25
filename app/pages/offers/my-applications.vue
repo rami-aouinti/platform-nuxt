@@ -80,13 +80,33 @@ function canWithdraw(row: JobApplication) {
   return row.status === 'pending'
 }
 
+function toApplicationsArray(payload: unknown): JobApplication[] {
+  if (Array.isArray(payload)) return payload as JobApplication[]
+  if (!payload || typeof payload !== 'object') return []
+
+  const objectPayload = payload as {
+    data?: unknown
+    items?: unknown
+    member?: unknown
+    'hydra:member'?: unknown
+  }
+
+  const collection =
+    objectPayload.data ??
+    objectPayload.items ??
+    objectPayload.member ??
+    objectPayload['hydra:member']
+
+  return Array.isArray(collection) ? (collection as JobApplication[]) : []
+}
+
 async function loadRows() {
   loading.value = true
   error.value = null
   forbidden.value = false
 
   try {
-    const response = await httpGet<JobApplication[]>('/api/job-applications', {
+    const response = await httpGet<unknown>('/api/job-applications', {
       query: {
         ...buildApiPlatformQuery({
           page: page.value,
@@ -99,7 +119,7 @@ async function loadRows() {
       },
     })
 
-    rows.value = Array.isArray(response) ? response : []
+    rows.value = toApplicationsArray(response)
     const firstOffer = rows.value.at(0)
     if (!selectedId.value && firstOffer) {
       selectedId.value = String(firstOffer.id)

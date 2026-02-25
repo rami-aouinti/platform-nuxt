@@ -35,18 +35,10 @@ export function normalizePaginatedResponse<TItem>(
     }
   }
 
-  const collection =
-    response.data ??
-    response.items ??
-    response.member ??
-    response['hydra:member'] ??
-    []
-
+  const typedResponse = response as LegacyPaginatedResponse<TItem>
+  const collection = typedResponse.data ?? typedResponse.items ?? []
   const totalItems = Number(
-    response.totalItems ??
-      response.total ??
-      response['hydra:totalItems'] ??
-      collection.length,
+    typedResponse.totalItems ?? typedResponse.total ?? collection.length,
   )
 
   return {

@@ -77,9 +77,46 @@ function firstFilter(key: string) {
 function resolveCompanyName(offer: JobOffer) {
   if (typeof offer.company === 'string')
     return offer.companyName || offer.company
+  const typedCompany = offer.company as {
+    id?: string
+    name?: string
+    legalName?: string
+  }
   return (
-    offer.companyName || offer.company?.name || String(offer.company?.id || '')
+    offer.companyName ||
+    typedCompany?.name ||
+    typedCompany?.legalName ||
+    String(typedCompany?.id || '')
   )
+}
+
+function asLabel(value: unknown) {
+  if (typeof value === 'string') return value
+  if (!value || typeof value !== 'object') return undefined
+
+  const typedValue = value as Record<string, unknown>
+  const label = typedValue.name ?? typedValue.title ?? typedValue.code
+  return typeof label === 'string' ? label : undefined
+}
+
+function toOffersArray(payload: unknown): JobOffer[] {
+  if (Array.isArray(payload)) return payload as JobOffer[]
+  if (!payload || typeof payload !== 'object') return []
+
+  const objectPayload = payload as {
+    data?: unknown
+    items?: unknown
+    member?: unknown
+    'hydra:member'?: unknown
+  }
+
+  const collection =
+    objectPayload.data ??
+    objectPayload.items ??
+    objectPayload.member ??
+    objectPayload['hydra:member']
+
+  return Array.isArray(collection) ? (collection as JobOffer[]) : []
 }
 
 function formatEmploymentType(offer: JobOffer) {
@@ -138,16 +175,16 @@ const mappedOffers = computed(() =>
     matchingLabel: 'Passt hervorragend',
     location:
       row.location ||
-      [row.city, row.region].filter(Boolean).join(', ') ||
+      [asLabel(row.city), asLabel(row.region)].filter(Boolean).join(', ') ||
       location.value ||
       'Standort flexibel',
     workMode: row.remoteMode || formatEmploymentType(row),
     salary: formatSalary(row),
     publishedAtLabel: formatRelativeDate(row.publishedAt),
     tags: [
-      row.jobCategory,
-      ...(row.skills || []).slice(0, 2),
-      ...(row.languages || []).slice(0, 1),
+      asLabel(row.jobCategory),
+      ...(row.skills || []).slice(0, 2).map((value) => asLabel(value)).filter(Boolean),
+      ...(row.languages || []).slice(0, 1).map((value) => asLabel(value)).filter(Boolean),
     ].filter(Boolean) as string[],
     status: row.status === 'open' ? 'Offen' : row.status,
   })),
@@ -190,7 +227,7 @@ async function loadRows() {
       Object.entries(where).filter(([, value]) => value !== undefined && value !== null && value !== ''),
     )
 
-    const data = await httpGet<JobOffer[]>('/api/job-offers', {
+    const data = await httpGet<unknown>('/api/job-offers', {
       query: {
         where: JSON.stringify(normalizedWhere),
         order: 'publishedAt:desc',
@@ -200,7 +237,7 @@ async function loadRows() {
       },
     })
 
-    rows.value = Array.isArray(data) ? data : []
+    rows.value = toOffersArray(data)
     const firstOffer = rows.value.at(0)
     if (!selectedId.value && firstOffer) {
       selectedId.value = String(firstOffer.id)
