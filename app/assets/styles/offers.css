@@ -84,7 +84,7 @@
   background: var(--offers-surface);
   border: 1px solid var(--offers-border);
   border-radius: var(--offers-radius-lg);
-  max-height: calc(100vh - 190px);
+  max-height: calc(100vh - 120px);
   overflow-y: auto;
   padding: var(--offers-space-3);
 }
