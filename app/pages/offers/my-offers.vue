@@ -44,7 +44,7 @@ const editing = ref<OfferForm>({
   status: 'draft',
 })
 const dialogDelete = useTemplateRef('dialogDelete')
-const { mdAndDown } = useDisplay()
+const { smAndDown } = useDisplay()
 
 const filterSections = [
   {
@@ -327,27 +327,14 @@ onMounted(loadRows)
       v-model:query="search"
       v-model:location="location"
       app-bar-teleport
+      show-filter-drawer-button
+      :filter-drawer-open="mobileFilters"
       @search="loadRows"
-    />
-
-    <OffersFiltersSidebar
-      v-if="!mdAndDown"
-      v-model="selectedFilters"
-      title="Segments"
-      horizontal
-      :sections="filterSections"
+      @filter="mobileFilters = !mobileFilters"
     />
 
     <div class="offers-board-page__layout">
       <section class="offers-board-page__content">
-        <div v-if="mdAndDown" class="offers-board-page__mobile-tools">
-          <v-btn
-            variant="outlined"
-            prepend-icon="mdi-filter-variant"
-            @click="mobileFilters = true"
-            >Filter</v-btn
-          >
-        </div>
 
         <v-alert v-if="pageState === 'forbidden'" type="error" variant="tonal"
           >403 · Accès refusé.</v-alert
@@ -421,11 +408,14 @@ onMounted(loadRows)
 
     <v-navigation-drawer
       v-model="mobileFilters"
-      temporary
+      class="offers-filters-drawer"
+      :temporary="smAndDown"
+      :scrim="smAndDown"
+      floating
       location="right"
-      width="320"
+      width="300"
     >
-      <div class="pa-4">
+      <div>
         <OffersFiltersSidebar
           v-model="selectedFilters"
           title="Segments"

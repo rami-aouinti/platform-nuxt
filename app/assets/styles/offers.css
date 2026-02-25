@@ -138,6 +138,26 @@
   opacity: 0.75;
 }
 
+.offers-filters-sidebar__card {
+  background: var(--offers-surface);
+  border: 1px solid var(--offers-border);
+  border-radius: var(--offers-radius-xl);
+  padding: var(--offers-space-3);
+  display: grid;
+  gap: var(--offers-space-3);
+}
+
+.offers-filters-sidebar__section {
+  display: grid;
+  gap: var(--offers-space-2);
+}
+
+.offers-filters-sidebar__section-title {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--offers-muted);
+}
+
 .offers-search-bar__teleport-content {
   display: grid;
   grid-template-columns: minmax(220px, 1fr) minmax(220px, 1fr) auto;
