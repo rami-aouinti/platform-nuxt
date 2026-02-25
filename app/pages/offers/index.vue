@@ -7,7 +7,7 @@ import { jobApplicationsService } from '../../../services/admin/job-applications
 import {
   jobOffersService,
   type JobOffer,
-} from '../../../services/admin/job-offers'
+} from '../../../services/admin/job-offers/index'
 
 definePageMeta({
   icon: 'mdi-briefcase-search-outline',
