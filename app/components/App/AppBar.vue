@@ -21,7 +21,24 @@ const isDark = computed({
     theme.change(v ? 'dark' : 'light')
   },
 })
-const { loggedIn, clear, user } = useUserSession()
+const authStore = useAuthStore()
+const { isAuthenticated, profile } = storeToRefs(authStore)
+
+const userDisplayName = computed(() => {
+  const currentProfile = profile.value
+
+  if (!currentProfile) {
+    return 'User'
+  }
+
+  const fullName = `${currentProfile.firstName ?? ''} ${currentProfile.lastName ?? ''}`.trim()
+
+  return fullName || currentProfile.username || 'User'
+})
+
+function logout() {
+  authStore.logout()
+}
 </script>
 
 <template>
@@ -54,27 +71,30 @@ const { loggedIn, clear, user } = useUserSession()
         <v-tooltip location="bottom">
           <template #activator="{ props: tooltip }">
             <v-btn icon v-bind="mergeProps(menu, tooltip)" class="ml-1">
-              <v-icon v-if="!loggedIn" icon="mdi-account-circle" size="36" />
-              <v-avatar v-else color="primary" size="36">
-                <v-img :src="user?.avatar_url" />
-              </v-avatar>
+              <v-icon icon="mdi-account-circle" size="36" />
             </v-btn>
           </template>
-          <span>{{ loggedIn ? user!.login : 'User' }}</span>
+          <span>{{ userDisplayName }}</span>
         </v-tooltip>
       </template>
       <v-list>
         <v-list-item
-          v-if="!loggedIn"
+          v-if="!isAuthenticated"
           title="Login"
-          prepend-icon="mdi-github"
-          href="/api/auth/github"
+          prepend-icon="mdi-login"
+          to="/login"
         />
         <v-list-item
           v-else
+          title="Profile"
+          prepend-icon="mdi-account"
+          to="/profile"
+        />
+        <v-list-item
+          v-if="isAuthenticated"
           title="Logout"
           prepend-icon="mdi-logout"
-          @click="clear"
+          @click="logout"
         />
       </v-list>
     </v-menu>
