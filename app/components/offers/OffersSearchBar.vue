@@ -19,6 +19,7 @@ const emit = defineEmits<{
       <div class="offers-search-bar__teleport-content">
         <v-text-field
           v-model="query"
+          class="offers-search-bar__query-field"
           label="Jobtitel oder Stichwort"
           hide-details
           variant="outlined"
