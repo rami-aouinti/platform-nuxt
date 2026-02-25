@@ -1,4 +1,5 @@
 import type { H3Event } from 'h3'
+import { resolveAuthorizationHeader } from './authorization'
 
 type ProxyHttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
@@ -50,22 +51,6 @@ function getUpstreamCandidates(event: H3Event): string[] {
 
 export async function proxyAuthApiGet(event: H3Event, path: string) {
   return await proxyAuthApiRequest(event, path, 'GET')
-}
-
-function resolveAuthorizationHeader(event: H3Event) {
-  const authorization = getHeader(event, 'authorization')
-
-  if (authorization && authorization.trim().length > 0) {
-    return authorization
-  }
-
-  const tokenFromCookie = getCookie(event, 'auth_token')
-
-  if (tokenFromCookie && tokenFromCookie.trim().length > 0) {
-    return `Bearer ${tokenFromCookie}`
-  }
-
-  return undefined
 }
 
 export async function proxyAuthApiRequest(
