@@ -100,6 +100,29 @@ function handleGlobalHttpError(error: HttpRequestError) {
   }
 }
 
+function readTokenFromCookie() {
+  if (!import.meta.client) {
+    return null
+  }
+
+  const tokenCookie = document.cookie
+    .split(';')
+    .map((entry) => entry.trim())
+    .find((entry) => entry.startsWith('auth_token='))
+
+  if (!tokenCookie) {
+    return null
+  }
+
+  const value = tokenCookie.slice('auth_token='.length)
+
+  if (!value) {
+    return null
+  }
+
+  return decodeURIComponent(value)
+}
+
 const apiClient = $fetch.create({
   onRequest({ options }) {
     const config = useRuntimeConfig()
@@ -107,7 +130,7 @@ const apiClient = $fetch.create({
 
     options.baseURL = config.public.authApiBase
 
-    const token = authStore.token
+    const token = authStore.token ?? readTokenFromCookie()
     if (!token) {
       return
     }
