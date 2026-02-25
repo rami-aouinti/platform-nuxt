@@ -4,7 +4,7 @@ import { useAuthStore } from '~/stores/auth'
 
 const router = useRouter()
 const authStore = useAuthStore()
-const { isAuthenticated } = storeToRefs(authStore)
+const { isAuthenticated, hasAdminAccess, rolesLoading } = storeToRefs(authStore)
 const drawerState = useState('drawer', () => true)
 
 const { mobile, lgAndUp, width } = useDisplay()
@@ -22,6 +22,17 @@ const routes = computed(() =>
     .getRoutes()
     .filter((route) => route.path.lastIndexOf('/') === 0)
     .filter((route) => !route.meta?.requiresAuth || isAuthenticated.value)
+    .filter((route) => {
+      if (!route.meta?.requiresAdmin) {
+        return true
+      }
+
+      if (rolesLoading.value) {
+        return false
+      }
+
+      return hasAdminAccess.value
+    })
     .sort((a, b) => (a.meta?.drawerIndex ?? 99) - (b.meta?.drawerIndex ?? 98)),
 )
 

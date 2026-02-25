@@ -16,14 +16,20 @@ type AuthGroup = {
 }
 
 const AUTH_TOKEN_STORAGE_KEY = 'auth_token'
+const ADMIN_ROLES = ['ROLE_ROOT', 'ROLE_ADMIN'] as const
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref<string | null>(null)
   const profile = ref<AuthProfile | null>(null)
   const groups = ref<AuthGroup[]>([])
   const roles = ref<string[]>([])
+  const rolesLoading = ref(false)
+  const rolesError = ref<string | null>(null)
 
   const isAuthenticated = computed(() => Boolean(token.value))
+  const hasAdminAccess = computed(() =>
+    ADMIN_ROLES.some((role) => roles.value.includes(role)),
+  )
 
   function persistToken() {
     if (!import.meta.client) {
@@ -76,15 +82,52 @@ export const useAuthStore = defineStore('auth', () => {
 
     const headers = authHeaders()
 
-    const [profileResponse, groupsResponse, rolesResponse] = await Promise.all([
-      $fetch<AuthProfile>('/api/profile', { headers }),
-      $fetch<AuthGroup[]>('/api/profile/groups', { headers }),
-      $fetch<string[]>('/api/profile/roles', { headers }),
-    ])
+    rolesLoading.value = true
+    rolesError.value = null
 
-    profile.value = profileResponse
-    groups.value = groupsResponse
-    roles.value = rolesResponse
+    try {
+      const [profileResponse, groupsResponse, rolesResponse] = await Promise.all([
+        $fetch<AuthProfile>('/api/profile', { headers }),
+        $fetch<AuthGroup[]>('/api/profile/groups', { headers }),
+        $fetch<string[]>('/api/profile/roles', { headers }),
+      ])
+
+      profile.value = profileResponse
+      groups.value = groupsResponse
+      roles.value = rolesResponse
+    } catch (error) {
+      rolesError.value = 'Impossible de charger les rôles utilisateur.'
+      throw error
+    } finally {
+      rolesLoading.value = false
+    }
+  }
+
+  async function ensureRolesLoaded(force = false) {
+    if (!isAuthenticated.value) {
+      roles.value = []
+      return roles.value
+    }
+
+    if (!force && roles.value.length > 0) {
+      return roles.value
+    }
+
+    rolesLoading.value = true
+    rolesError.value = null
+
+    try {
+      const rolesResponse = await $fetch<string[]>('/api/profile/roles', {
+        headers: authHeaders(),
+      })
+      roles.value = rolesResponse
+      return roles.value
+    } catch (error) {
+      rolesError.value = 'Impossible de charger les rôles utilisateur.'
+      throw error
+    } finally {
+      rolesLoading.value = false
+    }
   }
 
   function logout() {
@@ -92,6 +135,8 @@ export const useAuthStore = defineStore('auth', () => {
     profile.value = null
     groups.value = []
     roles.value = []
+    rolesError.value = null
+    rolesLoading.value = false
   }
 
   async function initAuth() {
@@ -120,9 +165,13 @@ export const useAuthStore = defineStore('auth', () => {
     profile,
     groups,
     roles,
+    rolesLoading,
+    rolesError,
     isAuthenticated,
+    hasAdminAccess,
     login,
     fetchProfileData,
+    ensureRolesLoaded,
     logout,
     initAuth,
   }
