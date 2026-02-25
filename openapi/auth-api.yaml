@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Auth API
-  version: 1.0.0
+  version: 1.1.0
 paths:
   /api/v1/profile:
     get:
@@ -13,6 +13,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserDetail'
+              examples:
+                default:
+                  value:
+                    id: usr_123
+                    username: jdoe
+                    email: john.doe@example.com
+                    firstName: John
+                    lastName: Doe
+                    displayName: John Doe
+                    roles:
+                      - id: admin
+                        label: Administrator
+                    groups:
+                      - platform-admin
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
   /api/v1/profile/roles:
     get:
       summary: Get authenticated user profile with roles
@@ -23,6 +41,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserWithRoles'
+              examples:
+                default:
+                  value:
+                    id: usr_123
+                    username: jdoe
+                    roles:
+                      - id: admin
+                        label: Administrator
+                        description: Full access
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
   /api/v1/profile/groups:
     get:
       summary: Get authenticated user profile with groups
@@ -33,6 +64,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserWithGroups'
+              examples:
+                default:
+                  value:
+                    id: usr_123
+                    username: jdoe
+                    groups:
+                      - platform-admin
+                      - support
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
   /api/v1/role/count:
     get:
       summary: Count roles
@@ -44,6 +87,13 @@ paths:
               schema:
                 type: integer
                 minimum: 0
+              examples:
+                default:
+                  value: 7
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
   /api/v1/role/ids:
     get:
       summary: List role ids
@@ -56,6 +106,16 @@ paths:
                 type: array
                 items:
                   type: string
+              examples:
+                default:
+                  value:
+                    - admin
+                    - manager
+                    - viewer
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
   /api/v1/role/inherited:
     get:
       summary: List inherited roles
@@ -68,6 +128,16 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Role'
+              examples:
+                default:
+                  value:
+                    - id: support
+                      label: Support Agent
+                      description: Support operations
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
   /api/v1/role/{role}:
     get:
       summary: Get role details
@@ -85,10 +155,263 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Role'
+              examples:
+                default:
+                  value:
+                    id: admin
+                    label: Administrator
+                    description: Full access to back-office features
         '400':
-          description: Invalid role value
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/v1/notifications:
+    get:
+      summary: List current user notifications
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Notification list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationListResponse'
+              examples:
+                default:
+                  value:
+                    data:
+                      - id: notif_1
+                        title: Session expiring soon
+                        message: Your session expires in 5 minutes.
+                        type: warning
+                        read: false
+                        createdAt: '2026-01-12T10:30:00Z'
+                    meta:
+                      page: 1
+                      pageSize: 20
+                      totalItems: 1
+                      totalPages: 1
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+  /api/v1/companies/{id}/members:
+    get:
+      summary: List members of a company
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Company members list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyMemberListResponse'
+              examples:
+                default:
+                  value:
+                    data:
+                      - userId: usr_123
+                        email: john.doe@example.com
+                        firstName: John
+                        lastName: Doe
+                        role: owner
+                        status: active
+                      - userId: usr_456
+                        email: jane.smith@example.com
+                        firstName: Jane
+                        lastName: Smith
+                        role: member
+                        status: invited
+                    meta:
+                      page: 1
+                      pageSize: 20
+                      totalItems: 2
+                      totalPages: 1
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/v1/auth/social/connect:
+    post:
+      summary: Connect a social account to current user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SocialConnectRequest'
+            examples:
+              google:
+                value:
+                  provider: google
+                  authorizationCode: 4/0Adeu5BVz...
+                  redirectUri: https://app.example.com/auth/social/callback
+      responses:
+        '200':
+          description: Social account connected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SocialConnectResponse'
+              examples:
+                success:
+                  value:
+                    success: true
+                    provider: google
+                    accountId: social_789
+                    connectedAt: '2026-01-12T10:35:00Z'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '409':
+          $ref: '#/components/responses/BusinessError'
+
 components:
+  parameters:
+    Page:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PageSize:
+      name: pageSize
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+  responses:
+    UnauthorizedError:
+      description: Authentication is required or token is invalid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            default:
+              value:
+                code: AUTH_UNAUTHORIZED
+                message: Authentication required.
+    ForbiddenError:
+      description: Authenticated but not allowed to access this resource.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            default:
+              value:
+                code: AUTH_FORBIDDEN
+                message: You are not allowed to access this resource.
+    ValidationError:
+      description: Invalid payload or parameters.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            default:
+              value:
+                code: VALIDATION_ERROR
+                message: One or more fields are invalid.
+                details:
+                  - field: role
+                    issue: Must match required pattern.
+    NotFoundError:
+      description: Requested resource does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            default:
+              value:
+                code: RESOURCE_NOT_FOUND
+                message: Resource not found.
+    BusinessError:
+      description: Business rule conflict.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            default:
+              value:
+                code: SOCIAL_ACCOUNT_ALREADY_LINKED
+                message: This social account is already linked to another user.
+
   schemas:
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              issue:
+                type: string
+            additionalProperties: true
+
+    PaginationMeta:
+      type: object
+      required:
+        - page
+        - pageSize
+        - totalItems
+        - totalPages
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        pageSize:
+          type: integer
+          minimum: 1
+        totalItems:
+          type: integer
+          minimum: 0
+        totalPages:
+          type: integer
+          minimum: 0
+
     Role:
       type: object
       properties:
@@ -99,6 +422,7 @@ components:
         description:
           type: string
       additionalProperties: true
+
     UserBase:
       type: object
       properties:
@@ -107,6 +431,7 @@ components:
         username:
           type: string
       additionalProperties: true
+
     UserProfile:
       allOf:
         - $ref: '#/components/schemas/UserBase'
@@ -124,6 +449,7 @@ components:
               type: string
             displayName:
               type: string
+
     UserWithRoles:
       allOf:
         - $ref: '#/components/schemas/UserBase'
@@ -133,6 +459,7 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/Role'
+
     UserWithGroups:
       allOf:
         - $ref: '#/components/schemas/UserBase'
@@ -142,8 +469,116 @@ components:
               type: array
               items:
                 type: string
+
     UserDetail:
       allOf:
         - $ref: '#/components/schemas/UserProfile'
         - $ref: '#/components/schemas/UserWithRoles'
         - $ref: '#/components/schemas/UserWithGroups'
+
+    Notification:
+      type: object
+      required:
+        - id
+        - title
+        - message
+        - type
+        - read
+        - createdAt
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        message:
+          type: string
+        type:
+          type: string
+          enum: [info, success, warning, error]
+        read:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    NotificationListResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    CompanyMember:
+      type: object
+      required:
+        - userId
+        - email
+        - role
+        - status
+      properties:
+        userId:
+          type: string
+        email:
+          type: string
+          format: email
+        firstName:
+          type: string
+        lastName:
+          type: string
+        role:
+          type: string
+        status:
+          type: string
+          enum: [active, invited, suspended]
+
+    CompanyMemberListResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompanyMember'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    SocialConnectRequest:
+      type: object
+      required:
+        - provider
+        - authorizationCode
+      properties:
+        provider:
+          type: string
+          enum: [google, github, microsoft]
+        authorizationCode:
+          type: string
+        redirectUri:
+          type: string
+          format: uri
+
+    SocialConnectResponse:
+      type: object
+      required:
+        - success
+        - provider
+        - accountId
+        - connectedAt
+      properties:
+        success:
+          type: boolean
+        provider:
+          type: string
+        accountId:
+          type: string
+        connectedAt:
+          type: string
+          format: date-time

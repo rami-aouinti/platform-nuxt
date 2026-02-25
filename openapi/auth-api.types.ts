@@ -1,8 +1,5 @@
 /**
  * Generated API types for openapi/auth-api.yaml.
- *
- * Note: regenerated locally from the OpenAPI contract to provide stable,
- * explicit names (UserBase, UserProfile, UserWithRoles, UserWithGroups, UserDetail).
  */
 
 export interface Role {
@@ -10,6 +7,19 @@ export interface Role {
   label?: string
   description?: string
   [key: string]: unknown
+}
+
+export interface ErrorResponse {
+  code: string
+  message: string
+  details?: Array<{ field?: string; issue?: string; [key: string]: unknown }>
+}
+
+export interface PaginationMeta {
+  page: number
+  pageSize: number
+  totalItems: number
+  totalPages: number
 }
 
 export interface UserBase {
@@ -35,45 +45,80 @@ export interface UserWithGroups extends UserBase {
 
 export type UserDetail = UserProfile & UserWithRoles & UserWithGroups
 
+export interface Notification {
+  id: string
+  title: string
+  message: string
+  type: 'info' | 'success' | 'warning' | 'error'
+  read: boolean
+  createdAt: string
+}
+
+export interface NotificationListResponse {
+  data: Notification[]
+  meta: PaginationMeta
+}
+
+export interface CompanyMember {
+  userId: string
+  email: string
+  firstName?: string
+  lastName?: string
+  role: string
+  status: 'active' | 'invited' | 'suspended'
+}
+
+export interface CompanyMemberListResponse {
+  data: CompanyMember[]
+  meta: PaginationMeta
+}
+
+export interface SocialConnectRequest {
+  provider: 'google' | 'github' | 'microsoft'
+  authorizationCode: string
+  redirectUri?: string
+}
+
+export interface SocialConnectResponse {
+  success: boolean
+  provider: string
+  accountId: string
+  connectedAt: string
+}
+
 export interface AuthApiPaths {
-  '/api/v1/profile': {
-    get: {
-      response: UserDetail
-    }
-  }
-  '/api/v1/profile/roles': {
-    get: {
-      response: UserWithRoles
-    }
-  }
-  '/api/v1/profile/groups': {
-    get: {
-      response: UserWithGroups
-    }
-  }
-  '/api/v1/role/count': {
-    get: {
-      response: number
-    }
-  }
-  '/api/v1/role/ids': {
-    get: {
-      response: string[]
-    }
-  }
-  '/api/v1/role/inherited': {
-    get: {
-      response: Role[]
-    }
-  }
+  '/api/v1/profile': { get: { response: UserDetail } }
+  '/api/v1/profile/roles': { get: { response: UserWithRoles } }
+  '/api/v1/profile/groups': { get: { response: UserWithGroups } }
+  '/api/v1/role/count': { get: { response: number } }
+  '/api/v1/role/ids': { get: { response: string[] } }
+  '/api/v1/role/inherited': { get: { response: Role[] } }
   '/api/v1/role/{role}': {
     get: {
-      params: {
-        path: {
-          role: string
-        }
-      }
+      params: { path: { role: string } }
       response: Role
+      errors: ErrorResponse
+    }
+  }
+  '/api/v1/notifications': {
+    get: {
+      params?: { query?: { page?: number; pageSize?: number } }
+      response: NotificationListResponse
+      errors: ErrorResponse
+    }
+  }
+  '/api/v1/companies/{id}/members': {
+    get: {
+      params: { path: { id: string }; query?: { page?: number; pageSize?: number } }
+      response: CompanyMemberListResponse
+      errors: ErrorResponse
+    }
+  }
+  '/api/v1/auth/social/connect': {
+    post: {
+      body: SocialConnectRequest
+      response: SocialConnectResponse
+      errors: ErrorResponse
     }
   }
 }
