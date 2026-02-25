@@ -31,8 +31,10 @@ const filters = ref({ status: 'pending' })
 
 const columns: DataTableHeader[] = [
   { title: 'ID', key: 'id' },
-  { title: 'Offre', key: 'offerId' },
-  { title: 'Candidat', key: 'candidateId' },
+  { title: 'Offre', key: 'jobOffer' },
+  { title: 'Candidat', key: 'candidate' },
+  { title: 'Lettre', key: 'coverLetter' },
+  { title: 'CV', key: 'cvUrl' },
   { title: 'Statut', key: 'status' },
 ]
 
@@ -170,6 +172,14 @@ onMounted(loadRows)
         @update:page="page = $event"
         @update:page-size="pageSize = $event"
       >
+        <template #cell:coverLetter="{ value }">
+          <span class="text-body-2">{{ String(value || '-').slice(0, 80) }}</span>
+        </template>
+
+        <template #cell:cvUrl="{ value }">
+          <span class="text-body-2">{{ value ? 'Renseigné' : '-' }}</span>
+        </template>
+
         <template #cell:status="{ value }">
           <AdminBadge :status="statusMeta(String(value)).tone" :label="statusMeta(String(value)).label" />
         </template>
