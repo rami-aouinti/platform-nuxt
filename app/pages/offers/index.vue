@@ -377,9 +377,9 @@ onMounted(loadRows)
       :scrim="smAndDown"
       floating
       location="right"
-      width="420"
+      width="350"
     >
-      <div class="pa-4">
+      <div>
         <OffersFiltersSidebar
           v-model="selectedFilters"
           title="Filter"
