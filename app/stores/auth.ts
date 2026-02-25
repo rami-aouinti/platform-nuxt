@@ -77,9 +77,9 @@ export const useAuthStore = defineStore('auth', () => {
     const headers = authHeaders()
 
     const [profileResponse, groupsResponse, rolesResponse] = await Promise.all([
-      $fetch<AuthProfile>('/api/v1/profile', { headers }),
-      $fetch<AuthGroup[]>('/api/v1/profile/groups', { headers }),
-      $fetch<string[]>('/api/v1/profile/roles', { headers }),
+      $fetch<AuthProfile>('/api/profile', { headers }),
+      $fetch<AuthGroup[]>('/api/profile/groups', { headers }),
+      $fetch<string[]>('/api/profile/roles', { headers }),
     ])
 
     profile.value = profileResponse
