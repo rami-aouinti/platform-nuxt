@@ -18,11 +18,18 @@ const drawer = computed({
   },
 })
 const rail = computed(() => !drawerState.value && !mobile.value)
+const drawerPaths = [
+  '/homepage',
+  '/dashboard',
+  '/administration',
+  '/jobs',
+  '/jobs/my-offers',
+  '/jobs/applications',
+]
 const routes = computed(() =>
   router
     .getRoutes()
-    .filter((route) => ['/homepage', '/dashboard'].includes(route.path))
-    .filter((route) => route.path.lastIndexOf('/') === 0)
+    .filter((route) => drawerPaths.includes(route.path))
     .filter((route) => !route.meta?.requiresAuth || isAuthenticated.value)
     .filter((route) => {
       if (!route.meta?.requiresAdmin) {
