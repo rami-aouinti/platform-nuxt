@@ -18,4 +18,14 @@ describe('normalizePaginatedResponse', () => {
     expect(response.data).toEqual([{ id: '1' }, { id: '2' }])
     expect(response.meta?.totalItems).toBe(2)
   })
+
+  it('normalizes hydra payload', () => {
+    const response = normalizePaginatedResponse({
+      'hydra:member': [{ id: '1' }, { id: '2' }, { id: '3' }],
+      'hydra:totalItems': 3,
+    })
+
+    expect(response.data).toEqual([{ id: '1' }, { id: '2' }, { id: '3' }])
+    expect(response.meta?.totalItems).toBe(3)
+  })
 })
