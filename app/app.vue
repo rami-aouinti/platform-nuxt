@@ -10,7 +10,7 @@ const title = computed(() => {
 })
 useHead({
   title,
-  titleTemplate: (t) => (t ? `${t} | Vitify Admin` : 'Vitify Admin'),
+  titleTemplate: (t) => (t ? `${t} | BroWorld` : 'BroWorld'),
   htmlAttrs: { lang: 'en' },
   link: [{ rel: 'icon', href: '/favicon.ico' }],
 })
