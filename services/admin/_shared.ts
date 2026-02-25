@@ -1,4 +1,5 @@
 import { httpDelete, httpGet, httpPatch, httpPost, httpPut } from '../http/client'
+import { normalizePaginatedResponse, type PaginatedResponse } from './pagination'
 
 export type Id = string
 
@@ -23,16 +24,6 @@ export interface ListQuery {
   sortBy?: string
   sortOrder?: SortOrder
   filters?: LegacyFilters
-}
-
-export interface PaginatedResponse<T> {
-  data: T[]
-  meta?: {
-    page: number
-    pageSize: number
-    totalItems: number
-    totalPages: number
-  }
 }
 
 export interface CountResponse {
@@ -143,9 +134,9 @@ export function createAdminCrudService<
 >(basePath: string): AdminCrudService<TItem, TCreate, TUpdate, TPatch> {
   return {
     list(query: ListQuery = {}) {
-      return httpGet<PaginatedResponse<TItem>>(basePath, {
+      return httpGet<PaginatedResponse<TItem> | TItem[] | { data?: TItem[]; items?: TItem[]; total?: number; totalItems?: number }>(basePath, {
         query: normalizeListQuery(query),
-      })
+      }).then((response) => normalizePaginatedResponse<TItem>(response))
     },
     count() {
       return httpGet<CountResponse>(`${basePath}/count`)
