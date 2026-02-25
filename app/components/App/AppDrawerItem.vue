@@ -4,9 +4,13 @@ import type { RouteRecordRaw } from 'vue-router'
 const { item } = defineProps<{
   item: RouteRecordRaw
 }>()
+const authStore = useAuthStore()
+const { isAuthenticated } = storeToRefs(authStore)
+
 const visibleChildren = computed(() =>
   item.children
     ?.filter((child) => child.meta?.icon)
+    .filter((child) => !child.meta?.requiresAuth || isAuthenticated.value)
     .sort((a, b) => (a.meta?.drawerIndex ?? 99) - (b.meta?.drawerIndex ?? 98)),
 )
 const visibleChildrenNum = computed(() => visibleChildren.value?.length || 0)
