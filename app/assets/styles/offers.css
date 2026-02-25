@@ -80,6 +80,15 @@
   gap: var(--offers-space-4);
   align-items: start;
 }
+.offers-board-page__list-card {
+  background: var(--offers-surface);
+  border: 1px solid var(--offers-border);
+  border-radius: var(--offers-radius-lg);
+  max-height: calc(100vh - 190px);
+  overflow-y: auto;
+  padding: var(--offers-space-3);
+}
+
 .offers-board-page__list {
   display: grid;
   gap: var(--offers-space-3);
