@@ -73,7 +73,7 @@
 }
 .offers-board-page__grid {
   display: grid;
-  grid-template-columns: minmax(320px, 420px) 1fr;
+  grid-template-columns: minmax(320px, 350px) 1fr;
   gap: var(--offers-space-4);
   align-items: start;
 }
