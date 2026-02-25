@@ -1,21 +1,37 @@
 <script setup lang="ts">
+import type { DataTableHeader } from 'vuetify'
 import { Notify } from '~/stores/notification'
+
+type NotificationRecord = { id: string; title: string; message: string; read: string; createdAt: string }
 
 definePageMeta({
   icon: 'mdi-bell-outline',
   title: 'Notifications',
   drawerIndex: 76,
   requiresAuth: true,
-  middleware: ['auth'],
+  requiresAdmin: true,
+  layout: 'administration',
+  middleware: ['auth', 'admin-access'],
 })
 
-type NotificationRow = { id: string; title: string; message: string; read: boolean; createdAt?: string }
-
-const rows = ref<NotificationRow[]>([])
+const rows = ref<NotificationRecord[]>([])
 const loading = ref(false)
-const unreadCount = ref(0)
+const error = ref<string | null>(null)
+const total = ref(0)
+const page = ref(1)
+const pageSize = ref(10)
+const search = ref('')
+const filters = ref<Record<string, string>>({ read: '' })
 
-function normalize(payload: unknown): NotificationRow[] {
+const columns: DataTableHeader[] = [
+  { title: 'ID', key: 'id' },
+  { title: 'Title', key: 'title' },
+  { title: 'Message', key: 'message' },
+  { title: 'Read', key: 'read' },
+  { title: 'Created at', key: 'createdAt' },
+]
+
+function normalize(payload: unknown): NotificationRecord[] {
   const list = Array.isArray(payload)
     ? payload
     : payload && typeof payload === 'object' && Array.isArray((payload as { items?: unknown[] }).items)
@@ -30,71 +46,75 @@ function normalize(payload: unknown): NotificationRow[] {
       id: String(row.id ?? row.uuid ?? index),
       title: String(row.title ?? ''),
       message: String(row.message ?? ''),
-      read: Boolean(row.read),
+      read: row.read ? 'Oui' : 'Non',
       createdAt: String(row.createdAt ?? ''),
     }
   })
 }
 
-async function load() {
+async function loadRows() {
   loading.value = true
+  error.value = null
   try {
-    const [listResponse, unreadResponse] = await Promise.all([
-      $fetch('/api/notifications'),
-      $fetch('/api/notifications/unread-count'),
-    ])
-
-    rows.value = normalize(listResponse)
-    unreadCount.value = typeof unreadResponse === 'number'
-      ? unreadResponse
-      : Number((unreadResponse as { count?: number })?.count ?? 0)
+    const response = await $fetch('/api/notifications', {
+      query: { search: search.value || undefined, read: filters.value.read || undefined, page: page.value, limit: pageSize.value },
+    })
+    rows.value = normalize(response)
+    total.value = rows.value.length
+  } catch (errorValue) {
+    error.value = errorValue instanceof Error ? errorValue.message : 'Erreur API.'
   } finally {
     loading.value = false
   }
 }
 
-async function markAsRead(id: string) {
-  await $fetch(`/api/notifications/${encodeURIComponent(id)}/read`, { method: 'PATCH' as never })
-  Notify.success('Notification marquée comme lue.')
-  await load()
+function createRow() {
+  Notify.info('TODO: brancher l’envoi d’une notification.')
 }
 
-async function markAllAsRead() {
-  await $fetch('/api/notifications/read-all', { method: 'PATCH' as never })
-  Notify.success('Toutes les notifications sont lues.')
-  await load()
-}
+watch([page, pageSize], loadRows)
+watchDebounced([search, filters], loadRows, { debounce: 300, maxWait: 1000 })
 
-onMounted(load)
+onMounted(loadRows)
 </script>
 
 <template>
-  <v-container fluid class="pa-6">
-    <v-card rounded="xl" elevation="6" class="pa-6">
-      <div class="d-flex align-center justify-space-between mb-4">
-        <h1 class="text-h4 font-weight-bold">Notifications</h1>
-        <div class="d-flex ga-2">
-          <v-chip color="primary" variant="tonal">Non lues: {{ unreadCount }}</v-chip>
-          <v-btn prepend-icon="mdi-bell-check-outline" :loading="loading" @click="markAllAsRead">Tout lire</v-btn>
-          <v-btn prepend-icon="mdi-refresh" :loading="loading" @click="load">Recharger</v-btn>
-        </div>
-      </div>
-
-      <v-table>
-        <thead><tr><th>ID</th><th>Titre</th><th>Message</th><th>État</th><th /></tr></thead>
-        <tbody>
-          <tr v-for="item in rows" :key="item.id">
-            <td>{{ item.id }}</td><td>{{ item.title }}</td><td>{{ item.message }}</td>
-            <td>
-              <v-chip :color="item.read ? 'success' : 'warning'" size="small" variant="tonal">{{ item.read ? 'Lue' : 'Non lue' }}</v-chip>
-            </td>
-            <td class="d-flex ga-2">
-              <v-btn size="small" variant="text" :to="`/administration/notifications/${item.id}`">Détail</v-btn>
-              <v-btn v-if="!item.read" size="small" variant="text" @click="markAsRead(item.id)">Lire</v-btn>
-            </td>
-          </tr>
-        </tbody>
-      </v-table>
-    </v-card>
-  </v-container>
+  <AdminResourcePage
+    title="Notifications"
+    description="Prototype notifications prêt à brancher aux APIs de diffusion."
+    :columns="columns"
+    :rows="rows"
+    :loading="loading"
+    :error="error"
+    :total="total"
+    :page="page"
+    :page-size="pageSize"
+    :search="search"
+    :filters="filters"
+    :filter-configs="[{ key: 'read', label: 'Filtre lecture (Oui/Non)', icon: 'mdi-email-check-outline' }]"
+    :detail-fields="[
+      { key: 'id', label: 'ID' },
+      { key: 'title', label: 'Title' },
+      { key: 'message', label: 'Message' },
+      { key: 'read', label: 'Read' },
+      { key: 'createdAt', label: 'Created at' },
+    ]"
+    :editable-fields="[
+      { key: 'title', label: 'Title' },
+      { key: 'message', label: 'Message' },
+      { key: 'read', label: 'Read (Oui/Non)' },
+    ]"
+    :can-show="true"
+    :can-create="true"
+    :can-edit="true"
+    :can-delete="true"
+    resource-name="la notification"
+    create-label="Créer une notification"
+    @update:page="page = $event"
+    @update:page-size="pageSize = $event"
+    @update:search="search = $event"
+    @update:filters="filters = $event"
+    @create="createRow"
+    @refresh="loadRows"
+  />
 </template>
