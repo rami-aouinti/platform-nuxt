@@ -9,14 +9,28 @@ import type {
 
 const USERS_BASE_PATH = '/api/v1/admin/users'
 
+export const USER_TEXT_MIN_LENGTH = 2
+export const USER_TEXT_MAX_LENGTH = 255
+export const DEFAULT_TIMEZONE = 'Europe/Kyiv'
+
+export const LANGUAGE_VALUES = ['en', 'ru', 'ua', 'fi'] as const
+export const LOCALE_VALUES = ['en', 'ru', 'ua', 'fi'] as const
+
+export type Language = typeof LANGUAGE_VALUES[number]
+export type Locale = typeof LOCALE_VALUES[number]
+
 export interface User {
   id: Id
   username: string
   email: string
-  firstName?: string
-  lastName?: string
+  firstName: string
+  lastName: string
+  language: Language
+  locale: Locale
+  timezone: string
   enabled?: boolean
-  roles?: string[]
+  roles: string[]
+  userGroups: string[]
 }
 
 export interface CreateUserRequest {
