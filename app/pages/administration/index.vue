@@ -19,6 +19,9 @@ const adminLinks = [
   { title: 'UserGroups', to: '/administration/user-groups', icon: 'mdi-account-group-outline' },
   { title: 'Roles', to: '/administration/roles', icon: 'mdi-shield-account-outline' },
   { title: 'ApiKeys', to: '/administration/api-keys', icon: 'mdi-key-variant' },
+  { title: 'Companies', to: '/administration/companies', icon: 'mdi-domain' },
+  { title: 'Candidates', to: '/administration/candidates', icon: 'mdi-account-search' },
+  { title: 'Notifications', to: '/administration/notifications', icon: 'mdi-bell-outline' },
 ]
 
 onMounted(async () => {
