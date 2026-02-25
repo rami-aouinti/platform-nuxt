@@ -19,7 +19,7 @@ export interface UserBase {
 }
 
 export interface UserProfile extends UserBase {
-  email?: string
+  email: string
   firstName?: string
   lastName?: string
   displayName?: string
