@@ -23,40 +23,60 @@ export class HttpRequestError extends Error {
   }
 }
 
+type StandardApiError = {
+  message?: string
+  error?: string
+  details?: unknown
+  errors?: unknown
+}
+
+function extractStandardErrorPayload(context: FetchContext & { response?: Response }) {
+  const payload =
+    (context.error as { data?: unknown } | undefined)?.data ?? context.response?._data
+
+  if (!payload || typeof payload !== 'object') {
+    return { message: undefined, details: payload }
+  }
+
+  const typedPayload = payload as StandardApiError
+  return {
+    message: typedPayload.message ?? typedPayload.error,
+    details: typedPayload.details ?? typedPayload.errors ?? payload,
+  }
+}
+
 function toHttpError(context: FetchContext & { response?: Response }) {
   const statusCode = context.response?.status ?? 500
-  const details =
-    (context.error as { data?: unknown } | undefined)?.data ??
-    context.response?._data
+  const standardError = extractStandardErrorPayload(context)
 
   if (statusCode === 401) {
     return new HttpRequestError({
       statusCode,
-      message: 'Session invalide. Veuillez vous reconnecter.',
-      details,
+      message: standardError.message ?? 'Session invalide. Veuillez vous reconnecter.',
+      details: standardError.details,
     })
   }
 
   if (statusCode === 403) {
     return new HttpRequestError({
       statusCode,
-      message: 'Accès refusé pour cette action.',
-      details,
+      message: standardError.message ?? 'Accès refusé pour cette action.',
+      details: standardError.details,
     })
   }
 
   if (statusCode >= 500) {
     return new HttpRequestError({
       statusCode,
-      message: 'Erreur serveur. Réessayez plus tard.',
-      details,
+      message: standardError.message ?? 'Erreur serveur. Réessayez plus tard.',
+      details: standardError.details,
     })
   }
 
   return new HttpRequestError({
     statusCode,
-    message: context.error?.message ?? 'Erreur de requête HTTP.',
-    details,
+    message: standardError.message ?? context.error?.message ?? 'Erreur de requête HTTP.',
+    details: standardError.details,
   })
 }
 
