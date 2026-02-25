@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { useDisplay } from 'vuetify'
 import { Notify } from '~/stores/notification'
-import { buildApiPlatformQuery } from '../../../services/admin/_shared'
-import { HttpRequestError } from '../../../services/http/client'
-import { jobOffersService, type JobOffer } from '../../../services/admin/job-offers'
+import {
+  buildApiPlatformQuery,
+  normalizeListQuery,
+} from '../../../services/admin/_shared'
+import { httpGet, HttpRequestError } from '../../../services/http/client'
+import { normalizePaginatedResponse } from '../../../services/admin/pagination'
+import * as jobOffersApi from '../../../services/admin/job-offers'
+import type { JobOffer } from '../../../services/admin/job-offers'
 
 definePageMeta({
   icon: 'mdi-briefcase-edit-outline',
@@ -22,6 +27,8 @@ type OfferForm = {
   status: JobOffer['status']
 }
 
+const jobOffersService = jobOffersApi.jobOffersService
+
 const rows = ref<JobOffer[]>([])
 const loading = ref(false)
 const actionLoading = ref(false)
@@ -34,7 +41,13 @@ const location = ref('')
 const selectedId = ref('')
 const editDialog = ref(false)
 
-const editing = ref<OfferForm>({ title: '', slug: '', description: '', company: '', status: 'draft' })
+const editing = ref<OfferForm>({
+  title: '',
+  slug: '',
+  description: '',
+  company: '',
+  status: 'draft',
+})
 const dialogDelete = useTemplateRef('dialogDelete')
 const { mdAndDown } = useDisplay()
 
@@ -43,27 +56,78 @@ const filterSections = [
     key: 'status',
     title: 'Statut',
     items: [
-      { label: 'Brouillon', value: 'draft', count: 10 },
-      { label: 'Ouverte', value: 'open', count: 14 },
-      { label: 'Fermée', value: 'closed', count: 4 },
+      { label: 'Brouillon', value: 'draft' },
+      { label: 'Ouverte', value: 'open' },
+      { label: 'Fermée', value: 'closed' },
     ],
   },
 ]
 const selectedFilters = ref<Record<string, string[]>>({})
 const mobileFilters = ref(false)
 
-const mappedOffers = computed(() => rows.value.map((row, index) => ({
-  id: String(row.id),
-  title: row.title,
-  company: String(row.company),
-  matchingScore: 71 + (index % 5) * 4,
-  location: location.value || 'Paris',
-  salary: '55.000€ - 80.000€',
-  tags: [row.slug, row.status],
-  status: row.status,
-})))
+function firstFilter(key: string) {
+  return selectedFilters.value[key]?.[0]
+}
 
-const selectedOffer = computed(() => mappedOffers.value.find(offer => offer.id === selectedId.value) ?? mappedOffers.value[0])
+function resolveCompanyName(offer: JobOffer) {
+  if (typeof offer.company === 'string')
+    return offer.companyName || offer.company
+  return (
+    offer.companyName || offer.company?.name || String(offer.company?.id || '')
+  )
+}
+
+function formatSalary(offer: JobOffer) {
+  if (!offer.salaryMin && !offer.salaryMax) return 'Gehalt auf Anfrage'
+  const currency = offer.salaryCurrency || 'EUR'
+  const min =
+    typeof offer.salaryMin === 'number'
+      ? offer.salaryMin.toLocaleString('de-DE')
+      : undefined
+  const max =
+    typeof offer.salaryMax === 'number'
+      ? offer.salaryMax.toLocaleString('de-DE')
+      : undefined
+  const period =
+    offer.salaryPeriod === 'yearly' || !offer.salaryPeriod ? ' / an' : ''
+  return `${min && max ? `${min} - ${max}` : min || max || ''} ${currency}${period}`.trim()
+}
+
+function formatRelativeDate(input?: string) {
+  if (!input) return undefined
+  const date = new Date(input)
+  if (Number.isNaN(date.getTime())) return undefined
+  const days = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24))
+  if (days <= 0) return "Aujourd'hui"
+  if (days === 1) return 'Hier'
+  return `Il y a ${days} jours`
+}
+
+const mappedOffers = computed(() =>
+  rows.value.map((row, index) => ({
+    id: String(row.id),
+    title: row.title,
+    company: resolveCompanyName(row),
+    matchingScore: 71 + (index % 5) * 4,
+    location:
+      row.location ||
+      [row.city, row.region].filter(Boolean).join(', ') ||
+      location.value ||
+      'Paris',
+    salary: formatSalary(row),
+    workMode:
+      row.employmentType || row.workTime || row.remoteMode || 'full-time',
+    publishedAtLabel: formatRelativeDate(row.publishedAt),
+    tags: [row.slug, row.status, row.jobCategory].filter(Boolean) as string[],
+    status: row.status,
+  })),
+)
+
+const selectedOffer = computed(
+  () =>
+    mappedOffers.value.find((offer) => offer.id === selectedId.value) ??
+    mappedOffers.value[0],
+)
 
 const pageState = computed(() => {
   if (forbidden.value) return 'forbidden'
@@ -80,7 +144,7 @@ function toErrorMessage(errorValue: unknown) {
 }
 
 function openEdit(offerId: string) {
-  const row = rows.value.find(item => String(item.id) === offerId)
+  const row = rows.value.find((item) => String(item.id) === offerId)
   if (!row) return
 
   editing.value = {
@@ -88,10 +152,25 @@ function openEdit(offerId: string) {
     title: row.title,
     slug: row.slug,
     description: row.description,
-    company: String(row.company),
+    company: String(
+      typeof row.company === 'string' ? row.company : row.company?.id || '',
+    ),
     status: row.status,
   }
   editDialog.value = true
+}
+
+async function listMyOffers(query: Record<string, unknown>) {
+  if (
+    'listMyJobOffers' in jobOffersApi &&
+    typeof jobOffersApi.listMyJobOffers === 'function'
+  ) {
+    return jobOffersApi.listMyJobOffers(query)
+  }
+
+  return httpGet('/api/job-offers/my', {
+    query: normalizeListQuery(query),
+  }).then((response) => normalizePaginatedResponse<JobOffer>(response))
 }
 
 async function loadRows() {
@@ -100,13 +179,26 @@ async function loadRows() {
   forbidden.value = false
 
   try {
-    const response = await jobOffersService.list({
+    const response = await listMyOffers({
       ...buildApiPlatformQuery({
         page: page.value,
         pageSize: pageSize.value,
         search: search.value,
-        sortBy: 'title',
-        sortOrder: 'asc',
+        sortBy: 'publishedAt',
+        sortOrder: 'desc',
+        filters: {
+          status: firstFilter('status'),
+          location: location.value || undefined,
+          remoteMode: firstFilter('remoteMode'),
+          salaryMin: firstFilter('salaryMin'),
+          salaryMax: firstFilter('salaryMax'),
+          skills: firstFilter('skills'),
+          languages: firstFilter('languages'),
+          city: firstFilter('city'),
+          region: firstFilter('region'),
+          jobCategory: firstFilter('jobCategory'),
+          publishedWithinDays: firstFilter('publishedWithinDays'),
+        },
       }),
     })
 
@@ -116,7 +208,10 @@ async function loadRows() {
       selectedId.value = String(firstOffer.id)
     }
   } catch (errorValue) {
-    if (errorValue instanceof HttpRequestError && errorValue.statusCode === 403) {
+    if (
+      errorValue instanceof HttpRequestError &&
+      errorValue.statusCode === 403
+    ) {
       forbidden.value = true
       return
     }
@@ -153,14 +248,17 @@ async function saveOffer() {
 }
 
 async function deleteOffer(offerId: string) {
-  const row = rows.value.find(item => String(item.id) === offerId)
+  const row = rows.value.find((item) => String(item.id) === offerId)
   if (!row) return
 
   const identifier = String(row.title || row.id)
-  const confirmed = await dialogDelete.value?.open(`Supprimer l'offre ${identifier} ?`, {
-    confirmationLabel: `Saisissez ${identifier} pour confirmer`,
-    expectedConfirmationText: identifier,
-  })
+  const confirmed = await dialogDelete.value?.open(
+    `Supprimer l'offre ${identifier} ?`,
+    {
+      confirmationLabel: `Saisissez ${identifier} pour confirmer`,
+      expectedConfirmationText: identifier,
+    },
+  )
 
   if (!confirmed) return
 
@@ -178,10 +276,14 @@ async function deleteOffer(offerId: string) {
 }
 
 watch([page, pageSize], loadRows)
-watchDebounced([search, location], () => {
-  page.value = 1
-  void loadRows()
-}, { debounce: 300, maxWait: 1000 })
+watchDebounced(
+  [search, location, selectedFilters],
+  () => {
+    page.value = 1
+    void loadRows()
+  },
+  { debounce: 300, maxWait: 1000 },
+)
 
 onMounted(loadRows)
 </script>
@@ -206,13 +308,30 @@ onMounted(loadRows)
 
       <section class="offers-board-page__content">
         <div v-if="mdAndDown" class="offers-board-page__mobile-tools">
-          <v-btn variant="outlined" prepend-icon="mdi-filter-variant" @click="mobileFilters = true">Filter</v-btn>
+          <v-btn
+            variant="outlined"
+            prepend-icon="mdi-filter-variant"
+            @click="mobileFilters = true"
+            >Filter</v-btn
+          >
         </div>
 
-        <v-alert v-if="pageState === 'forbidden'" type="error" variant="tonal">403 · Accès refusé.</v-alert>
-        <v-alert v-else-if="pageState === 'error'" type="error" variant="tonal">{{ error || 'Erreur API.' }}</v-alert>
-        <v-skeleton-loader v-else-if="pageState === 'loading'" type="article, article" />
-        <v-alert v-else-if="pageState === 'empty'" type="info" variant="tonal">Aucune offre à gérer.</v-alert>
+        <v-alert v-if="pageState === 'forbidden'" type="error" variant="tonal"
+          >403 · Accès refusé.</v-alert
+        >
+        <v-alert
+          v-else-if="pageState === 'error'"
+          type="error"
+          variant="tonal"
+          >{{ error || 'Erreur API.' }}</v-alert
+        >
+        <v-skeleton-loader
+          v-else-if="pageState === 'loading'"
+          type="article, article"
+        />
+        <v-alert v-else-if="pageState === 'empty'" type="info" variant="tonal"
+          >Aucune offre à gérer.</v-alert
+        >
 
         <div v-else class="offers-board-page__grid">
           <div class="offers-board-page__list">
@@ -243,20 +362,36 @@ onMounted(loadRows)
             :company="selectedOffer.company"
             :location="selectedOffer.location"
             :salary="selectedOffer.salary"
-            :description="editing.description || 'Mettez à jour votre description pour présenter la mission.'"
+            :description="
+              editing.description ||
+              'Mettez à jour votre description pour présenter la mission.'
+            "
             :highlights="[
               'Ajuster les missions pour refléter le besoin actuel',
               'Vérifier les prérequis et la stack technique',
               'Mettre à jour les informations de rémunération',
             ]"
-            :requirements="['Expérience adaptée au poste', 'Bon niveau de communication', 'Autonomie et sens de l\'organisation']"
-            :perks="['Télétravail possible', 'Prime annuelle', 'Mutuelle premium']"
+            :requirements="[
+              'Expérience adaptée au poste',
+              'Bon niveau de communication',
+              'Autonomie et sens de l\'organisation',
+            ]"
+            :perks="[
+              'Télétravail possible',
+              'Prime annuelle',
+              'Mutuelle premium',
+            ]"
           />
         </div>
       </section>
     </div>
 
-    <v-navigation-drawer v-model="mobileFilters" temporary location="right" width="320">
+    <v-navigation-drawer
+      v-model="mobileFilters"
+      temporary
+      location="right"
+      width="320"
+    >
       <div class="pa-4">
         <OffersFiltersSidebar
           v-model="selectedFilters"
@@ -274,7 +409,11 @@ onMounted(loadRows)
         <v-card-text class="pt-4">
           <v-text-field v-model="editing.title" label="Titre" class="mb-2" />
           <v-text-field v-model="editing.slug" label="Slug" class="mb-2" />
-          <v-text-field v-model="editing.company" label="ID entreprise" class="mb-2" />
+          <v-text-field
+            v-model="editing.company"
+            label="ID entreprise"
+            class="mb-2"
+          />
           <v-select
             v-model="editing.status"
             :items="[
@@ -285,12 +424,18 @@ onMounted(loadRows)
             label="Statut"
             class="mb-2"
           />
-          <v-textarea v-model="editing.description" label="Description" rows="4" />
+          <v-textarea
+            v-model="editing.description"
+            label="Description"
+            rows="4"
+          />
         </v-card-text>
         <v-card-actions>
           <v-spacer />
           <v-btn variant="text" @click="editDialog = false">Annuler</v-btn>
-          <v-btn color="primary" :loading="actionLoading" @click="saveOffer">Enregistrer</v-btn>
+          <v-btn color="primary" :loading="actionLoading" @click="saveOffer"
+            >Enregistrer</v-btn
+          >
         </v-card-actions>
       </v-card>
     </v-dialog>
