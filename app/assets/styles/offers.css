@@ -65,8 +65,12 @@
 
 .offers-board-page__layout {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 320px);
   gap: var(--offers-space-4);
+  align-items: start;
+}
+.offers-board-page__sidebar {
+  min-width: 0;
 }
 .offers-board-page__content {
   min-width: 0;
@@ -294,6 +298,9 @@
 }
 
 @media (max-width: 1260px) {
+  .offers-board-page__layout {
+    grid-template-columns: 1fr;
+  }
   .offers-board-page__grid {
     grid-template-columns: 1fr;
   }
