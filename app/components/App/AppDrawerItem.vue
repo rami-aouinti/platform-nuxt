@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { storeToRefs } from 'pinia'
+import { useAuthStore } from '~/stores/auth'
+
 import type { RouteRecordRaw } from 'vue-router'
 
 const { item } = defineProps<{

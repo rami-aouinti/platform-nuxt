@@ -14,6 +14,9 @@ export default defineNuxtConfig({
     '@nuxt/eslint',
     '@nuxt/test-utils/module',
   ],
+  pinia: {
+    storesDirs: ['./app/stores/**'],
+  },
   css: ['~/assets/styles/index.css'],
   experimental: { typedPages: true },
   typescript: {
