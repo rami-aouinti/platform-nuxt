@@ -302,14 +302,6 @@ onMounted(loadRows)
       @search="loadRows"
     />
 
-    <OffersFiltersSidebar
-      v-if="!mdAndDown"
-      v-model="selectedFilters"
-      title="Filter"
-      horizontal
-      :sections="filterSections"
-    />
-
     <div class="offers-board-page__layout">
       <section class="offers-board-page__content">
         <div v-if="mdAndDown" class="offers-board-page__mobile-tools">
@@ -378,6 +370,14 @@ onMounted(loadRows)
           />
         </div>
       </section>
+
+      <aside v-if="!mdAndDown" class="offers-board-page__sidebar">
+        <OffersFiltersSidebar
+          v-model="selectedFilters"
+          title="Filter"
+          :sections="filterSections"
+        />
+      </aside>
     </div>
 
     <v-navigation-drawer
