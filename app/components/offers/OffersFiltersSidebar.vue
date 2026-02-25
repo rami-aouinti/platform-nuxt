@@ -69,36 +69,34 @@ function isSelected(sectionKey: string, value: string) {
       </div>
     </template>
 
-    <v-expansion-panels v-else multiple variant="accordion">
-      <v-expansion-panel
-        v-for="section in sections"
+    <v-card v-else class="offers-filters-sidebar__card" variant="flat">
+      <div
+        v-for="(section, index) in sections"
         :key="section.key"
-        :title="section.title"
+        class="offers-filters-sidebar__section"
       >
-        <v-expansion-panel-text>
-          <div class="offers-filters-sidebar__chips">
-            <v-chip
-              v-for="item in section.items"
-              :key="`${section.key}-${item.value}`"
-              :color="
-                isSelected(section.key, item.value) ? 'primary' : undefined
-              "
-              :variant="
-                isSelected(section.key, item.value) ? 'flat' : 'outlined'
-              "
-              size="small"
-              @click="toggleItem(section.key, item.value)"
+        <p class="offers-filters-sidebar__section-title">{{ section.title }}</p>
+
+        <div class="offers-filters-sidebar__chips">
+          <v-chip
+            v-for="item in section.items"
+            :key="`${section.key}-${item.value}`"
+            :color="isSelected(section.key, item.value) ? 'primary' : undefined"
+            :variant="isSelected(section.key, item.value) ? 'flat' : 'outlined'"
+            size="small"
+            @click="toggleItem(section.key, item.value)"
+          >
+            {{ item.label }}
+            <span
+              v-if="typeof item.count === 'number'"
+              class="offers-filters-sidebar__count"
+              >{{ item.count }}</span
             >
-              {{ item.label }}
-              <span
-                v-if="typeof item.count === 'number'"
-                class="offers-filters-sidebar__count"
-                >{{ item.count }}</span
-              >
-            </v-chip>
-          </div>
-        </v-expansion-panel-text>
-      </v-expansion-panel>
-    </v-expansion-panels>
+          </v-chip>
+        </div>
+
+        <v-divider v-if="index < sections.length - 1" class="mt-4" />
+      </div>
+    </v-card>
   </aside>
 </template>
