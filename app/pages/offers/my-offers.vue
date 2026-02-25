@@ -150,7 +150,9 @@ const mappedOffers = computed(() =>
     workMode:
       row.employmentType || row.workTime || row.remoteMode || 'full-time',
     publishedAtLabel: formatRelativeDate(row.publishedAt),
-    tags: [row.slug, row.status, asLabel(row.jobCategory)].filter(Boolean) as string[],
+    tags: [row.slug, row.status, asLabel(row.jobCategory)].filter(
+      Boolean,
+    ) as string[],
     status: row.status,
   })),
 )
@@ -220,7 +222,9 @@ async function loadRows() {
     }
 
     const normalizedWhere = Object.fromEntries(
-      Object.entries(where).filter(([, value]) => value !== undefined && value !== null && value !== ''),
+      Object.entries(where).filter(
+        ([, value]) => value !== undefined && value !== null && value !== '',
+      ),
     )
 
     const response = await listMyOffers({
@@ -322,19 +326,19 @@ onMounted(loadRows)
     <OffersSearchBar
       v-model:query="search"
       v-model:location="location"
-      title="Mes offres publiées"
-      subtitle="Pilotez vos annonces dans une interface orientée cartes."
+      app-bar-teleport
       @search="loadRows"
     />
 
-    <div class="offers-board-page__layout">
-      <OffersFiltersSidebar
-        v-if="!mdAndDown"
-        v-model="selectedFilters"
-        title="Segments"
-        :sections="filterSections"
-      />
+    <OffersFiltersSidebar
+      v-if="!mdAndDown"
+      v-model="selectedFilters"
+      title="Segments"
+      horizontal
+      :sections="filterSections"
+    />
 
+    <div class="offers-board-page__layout">
       <section class="offers-board-page__content">
         <div v-if="mdAndDown" class="offers-board-page__mobile-tools">
           <v-btn

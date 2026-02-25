@@ -3,7 +3,10 @@ import { useDisplay } from 'vuetify'
 import { Notify } from '~/stores/notification'
 import { buildApiPlatformQuery } from '../../../services/admin/_shared'
 import { httpGet, HttpRequestError } from '../../../services/http/client'
-import { jobApplicationsService, type JobApplication } from '../../../services/admin/job-applications'
+import {
+  jobApplicationsService,
+  type JobApplication,
+} from '../../../services/admin/job-applications'
 
 definePageMeta({
   icon: 'mdi-account-check-outline',
@@ -50,18 +53,24 @@ const pageState = computed(() => {
   return 'ready'
 })
 
-const mappedOffers = computed(() => rows.value.map((row, index) => ({
-  id: String(row.id),
-  title: `Candidature #${row.id}`,
-  company: String(row.jobOffer),
-  matchingScore: 72 + (index % 3) * 8,
-  location: location.value || 'Remote',
-  salary: row.cvUrl ? 'CV joint' : 'Sans CV',
-  tags: [row.status, row.coverLetter ? 'Lettre jointe' : 'Sans lettre'],
-  status: statusMeta(row.status).label,
-})))
+const mappedOffers = computed(() =>
+  rows.value.map((row, index) => ({
+    id: String(row.id),
+    title: `Candidature #${row.id}`,
+    company: String(row.jobOffer),
+    matchingScore: 72 + (index % 3) * 8,
+    location: location.value || 'Remote',
+    salary: row.cvUrl ? 'CV joint' : 'Sans CV',
+    tags: [row.status, row.coverLetter ? 'Lettre jointe' : 'Sans lettre'],
+    status: statusMeta(row.status).label,
+  })),
+)
 
-const selectedOffer = computed(() => mappedOffers.value.find(offer => offer.id === selectedId.value) ?? mappedOffers.value[0])
+const selectedOffer = computed(
+  () =>
+    mappedOffers.value.find((offer) => offer.id === selectedId.value) ??
+    mappedOffers.value[0],
+)
 
 function toErrorMessage(errorValue: unknown) {
   if (errorValue instanceof HttpRequestError) return errorValue.message
@@ -70,9 +79,11 @@ function toErrorMessage(errorValue: unknown) {
 }
 
 function statusMeta(status: string) {
-  if (status === 'accepted') return { label: 'Acceptée', tone: 'success' as const }
+  if (status === 'accepted')
+    return { label: 'Acceptée', tone: 'success' as const }
   if (status === 'rejected') return { label: 'Rejetée', tone: 'error' as const }
-  if (status === 'withdrawn') return { label: 'Retirée', tone: 'neutral' as const }
+  if (status === 'withdrawn')
+    return { label: 'Retirée', tone: 'neutral' as const }
   return { label: 'En attente', tone: 'warning' as const }
 }
 
@@ -125,7 +136,10 @@ async function loadRows() {
       selectedId.value = String(firstOffer.id)
     }
   } catch (errorValue) {
-    if (errorValue instanceof HttpRequestError && errorValue.statusCode === 403) {
+    if (
+      errorValue instanceof HttpRequestError &&
+      errorValue.statusCode === 403
+    ) {
       forbidden.value = true
       return
     }
@@ -137,7 +151,7 @@ async function loadRows() {
 }
 
 async function withdraw(offerId: string) {
-  const item = rows.value.find(row => String(row.id) === offerId)
+  const item = rows.value.find((row) => String(row.id) === offerId)
   if (!item || !canWithdraw(item)) {
     Notify.error('Seules les candidatures en attente peuvent être retirées.')
     return
@@ -157,14 +171,22 @@ async function withdraw(offerId: string) {
 }
 
 watch([page, pageSize], loadRows)
-watchDebounced([search, location, filters], () => {
-  page.value = 1
-  void loadRows()
-}, { debounce: 300, maxWait: 1000 })
+watchDebounced(
+  [search, location, filters],
+  () => {
+    page.value = 1
+    void loadRows()
+  },
+  { debounce: 300, maxWait: 1000 },
+)
 
-watch(selectedFilters, (value) => {
-  filters.value.status = value.status?.[0] || ''
-}, { deep: true })
+watch(
+  selectedFilters,
+  (value) => {
+    filters.value.status = value.status?.[0] || ''
+  },
+  { deep: true },
+)
 
 onMounted(loadRows)
 </script>
@@ -174,28 +196,45 @@ onMounted(loadRows)
     <OffersSearchBar
       v-model:query="search"
       v-model:location="location"
-      title="Mes candidatures"
-      subtitle="Suivez vos candidatures avec une vue détaillée par carte."
+      app-bar-teleport
       @search="loadRows"
     />
 
-    <div class="offers-board-page__layout">
-      <OffersFiltersSidebar
-        v-if="!mdAndDown"
-        v-model="selectedFilters"
-        title="Filtrer"
-        :sections="filterSections"
-      />
+    <OffersFiltersSidebar
+      v-if="!mdAndDown"
+      v-model="selectedFilters"
+      title="Filtrer"
+      horizontal
+      :sections="filterSections"
+    />
 
+    <div class="offers-board-page__layout">
       <section class="offers-board-page__content">
         <div v-if="mdAndDown" class="offers-board-page__mobile-tools">
-          <v-btn variant="outlined" prepend-icon="mdi-filter-variant" @click="mobileFilters = true">Filter</v-btn>
+          <v-btn
+            variant="outlined"
+            prepend-icon="mdi-filter-variant"
+            @click="mobileFilters = true"
+            >Filter</v-btn
+          >
         </div>
 
-        <v-alert v-if="pageState === 'forbidden'" type="error" variant="tonal">403 · Accès refusé.</v-alert>
-        <v-alert v-else-if="pageState === 'error'" type="error" variant="tonal">{{ error || 'Erreur API.' }}</v-alert>
-        <v-skeleton-loader v-else-if="pageState === 'loading'" type="article, article" />
-        <v-alert v-else-if="pageState === 'empty'" type="info" variant="tonal">Aucune candidature.</v-alert>
+        <v-alert v-if="pageState === 'forbidden'" type="error" variant="tonal"
+          >403 · Accès refusé.</v-alert
+        >
+        <v-alert
+          v-else-if="pageState === 'error'"
+          type="error"
+          variant="tonal"
+          >{{ error || 'Erreur API.' }}</v-alert
+        >
+        <v-skeleton-loader
+          v-else-if="pageState === 'loading'"
+          type="article, article"
+        />
+        <v-alert v-else-if="pageState === 'empty'" type="info" variant="tonal"
+          >Aucune candidature.</v-alert
+        >
 
         <div v-else class="offers-board-page__grid">
           <div class="offers-board-page__list">
@@ -223,14 +262,27 @@ onMounted(loadRows)
               'Profil évalué selon les critères du poste',
               'Retour attendu sous 5 jours ouvrés',
             ]"
-            :requirements="['CV à jour', 'Portfolio ou références', 'Disponibilité communiquée']"
-            :perks="['Notifications en temps réel', 'Suivi des étapes', 'Historique centralisé']"
+            :requirements="[
+              'CV à jour',
+              'Portfolio ou références',
+              'Disponibilité communiquée',
+            ]"
+            :perks="[
+              'Notifications en temps réel',
+              'Suivi des étapes',
+              'Historique centralisé',
+            ]"
           />
         </div>
       </section>
     </div>
 
-    <v-navigation-drawer v-model="mobileFilters" temporary location="right" width="320">
+    <v-navigation-drawer
+      v-model="mobileFilters"
+      temporary
+      location="right"
+      width="320"
+    >
       <div class="pa-4">
         <OffersFiltersSidebar
           v-model="selectedFilters"
