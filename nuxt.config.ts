@@ -75,6 +75,9 @@ export default defineNuxtConfig({
       name: 'nuxt-session',
       password: '',
     },
+    public: {
+      authApiBase: 'http://localhost',
+    },
   },
   compatibilityDate: '2024-08-05',
 })
