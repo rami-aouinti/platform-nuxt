@@ -65,8 +65,11 @@ async function login() {
     syncToken(response.token)
     form.password = ''
   }
-  catch {
-    errorMessage.value = 'Connexion échouée : identifiants invalides ou API inaccessible.'
+  catch (error) {
+    const message = error instanceof Error ? error.message : ''
+    errorMessage.value = message
+      ? `Connexion échouée : ${message}`
+      : 'Connexion échouée : identifiants invalides ou API inaccessible.'
     syncToken('')
   }
   finally {
