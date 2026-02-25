@@ -114,7 +114,6 @@
   grid-template-columns: minmax(220px, 1fr) minmax(220px, 1fr) auto;
   gap: var(--offers-space-2);
   align-items: center;
-  width: min(920px, calc(100vw - 360px));
   margin-inline: auto;
 }
 

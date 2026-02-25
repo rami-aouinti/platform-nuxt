@@ -29,6 +29,7 @@ const emit = defineEmits<{
         />
         <v-text-field
           v-model="location"
+          class="offers-search-bar__query-field"
           label="Ort oder Remote"
           hide-details
           variant="outlined"
