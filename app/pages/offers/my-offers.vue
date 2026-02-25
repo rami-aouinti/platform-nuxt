@@ -7,8 +7,8 @@ import {
 } from '../../../services/admin/_shared'
 import { httpGet, HttpRequestError } from '../../../services/http/client'
 import { normalizePaginatedResponse } from '../../../services/admin/pagination'
-import * as jobOffersApi from '../../../services/admin/job-offers'
-import type { JobOffer } from '../../../services/admin/job-offers'
+import * as jobOffersApi from '../../../services/admin/job-offers/index'
+import type { JobOffer } from '../../../services/admin/job-offers/index'
 
 definePageMeta({
   icon: 'mdi-briefcase-edit-outline',
