@@ -1,15 +1,15 @@
 import { proxyAuthApiGet } from '../../utils/auth-api-proxy'
 
-const ROLE_PATTERN = /^(?!count$|ids$|inherited$)[A-Za-z][A-Za-z0-9_-]*$/
+const UUID_PATTERN = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/
 
 export default defineEventHandler(async (event) => {
   const role = getRouterParam(event, 'role')
 
-  if (!role || !ROLE_PATTERN.test(role)) {
+  if (!role || !UUID_PATTERN.test(role)) {
     throw createError({
       statusCode: 400,
       statusMessage: 'Invalid role parameter.',
-      message: 'Role must match the allowed pattern and cannot be a reserved endpoint name.',
+      message: 'Role must be a valid UUID.',
     })
   }
 
