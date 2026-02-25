@@ -82,8 +82,8 @@ async function loadRows() {
   error.value = null
   try {
     const [listResponse, countResponse] = await Promise.all([
-      $fetch('/api/group', { query: { page: page.value, limit: pageSize.value, search: search.value || undefined } }),
-      $fetch('/api/group/count'),
+      $fetch('/api/user_group', { query: { page: page.value, limit: pageSize.value, search: search.value || undefined } }),
+      $fetch('/api/user_group/count'),
     ])
 
     rows.value = normalize(listResponse)
@@ -106,7 +106,7 @@ async function saveEdit(row: Record<string, unknown>) {
 
   mutationLoading.value = true
   try {
-    await $fetch(`/api/group/${encodeURIComponent(String(row.id ?? ''))}` as any, {
+    await $fetch(`/api/user_group/${encodeURIComponent(String(row.id ?? ''))}` as any, {
     method: 'PATCH' as any,
     body: { name: row.name, description: row.description },
   })
@@ -133,7 +133,7 @@ async function deleteRow(row: Record<string, unknown>) {
 
   mutationLoading.value = true
   try {
-    await $fetch(`/api/group/${encodeURIComponent(String(row.id ?? ''))}` as any, {
+    await $fetch(`/api/user_group/${encodeURIComponent(String(row.id ?? ''))}` as any, {
     method: 'DELETE' as any,
   })
     Notify.success('Action réussie : groupe supprimé.')
