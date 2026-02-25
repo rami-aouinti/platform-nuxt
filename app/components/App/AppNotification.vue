@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
-import { useNotificationStore } from '~/stores/notification'
+import { Notify, useNotificationStore } from '~/stores/notification'
+import { useInternalEventTracking } from '~/composables/useInternalEventTracking'
 
 const notificationStore = useNotificationStore()
 const { notifications } = storeToRefs(notificationStore)
@@ -8,12 +9,31 @@ const notificationsShown = computed(() =>
   notifications.value.filter((notification) => notification.show).reverse(),
 )
 const showAll = ref(false)
+const dialogReadAll = useTemplateRef('dialogReadAll')
 const timeout = computed(() => (showAll.value ? -1 : 5000))
+
+const { track } = useInternalEventTracking()
 function deleteNotification(id: number) {
   notificationStore.delNotification(id)
 }
-function emptyNotifications() {
+async function emptyNotifications() {
+  const confirmed = await dialogReadAll.value?.open(
+    'Marquer toutes les notifications comme lues/vidées ?',
+  )
+
+  if (!confirmed) {
+    return
+  }
+
+  const countBeforeReset = notifications.value.length
   notificationStore.$reset()
+  Notify.success('Action réussie : notifications marquées comme lues.')
+  track({
+    name: 'admin.notifications.read-all',
+    payload: {
+      count: countBeforeReset,
+    },
+  })
 }
 function toggleAll() {
   showAll.value = !showAll.value
@@ -30,6 +50,7 @@ function toggleAll() {
     :rounded="0"
     @click="toggleAll"
   />
+  <DialogConfirm ref="dialogReadAll" />
   <ClientOnly>
     <teleport to="body">
       <v-card
