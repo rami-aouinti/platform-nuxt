@@ -11,6 +11,12 @@ const location = defineModel<string>('location', { default: '' })
 const emit = defineEmits<{
   search: []
 }>()
+
+function resetFilters() {
+  query.value = ''
+  location.value = ''
+  emit('search')
+}
 </script>
 
 <template>
@@ -37,6 +43,13 @@ const emit = defineEmits<{
           rounded
           prepend-inner-icon="mdi-map-marker-outline"
         />
+        <v-btn
+          class="offers-search-bar__reset"
+          variant="text"
+          @click="resetFilters"
+        >
+          Reset
+        </v-btn>
         <v-btn
           class="offers-search-bar__cta mx-4"
           color="primary"
