@@ -43,7 +43,7 @@ export default defineEventHandler(async (event) => {
   requireAuthenticatedRequest(event)
 
   const suffix = buildQuerySuffixFromQuery(getQuery(event))
-  const upstreamPath = `/api/v2/${normalizedPath}${suffix}`
+  const upstreamPath = `/api/${normalizedPath}${suffix}`
 
   return await proxyAuthApiRequest(event, upstreamPath, method)
 })
