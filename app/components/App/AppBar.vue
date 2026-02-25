@@ -25,7 +25,7 @@ const isDark = computed({
   },
 })
 const authStore = useAuthStore()
-const { isAuthenticated, profile } = storeToRefs(authStore)
+const { isAuthenticated, profile, hasAdminAccess, rolesLoading } = storeToRefs(authStore)
 
 const userDisplayName = computed(() => {
   const currentProfile = profile.value
@@ -81,7 +81,7 @@ function createActivatorProps(menu: HTMLAttributes, tooltip: HTMLAttributes): HT
     />
     <v-btn
       icon
-      href="https://github.com/kingyue737/vitify-nuxt"
+      href="https://github.com/rami-aouinti/platform-nuxt"
       size="small"
       class="ml-2"
       target="_blank"
@@ -111,6 +111,12 @@ function createActivatorProps(menu: HTMLAttributes, tooltip: HTMLAttributes): HT
           title="Profile"
           prepend-icon="mdi-account"
           to="/profile"
+        />
+        <v-list-item
+          v-if="isAuthenticated && !rolesLoading && hasAdminAccess"
+          title="Administration"
+          prepend-icon="mdi-shield-account-outline"
+          to="/administration"
         />
         <v-list-item
           v-if="isAuthenticated"

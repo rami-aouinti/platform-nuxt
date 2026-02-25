@@ -1,7 +1,7 @@
 <p align="center">
-  <img alt="Vitify - Opinionated Vuetify Admin Starter Template" src="public/vitify-nuxt.svg" width=100px/>
+  <img alt="BroWorld - Opinionated Vuetify Admin Starter Template" src="public/vitify-nuxt.svg" width=100px/>
 </p>
-<h1 align="center">Vitify Nuxt</h1>
+<h1 align="center">BroWorld</h1>
 
 <p align="center">
   <a href="https://github.com/vuejs/vue">
@@ -10,7 +10,7 @@
   <a href="https://github.com/vuetifyjs/vuetify">
     <img src="https://img.shields.io/badge/vuetify-3-blue.svg" alt="vuetify">
   </a>
-  <a href="https://github.com/kingyue737/vitify-admin/blob/main/LICENSE">
+  <a href="https://github.com/rami-aouinti/platform-nuxt/blob/main/LICENSE">
     <img src="https://img.shields.io/github/license/mashape/apistatus.svg" alt="license">
   </a>
 </p>
@@ -20,7 +20,7 @@
 </p>
 
 <p align='center'>
-<a href="https://vitify-nuxt.netlify.app/">Live Demo<br><br></a>
+<a href="https://github.com/rami-aouinti/platform-nuxt">Live Demo<br><br></a>
 </p>
 
 ## Features
@@ -61,10 +61,8 @@
 
 ## Variants
 
-- [vitify-next](https://github.com/kingyue737/vitify-next) - Lightweight Vue 3 version without Nuxt
+- [BroWorld repository](https://github.com/rami-aouinti/platform-nuxt)
 
-- [vitify-electron](https://github.com/kingyue737/vitify-electron) - Vuetify + Nuxt + Electron starter
-- [vitify-admin](https://github.com/kingyue737/vitify-admin) - Vue 2.7 with i18n, browser compatibility and mock server
 
 ## Pre-packed
 
@@ -97,15 +95,15 @@
 
 ### GitHub Template
 
-[Create a repo from this template on GitHub](https://github.com/kingyue737/vitify-nuxt/generate).
+[Repository on GitHub](https://github.com/rami-aouinti/platform-nuxt).
 
 ### Clone to local
 
 If you prefer to do it manually with the cleaner git history
 
 ```bash
-npx degit kingyue737/vitify-nuxt my-vitify-app
-cd my-vitify-app
+git clone https://github.com/rami-aouinti/platform-nuxt
+cd platform-nuxt
 pnpm i
 ```
 

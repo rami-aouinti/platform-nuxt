@@ -1,7 +1,7 @@
 <script setup lang="ts">
 definePageMeta({
   icon: 'mdi-home',
-  title: 'Homepage',
+  title: 'Home',
   drawerIndex: 0,
 })
 </script>
@@ -14,7 +14,7 @@ definePageMeta({
           <v-chip color="primary" variant="tonal" class="mb-4">
             Bienvenue
           </v-chip>
-          <h1 class="text-h3 font-weight-bold mb-4">Homepage</h1>
+          <h1 class="text-h3 font-weight-bold mb-4">Home</h1>
           <p class="text-body-1 text-medium-emphasis mb-0">
             Ceci est la page d'accueil de l'application. Utilisez le menu de navigation
             pour accéder aux différents modules.

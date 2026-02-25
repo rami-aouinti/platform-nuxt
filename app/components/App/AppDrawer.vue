@@ -20,6 +20,7 @@ const rail = computed(() => !drawerState.value && !mobile.value)
 const routes = computed(() =>
   router
     .getRoutes()
+    .filter((route) => ['/homepage', '/dashboard'].includes(route.path))
     .filter((route) => route.path.lastIndexOf('/') === 0)
     .filter((route) => !route.meta?.requiresAuth || isAuthenticated.value)
     .filter((route) => {
@@ -61,7 +62,7 @@ drawerState.value = lgAndUp.value && width.value !== 1280
             class="text-h5 font-weight-bold"
             style="line-height: 2rem"
           >
-            Vitify <span class="text-primary">Admin</span>
+            Bro<span class="text-primary">World</span>
           </v-list-item-title>
         </v-list-item>
       </v-list>
@@ -75,10 +76,10 @@ drawerState.value = lgAndUp.value && width.value !== 1280
         <div class="text-caption pt-6 pt-md-0 text-center text-no-wrap">
           &copy; Copyright 2023
           <a
-            href="https://github.com/kingyue737"
+            href="https://github.com/rami-aouinti/platform-nuxt"
             class="font-weight-bold text-primary"
             target="_blank"
-            >Yue JIN</a
+            >BroWorld</a
           >
           <span> & </span>
           <a
