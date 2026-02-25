@@ -18,6 +18,7 @@ type AuthGroup = {
 }
 
 const AUTH_TOKEN_STORAGE_KEY = 'auth_token'
+const AUTH_TOKEN_COOKIE_KEY = 'auth_token'
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref<string | null>(null)
@@ -37,10 +38,12 @@ export const useAuthStore = defineStore('auth', () => {
 
     if (token.value) {
       sessionStorage.setItem(AUTH_TOKEN_STORAGE_KEY, token.value)
+      document.cookie = `${AUTH_TOKEN_COOKIE_KEY}=${encodeURIComponent(token.value)}; Path=/; SameSite=Lax`
       return
     }
 
     sessionStorage.removeItem(AUTH_TOKEN_STORAGE_KEY)
+    document.cookie = `${AUTH_TOKEN_COOKIE_KEY}=; Path=/; Max-Age=0; SameSite=Lax`
   }
 
   function setToken(newToken: string | null) {
