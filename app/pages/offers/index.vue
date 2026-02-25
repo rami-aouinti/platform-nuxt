@@ -3,6 +3,7 @@ import { Notify } from '~/stores/notification'
 import { httpGet, HttpRequestError } from '../../../services/http/client'
 import { jobApplicationsService } from '../../../services/admin/job-applications'
 import type { JobOffer } from '../../../services/admin/job-offers/index'
+import { useDisplay } from 'vuetify'
 
 definePageMeta({
   icon: 'mdi-briefcase-search-outline',
@@ -25,7 +26,7 @@ const selectedId = ref<string>('')
 const favorites = ref<string[]>([])
 const mobileFilters = ref(false)
 const selectedFilters = ref<Record<string, string[]>>({})
-
+const { smAndDown } = useDisplay()
 
 const filterSections = [
   {
@@ -292,14 +293,18 @@ onMounted(loadRows)
 </script>
 
 <template>
-  <main class="offers-board-page">
+  <main
+    class="offers-board-page"
+    :class="{ 'offers-board-page--filters-open': mobileFilters }"
+  >
     <OffersSearchBar
       v-model:query="search"
       v-model:location="location"
       app-bar-teleport
       show-filter-drawer-button
+      :filter-drawer-open="mobileFilters"
       @search="loadRows"
-      @filter="mobileFilters = true"
+      @filter="mobileFilters = !mobileFilters"
     />
 
     <div class="offers-board-page__layout">
@@ -368,7 +373,9 @@ onMounted(loadRows)
     <v-navigation-drawer
       v-model="mobileFilters"
       class="offers-filters-drawer"
-      temporary
+      :temporary="smAndDown"
+      :scrim="smAndDown"
+      floating
       location="right"
       width="420"
     >

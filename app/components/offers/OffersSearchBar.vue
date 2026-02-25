@@ -4,6 +4,7 @@ const props = defineProps<{
   subtitle?: string
   appBarTeleport?: boolean
   showFilterDrawerButton?: boolean
+  filterDrawerOpen?: boolean
 }>()
 
 const query = defineModel<string>('query', { default: '' })
@@ -65,11 +66,12 @@ function resetFilters() {
           <v-btn
             v-if="props.showFilterDrawerButton"
             class="mx-1"
-            variant="outlined"
+            :variant="props.filterDrawerOpen ? 'flat' : 'outlined'"
+            :color="props.filterDrawerOpen ? 'primary' : undefined"
             prepend-icon="mdi-filter-variant"
             @click="emit('filter')"
           >
-            Filtres
+            Filter
           </v-btn>
       </div>
     </teleport>
