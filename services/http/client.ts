@@ -1,5 +1,5 @@
 import { useRuntimeConfig } from '#imports'
-import { useAuthStore } from '~/app/stores/auth'
+import { useAuthStore } from '~/stores/auth'
 import type { FetchContext, FetchOptions } from 'ofetch'
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'

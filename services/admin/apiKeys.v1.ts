@@ -1,61 +1,26 @@
-import { httpDelete, httpGet, httpPatch, httpPost, httpPut } from '../http/client'
-import type {
-  CountResponse,
-  Id,
-  PaginatedResponse,
-  PaginationQuery,
-  PatchPayload,
-} from './_shared'
+import type { PatchPayload } from './_shared'
+import {
+  createApiKeysService,
+  type BaseApiKey,
+  type BaseCreateApiKeyRequest,
+  type BaseUpdateApiKeyRequest,
+} from './apiKeys.shared'
 
 const API_KEYS_V1_BASE_PATH = '/api/v1/admin/api-keys'
 
-export interface ApiKeyV1 {
-  id: Id
-  label: string
+export interface ApiKeyV1 extends BaseApiKey {
   key?: string
-  scopes?: string[]
-  enabled?: boolean
-  expiresAt?: string | null
 }
 
-export interface CreateApiKeyV1Request {
-  label: string
-  scopes?: string[]
-  expiresAt?: string | null
-}
+export type CreateApiKeyV1Request = BaseCreateApiKeyRequest
 
-export interface UpdateApiKeyV1Request {
-  label?: string
-  scopes?: string[]
-  enabled?: boolean
-  expiresAt?: string | null
-}
+export type UpdateApiKeyV1Request = BaseUpdateApiKeyRequest
 
 export type PatchApiKeyV1Request = PatchPayload
 
-export const apiKeysV1Service = {
-  list(query: PaginationQuery = {}) {
-    return httpGet<PaginatedResponse<ApiKeyV1>>(API_KEYS_V1_BASE_PATH, { query })
-  },
-  count() {
-    return httpGet<CountResponse>(`${API_KEYS_V1_BASE_PATH}/count`)
-  },
-  ids() {
-    return httpGet<Id[]>(`${API_KEYS_V1_BASE_PATH}/ids`)
-  },
-  getById(id: Id) {
-    return httpGet<ApiKeyV1>(`${API_KEYS_V1_BASE_PATH}/${id}`)
-  },
-  create(payload: CreateApiKeyV1Request) {
-    return httpPost<ApiKeyV1, CreateApiKeyV1Request>(API_KEYS_V1_BASE_PATH, payload)
-  },
-  update(id: Id, payload: UpdateApiKeyV1Request) {
-    return httpPut<ApiKeyV1, UpdateApiKeyV1Request>(`${API_KEYS_V1_BASE_PATH}/${id}`, payload)
-  },
-  patch(id: Id, payload: PatchApiKeyV1Request) {
-    return httpPatch<ApiKeyV1, PatchApiKeyV1Request>(`${API_KEYS_V1_BASE_PATH}/${id}`, payload)
-  },
-  remove(id: Id) {
-    return httpDelete<unknown>(`${API_KEYS_V1_BASE_PATH}/${id}`)
-  },
-}
+export const apiKeysV1Service = createApiKeysService<
+  ApiKeyV1,
+  CreateApiKeyV1Request,
+  UpdateApiKeyV1Request,
+  PatchApiKeyV1Request
+>(API_KEYS_V1_BASE_PATH)
