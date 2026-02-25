@@ -1,12 +1,7 @@
 <script setup lang="ts">
 import { useDisplay } from 'vuetify'
 import { Notify } from '~/stores/notification'
-import {
-  buildApiPlatformQuery,
-  normalizeListQuery,
-} from '../../../services/admin/_shared'
 import { httpGet, HttpRequestError } from '../../../services/http/client'
-import { normalizePaginatedResponse } from '../../../services/admin/pagination'
 import * as jobOffersApi from '../../../services/admin/job-offers/index'
 import type { JobOffer } from '../../../services/admin/job-offers/index'
 
@@ -72,9 +67,46 @@ function firstFilter(key: string) {
 function resolveCompanyName(offer: JobOffer) {
   if (typeof offer.company === 'string')
     return offer.companyName || offer.company
+  const typedCompany = offer.company as {
+    id?: string
+    name?: string
+    legalName?: string
+  }
   return (
-    offer.companyName || offer.company?.name || String(offer.company?.id || '')
+    offer.companyName ||
+    typedCompany?.name ||
+    typedCompany?.legalName ||
+    String(typedCompany?.id || '')
   )
+}
+
+function asLabel(value: unknown) {
+  if (typeof value === 'string') return value
+  if (!value || typeof value !== 'object') return undefined
+
+  const typedValue = value as Record<string, unknown>
+  const label = typedValue.name ?? typedValue.title ?? typedValue.code
+  return typeof label === 'string' ? label : undefined
+}
+
+function toOffersArray(payload: unknown): JobOffer[] {
+  if (Array.isArray(payload)) return payload as JobOffer[]
+  if (!payload || typeof payload !== 'object') return []
+
+  const objectPayload = payload as {
+    data?: unknown
+    items?: unknown
+    member?: unknown
+    'hydra:member'?: unknown
+  }
+
+  const collection =
+    objectPayload.data ??
+    objectPayload.items ??
+    objectPayload.member ??
+    objectPayload['hydra:member']
+
+  return Array.isArray(collection) ? (collection as JobOffer[]) : []
 }
 
 function formatSalary(offer: JobOffer) {
@@ -111,14 +143,14 @@ const mappedOffers = computed(() =>
     matchingScore: 71 + (index % 5) * 4,
     location:
       row.location ||
-      [row.city, row.region].filter(Boolean).join(', ') ||
+      [asLabel(row.city), asLabel(row.region)].filter(Boolean).join(', ') ||
       location.value ||
       'Paris',
     salary: formatSalary(row),
     workMode:
       row.employmentType || row.workTime || row.remoteMode || 'full-time',
     publishedAtLabel: formatRelativeDate(row.publishedAt),
-    tags: [row.slug, row.status, row.jobCategory].filter(Boolean) as string[],
+    tags: [row.slug, row.status, asLabel(row.jobCategory)].filter(Boolean) as string[],
     status: row.status,
   })),
 )
@@ -160,17 +192,11 @@ function openEdit(offerId: string) {
   editDialog.value = true
 }
 
-async function listMyOffers(query: Record<string, unknown>) {
-  if (
-    'listMyJobOffers' in jobOffersApi &&
-    typeof jobOffersApi.listMyJobOffers === 'function'
-  ) {
-    return jobOffersApi.listMyJobOffers(query)
-  }
-
-  return httpGet('/api/job-offers/my', {
-    query: normalizeListQuery(query),
-  }).then((response) => normalizePaginatedResponse<JobOffer>(response))
+async function listMyOffers(query: Record<string, string | number>) {
+  const payload = await httpGet<unknown>('/api/job-offers/my', {
+    query,
+  })
+  return toOffersArray(payload)
 }
 
 async function loadRows() {
@@ -179,31 +205,34 @@ async function loadRows() {
   forbidden.value = false
 
   try {
+    const where = {
+      status: firstFilter('status'),
+      location: location.value || undefined,
+      remoteMode: firstFilter('remoteMode'),
+      salaryMin: firstFilter('salaryMin'),
+      salaryMax: firstFilter('salaryMax'),
+      skills: firstFilter('skills'),
+      languages: firstFilter('languages'),
+      city: firstFilter('city'),
+      region: firstFilter('region'),
+      jobCategory: firstFilter('jobCategory'),
+      publishedWithinDays: firstFilter('publishedWithinDays'),
+    }
+
+    const normalizedWhere = Object.fromEntries(
+      Object.entries(where).filter(([, value]) => value !== undefined && value !== null && value !== ''),
+    )
+
     const response = await listMyOffers({
-      ...buildApiPlatformQuery({
-        page: page.value,
-        pageSize: pageSize.value,
-        search: search.value,
-        sortBy: 'publishedAt',
-        sortOrder: 'desc',
-        filters: {
-          status: firstFilter('status'),
-          location: location.value || undefined,
-          remoteMode: firstFilter('remoteMode'),
-          salaryMin: firstFilter('salaryMin'),
-          salaryMax: firstFilter('salaryMax'),
-          skills: firstFilter('skills'),
-          languages: firstFilter('languages'),
-          city: firstFilter('city'),
-          region: firstFilter('region'),
-          jobCategory: firstFilter('jobCategory'),
-          publishedWithinDays: firstFilter('publishedWithinDays'),
-        },
-      }),
+      where: JSON.stringify(normalizedWhere),
+      order: 'publishedAt:desc',
+      limit: pageSize.value,
+      offset: Math.max(page.value - 1, 0) * pageSize.value,
+      ...(search.value.trim() ? { search: search.value.trim() } : {}),
     })
 
-    rows.value = response.data
-    const firstOffer = response.data.at(0)
+    rows.value = response
+    const firstOffer = rows.value.at(0)
     if (!selectedId.value && firstOffer) {
       selectedId.value = String(firstOffer.id)
     }

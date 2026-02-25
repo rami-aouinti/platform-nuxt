@@ -32,8 +32,11 @@ export function normalizePaginatedResponse<TItem>(
     }
   }
 
-  const collection = response.data ?? response.items ?? []
-  const totalItems = Number(response.totalItems ?? response.total ?? collection.length)
+  const typedResponse = response as LegacyPaginatedResponse<TItem>
+  const collection = typedResponse.data ?? typedResponse.items ?? []
+  const totalItems = Number(
+    typedResponse.totalItems ?? typedResponse.total ?? collection.length,
+  )
 
   return {
     data: collection,
