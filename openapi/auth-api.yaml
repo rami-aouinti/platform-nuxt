@@ -111,10 +111,13 @@ components:
       allOf:
         - $ref: '#/components/schemas/UserBase'
         - type: object
+          required:
+            - email
           properties:
             email:
               type: string
               format: email
+              nullable: false
             firstName:
               type: string
             lastName:
