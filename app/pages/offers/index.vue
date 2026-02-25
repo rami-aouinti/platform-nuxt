@@ -297,19 +297,13 @@ onMounted(loadRows)
       v-model:query="search"
       v-model:location="location"
       app-bar-teleport
+      show-filter-drawer-button
       @search="loadRows"
+      @filter="mobileFilters = true"
     />
 
     <div class="offers-board-page__layout">
       <section class="offers-board-page__content">
-        <div class="offers-board-page__tools">
-          <v-btn
-            variant="outlined"
-            prepend-icon="mdi-filter-variant"
-            @click="mobileFilters = true"
-            >Filter</v-btn
-          >
-        </div>
 
         <v-alert v-if="pageState === 'forbidden'" type="error" variant="tonal"
           >403 · Accès refusé.</v-alert
