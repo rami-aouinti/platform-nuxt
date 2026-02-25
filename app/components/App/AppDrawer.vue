@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const router = useRouter()
-const routes = router.getRoutes().filter((r) => r.path.lastIndexOf('/') === 0)
+const authStore = useAuthStore()
+const { isAuthenticated } = storeToRefs(authStore)
 const drawerState = useState('drawer', () => true)
 
 const { mobile, lgAndUp, width } = useDisplay()
@@ -13,7 +14,13 @@ const drawer = computed({
   },
 })
 const rail = computed(() => !drawerState.value && !mobile.value)
-routes.sort((a, b) => (a.meta?.drawerIndex ?? 99) - (b.meta?.drawerIndex ?? 98))
+const routes = computed(() =>
+  router
+    .getRoutes()
+    .filter((route) => route.path.lastIndexOf('/') === 0)
+    .filter((route) => !route.meta?.requiresAuth || isAuthenticated.value)
+    .sort((a, b) => (a.meta?.drawerIndex ?? 99) - (b.meta?.drawerIndex ?? 98)),
+)
 
 drawerState.value = lgAndUp.value && width.value !== 1280
 </script>
