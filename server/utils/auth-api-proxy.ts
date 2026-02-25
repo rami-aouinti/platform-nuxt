@@ -52,12 +52,28 @@ export async function proxyAuthApiGet(event: H3Event, path: string) {
   return await proxyAuthApiRequest(event, path, 'GET')
 }
 
+function resolveAuthorizationHeader(event: H3Event) {
+  const authorization = getHeader(event, 'authorization')
+
+  if (authorization && authorization.trim().length > 0) {
+    return authorization
+  }
+
+  const tokenFromCookie = getCookie(event, 'auth_token')
+
+  if (tokenFromCookie && tokenFromCookie.trim().length > 0) {
+    return `Bearer ${tokenFromCookie}`
+  }
+
+  return undefined
+}
+
 export async function proxyAuthApiRequest(
   event: H3Event,
   path: string,
   method: ProxyHttpMethod,
 ) {
-  const authorization = getHeader(event, 'authorization')
+  const authorization = resolveAuthorizationHeader(event)
   const upstreamCandidates = getUpstreamCandidates(event)
   const body = ['GET', 'DELETE'].includes(method) ? undefined : await readBody(event)
 
