@@ -1,6 +1,7 @@
 import { useAuthStore } from '~/stores/auth'
+import { hasAdminPermission, type AdminPermission } from '~/utils/permissions/admin'
 
-export default defineNuxtRouteMiddleware(async () => {
+export default defineNuxtRouteMiddleware(async (to) => {
   const authStore = useAuthStore()
 
   if (!authStore.isAuthenticated) {
@@ -13,7 +14,9 @@ export default defineNuxtRouteMiddleware(async () => {
     return navigateTo('/403?reason=error')
   }
 
-  if (!authStore.hasAdminAccess) {
-    return navigateTo('/403?reason=unauthorized')
+  const requiredPermission = (to.meta?.adminPermission as AdminPermission | undefined) ?? 'admin'
+
+  if (!hasAdminPermission(authStore.roles, requiredPermission)) {
+    return navigateTo(`/403?reason=unauthorized&permission=${requiredPermission}`)
   }
 })

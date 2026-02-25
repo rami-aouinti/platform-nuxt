@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import { FORBIDDEN_MESSAGE } from '~/utils/permissions/messages'
 import type { DataTableHeader } from 'vuetify'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth'
 import { Notify } from '~/stores/notification'
+import { canManageUsers, isRoot } from '~/utils/permissions/admin'
 import {
   DEFAULT_TIMEZONE,
   LANGUAGE_VALUES,
@@ -33,6 +35,7 @@ definePageMeta({
   requiresAuth: true,
   requiresAdmin: true,
   middleware: ['auth', 'admin-access'],
+  adminPermission: 'manageUsers',
 })
 
 const authStore = useAuthStore()
@@ -69,13 +72,12 @@ const headers: DataTableHeader[] = [
   { title: 'Actions', key: 'actions', sortable: false },
 ]
 
-const canShow = computed(() =>
-  ['ROLE_ADMIN', 'ROLE_ROOT'].some((roleName) =>
-    roles.value.includes(roleName),
-  ),
-)
-const canEdit = computed(() => roles.value.includes('ROLE_ROOT'))
-const canDelete = computed(() => roles.value.includes('ROLE_ROOT'))
+const canShow = computed(() => canManageUsers(roles.value))
+const canEdit = computed(() => isRoot(roles.value))
+const canDelete = computed(() => isRoot(roles.value))
+
+const editDisabledMessage = 'Action réservée aux utilisateurs ROLE_ROOT.'
+const deleteDisabledMessage = 'Action réservée aux utilisateurs ROLE_ROOT.'
 
 function normalizeUsers(payload: unknown): UserRecord[] {
   const records = Array.isArray(payload)
@@ -221,7 +223,7 @@ function mapValidationErrors(
 
 function toErrorMessage(error: unknown) {
   if (isError(error) && error.statusCode === 403) {
-    return 'Accès refusé (403) : vous n’avez pas les permissions nécessaires pour cette action.'
+    return FORBIDDEN_MESSAGE
   }
 
   if (isError(error) && typeof error.statusMessage === 'string') {
@@ -535,36 +537,47 @@ onMounted(async () => {
         </template>
 
         <template #row-actions="{ item }">
-          <PermissionGate :allowed="canShow">
-            <v-btn
-              size="small"
-              icon="mdi-eye-outline"
-              variant="text"
-              color="info"
-              aria-label="Voir les détails utilisateur"
-              @click.stop="showUserDetails(item.id)"
-            />
-          </PermissionGate>
-          <PermissionGate :allowed="canEdit">
-            <v-btn
-              size="small"
-              icon="mdi-pencil-outline"
-              variant="text"
-              color="warning"
-              aria-label="Éditer utilisateur"
-              @click.stop="openEditDialog(item)"
-            />
-          </PermissionGate>
-          <PermissionGate :allowed="canDelete">
-            <v-btn
-              size="small"
-              icon="mdi-delete-outline"
-              variant="text"
-              color="error"
-              aria-label="Supprimer utilisateur"
-              @click.stop="deleteUser(item)"
-            />
-          </PermissionGate>
+          <v-btn
+            v-if="canShow"
+            size="small"
+            icon="mdi-eye-outline"
+            variant="text"
+            color="info"
+            aria-label="Voir les détails utilisateur"
+            @click.stop="showUserDetails(String(item.id ?? ''))"
+          />
+
+          <v-tooltip :text="editDisabledMessage" :disabled="canEdit">
+            <template #activator="{ props: tooltipProps }">
+              <span v-bind="tooltipProps">
+                <v-btn
+                  size="small"
+                  icon="mdi-pencil-outline"
+                  variant="text"
+                  color="warning"
+                  aria-label="Éditer utilisateur"
+                  :disabled="!canEdit"
+                  @click.stop="openEditDialog(item as UserRecord)"
+                />
+              </span>
+            </template>
+          </v-tooltip>
+
+          <v-tooltip :text="deleteDisabledMessage" :disabled="canDelete">
+            <template #activator="{ props: tooltipProps }">
+              <span v-bind="tooltipProps">
+                <v-btn
+                  size="small"
+                  icon="mdi-delete-outline"
+                  variant="text"
+                  color="error"
+                  aria-label="Supprimer utilisateur"
+                  :disabled="!canDelete"
+                  @click.stop="deleteUser(item as UserRecord)"
+                />
+              </span>
+            </template>
+          </v-tooltip>
         </template>
       </AdminTable>
     </v-card>

@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth'
+import {
+  hasAdminPermission,
+  type AdminPermission,
+} from '~/utils/permissions/admin'
 
 definePageMeta({
   icon: 'mdi-shield-crown-outline',
@@ -12,37 +16,68 @@ definePageMeta({
 })
 
 const authStore = useAuthStore()
-const { rolesLoading, rolesError, hasAdminAccess } = storeToRefs(authStore)
+const { rolesLoading, rolesError, hasAdminAccess, roles } = storeToRefs(authStore)
 
 const adminLinks = [
   {
     title: 'Users',
     to: '/administration/users',
     icon: 'mdi-account-multiple-outline',
+    permission: 'manageUsers' as AdminPermission,
   },
   {
     title: 'UserGroups',
     to: '/administration/user-groups',
     icon: 'mdi-account-group-outline',
+    permission: 'manageUsers' as AdminPermission,
   },
   {
     title: 'Roles',
     to: '/administration/roles',
     icon: 'mdi-shield-account-outline',
+    permission: 'admin' as AdminPermission,
   },
-  { title: 'ApiKeys', to: '/administration/api-keys', icon: 'mdi-key-variant' },
-  { title: 'Companies', to: '/administration/companies', icon: 'mdi-domain' },
+  {
+    title: 'ApiKeys',
+    to: '/administration/api-keys',
+    icon: 'mdi-key-variant',
+    permission: 'manageApiKeys' as AdminPermission,
+  },
+  {
+    title: 'Companies',
+    to: '/administration/companies',
+    icon: 'mdi-domain',
+    permission: 'admin' as AdminPermission,
+  },
   {
     title: 'Candidates',
     to: '/administration/candidates',
     icon: 'mdi-account-search',
+    permission: 'admin' as AdminPermission,
   },
   {
     title: 'Notifications',
     to: '/administration/notifications',
     icon: 'mdi-bell-outline',
+    permission: 'admin' as AdminPermission,
   },
 ]
+
+function isAllowed(permission: AdminPermission) {
+  return hasAdminPermission(roles.value, permission)
+}
+
+function deniedMessage(permission: AdminPermission) {
+  if (permission === 'manageApiKeys') {
+    return 'Réservé aux utilisateurs ROLE_ROOT.'
+  }
+
+  if (permission === 'manageUsers') {
+    return 'Réservé aux utilisateurs ROLE_ADMIN ou ROLE_ROOT.'
+  }
+
+  return 'Accès administrateur requis.'
+}
 
 onMounted(async () => {
   try {
@@ -100,7 +135,20 @@ onMounted(async () => {
               <v-card-title>{{ item.title }}</v-card-title>
             </v-card-item>
             <v-card-actions>
-              <v-btn color="primary" variant="text" :to="item.to">Ouvrir</v-btn>
+              <v-tooltip :text="deniedMessage(item.permission)" :disabled="isAllowed(item.permission)">
+                <template #activator="{ props: tooltipProps }">
+                  <span v-bind="tooltipProps">
+                    <v-btn
+                      color="primary"
+                      variant="text"
+                      :to="item.to"
+                      :disabled="!isAllowed(item.permission)"
+                    >
+                      Ouvrir
+                    </v-btn>
+                  </span>
+                </template>
+              </v-tooltip>
             </v-card-actions>
           </v-card>
         </v-col>

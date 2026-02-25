@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth'
+import { hasAdminPermission, type AdminPermission } from '~/utils/permissions/admin'
 
 const router = useRouter()
 const authStore = useAuthStore()
-const { isAuthenticated, hasAdminAccess, rolesLoading } = storeToRefs(authStore)
+const { isAuthenticated, rolesLoading } = storeToRefs(authStore)
 const drawerState = useState('drawer', () => true)
 
 const { mobile, lgAndUp, width } = useDisplay()
@@ -31,7 +32,8 @@ const routes = computed(() =>
         return false
       }
 
-      return hasAdminAccess.value
+      const permission = (route.meta?.adminPermission as AdminPermission | undefined) ?? 'admin'
+      return hasAdminPermission(authStore.roles, permission)
     })
     .sort((a, b) => (a.meta?.drawerIndex ?? 99) - (b.meta?.drawerIndex ?? 98)),
 )

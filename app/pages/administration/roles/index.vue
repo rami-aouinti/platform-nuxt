@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { FORBIDDEN_MESSAGE } from '~/utils/permissions/messages'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth'
 import { Notify } from '~/stores/notification'
@@ -41,7 +42,7 @@ const canShow = computed(() =>
 
 function toErrorMessage(error: unknown) {
   if (isError(error) && error.statusCode === 403) {
-    return 'Accès refusé (403) : vous n’avez pas les permissions nécessaires pour cette action.'
+    return FORBIDDEN_MESSAGE
   }
 
   if (isError(error) && typeof error.statusMessage === 'string') {

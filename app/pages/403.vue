@@ -1,4 +1,9 @@
 <script setup lang="ts">
+import {
+  getPermissionDeniedMessage,
+  type AdminPermission,
+} from '~/utils/permissions/admin'
+
 definePageMeta({
   title: 'Forbidden',
 })
@@ -10,6 +15,21 @@ const reason = computed(() => {
   return Array.isArray(value) ? value[0] : value
 })
 
+const permission = computed<AdminPermission>(() => {
+  const value = route.query.permission
+  const current = Array.isArray(value) ? value[0] : value
+
+  if (
+    current === 'admin' ||
+    current === 'manageUsers' ||
+    current === 'manageApiKeys'
+  ) {
+    return current
+  }
+
+  return 'admin'
+})
+
 const title = computed(() =>
   reason.value === 'error' ? 'Erreur de chargement des rôles' : 'Accès refusé',
 )
@@ -19,7 +39,7 @@ const message = computed(() => {
     return 'Impossible de vérifier vos autorisations pour le moment. Veuillez réessayer.'
   }
 
-  return 'Vous ne disposez pas des permissions ROLE_ROOT ou ROLE_ADMIN pour accéder à cette section.'
+  return getPermissionDeniedMessage(permission.value)
 })
 </script>
 

@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { FORBIDDEN_MESSAGE } from '~/utils/permissions/messages'
 import { storeToRefs } from 'pinia'
 import { Notify } from '~/stores/notification'
+import { isRoot } from '~/utils/permissions/admin'
 import { useAuthStore } from '~/stores/auth'
 
 definePageMeta({
@@ -10,6 +12,7 @@ definePageMeta({
   requiresAuth: true,
   requiresAdmin: true,
   middleware: ['auth', 'admin-access'],
+  adminPermission: 'manageUsers',
 })
 
 type UserProfile = {
@@ -34,7 +37,7 @@ const userRoles = ref<string[]>([])
 const userGroups = ref<string[]>([])
 const newGroup = ref('')
 
-const canManageGroups = computed(() => roles.value.includes('ROLE_ROOT'))
+const canManageGroups = computed(() => isRoot(roles.value))
 
 function normalizeStringList(payload: unknown): string[] {
   const records = Array.isArray(payload)
@@ -71,7 +74,7 @@ function normalizeProfile(payload: unknown): UserProfile {
 
 function toErrorMessage(error: unknown): string {
   if (isError(error) && error.statusCode === 403) {
-    return 'Accès refusé (403) : vous n’avez pas les permissions nécessaires pour cette action.'
+    return FORBIDDEN_MESSAGE
   }
 
   if (isError(error) && typeof error.statusMessage === 'string') {

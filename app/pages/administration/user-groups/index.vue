@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import { FORBIDDEN_MESSAGE } from '~/utils/permissions/messages'
 import type { DataTableHeader } from 'vuetify'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth'
 import { Notify } from '~/stores/notification'
+import { isRoot } from '~/utils/permissions/admin'
 
 type UserGroupRecord = {
   id: string
@@ -17,6 +19,7 @@ definePageMeta({
   requiresAuth: true,
   requiresAdmin: true,
   middleware: ['auth', 'admin-access'],
+  adminPermission: 'manageUsers',
 })
 
 const authStore = useAuthStore()
@@ -49,7 +52,8 @@ const headers: DataTableHeader[] = [
   { title: 'Actions', key: 'actions', sortable: false },
 ]
 
-const canManage = computed(() => roles.value.includes('ROLE_ROOT'))
+const canManage = computed(() => isRoot(roles.value))
+const manageDisabledMessage = 'Action réservée aux utilisateurs ROLE_ROOT.'
 
 function normalizeGroups(payload: unknown): UserGroupRecord[] {
   const records = Array.isArray(payload)
@@ -77,7 +81,7 @@ function normalizeGroups(payload: unknown): UserGroupRecord[] {
 
 function toErrorMessage(error: unknown): string {
   if (isError(error) && error.statusCode === 403) {
-    return 'Accès refusé (403) : vous n’avez pas les permissions nécessaires pour cette action.'
+    return FORBIDDEN_MESSAGE
   }
 
   if (isError(error) && typeof error.statusMessage === 'string') {
@@ -256,15 +260,20 @@ onMounted(async () => {
           <div class="text-caption text-medium-emphasis">
             Total: {{ totalGroups }} · IDs reçus: {{ availableIds.length }}
           </div>
-          <PermissionGate :allowed="canManage">
-            <v-btn
-              color="primary"
-              prepend-icon="mdi-plus"
-              @click="openCreateDialog"
-            >
-              Créer
-            </v-btn>
-          </PermissionGate>
+          <v-tooltip :text="manageDisabledMessage" :disabled="canManage">
+            <template #activator="{ props: tooltipProps }">
+              <span v-bind="tooltipProps">
+                <v-btn
+                  color="primary"
+                  prepend-icon="mdi-plus"
+                  :disabled="!canManage"
+                  @click="openCreateDialog"
+                >
+                  Créer
+                </v-btn>
+              </span>
+            </template>
+          </v-tooltip>
         </div>
       </div>
 
@@ -298,24 +307,34 @@ onMounted(async () => {
               color="info"
               :to="`/administration/user-groups/${item.id}`"
             />
-            <PermissionGate :allowed="canManage">
-              <v-btn
-                size="small"
-                icon="mdi-pencil-outline"
-                variant="text"
-                color="warning"
-                @click="openEditDialog(item)"
-              />
-            </PermissionGate>
-            <PermissionGate :allowed="canManage">
-              <v-btn
-                size="small"
-                icon="mdi-delete-outline"
-                variant="text"
-                color="error"
-                @click="deleteGroup(item)"
-              />
-            </PermissionGate>
+            <v-tooltip :text="manageDisabledMessage" :disabled="canManage">
+              <template #activator="{ props: tooltipProps }">
+                <span v-bind="tooltipProps">
+                  <v-btn
+                    size="small"
+                    icon="mdi-pencil-outline"
+                    variant="text"
+                    color="warning"
+                    :disabled="!canManage"
+                    @click="openEditDialog(item)"
+                  />
+                </span>
+              </template>
+            </v-tooltip>
+            <v-tooltip :text="manageDisabledMessage" :disabled="canManage">
+              <template #activator="{ props: tooltipProps }">
+                <span v-bind="tooltipProps">
+                  <v-btn
+                    size="small"
+                    icon="mdi-delete-outline"
+                    variant="text"
+                    color="error"
+                    :disabled="!canManage"
+                    @click="deleteGroup(item)"
+                  />
+                </span>
+              </template>
+            </v-tooltip>
           </div>
         </template>
       </v-data-table-server>
