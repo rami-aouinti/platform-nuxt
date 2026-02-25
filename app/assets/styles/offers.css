@@ -81,8 +81,21 @@
   display: grid;
   gap: var(--offers-space-3);
 }
-.offers-board-page__mobile-tools {
-  margin-bottom: var(--offers-space-3);
+.offers-filters-drawer .offers-filters-sidebar {
+  position: static;
+  top: auto;
+  margin-bottom: 0;
+}
+
+@media (min-width: 961px) {
+  .offers-filters-drawer.v-navigation-drawer {
+    top: 104px !important;
+    right: 20px !important;
+    height: 620px !important;
+    max-height: calc(100vh - 136px) !important;
+    border-radius: var(--offers-radius-lg);
+    border: 1px solid var(--offers-border);
+  }
 }
 
 .offers-filters-sidebar {

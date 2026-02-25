@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { useDisplay } from 'vuetify'
 import { Notify } from '~/stores/notification'
 import { httpGet, HttpRequestError } from '../../../services/http/client'
 import { jobApplicationsService } from '../../../services/admin/job-applications'
@@ -27,7 +26,6 @@ const favorites = ref<string[]>([])
 const mobileFilters = ref(false)
 const selectedFilters = ref<Record<string, string[]>>({})
 
-const { mdAndDown } = useDisplay()
 
 const filterSections = [
   {
@@ -299,27 +297,13 @@ onMounted(loadRows)
       v-model:query="search"
       v-model:location="location"
       app-bar-teleport
+      show-filter-drawer-button
       @search="loadRows"
-    />
-
-    <OffersFiltersSidebar
-      v-if="!mdAndDown"
-      v-model="selectedFilters"
-      title="Filter"
-      horizontal
-      :sections="filterSections"
+      @filter="mobileFilters = true"
     />
 
     <div class="offers-board-page__layout">
       <section class="offers-board-page__content">
-        <div v-if="mdAndDown" class="offers-board-page__mobile-tools">
-          <v-btn
-            variant="outlined"
-            prepend-icon="mdi-filter-variant"
-            @click="mobileFilters = true"
-            >Filter</v-btn
-          >
-        </div>
 
         <v-alert v-if="pageState === 'forbidden'" type="error" variant="tonal"
           >403 · Accès refusé.</v-alert
@@ -378,13 +362,15 @@ onMounted(loadRows)
           />
         </div>
       </section>
+
     </div>
 
     <v-navigation-drawer
       v-model="mobileFilters"
+      class="offers-filters-drawer"
       temporary
       location="right"
-      width="320"
+      width="420"
     >
       <div class="pa-4">
         <OffersFiltersSidebar
