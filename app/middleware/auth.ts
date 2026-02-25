@@ -1,5 +1,6 @@
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth'
+import { Notify } from '~/stores/notification'
 
 export default defineNuxtRouteMiddleware(() => {
   const authStore = useAuthStore()

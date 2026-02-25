@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { storeToRefs } from 'pinia'
+import { useNotificationStore } from '~/stores/notification'
+
 const notificationStore = useNotificationStore()
 const { notifications } = storeToRefs(notificationStore)
 const notificationsShown = computed(() =>
@@ -14,7 +17,7 @@ function emptyNotifications() {
 }
 function toggleAll() {
   showAll.value = !showAll.value
-  notifications.value.forEach((m) => {
+  notifications.value.forEach((m: { show: boolean }) => {
     m.show = showAll.value
   })
 }

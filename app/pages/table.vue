@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { DataTableHeader } from 'vuetify'
+import { Notify } from '~/stores/notification'
 
 definePageMeta({
   icon: 'mdi-table',
