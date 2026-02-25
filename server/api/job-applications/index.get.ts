@@ -6,5 +6,5 @@ export default defineEventHandler(async (event) => {
   requireAuthenticatedRequest(event)
   const suffix = buildQuerySuffix(event)
 
-  return await proxyAuthApiRequest(event, `/api/job-applications${suffix}`, 'GET')
+  return await proxyAuthApiRequest(event, `/api/v1/job-applications${suffix}`, 'GET')
 })
