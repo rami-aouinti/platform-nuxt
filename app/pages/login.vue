@@ -2,6 +2,7 @@
 definePageMeta({
   icon: 'mdi-lock-check-outline',
   title: 'Login',
+  middleware: 'guest',
 })
 
 const authStore = useAuthStore()
