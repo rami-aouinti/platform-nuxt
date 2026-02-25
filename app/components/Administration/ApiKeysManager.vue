@@ -56,6 +56,9 @@ const patchForm = reactive({
   value: 'false',
 })
 
+const dialogDelete = useTemplateRef('dialogDelete')
+const dialogPatch = useTemplateRef('dialogPatch')
+
 const { track } = useInternalEventTracking()
 const manageDisabledMessage = 'Action réservée aux utilisateurs ROLE_ROOT.'
 
@@ -170,10 +173,10 @@ async function createApiKey() {
       },
     })
 
-    Notify.success(`Clé API ${props.version} créée.`)
+    Notify.success(`Action réussie : clé API ${props.version} créée.`)
     await loadInventory()
   } catch (error) {
-    Notify.error(toErrorMessage(error))
+    Notify.error(`Action échouée : ${toErrorMessage(error)}`)
   } finally {
     busy.value = false
   }
@@ -191,7 +194,7 @@ async function fetchById() {
     selectedItem.value = response as BaseApiKey
     Notify.success(`Détail récupéré pour ${selectedId.value}.`)
   } catch (error) {
-    Notify.error(toErrorMessage(error))
+    Notify.error(`Action échouée : ${toErrorMessage(error)}`)
   } finally {
     busy.value = false
   }
@@ -212,18 +215,40 @@ async function updateById() {
       expiresAt: updateForm.expiresAt || null,
     })
 
-    Notify.success(`Clé ${selectedId.value} mise à jour (PUT).`)
+    Notify.success(`Action réussie : clé ${selectedId.value} mise à jour (PUT).`)
+    track({
+      name: 'admin.api-keys.put',
+      payload: {
+        version: props.version,
+        id: selectedId.value,
+      },
+    })
     await loadInventory()
   } catch (error) {
-    Notify.error(toErrorMessage(error))
+    Notify.error(`Action échouée : ${toErrorMessage(error)}`)
   } finally {
     busy.value = false
   }
 }
 
 async function patchById() {
-  if (!ensureRoot() || !selectedId.value) {
+  if (!ensureRoot() || !selectedId.value || busy.value) {
     return
+  }
+
+  const isCriticalPatch = patchForm.field === 'enabled' || patchForm.field === 'expiresAt'
+  if (isCriticalPatch) {
+    const confirmed = await dialogPatch.value?.open(
+      `Confirmer le patch critique sur ${selectedId.value} (${patchForm.field}) ?`,
+      {
+        confirmationLabel: `Saisissez ${selectedId.value} pour confirmer`,
+        expectedConfirmationText: selectedId.value,
+      },
+    )
+
+    if (!confirmed) {
+      return
+    }
   }
 
   busy.value = true
@@ -238,39 +263,60 @@ async function patchById() {
       [patchForm.field]: value,
     })
 
-    Notify.success(`Clé ${selectedId.value} mise à jour (PATCH).`)
+    Notify.success(`Action réussie : clé ${selectedId.value} mise à jour (PATCH).`)
+    track({
+      name: 'admin.api-keys.patch',
+      payload: {
+        version: props.version,
+        id: selectedId.value,
+        field: patchForm.field,
+      },
+    })
     await loadInventory()
   } catch (error) {
-    Notify.error(toErrorMessage(error))
+    Notify.error(`Action échouée : ${toErrorMessage(error)}`)
   } finally {
     busy.value = false
   }
 }
 
 async function removeById() {
-  if (!ensureRoot() || !selectedId.value) {
+  if (!ensureRoot() || !selectedId.value || busy.value) {
+    return
+  }
+
+  const idToDelete = selectedId.value
+  const confirmed = await dialogDelete.value?.open(
+    `Supprimer définitivement la clé API ${idToDelete} ?`,
+    {
+      confirmationLabel: `Saisissez ${idToDelete} pour confirmer la suppression`,
+      expectedConfirmationText: idToDelete,
+    },
+  )
+
+  if (!confirmed) {
     return
   }
 
   busy.value = true
 
   try {
-    await props.service.remove(selectedId.value)
+    await props.service.remove(idToDelete)
     track({
-      name: 'api-keys.delete',
+      name: 'admin.api-keys.delete',
       payload: {
         version: props.version,
         prefix: props.apiPrefix,
-        id: selectedId.value,
+        id: idToDelete,
       },
     })
 
-    Notify.success(`Clé ${selectedId.value} supprimée.`)
+    Notify.success(`Action réussie : clé ${idToDelete} supprimée.`)
     selectedId.value = ''
     selectedItem.value = null
     await loadInventory()
   } catch (error) {
-    Notify.error(toErrorMessage(error))
+    Notify.error(`Action échouée : ${toErrorMessage(error)}`)
   } finally {
     busy.value = false
   }
@@ -465,6 +511,9 @@ onMounted(async () => {
         </v-tooltip>
       </v-col>
     </v-row>
+
+    <DialogConfirm ref="dialogDelete" />
+    <DialogConfirm ref="dialogPatch" />
 
     <v-card v-if="selectedItem" variant="outlined" rounded="lg" class="mt-4">
       <v-card-title class="text-subtitle-2">Réponse getById</v-card-title>

@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia'
 import { Notify } from '~/stores/notification'
 import { useAuthStore } from '~/stores/auth'
 import { canManageUsers, isRoot } from '~/utils/permissions/admin'
+import { useInternalEventTracking } from '~/composables/useInternalEventTracking'
 
 type UserRecord = {
   id: string
@@ -35,6 +36,9 @@ const page = ref(1)
 const pageSize = ref(10)
 const search = ref('')
 const filters = ref<Record<string, string>>({ role: '', group: '' })
+const mutationLoading = ref(false)
+
+const { track } = useInternalEventTracking()
 
 const canCreate = computed(() => isRoot(roles.value))
 const canEdit = computed(() => isRoot(roles.value))
@@ -119,6 +123,11 @@ async function createRow() {
 }
 
 async function saveEdit(row: Record<string, unknown>) {
+  if (mutationLoading.value) {
+    return
+  }
+
+  mutationLoading.value = true
   try {
     await $fetch(`/api/user/${encodeURIComponent(String(row.id ?? ''))}` as any, {
       method: 'PATCH' as any,
@@ -128,23 +137,46 @@ async function saveEdit(row: Record<string, unknown>) {
       },
     })
 
-    Notify.success('Utilisateur mis à jour.')
+    Notify.success('Action réussie : utilisateur mis à jour.')
+    track({
+      name: 'admin.users.patch',
+      payload: {
+        id: String(row.id ?? ''),
+        username: String(row.username ?? ''),
+      },
+    })
     await loadRows()
   } catch (errorValue) {
-    Notify.error(toError(errorValue))
+    Notify.error(`Action échouée : ${toError(errorValue)}`)
+  } finally {
+    mutationLoading.value = false
   }
 }
 
 async function deleteRow(row: Record<string, unknown>) {
+  if (mutationLoading.value) {
+    return
+  }
+
+  mutationLoading.value = true
   try {
     await $fetch(`/api/user/${encodeURIComponent(String(row.id ?? ''))}` as any, {
       method: 'DELETE' as any,
     })
 
-    Notify.success('Utilisateur supprimé.')
+    Notify.success('Action réussie : utilisateur supprimé.')
+    track({
+      name: 'admin.users.delete',
+      payload: {
+        id: String(row.id ?? ''),
+        username: String(row.username ?? ''),
+      },
+    })
     await loadRows()
   } catch (errorValue) {
-    Notify.error(toError(errorValue))
+    Notify.error(`Action échouée : ${toError(errorValue)}`)
+  } finally {
+    mutationLoading.value = false
   }
 }
 
@@ -189,6 +221,7 @@ onMounted(async () => {
     :can-create="canCreate"
     :can-edit="canEdit"
     :can-delete="canDelete"
+    :mutation-loading="mutationLoading"
     resource-name="l'utilisateur"
     create-label="Créer un user"
     @update:page="page = $event"

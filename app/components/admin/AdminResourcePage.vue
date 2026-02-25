@@ -36,6 +36,7 @@ const props = withDefaults(
     canEdit?: boolean
     canDelete?: boolean
     resourceName?: string
+    mutationLoading?: boolean
   }>(),
   {
     description: '',
@@ -55,6 +56,7 @@ const props = withDefaults(
     canEdit: false,
     canDelete: false,
     resourceName: 'élément',
+    mutationLoading: false,
   },
 )
 
@@ -111,13 +113,20 @@ function openEdit(row: AdminRow) {
 }
 
 async function confirmDelete(row: AdminRow) {
-  if (!props.canDelete) {
+  if (!props.canDelete || props.mutationLoading) {
     return
   }
 
-  const identifier = String(row.name ?? row.username ?? row.email ?? row.id ?? '')
+  const identifier = String(row.username ?? row.name ?? row.email ?? row.id ?? '').trim()
+  const requiresTypedConfirmation = Boolean(identifier)
   const confirmed = await dialogDelete.value?.open(
-    `Supprimer ${props.resourceName} ${identifier} ?`,
+    `Supprimer ${props.resourceName} ${identifier || ''} ?`,
+    requiresTypedConfirmation
+      ? {
+          confirmationLabel: `Saisissez ${identifier} pour confirmer la suppression`,
+          expectedConfirmationText: identifier,
+        }
+      : undefined,
   )
 
   if (!confirmed) {
@@ -210,7 +219,8 @@ function saveEdit() {
           icon="mdi-pencil-outline"
           variant="text"
           color="warning"
-          :disabled="!canEdit"
+          :disabled="!canEdit || mutationLoading"
+          :loading="mutationLoading"
           @click.stop="openEdit(item)"
         />
         <v-btn
@@ -218,7 +228,8 @@ function saveEdit() {
           icon="mdi-delete-outline"
           variant="text"
           color="error"
-          :disabled="!canDelete"
+          :disabled="!canDelete || mutationLoading"
+          :loading="mutationLoading"
           @click.stop="confirmDelete(item)"
         />
       </template>
@@ -266,7 +277,7 @@ function saveEdit() {
         <v-card-actions>
           <v-spacer />
           <v-btn variant="text" @click="editOpen = false">Annuler</v-btn>
-          <v-btn color="primary" @click="saveEdit">Enregistrer</v-btn>
+          <v-btn color="primary" :loading="mutationLoading" :disabled="mutationLoading" @click="saveEdit">Enregistrer</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia'
 import { Notify } from '~/stores/notification'
 import { useAuthStore } from '~/stores/auth'
 import { canManageUsers, isRoot } from '~/utils/permissions/admin'
+import { useInternalEventTracking } from '~/composables/useInternalEventTracking'
 
 type GroupRecord = { id: string; name: string; description: string }
 
@@ -29,6 +30,9 @@ const page = ref(1)
 const pageSize = ref(10)
 const search = ref('')
 const filters = ref<Record<string, string>>({})
+const mutationLoading = ref(false)
+
+const { track } = useInternalEventTracking()
 
 const canShow = computed(() => canManageUsers(roles.value))
 const canCreate = computed(() => isRoot(roles.value))
@@ -60,6 +64,19 @@ function normalize(payload: unknown): GroupRecord[] {
   })
 }
 
+
+function toError(errorValue: unknown) {
+  if (isError(errorValue) && typeof errorValue.statusMessage === 'string') {
+    return errorValue.statusMessage
+  }
+
+  if (errorValue instanceof Error) {
+    return errorValue.message
+  }
+
+  return 'Erreur API.'
+}
+
 async function loadRows() {
   loading.value = true
   error.value = null
@@ -72,7 +89,7 @@ async function loadRows() {
     rows.value = normalize(listResponse)
     total.value = typeof countResponse === 'number' ? countResponse : Number((countResponse as { count?: number })?.count ?? rows.value.length)
   } catch (errorValue) {
-    error.value = errorValue instanceof Error ? errorValue.message : 'Erreur API.'
+    error.value = toError(errorValue)
   } finally {
     loading.value = false
   }
@@ -83,20 +100,56 @@ function createRow() {
 }
 
 async function saveEdit(row: Record<string, unknown>) {
-  await $fetch(`/api/group/${encodeURIComponent(String(row.id ?? ''))}` as any, {
+  if (mutationLoading.value) {
+    return
+  }
+
+  mutationLoading.value = true
+  try {
+    await $fetch(`/api/group/${encodeURIComponent(String(row.id ?? ''))}` as any, {
     method: 'PATCH' as any,
     body: { name: row.name, description: row.description },
   })
-  Notify.success('Groupe mis à jour.')
-  await loadRows()
+    Notify.success('Action réussie : groupe mis à jour.')
+    track({
+      name: 'admin.user-groups.patch',
+      payload: {
+        id: String(row.id ?? ''),
+        name: String(row.name ?? ''),
+      },
+    })
+    await loadRows()
+  } catch (errorValue) {
+    Notify.error(`Action échouée : ${toError(errorValue)}`)
+  } finally {
+    mutationLoading.value = false
+  }
 }
 
 async function deleteRow(row: Record<string, unknown>) {
-  await $fetch(`/api/group/${encodeURIComponent(String(row.id ?? ''))}` as any, {
+  if (mutationLoading.value) {
+    return
+  }
+
+  mutationLoading.value = true
+  try {
+    await $fetch(`/api/group/${encodeURIComponent(String(row.id ?? ''))}` as any, {
     method: 'DELETE' as any,
   })
-  Notify.success('Groupe supprimé.')
-  await loadRows()
+    Notify.success('Action réussie : groupe supprimé.')
+    track({
+      name: 'admin.user-groups.delete',
+      payload: {
+        id: String(row.id ?? ''),
+        name: String(row.name ?? ''),
+      },
+    })
+    await loadRows()
+  } catch (errorValue) {
+    Notify.error(`Action échouée : ${toError(errorValue)}`)
+  } finally {
+    mutationLoading.value = false
+  }
 }
 
 watch([page, pageSize], loadRows)
@@ -134,6 +187,7 @@ onMounted(async () => {
     :can-create="canCreate"
     :can-edit="canEdit"
     :can-delete="canDelete"
+    :mutation-loading="mutationLoading"
     resource-name="le groupe"
     create-label="Créer un groupe"
     @update:page="page = $event"
