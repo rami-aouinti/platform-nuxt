@@ -2,6 +2,18 @@ openapi: 3.0.3
 info:
   title: Auth API
   version: 1.1.0
+  description: |
+    ## API key versioning decision
+
+    The `api_key` surface currently has no functional v2 divergence in this repository.
+    As a result, v2 is treated as premature and **not published**.
+
+    ### Migration note
+
+    - Continue using `/api/v1/api_key/*` as the canonical contract.
+    - Any consumer that prepared `/api/v2/api_key/*` URLs should roll back to v1 routes.
+    - A v2 route family should only be introduced when there is an explicit breaking change
+      (payload schema, status codes, security model, or pagination semantics).
 paths:
   /api/v1/profile:
     get:
