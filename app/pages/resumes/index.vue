@@ -16,18 +16,14 @@ const loading = ref(false)
 const deletingId = ref<string | null>(null)
 const rows = ref<Resume[]>([])
 
-function toErrorMessage(errorValue: unknown) {
-  if (errorValue instanceof Error) return errorValue.message
-  return 'Une erreur API est survenue.'
-}
-
 async function loadResumes() {
   loading.value = true
   try {
     const response = await getMyResumes({ limit: 50, order: 'updatedAt:desc' })
     rows.value = response.data || []
   } catch (errorValue) {
-    Notify.error(toErrorMessage(errorValue))
+    const message = errorValue instanceof Error ? errorValue.message : 'Chargement des CV impossible.'
+    Notify.error(`Chargement des CV impossible. ${message}`)
   } finally {
     loading.value = false
   }
@@ -37,10 +33,9 @@ async function removeResume(id: string) {
   deletingId.value = id
   try {
     await deleteResume(id)
-    Notify.success('CV supprimé.')
     await loadResumes()
-  } catch (errorValue) {
-    Notify.error(toErrorMessage(errorValue))
+  } catch {
+    // Notifications already handled by useResumeApi.
   } finally {
     deletingId.value = null
   }

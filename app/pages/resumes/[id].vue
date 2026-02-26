@@ -73,11 +73,6 @@ const skills = ref<ResumeSkill[]>([])
 const skillForm = ref<UpdateResumeSkillPayload>({ resume: '', name: '' })
 const editingSkillId = ref<string | null>(null)
 
-function toErrorMessage(errorValue: unknown) {
-  if (errorValue instanceof Error) return errorValue.message
-  return 'Une erreur API est survenue.'
-}
-
 async function loadData() {
   loading.value = true
   try {
@@ -104,7 +99,8 @@ async function loadData() {
     resetEducationForm()
     resetSkillForm()
   } catch (errorValue) {
-    Notify.error(toErrorMessage(errorValue))
+    const message = errorValue instanceof Error ? errorValue.message : 'Chargement du CV impossible.'
+    Notify.error(`Chargement du CV impossible. ${message}`)
   } finally {
     loading.value = false
   }
@@ -139,10 +135,9 @@ async function saveResume() {
   busy.value = true
   try {
     await updateResume(resumeId.value, resumeForm.value)
-    Notify.success('CV mis à jour (PUT).')
     await loadData()
-  } catch (errorValue) {
-    Notify.error(toErrorMessage(errorValue))
+  } catch {
+    // Notifications already handled by useResumeApi.
   } finally {
     busy.value = false
   }
@@ -156,10 +151,9 @@ async function patchResumeData() {
       summary: resumeForm.value.summary,
       location: resumeForm.value.location,
     })
-    Notify.success('CV mis à jour (PATCH).')
     await loadData()
-  } catch (errorValue) {
-    Notify.error(toErrorMessage(errorValue))
+  } catch {
+    // Notifications already handled by useResumeApi.
   } finally {
     busy.value = false
   }
@@ -169,10 +163,9 @@ async function removeResume() {
   busy.value = true
   try {
     await deleteResume(resumeId.value)
-    Notify.success('CV supprimé.')
     await router.push('/resumes')
-  } catch (errorValue) {
-    Notify.error(toErrorMessage(errorValue))
+  } catch {
+    // Notifications already handled by useResumeApi.
   } finally {
     busy.value = false
   }
@@ -194,14 +187,12 @@ async function submitExperience() {
     const payload = { ...experienceForm.value, resume: resumeId.value }
     if (editingExperienceId.value) {
       await updateResumeExperience(editingExperienceId.value, payload)
-      Notify.success('Expérience mise à jour (PUT).')
     } else {
       await createResumeExperience(payload as never)
-      Notify.success('Expérience créée.')
     }
     await loadData()
-  } catch (errorValue) {
-    Notify.error(toErrorMessage(errorValue))
+  } catch {
+    // Notifications already handled by useResumeApi.
   } finally {
     busy.value = false
   }
@@ -212,10 +203,9 @@ async function patchSelectedExperience() {
   busy.value = true
   try {
     await patchResumeExperience(editingExperienceId.value, experienceForm.value)
-    Notify.success('Expérience mise à jour (PATCH).')
     await loadData()
-  } catch (errorValue) {
-    Notify.error(toErrorMessage(errorValue))
+  } catch {
+    // Notifications already handled by useResumeApi.
   } finally {
     busy.value = false
   }
@@ -225,10 +215,9 @@ async function removeExperience(id: string) {
   busy.value = true
   try {
     await deleteResumeExperience(id)
-    Notify.success('Expérience supprimée.')
     await loadData()
-  } catch (errorValue) {
-    Notify.error(toErrorMessage(errorValue))
+  } catch {
+    // Notifications already handled by useResumeApi.
   } finally {
     busy.value = false
   }
@@ -250,14 +239,12 @@ async function submitEducation() {
     const payload = { ...educationForm.value, resume: resumeId.value }
     if (editingEducationId.value) {
       await updateResumeEducation(editingEducationId.value, payload)
-      Notify.success('Formation mise à jour (PUT).')
     } else {
       await createResumeEducation(payload as never)
-      Notify.success('Formation créée.')
     }
     await loadData()
-  } catch (errorValue) {
-    Notify.error(toErrorMessage(errorValue))
+  } catch {
+    // Notifications already handled by useResumeApi.
   } finally {
     busy.value = false
   }
@@ -268,10 +255,9 @@ async function patchSelectedEducation() {
   busy.value = true
   try {
     await patchResumeEducation(editingEducationId.value, educationForm.value)
-    Notify.success('Formation mise à jour (PATCH).')
     await loadData()
-  } catch (errorValue) {
-    Notify.error(toErrorMessage(errorValue))
+  } catch {
+    // Notifications already handled by useResumeApi.
   } finally {
     busy.value = false
   }
@@ -281,10 +267,9 @@ async function removeEducation(id: string) {
   busy.value = true
   try {
     await deleteResumeEducation(id)
-    Notify.success('Formation supprimée.')
     await loadData()
-  } catch (errorValue) {
-    Notify.error(toErrorMessage(errorValue))
+  } catch {
+    // Notifications already handled by useResumeApi.
   } finally {
     busy.value = false
   }
@@ -306,14 +291,12 @@ async function submitSkill() {
     const payload = { ...skillForm.value, resume: resumeId.value }
     if (editingSkillId.value) {
       await updateResumeSkill(editingSkillId.value, payload)
-      Notify.success('Compétence mise à jour (PUT).')
     } else {
       await createResumeSkill(payload as never)
-      Notify.success('Compétence créée.')
     }
     await loadData()
-  } catch (errorValue) {
-    Notify.error(toErrorMessage(errorValue))
+  } catch {
+    // Notifications already handled by useResumeApi.
   } finally {
     busy.value = false
   }
@@ -324,10 +307,9 @@ async function patchSelectedSkill() {
   busy.value = true
   try {
     await patchResumeSkill(editingSkillId.value, skillForm.value)
-    Notify.success('Compétence mise à jour (PATCH).')
     await loadData()
-  } catch (errorValue) {
-    Notify.error(toErrorMessage(errorValue))
+  } catch {
+    // Notifications already handled by useResumeApi.
   } finally {
     busy.value = false
   }
@@ -337,10 +319,9 @@ async function removeSkill(id: string) {
   busy.value = true
   try {
     await deleteResumeSkill(id)
-    Notify.success('Compétence supprimée.')
     await loadData()
-  } catch (errorValue) {
-    Notify.error(toErrorMessage(errorValue))
+  } catch {
+    // Notifications already handled by useResumeApi.
   } finally {
     busy.value = false
   }
