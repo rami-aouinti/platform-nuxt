@@ -200,7 +200,8 @@ export function useResumeApi() {
   const skillsApi = createCrudApi<ResumeSkill, CreateResumeSkillPayload, UpdateResumeSkillPayload, PatchResumeSkillPayload>('/api/v1/resume-skills')
 
   return {
-    getMyResumes: resumesApi.list,
+    getMyResumes: (query?: ResumeListQuery) => request<PaginatedResponse<Resume>>('GET', '/api/v1/resumes/my', { query }),
+    getResumes: resumesApi.list,
     getResume: resumesApi.get,
     createResume: resumesApi.create,
     updateResume: resumesApi.update,
