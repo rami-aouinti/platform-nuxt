@@ -13,11 +13,14 @@ const { createResume } = useResumeApi()
 const router = useRouter()
 
 const loading = ref(false)
+const isResumeFormValid = ref(false)
+const resumeFormRef = ref()
 const form = ref<CreateResumePayload>({
   title: '',
   headline: '',
   summary: '',
   location: '',
+  isPublic: false,
 })
 
 function toErrorMessage(errorValue: unknown) {
@@ -26,8 +29,9 @@ function toErrorMessage(errorValue: unknown) {
 }
 
 async function submit() {
-  if (!form.value.title?.trim()) {
-    Notify.error('Le titre est obligatoire.')
+  const validationResult = await resumeFormRef.value?.validate()
+  if (!validationResult?.valid) {
+    Notify.error('Le formulaire contient des erreurs. Merci de les corriger avant de soumettre.')
     return
   }
 
@@ -38,6 +42,7 @@ async function submit() {
       headline: form.value.headline,
       summary: form.value.summary,
       location: form.value.location,
+      isPublic: Boolean(form.value.isPublic),
     })
 
     Notify.success('CV créé.')
@@ -59,11 +64,13 @@ async function submit() {
 
     <v-card>
       <v-card-text>
-        <ResumeForm v-model="form" :disabled="loading" />
+        <v-form ref="resumeFormRef" v-model="isResumeFormValid">
+          <ResumeForm v-model="form" :disabled="loading" />
+        </v-form>
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn color="primary" :loading="loading" :disabled="loading" @click="submit">Créer</v-btn>
+        <v-btn color="primary" :loading="loading" :disabled="loading || !isResumeFormValid" @click="submit">Créer</v-btn>
       </v-card-actions>
     </v-card>
   </v-container>

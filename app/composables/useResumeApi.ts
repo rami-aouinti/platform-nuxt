@@ -44,6 +44,7 @@ export interface Resume {
   headline?: string
   summary?: string
   location?: string
+  isPublic?: boolean
   createdAt?: string
   updatedAt?: string
 }
@@ -53,6 +54,7 @@ export interface CreateResumePayload {
   headline?: string
   summary?: string
   location?: string
+  isPublic?: boolean
   tenant?: string
 }
 
@@ -61,6 +63,7 @@ export interface UpdateResumePayload {
   headline?: string
   summary?: string
   location?: string
+  isPublic?: boolean
   tenant?: string
 }
 
