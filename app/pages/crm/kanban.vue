@@ -2,10 +2,10 @@
 import { Notify } from '~/stores/notification'
 import { useCrmApi } from '~/composables/api/useCrmApi'
 import type {
-  CrmTask,
   CrmTaskRequest,
   CrmTaskStatus,
   CrmSprintTaskRequestsGroup,
+  CrmUser,
 } from '~/composables/api/useCrmApi'
 
 const crmApi = useCrmApi()
@@ -21,11 +21,15 @@ definePageMeta({
 
 const loading = ref(false)
 const requestsLoading = ref(false)
+const usersLoading = ref(false)
 const changingRequestStatus = ref<string>('')
+const assigningRequester = ref<string>('')
+const assigningReviewer = ref<string>('')
 const selectedSprintId = ref<string>('')
 const selectedTaskId = ref<string>('')
 const selectedUserId = ref<string>('')
 const groupedByTask = ref<CrmSprintTaskRequestsGroup[]>([])
+const users = ref<CrmUser[]>([])
 const draggedRequestId = ref<string>('')
 
 const requestColumns = [
@@ -48,6 +52,13 @@ const taskRequests = computed<CrmTaskRequest[]>(() => {
   return group?.taskRequests ?? []
 })
 
+const userOptions = computed(() => {
+  return users.value.map((user) => ({
+    id: String(user.id),
+    label: getUserLabel(user),
+  }))
+})
+
 const requestsByStatus = computed(() => {
   return requestColumns.reduce(
     (acc, column) => {
@@ -65,12 +76,41 @@ const requestsByStatus = computed(() => {
   )
 })
 
+function getUserLabel(user: CrmUser) {
+  const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ').trim()
+  if (fullName) return `${fullName} (${user.username ?? user.email ?? user.id})`
+  return user.username ?? user.email ?? String(user.id)
+}
+
+function normalizeUsers(payload: CrmUser[] | { data?: CrmUser[]; items?: CrmUser[] }) {
+  if (Array.isArray(payload)) return payload
+  return payload.items ?? payload.data ?? []
+}
+
+function userIdFromRef(value: CrmTaskRequest['requester'] | CrmTaskRequest['reviewer'], fallback?: string | null) {
+  if (typeof value === 'string') return value
+  if (value && typeof value === 'object' && value.id) return String(value.id)
+  return fallback ?? ''
+}
+
 function getRequestTitle(request: CrmTaskRequest) {
   return request.note?.trim() || `Request ${request.id.slice(0, 8)}`
 }
 
 function requestCount(status: CrmTaskStatus) {
   return requestsByStatus.value[status].length
+}
+
+async function loadUsers() {
+  usersLoading.value = true
+  try {
+    const response = await crmApi.listUsers()
+    users.value = normalizeUsers(response)
+  } catch (error) {
+    Notify.error(error instanceof Error ? error.message : 'Erreur chargement des utilisateurs.')
+  } finally {
+    usersLoading.value = false
+  }
 }
 
 async function loadSprintTaskRequests() {
@@ -99,7 +139,7 @@ async function loadSprintTaskRequests() {
         : 'Erreur chargement task requests du sprint.',
     )
   } finally {
-    requestsLoading.value = false
+    loading.value = false
   }
 }
 
@@ -146,6 +186,34 @@ async function updateRequestStatus(requestId: string, nextStatus: CrmTaskStatus)
   }
 }
 
+async function assignRequester(requestId: string, requesterId: string) {
+  if (!requesterId) return
+  assigningRequester.value = requestId
+  try {
+    await crmApi.assignTaskRequestRequester(requestId, requesterId)
+    Notify.success('Requester assigné.')
+    await loadSprintTaskRequests()
+  } catch (error) {
+    Notify.error(error instanceof Error ? error.message : 'Impossible d’assigner le requester.')
+  } finally {
+    assigningRequester.value = ''
+  }
+}
+
+async function assignReviewer(requestId: string, reviewerId: string) {
+  if (!reviewerId) return
+  assigningReviewer.value = requestId
+  try {
+    await crmApi.assignTaskRequestReviewer(requestId, reviewerId)
+    Notify.success('Reviewer assigné.')
+    await loadSprintTaskRequests()
+  } catch (error) {
+    Notify.error(error instanceof Error ? error.message : 'Impossible d’assigner le reviewer.')
+  } finally {
+    assigningReviewer.value = ''
+  }
+}
+
 function onDropRequest(status: CrmTaskStatus) {
   if (!draggedRequestId.value) return
   updateRequestStatus(draggedRequestId.value, status)
@@ -168,7 +236,7 @@ function requestStatusChipColor(status: CrmTaskRequest['status']) {
 watch(selectedSprintId, reloadKanban)
 watch(selectedUserId, reloadKanban)
 
-onMounted(() => {
+onMounted(async () => {
   const querySprintId = route.query.sprintId
   if (typeof querySprintId === 'string') {
     selectedSprintId.value = querySprintId
@@ -179,7 +247,7 @@ onMounted(() => {
     selectedUserId.value = queryUserId
   }
 
-  reloadKanban()
+  await Promise.all([loadUsers(), reloadKanban()])
 })
 </script>
 
@@ -207,7 +275,7 @@ onMounted(() => {
     </div>
 
     <v-row class="mb-3">
-      <v-col cols="12" md="6">
+      <v-col cols="12" md="4">
         <v-text-field
           v-model="selectedSprintId"
           label="Sprint ID"
@@ -215,12 +283,26 @@ onMounted(() => {
           placeholder="73000000-0000-1000-8000-000000000001"
         />
       </v-col>
-      <v-col cols="12" md="6">
+      <v-col cols="12" md="4">
         <v-text-field
           v-model="selectedUserId"
           label="Filtre User ID (optionnel)"
           clearable
           placeholder="550e8400-e29b-11d4-a716-446655440000"
+        />
+      </v-col>
+      <v-col cols="12" md="4">
+        <v-autocomplete
+          :items="userOptions"
+          item-title="label"
+          item-value="id"
+          label="Users assignables"
+          chips
+          variant="outlined"
+          :loading="usersLoading"
+          readonly
+          hint="Source utilisée pour assigner requester/reviewer"
+          persistent-hint
         />
       </v-col>
     </v-row>
@@ -327,6 +409,36 @@ onMounted(() => {
                       {{ request.status }}
                     </v-chip>
                   </div>
+                </div>
+
+                <div class="mt-3">
+                  <v-select
+                    :items="userOptions"
+                    item-title="label"
+                    item-value="id"
+                    :model-value="userIdFromRef(request.requester, request.requesterId)"
+                    label="Requester"
+                    density="compact"
+                    variant="outlined"
+                    hide-details
+                    :loading="assigningRequester === request.id"
+                    @update:model-value="(value) => assignRequester(request.id, String(value || ''))"
+                  />
+                </div>
+
+                <div class="mt-2">
+                  <v-select
+                    :items="userOptions"
+                    item-title="label"
+                    item-value="id"
+                    :model-value="userIdFromRef(request.reviewer, request.reviewerId)"
+                    label="Reviewer"
+                    density="compact"
+                    variant="outlined"
+                    hide-details
+                    :loading="assigningReviewer === request.id"
+                    @update:model-value="(value) => assignReviewer(request.id, String(value || ''))"
+                  />
                 </div>
               </v-card-text>
             </v-card>

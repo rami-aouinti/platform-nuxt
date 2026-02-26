@@ -48,6 +48,18 @@ export type CrmTaskRequest = {
   status: CrmTaskRequestStatus
   note?: string | null
   time?: string | null
+  requester?: { id?: string; firstName?: string; lastName?: string; username?: string } | string | null
+  reviewer?: { id?: string; firstName?: string; lastName?: string; username?: string } | string | null
+  requesterId?: string | null
+  reviewerId?: string | null
+}
+
+export type CrmUser = {
+  id: string
+  username?: string
+  firstName?: string
+  lastName?: string
+  email?: string
 }
 
 export type CrmSprintTaskRequestsGroup = {
@@ -153,6 +165,11 @@ export function useCrmApi() {
         method: 'GET',
         query: userId ? { user: userId } : undefined,
       }),
+    assignTaskRequestRequester: (id: string, requesterId: string) =>
+      $fetch<CrmTaskRequest>(`${taskRequestsBase}/${id}/requester/${requesterId}`, { method: 'PATCH' }),
+    assignTaskRequestReviewer: (id: string, reviewerId: string) =>
+      $fetch<CrmTaskRequest>(`${taskRequestsBase}/${id}/reviewer/${reviewerId}`, { method: 'PATCH' }),
+    listUsers: () => $fetch<CrmUser[] | { data?: CrmUser[]; items?: CrmUser[] }>('/api/user', { method: 'GET' }),
     createTaskRequest: (payload: CreateTaskRequestPayload) => $fetch<CrmTaskRequest>(taskRequestsBase, { method: 'POST', body: payload }),
     getTaskRequest: (id: string) => $fetch<CrmTaskRequest>(`${taskRequestsBase}/${id}`, { method: 'GET' }),
     updateTaskRequest: (id: string, payload: UpdateTaskRequestPayload) => $fetch<CrmTaskRequest>(`${taskRequestsBase}/${id}`, { method: 'PUT', body: payload }),
