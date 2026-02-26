@@ -135,6 +135,33 @@ function getErrorMessage(error: unknown, fallback: string) {
   return fallback
 }
 
+function formatDateInput(date: Date) {
+  return date.toISOString().slice(0, 10)
+}
+
+function addDays(date: Date, days: number) {
+  const next = new Date(date)
+  next.setDate(next.getDate() + days)
+  return next
+}
+
+function toIsoDateTime(dateInput: string, endOfDay = false) {
+  if (!dateInput) return ''
+  if (dateInput.includes('T')) return dateInput
+  const date = new Date(`${dateInput}T00:00:00`)
+  if (endOfDay) {
+    date.setHours(23, 59, 59, 0)
+  }
+  return date.toISOString()
+}
+
+function resetSprintDates() {
+  const start = new Date()
+  const end = addDays(start, 14)
+  sprintForm.startDate = formatDateInput(start)
+  sprintForm.endDate = formatDateInput(end)
+}
+
 async function loadData() {
   if (!companyId.value) return
 
@@ -227,6 +254,16 @@ async function createSprint() {
     return
   }
 
+  if (!sprintForm.startDate || !sprintForm.endDate) {
+    Notify.error('Les dates de début et de fin sont requises.')
+    return
+  }
+
+  if (new Date(sprintForm.endDate) < new Date(sprintForm.startDate)) {
+    Notify.error('La date de fin doit être postérieure à la date de début.')
+    return
+  }
+
   createSprintLoading.value = true
   try {
     await crmApi.createSprint({
@@ -234,16 +271,15 @@ async function createSprint() {
       project: sprintForm.project,
       goal: sprintForm.goal?.trim() || undefined,
       status: sprintForm.status || undefined,
-      startDate: sprintForm.startDate || undefined,
-      endDate: sprintForm.endDate || undefined,
+      startDate: toIsoDateTime(sprintForm.startDate),
+      endDate: toIsoDateTime(sprintForm.endDate, true),
     })
 
     sprintForm.name = ''
     sprintForm.project = projects.value[0]?.id || ''
     sprintForm.goal = ''
     sprintForm.status = 'planned'
-    sprintForm.startDate = ''
-    sprintForm.endDate = ''
+    resetSprintDates()
     createSprintDialog.value = false
     Notify.success('Sprint créé.')
     await loadData()
@@ -254,8 +290,16 @@ async function createSprint() {
   }
 }
 
+resetSprintDates()
+
 onMounted(loadData)
 watch(companyId, loadData)
+
+watch(createSprintDialog, (value) => {
+  if (value && (!sprintForm.startDate || !sprintForm.endDate)) {
+    resetSprintDates()
+  }
+})
 
 watch(
   projects,
@@ -491,11 +535,15 @@ watch(
           <v-text-field v-model="sprintForm.status" label="Statut" />
           <v-text-field
             v-model="sprintForm.startDate"
-            label="Date de début (ISO)"
+            label="Date de début"
+            type="date"
+            required
           />
           <v-text-field
             v-model="sprintForm.endDate"
-            label="Date de fin (ISO)"
+            label="Date de fin"
+            type="date"
+            required
           />
         </v-card-text>
         <v-card-actions>
