@@ -134,6 +134,8 @@ export function useCrmApi() {
     getTaskRequest: (id: string) => $fetch<CrmTaskRequest>(`${taskRequestsBase}/${id}`, { method: 'GET' }),
     updateTaskRequest: (id: string, payload: UpdateTaskRequestPayload) => $fetch<CrmTaskRequest>(`${taskRequestsBase}/${id}`, { method: 'PUT', body: payload }),
     patchTaskRequest: (id: string, payload: PatchTaskRequestPayload) => $fetch<CrmTaskRequest>(`${taskRequestsBase}/${id}`, { method: 'PATCH', body: payload }),
+    patchTaskRequestRequestedStatus: (id: string, status: CrmTaskRequestStatus) =>
+      $fetch<CrmTaskRequest>(`${taskRequestsBase}/${id}/requested-status/${status}`, { method: 'PATCH' }),
     deleteTaskRequest: (id: string) => $fetch<unknown>(`${taskRequestsBase}/${id}`, { method: 'DELETE' }),
     approveTaskRequest: (id: string) => $fetch<CrmTaskRequest>(`${taskRequestsBase}/${id}/approve`, { method: 'PATCH' }),
     rejectTaskRequest: (id: string) => $fetch<CrmTaskRequest>(`${taskRequestsBase}/${id}/reject`, { method: 'PATCH' }),

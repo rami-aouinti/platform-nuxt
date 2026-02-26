@@ -157,15 +157,7 @@ async function updateRequestStatus(requestId: string, nextStatus: CrmTaskRequest
   changingRequestStatus.value = requestId
 
   try {
-    if (nextStatus === 'approved') {
-      await crmApi.approveTaskRequest(requestId)
-    } else if (nextStatus === 'rejected') {
-      await crmApi.rejectTaskRequest(requestId)
-    } else if (nextStatus === 'cancelled') {
-      await crmApi.cancelTaskRequest(requestId)
-    } else {
-      await crmApi.patchTaskRequest(requestId, { status: nextStatus })
-    }
+    await crmApi.patchTaskRequestRequestedStatus(requestId, nextStatus)
 
     Notify.success('Status de la request mis à jour.')
     await loadTaskRequests()
