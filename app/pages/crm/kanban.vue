@@ -4,7 +4,8 @@ import { useCrmApi } from '~/composables/api/useCrmApi'
 import type {
   CrmTask,
   CrmTaskRequest,
-  CrmTaskRequestStatus,
+  CrmTaskStatus,
+  CrmSprintTaskRequestsGroup,
 } from '~/composables/api/useCrmApi'
 
 const crmApi = useCrmApi()
@@ -21,58 +22,45 @@ definePageMeta({
 const loading = ref(false)
 const requestsLoading = ref(false)
 const changingRequestStatus = ref<string>('')
-const selectedProjectId = ref<string>('')
+const selectedSprintId = ref<string>('')
 const selectedTaskId = ref<string>('')
-const projects = ref<{ id: string; name: string }[]>([])
-const tasks = ref<CrmTask[]>([])
-const taskRequests = ref<CrmTaskRequest[]>([])
+const selectedUserId = ref<string>('')
+const groupedByTask = ref<CrmSprintTaskRequestsGroup[]>([])
 const draggedRequestId = ref<string>('')
 
 const requestColumns = [
-  { key: 'pending', label: 'Pending', color: 'warning' },
-  { key: 'approved', label: 'Approved', color: 'success' },
-  { key: 'rejected', label: 'Rejected', color: 'error' },
-  { key: 'cancelled', label: 'Cancelled', color: 'default' },
+  { key: 'todo', label: 'Todo', color: 'info' },
+  { key: 'in_progress', label: 'In Progress', color: 'warning' },
+  { key: 'done', label: 'Done', color: 'success' },
+  { key: 'archived', label: 'Archived', color: 'default' },
 ] as const
 
-function normalizeItems<T>(value: unknown): T[] {
-  if (Array.isArray(value)) return value as T[]
-  if (
-    value &&
-    typeof value === 'object' &&
-    'items' in value &&
-    Array.isArray((value as { items?: unknown }).items)
-  ) {
-    return (value as { items: unknown[] }).items as T[]
-  }
-  if (
-    value &&
-    typeof value === 'object' &&
-    'data' in value &&
-    Array.isArray((value as { data?: unknown }).data)
-  ) {
-    return (value as { data: unknown[] }).data as T[]
-  }
-  return []
-}
+const tasks = computed(() => groupedByTask.value.map((group) => group.task))
 
 const selectedTask = computed(() =>
   tasks.value.find((task) => String(task.id) === selectedTaskId.value) || null,
 )
 
+const taskRequests = computed<CrmTaskRequest[]>(() => {
+  const group = groupedByTask.value.find(
+    (item) => String(item.task.id) === selectedTaskId.value,
+  )
+  return group?.taskRequests ?? []
+})
+
 const requestsByStatus = computed(() => {
   return requestColumns.reduce(
     (acc, column) => {
       acc[column.key] = taskRequests.value.filter(
-        (request) => request.status === column.key,
+        (request) => (request.requestedStatus ?? 'todo') === column.key,
       )
       return acc
     },
     {
-      pending: [] as CrmTaskRequest[],
-      approved: [] as CrmTaskRequest[],
-      rejected: [] as CrmTaskRequest[],
-      cancelled: [] as CrmTaskRequest[],
+      todo: [] as CrmTaskRequest[],
+      in_progress: [] as CrmTaskRequest[],
+      done: [] as CrmTaskRequest[],
+      archived: [] as CrmTaskRequest[],
     },
   )
 })
@@ -81,62 +69,46 @@ function getRequestTitle(request: CrmTaskRequest) {
   return request.note?.trim() || `Request ${request.id.slice(0, 8)}`
 }
 
-function requestCount(status: CrmTaskRequestStatus) {
+function requestCount(status: CrmTaskStatus) {
   return requestsByStatus.value[status].length
 }
 
-async function loadProjectsAndTasks() {
-  loading.value = true
-  try {
-    const projectsResult = await crmApi.listProjects()
-    projects.value = normalizeItems<{ id: string; name: string }>(projectsResult)
-
-    if (!selectedProjectId.value && projects.value.length) {
-      selectedProjectId.value = String(projects.value[0].id)
-    }
-
-    if (!selectedProjectId.value) {
-      tasks.value = []
-      selectedTaskId.value = ''
-      taskRequests.value = []
-      return
-    }
-
-    const tasksResult = await crmApi.listProjectTasks(selectedProjectId.value)
-    tasks.value = normalizeItems<CrmTask>(tasksResult)
-
-    if (!tasks.value.some((task) => String(task.id) === selectedTaskId.value)) {
-      selectedTaskId.value = tasks.value[0] ? String(tasks.value[0].id) : ''
-    }
-
-    await loadTaskRequests()
-  } catch (error) {
-    Notify.error(
-      error instanceof Error ? error.message : 'Erreur chargement kanban CRM.',
-    )
-  } finally {
-    loading.value = false
-  }
-}
-
-async function loadTaskRequests() {
-  if (!selectedTaskId.value) {
-    taskRequests.value = []
+async function loadSprintTaskRequests() {
+  if (!selectedSprintId.value) {
+    groupedByTask.value = []
+    selectedTaskId.value = ''
     return
   }
 
   requestsLoading.value = true
   try {
-    const requestsResult = await crmApi.listTaskTaskRequests(selectedTaskId.value)
-    taskRequests.value = normalizeItems<CrmTaskRequest>(requestsResult)
+    const response = await crmApi.listTaskRequestsBySprintGroupedByTask(
+      selectedSprintId.value,
+      selectedUserId.value || undefined,
+    )
+
+    groupedByTask.value = response.groupedByTask ?? []
+
+    if (!tasks.value.some((task) => String(task.id) === selectedTaskId.value)) {
+      selectedTaskId.value = tasks.value[0] ? String(tasks.value[0].id) : ''
+    }
   } catch (error) {
     Notify.error(
       error instanceof Error
         ? error.message
-        : 'Erreur chargement task requests.',
+        : 'Erreur chargement task requests du sprint.',
     )
   } finally {
     requestsLoading.value = false
+  }
+}
+
+async function reloadKanban() {
+  loading.value = true
+  try {
+    await loadSprintTaskRequests()
+  } finally {
+    loading.value = false
   }
 }
 
@@ -148,21 +120,21 @@ function onRequestDragEnd() {
   draggedRequestId.value = ''
 }
 
-async function updateRequestStatus(requestId: string, nextStatus: CrmTaskRequestStatus) {
+async function updateRequestStatus(requestId: string, nextStatus: CrmTaskStatus) {
   const request = taskRequests.value.find((item) => item.id === requestId)
-  if (!request || request.status === nextStatus) return
+  if (!request || request.requestedStatus === nextStatus) return
 
-  const previousStatus = request.status
-  request.status = nextStatus
+  const previousStatus = request.requestedStatus
+  request.requestedStatus = nextStatus
   changingRequestStatus.value = requestId
 
   try {
     await crmApi.patchTaskRequestRequestedStatus(requestId, nextStatus)
 
     Notify.success('Status de la request mis à jour.')
-    await loadTaskRequests()
+    await loadSprintTaskRequests()
   } catch (error) {
-    request.status = previousStatus
+    request.requestedStatus = previousStatus
     Notify.error(
       error instanceof Error
         ? error.message
@@ -174,49 +146,40 @@ async function updateRequestStatus(requestId: string, nextStatus: CrmTaskRequest
   }
 }
 
-function onDropRequest(status: CrmTaskRequestStatus) {
+function onDropRequest(status: CrmTaskStatus) {
   if (!draggedRequestId.value) return
   updateRequestStatus(draggedRequestId.value, status)
 }
 
-function statusChipColor(status: CrmTaskRequestStatus) {
+function statusChipColor(status?: CrmTaskStatus | null) {
+  if (status === 'done') return 'success'
+  if (status === 'archived') return 'default'
+  if (status === 'in_progress') return 'warning'
+  return 'info'
+}
+
+function requestStatusChipColor(status: CrmTaskRequest['status']) {
   if (status === 'approved') return 'success'
   if (status === 'rejected') return 'error'
   if (status === 'cancelled') return 'default'
   return 'warning'
 }
 
-watch(selectedProjectId, async () => {
-  if (!selectedProjectId.value) {
-    tasks.value = []
-    selectedTaskId.value = ''
-    taskRequests.value = []
-    return
-  }
-
-  loading.value = true
-  try {
-    const tasksResult = await crmApi.listProjectTasks(selectedProjectId.value)
-    tasks.value = normalizeItems<CrmTask>(tasksResult)
-    selectedTaskId.value = tasks.value[0] ? String(tasks.value[0].id) : ''
-    await loadTaskRequests()
-  } catch (error) {
-    Notify.error(
-      error instanceof Error ? error.message : 'Erreur chargement des tasks.',
-    )
-  } finally {
-    loading.value = false
-  }
-})
-
-watch(selectedTaskId, loadTaskRequests)
+watch(selectedSprintId, reloadKanban)
+watch(selectedUserId, reloadKanban)
 
 onMounted(() => {
-  const queryProjectId = route.query.projectId
-  if (typeof queryProjectId === 'string') {
-    selectedProjectId.value = queryProjectId
+  const querySprintId = route.query.sprintId
+  if (typeof querySprintId === 'string') {
+    selectedSprintId.value = querySprintId
   }
-  loadProjectsAndTasks()
+
+  const queryUserId = route.query.userId
+  if (typeof queryUserId === 'string') {
+    selectedUserId.value = queryUserId
+  }
+
+  reloadKanban()
 })
 </script>
 
@@ -226,7 +189,7 @@ onMounted(() => {
       <div>
         <h1 class="text-h5">CRM Kanban</h1>
         <p class="text-body-2 text-medium-emphasis mb-0">
-          5 colonnes : 1 Tasks + 4 statuts de Task Requests
+          Task requests d'un sprint groupées par task
         </p>
       </div>
       <div class="d-flex ga-2">
@@ -237,7 +200,7 @@ onMounted(() => {
           variant="tonal"
           prepend-icon="mdi-refresh"
           :loading="loading || requestsLoading"
-          @click="loadProjectsAndTasks"
+          @click="reloadKanban"
           >Recharger</v-btn
         >
       </div>
@@ -245,24 +208,19 @@ onMounted(() => {
 
     <v-row class="mb-3">
       <v-col cols="12" md="6">
-        <v-select
-          v-model="selectedProjectId"
-          :items="projects"
-          item-title="name"
-          item-value="id"
-          label="Projet"
+        <v-text-field
+          v-model="selectedSprintId"
+          label="Sprint ID"
           clearable
+          placeholder="73000000-0000-1000-8000-000000000001"
         />
       </v-col>
       <v-col cols="12" md="6">
-        <v-select
-          v-model="selectedTaskId"
-          :items="tasks"
-          item-title="title"
-          item-value="id"
-          label="Task active"
+        <v-text-field
+          v-model="selectedUserId"
+          label="Filtre User ID (optionnel)"
           clearable
-          :disabled="!tasks.length"
+          placeholder="550e8400-e29b-11d4-a716-446655440000"
         />
       </v-col>
     </v-row>
@@ -276,10 +234,16 @@ onMounted(() => {
         <v-divider />
         <v-card-text class="kanban-scroll">
           <v-alert
-            v-if="!tasks.length"
+            v-if="!selectedSprintId"
             type="info"
             variant="tonal"
-            text="Aucune task pour ce projet."
+            text="Saisissez un sprint ID pour charger les tasks."
+          />
+          <v-alert
+            v-else-if="!tasks.length"
+            type="info"
+            variant="tonal"
+            text="Aucune task pour ce sprint."
           />
 
           <v-card
@@ -355,9 +319,14 @@ onMounted(() => {
               <v-card-text class="pt-0">
                 <div class="d-flex align-center justify-space-between">
                   <span class="text-caption text-medium-emphasis">{{ request.id.slice(0, 8) }}</span>
-                  <v-chip size="x-small" :color="statusChipColor(request.status)" variant="tonal">
-                    {{ request.status }}
-                  </v-chip>
+                  <div class="d-flex ga-1">
+                    <v-chip size="x-small" :color="statusChipColor(request.requestedStatus)" variant="tonal">
+                      {{ request.requestedStatus || 'todo' }}
+                    </v-chip>
+                    <v-chip size="x-small" :color="requestStatusChipColor(request.status)" variant="outlined">
+                      {{ request.status }}
+                    </v-chip>
+                  </div>
                 </div>
               </v-card-text>
             </v-card>
@@ -378,7 +347,7 @@ onMounted(() => {
       class="mt-4"
       type="success"
       variant="tonal"
-      :text="`Task active: ${selectedTask.title}`"
+      :text="`Task active: ${selectedTask.title} (${selectedTask.status})`"
     />
   </v-container>
 </template>

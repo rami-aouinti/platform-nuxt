@@ -93,6 +93,20 @@ const canCreateProjectInCompany = computed(() => {
   return canCreateProject(currentUser.value, companyPermissionSubject.value)
 })
 
+function getCompanyDisplayName(entry: CrmCompany | null) {
+  if (!entry) return 'Company'
+  return entry.legalName?.trim() || entry.name
+}
+
+function getCompanyAvatar(entry: CrmCompany | null) {
+  if (!entry) return undefined
+  return entry.image || entry.photo || entry.photoUrl || undefined
+}
+
+function getProjectAvatar(project: CrmProjectExtended) {
+  return project.image || project.photo || project.photoUrl || undefined
+}
+
 function getErrorMessage(error: unknown, fallback: string) {
   if (error instanceof Error) return error.message
   return fallback
@@ -176,7 +190,7 @@ watch(companyId, loadData)
   <v-container fluid>
     <div class="d-flex align-center justify-space-between mb-4 flex-wrap ga-2">
       <div>
-        <h1 class="text-h5">CRM · {{ company?.name || 'Company' }}</h1>
+        <h1 class="text-h5">CRM · {{ getCompanyDisplayName(company) }}</h1>
         <p class="text-body-2 text-medium-emphasis">ID: {{ companyId }}</p>
       </div>
       <div class="d-flex ga-2">
@@ -217,9 +231,19 @@ watch(companyId, loadData)
       <v-card-text>
         <v-skeleton-loader v-if="loading" type="article" />
         <template v-else>
-          <p class="mb-2">
-            <strong>Nom :</strong> {{ company?.name || 'N/A' }}
-          </p>
+          <div class="d-flex align-center ga-3 mb-2">
+            <v-avatar size="40">
+              <v-img
+                v-if="getCompanyAvatar(company)"
+                :src="getCompanyAvatar(company)"
+                :alt="getCompanyDisplayName(company)"
+              />
+              <span v-else>{{ getCompanyDisplayName(company).slice(0, 1).toUpperCase() }}</span>
+            </v-avatar>
+            <p class="mb-0">
+              <strong>Nom :</strong> {{ getCompanyDisplayName(company) || 'N/A' }}
+            </p>
+          </div>
           <p class="mb-2">
             <strong>Rôle :</strong> {{ company?.role || 'member' }}
           </p>
@@ -241,7 +265,17 @@ watch(companyId, loadData)
       >
         <v-card class="h-100" hover @click="openProject(project.id)">
           <v-card-title class="d-flex align-center justify-space-between ga-2">
-            <span class="text-truncate">{{ project.name }}</span>
+            <div class="d-flex align-center ga-3 min-w-0">
+              <v-avatar size="28">
+                <v-img
+                  v-if="getProjectAvatar(project)"
+                  :src="getProjectAvatar(project)"
+                  :alt="project.name"
+                />
+                <span v-else>{{ project.name.slice(0, 1).toUpperCase() }}</span>
+              </v-avatar>
+              <span class="text-truncate">{{ project.name }}</span>
+            </div>
             <v-chip
               size="small"
               :color="project.status === 'active' ? 'success' : 'default'"

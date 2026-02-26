@@ -7,8 +7,12 @@ export type CrmCompanyRole = 'owner' | 'member' | string
 export type CrmCompany = {
   id: string
   name: string
+  legalName?: string | null
   description?: string | null
   role?: CrmCompanyRole | null
+  photoUrl?: string | null
+  photo?: string | null
+  image?: string | null
   projectsCount?: number | null
   projects?: unknown[] | number | null
   stats?: {
@@ -21,6 +25,9 @@ export type CrmProject = {
   name: string
   description?: string | null
   status: CrmProjectStatus
+  photoUrl?: string | null
+  photo?: string | null
+  image?: string | null
 }
 
 export type CrmTask = {
@@ -40,6 +47,17 @@ export type CrmTaskRequest = {
   requestedStatus?: CrmTaskStatus | null
   status: CrmTaskRequestStatus
   note?: string | null
+  time?: string | null
+}
+
+export type CrmSprintTaskRequestsGroup = {
+  task: CrmTask
+  taskRequests: CrmTaskRequest[]
+}
+
+export type CrmSprintTaskRequestsResponse = {
+  sprintId: string
+  groupedByTask: CrmSprintTaskRequestsGroup[]
 }
 
 export type CreateCompanyPayload = {
@@ -130,11 +148,16 @@ export function useCrmApi() {
       $fetch<CrmTaskRequest[]>(`${tasksBase}/${taskId}/task-requests`, {
         method: 'GET',
       }),
+    listTaskRequestsBySprintGroupedByTask: (sprintId: string, userId?: string) =>
+      $fetch<CrmSprintTaskRequestsResponse>(`${taskRequestsBase}/sprints/${sprintId}/grouped-by-task`, {
+        method: 'GET',
+        query: userId ? { user: userId } : undefined,
+      }),
     createTaskRequest: (payload: CreateTaskRequestPayload) => $fetch<CrmTaskRequest>(taskRequestsBase, { method: 'POST', body: payload }),
     getTaskRequest: (id: string) => $fetch<CrmTaskRequest>(`${taskRequestsBase}/${id}`, { method: 'GET' }),
     updateTaskRequest: (id: string, payload: UpdateTaskRequestPayload) => $fetch<CrmTaskRequest>(`${taskRequestsBase}/${id}`, { method: 'PUT', body: payload }),
     patchTaskRequest: (id: string, payload: PatchTaskRequestPayload) => $fetch<CrmTaskRequest>(`${taskRequestsBase}/${id}`, { method: 'PATCH', body: payload }),
-    patchTaskRequestRequestedStatus: (id: string, status: CrmTaskRequestStatus) =>
+    patchTaskRequestRequestedStatus: (id: string, status: CrmTaskStatus) =>
       $fetch<CrmTaskRequest>(`${taskRequestsBase}/${id}/requested-status/${status}`, { method: 'PATCH' }),
     deleteTaskRequest: (id: string) => $fetch<unknown>(`${taskRequestsBase}/${id}`, { method: 'DELETE' }),
     approveTaskRequest: (id: string) => $fetch<CrmTaskRequest>(`${taskRequestsBase}/${id}/approve`, { method: 'PATCH' }),
