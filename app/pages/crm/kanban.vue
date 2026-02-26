@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Notify } from '~/stores/notification'
-import type { useCrmApi } from '~/composables/api/useCrmApi'
+import { useCrmApi } from '~/composables/api/useCrmApi'
+import type {CrmTask} from "~/composables/api/useCrmApi";
 
 const crmApi = useCrmApi()
 

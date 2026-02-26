@@ -8,6 +8,8 @@ import type {
   CrmTaskRequestStatus,
 } from '~/composables/api/useCrmApi'
 
+import {useCrmApi} from "~/composables/api/useCrmApi";
+
 const crmApi = useCrmApi()
 
 definePageMeta({
