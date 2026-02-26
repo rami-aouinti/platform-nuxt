@@ -2,7 +2,12 @@
 import { Notify } from '~/stores/notification'
 import { useCrmApi } from '~/composables/api/useCrmApi'
 import { useAuthStore } from '~/stores/auth'
-import type { CrmCompany, CrmProject } from '~/composables/api/useCrmApi'
+import type {
+  CrmCompany,
+  CrmProject,
+  CrmSprint,
+  CreateSprintPayload,
+} from '~/composables/api/useCrmApi'
 import { PERMISSION_MESSAGES } from '~/utils/permissions/messages'
 import {
   canCreateProject,
@@ -36,12 +41,24 @@ const createLoading = ref(false)
 const company = ref<CrmCompany | null>(null)
 const companyMembershipIds = ref<string[]>([])
 const projects = ref<CrmProjectExtended[]>([])
+const sprints = ref<CrmSprint[]>([])
 const errorMessage = ref('')
 const createDialog = ref(false)
+const createSprintDialog = ref(false)
+const createSprintLoading = ref(false)
 
 const projectForm = reactive({
   name: '',
   description: '',
+})
+
+const sprintForm = reactive<CreateSprintPayload>({
+  name: '',
+  project: '',
+  goal: '',
+  status: 'planned',
+  startDate: '',
+  endDate: '',
 })
 
 const currentUser = computed<TaskManagerUser>(() => ({
@@ -107,6 +124,12 @@ function getProjectAvatar(project: CrmProjectExtended) {
   return project.image || project.photo || project.photoUrl || undefined
 }
 
+function sprintProjectName(sprint: CrmSprint) {
+  if (!sprint.project) return 'Projet inconnu'
+  if (typeof sprint.project === 'string') return sprint.project
+  return sprint.project.name || sprint.project.id || 'Projet inconnu'
+}
+
 function getErrorMessage(error: unknown, fallback: string) {
   if (error instanceof Error) return error.message
   return fallback
@@ -118,13 +141,15 @@ async function loadData() {
   loading.value = true
   errorMessage.value = ''
   try {
-    const [companiesResult, projectsResult] = await Promise.all([
+    const [companiesResult, projectsResult, sprintsResult] = await Promise.all([
       crmApi.listCompanies(),
       crmApi.listCompanyProjects(companyId.value),
+      crmApi.listSprints(),
     ])
 
     const companies = normalizeItems<CrmCompany>(companiesResult)
     const projectItems = normalizeItems<CrmProjectExtended>(projectsResult)
+    const sprintItems = normalizeItems<CrmSprint>(sprintsResult)
 
     company.value =
       companies.find((entry) => entry.id === companyId.value) ?? null
@@ -133,6 +158,15 @@ async function loadData() {
       .map((entry) => entry.id)
 
     projects.value = projectItems
+    const companyProjectIds = new Set(projectItems.map((project) => project.id))
+    sprints.value = sprintItems.filter((sprint) => {
+      if (!sprint.project) return false
+      if (typeof sprint.project === 'string')
+        return companyProjectIds.has(sprint.project)
+      return typeof sprint.project.id === 'string'
+        ? companyProjectIds.has(sprint.project.id)
+        : false
+    })
 
     if (!company.value) {
       errorMessage.value = 'Company introuvable ou non accessible.'
@@ -182,8 +216,64 @@ function openProject(projectId: string) {
   router.push(`/crm/projects/${projectId}`)
 }
 
+async function createSprint() {
+  if (!sprintForm.name.trim()) {
+    Notify.error('Le nom du sprint est requis.')
+    return
+  }
+
+  if (!sprintForm.project) {
+    Notify.error('Veuillez sélectionner un projet.')
+    return
+  }
+
+  createSprintLoading.value = true
+  try {
+    await crmApi.createSprint({
+      name: sprintForm.name.trim(),
+      project: sprintForm.project,
+      goal: sprintForm.goal?.trim() || undefined,
+      status: sprintForm.status || undefined,
+      startDate: sprintForm.startDate || undefined,
+      endDate: sprintForm.endDate || undefined,
+    })
+
+    sprintForm.name = ''
+    sprintForm.project = projects.value[0]?.id || ''
+    sprintForm.goal = ''
+    sprintForm.status = 'planned'
+    sprintForm.startDate = ''
+    sprintForm.endDate = ''
+    createSprintDialog.value = false
+    Notify.success('Sprint créé.')
+    await loadData()
+  } catch (error) {
+    Notify.error(getErrorMessage(error, 'Erreur de création du sprint.'))
+  } finally {
+    createSprintLoading.value = false
+  }
+}
+
 onMounted(loadData)
 watch(companyId, loadData)
+
+watch(
+  projects,
+  (value) => {
+    if (!value.length) {
+      sprintForm.project = ''
+      return
+    }
+    if (
+      !sprintForm.project ||
+      !value.some((project) => project.id === sprintForm.project)
+    ) {
+      const firstProject = value[0]
+      sprintForm.project = firstProject ? firstProject.id : ''
+    }
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
@@ -209,11 +299,21 @@ watch(companyId, loadData)
           prepend-icon="mdi-plus"
           :disabled="!canCreateProjectInCompany"
           :title="
-            canCreateProjectInCompany ? undefined : PERMISSION_MESSAGES.createProject
+            canCreateProjectInCompany
+              ? undefined
+              : PERMISSION_MESSAGES.createProject
           "
           @click="createDialog = true"
         >
           Créer un projet
+        </v-btn>
+        <v-btn
+          color="secondary"
+          prepend-icon="mdi-calendar-plus"
+          :disabled="!projects.length"
+          @click="createSprintDialog = true"
+        >
+          Ajouter un sprint
         </v-btn>
       </div>
     </div>
@@ -238,10 +338,13 @@ watch(companyId, loadData)
                 :src="getCompanyAvatar(company)"
                 :alt="getCompanyDisplayName(company)"
               />
-              <span v-else>{{ getCompanyDisplayName(company).slice(0, 1).toUpperCase() }}</span>
+              <span v-else>{{
+                getCompanyDisplayName(company).slice(0, 1).toUpperCase()
+              }}</span>
             </v-avatar>
             <p class="mb-0">
-              <strong>Nom :</strong> {{ getCompanyDisplayName(company) || 'N/A' }}
+              <strong>Nom :</strong>
+              {{ getCompanyDisplayName(company) || 'N/A' }}
             </p>
           </div>
           <p class="mb-2">
@@ -291,6 +394,49 @@ watch(companyId, loadData)
       </v-col>
     </v-row>
 
+    <v-card class="mt-6">
+      <v-card-title>Sprints</v-card-title>
+      <v-card-text>
+        <v-row v-if="sprints.length">
+          <v-col
+            v-for="sprint in sprints"
+            :key="sprint.id"
+            cols="12"
+            md="6"
+            lg="4"
+          >
+            <v-card variant="outlined" class="h-100">
+              <v-card-title
+                class="d-flex justify-space-between align-center ga-2"
+              >
+                <span class="text-truncate">{{
+                  sprint.name || sprint.id
+                }}</span>
+                <v-chip size="small" variant="tonal">{{
+                  sprint.status || 'planned'
+                }}</v-chip>
+              </v-card-title>
+              <v-card-text>
+                <p class="mb-1">
+                  <strong>Projet :</strong> {{ sprintProjectName(sprint) }}
+                </p>
+                <p class="mb-0">
+                  <strong>Objectif :</strong>
+                  {{ sprint.goal || 'Aucun objectif.' }}
+                </p>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
+        <v-alert
+          v-else
+          type="info"
+          variant="tonal"
+          text="Aucun sprint pour les projets de cette company."
+        />
+      </v-card-text>
+    </v-card>
+
     <v-alert
       v-if="!loading && !projects.length"
       type="info"
@@ -319,6 +465,51 @@ watch(companyId, loadData)
             >Annuler</v-btn
           >
           <v-btn color="primary" :loading="createLoading" @click="createProject"
+            >Créer</v-btn
+          >
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="createSprintDialog" max-width="640">
+      <v-card>
+        <v-card-title>Ajouter un sprint</v-card-title>
+        <v-card-text>
+          <v-text-field
+            v-model="sprintForm.name"
+            label="Nom du sprint"
+            autofocus
+          />
+          <v-select
+            v-model="sprintForm.project"
+            label="Projet"
+            :items="projects"
+            item-title="name"
+            item-value="id"
+          />
+          <v-textarea v-model="sprintForm.goal" label="Objectif" rows="3" />
+          <v-text-field v-model="sprintForm.status" label="Statut" />
+          <v-text-field
+            v-model="sprintForm.startDate"
+            label="Date de début (ISO)"
+          />
+          <v-text-field
+            v-model="sprintForm.endDate"
+            label="Date de fin (ISO)"
+          />
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            variant="text"
+            :disabled="createSprintLoading"
+            @click="createSprintDialog = false"
+            >Annuler</v-btn
+          >
+          <v-btn
+            color="primary"
+            :loading="createSprintLoading"
+            @click="createSprint"
             >Créer</v-btn
           >
         </v-card-actions>
