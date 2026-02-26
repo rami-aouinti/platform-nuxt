@@ -85,8 +85,7 @@
   border: 1px solid var(--offers-border);
   border-radius: var(--offers-radius-lg);
   position: sticky;
-  top: 88px;
-  max-height: calc(100vh - 120px);
+  max-height: calc(100vh - 150px);
   overflow-y: auto;
   padding: var(--offers-space-3);
 }
@@ -297,6 +296,9 @@
   padding: var(--offers-space-4);
   display: grid;
   gap: var(--offers-space-4);
+  position: sticky;
+  max-height: calc(100vh - 150px);
+  overflow-y: auto;
 }
 .offer-details-panel__header {
   display: flex;
