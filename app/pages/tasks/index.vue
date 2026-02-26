@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import TaskBoardAndTable from "~/components/task/TaskBoardAndTable.vue";
+
 definePageMeta({
   title: 'Tasks',
   icon: 'mdi-format-list-checks',
