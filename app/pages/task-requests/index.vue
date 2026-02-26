@@ -9,5 +9,5 @@ definePageMeta({
 </script>
 
 <template>
-  <TaskRequestsListPage />
+  <TaskRequestLists />
 </template>

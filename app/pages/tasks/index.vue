@@ -9,5 +9,5 @@ definePageMeta({
 </script>
 
 <template>
-  <TasksKanbanPage />
+  <TaskBoardAndTable />
 </template>
