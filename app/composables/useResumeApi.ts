@@ -1,4 +1,4 @@
-import { HttpRequestError, type HttpMethod, httpRequest } from '../../services/http/client'
+import { HttpRequestError, type HttpMethod, httpRequest } from '~/services/http/client'
 import { Notify } from '~/stores/notification'
 
 export type Id = string
