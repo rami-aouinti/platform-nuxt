@@ -1,15 +1,26 @@
 <script setup lang="ts">
+import { useCrmApi, type CrmProject } from '~/composables/api/useCrmApi'
+
 type ProjectsViewState = 'loading' | 'empty' | 'error' | 'success'
 
 interface ProjectRow {
   id: string
   name: string
   owner: string
+  ownerId: string | null
+  managerIds: string[]
   status: 'Actif' | 'En pause' | 'Terminé'
 }
 
-const state = ref<ProjectsViewState>('loading')
+type CrmProjectExtended = CrmProject & {
+  owner?: { id?: string; name?: string } | string | null
+  ownerId?: string | null
+  managers?: Array<{ id?: string } | string> | null
+}
+
+const crmApi = useCrmApi()
 const rows = ref<ProjectRow[]>([])
+const state = ref<ProjectsViewState>('loading')
 
 const headers = [
   { title: 'Projet', key: 'name' },
@@ -18,22 +29,76 @@ const headers = [
   { title: 'Action', key: 'actions', sortable: false },
 ]
 
-function load(stateMode: ProjectsViewState = 'success') {
-  state.value = 'loading'
-
-  window.setTimeout(() => {
-    state.value = stateMode
-
-    rows.value = stateMode === 'success'
-      ? [
-          { id: 'PRJ-101', name: 'Portail client', owner: 'Lucie Martin', status: 'Actif' },
-          { id: 'PRJ-102', name: 'Refonte onboarding', owner: 'Amine B.', status: 'En pause' },
-        ]
-      : []
-  }, 500)
+function normalizeItems<T>(value: unknown): T[] {
+  if (Array.isArray(value)) return value as T[]
+  if (value && typeof value === 'object' && 'items' in value && Array.isArray((value as { items?: unknown }).items)) {
+    return (value as { items: T[] }).items
+  }
+  if (value && typeof value === 'object' && 'data' in value && Array.isArray((value as { data?: unknown }).data)) {
+    return (value as { data: T[] }).data
+  }
+  return []
 }
 
-onMounted(() => load('success'))
+function mapStatus(status: string): ProjectRow['status'] {
+  if (status === 'active') return 'Actif'
+  if (status === 'archived') return 'Terminé'
+  return 'En pause'
+}
+
+function mapOwner(project: CrmProjectExtended) {
+  if (project.owner && typeof project.owner === 'object') {
+    return {
+      name: project.owner.name || project.owner.id || 'Non assigné',
+      id: project.owner.id || null,
+    }
+  }
+
+  if (typeof project.owner === 'string') {
+    return { name: project.owner, id: project.owner }
+  }
+
+  if (typeof project.ownerId === 'string') {
+    return { name: project.ownerId, id: project.ownerId }
+  }
+
+  return { name: 'Non assigné', id: null }
+}
+
+function mapManagers(project: CrmProjectExtended) {
+  if (!Array.isArray(project.managers)) return []
+
+  return project.managers
+    .map((entry) => (typeof entry === 'string' ? entry : entry.id || ''))
+    .filter(Boolean)
+}
+
+function mapProjectToRow(project: CrmProjectExtended): ProjectRow {
+  const owner = mapOwner(project)
+  return {
+    id: project.id,
+    name: project.name,
+    owner: owner.name,
+    ownerId: owner.id,
+    managerIds: mapManagers(project),
+    status: mapStatus(project.status),
+  }
+}
+
+async function load() {
+  state.value = 'loading'
+
+  try {
+    const result = await crmApi.listProjects()
+    rows.value = normalizeItems<CrmProjectExtended>(result).map(mapProjectToRow)
+    state.value = rows.value.length ? 'success' : 'empty'
+  } catch {
+    rows.value = []
+    state.value = 'error'
+  }
+}
+
+onMounted(load)
 </script>
 
 <template>
@@ -41,9 +106,7 @@ onMounted(() => load('success'))
     <div class="d-flex align-center justify-space-between mb-4 ga-2 flex-wrap">
       <h1 class="text-h5">Projects</h1>
       <div class="d-flex ga-2 flex-wrap">
-        <v-btn variant="text" prepend-icon="mdi-sync" @click="load('success')">Reload</v-btn>
-        <v-btn variant="text" @click="load('empty')">Simuler empty</v-btn>
-        <v-btn variant="text" color="error" @click="load('error')">Simuler error</v-btn>
+        <v-btn variant="text" prepend-icon="mdi-sync" @click="load">Reload</v-btn>
       </div>
     </div>
 
@@ -59,11 +122,14 @@ onMounted(() => load('success'))
     <v-alert v-else-if="state === 'error'" type="error" variant="tonal" border="start" class="d-flex align-center">
       Impossible de charger les projets.
       <template #append>
-        <v-btn size="small" color="error" variant="outlined" @click="load('success')">Réessayer</v-btn>
+        <v-btn size="small" color="error" variant="outlined" @click="load">Réessayer</v-btn>
       </template>
     </v-alert>
 
-    <v-data-table v-else :headers="headers" :items="rows" item-value="id" class="elevation-1">
+    <v-data-table v-else :headers="headers" :items="rows" item-value="id" class="elevation-1" hover>
+      <template #item.name="{ item }">
+        <NuxtLink :to="`/projects/${item.id}`" class="text-decoration-none">{{ item.name }}</NuxtLink>
+      </template>
       <template #item.actions="{ item }">
         <v-btn size="small" color="primary" variant="text" :to="`/projects/${item.id}`">Voir</v-btn>
       </template>
