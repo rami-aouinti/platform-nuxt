@@ -55,54 +55,5 @@ onMounted(loadTasks)
 </script>
 
 <template>
-  <v-container fluid>
-    <v-row class="mb-2" align="center" justify="space-between">
-      <v-col cols="12" md="8">
-        <h1 class="text-h5 font-weight-bold">Tasks</h1>
-      </v-col>
-      <v-col cols="12" md="4" class="d-flex justify-md-end">
-        <v-btn variant="tonal" prepend-icon="mdi-refresh" :loading="loading" @click="loadTasks">
-          Recharger
-        </v-btn>
-      </v-col>
-    </v-row>
-
-    <v-alert v-if="error" type="error" variant="tonal" class="mb-4">
-      {{ error }}
-    </v-alert>
-
-    <v-card>
-      <v-data-table
-        :items="tasks"
-        :loading="loading"
-        item-value="id"
-        :headers="[
-          { title: 'Titre', key: 'title' },
-          { title: 'Priorité', key: 'priority' },
-          { title: 'Statut', key: 'status' },
-          { title: 'Échéance', key: 'dueDate' },
-        ]"
-      >
-        <template #item.priority="{ item }">
-          <v-chip size="small" :color="priorityColor(item.priority)">
-            {{ item.priority }}
-          </v-chip>
-        </template>
-
-        <template #item.status="{ item }">
-          <v-chip size="small" :color="statusColor(item.status)">
-            {{ item.status }}
-          </v-chip>
-        </template>
-
-        <template #item.dueDate="{ item }">
-          {{ item.dueDate ? new Date(item.dueDate).toLocaleDateString() : '-' }}
-        </template>
-
-        <template #no-data>
-          <div class="py-6 text-medium-emphasis text-center">Aucune task trouvée.</div>
-        </template>
-      </v-data-table>
-    </v-card>
-  </v-container>
+  <TaskBoardAndTable />
 </template>

@@ -1,43 +1,9 @@
 export type TaskPriority = 'low' | 'medium' | 'high' | 'critical'
 export type TaskStatus = 'todo' | 'in_progress' | 'done' | 'archived'
 
-export type TaskItem = {
-  id: string
-  owner: unknown
-  project: unknown | null
-  title: string
-  description: string
-  priority: TaskPriority
-  status: TaskStatus
-  dueDate: string | null
-  completedAt: string | null
-}
-
-export type CreateTaskPayload = {
-  title: string
-  description?: string
-  priority: TaskPriority
-  status: TaskStatus
-  project?: string | null
-  dueDate?: string
-}
-
-export type UpdateTaskPayload = CreateTaskPayload
-export type PatchTaskPayload = Partial<CreateTaskPayload>
-
-export type TaskItem = {
-  id: string
-  owner: unknown
-  project: unknown | null
-  title: string
-  description: string
-  priority: TaskPriority
-  status: TaskStatus
-  dueDate: string | null
-  completedAt: string | null
-}
-
 export function useTasksApi() {
+  const basePath = '/api/v1/tasks'
+
   return {
     list: () => $fetch<TaskItem[]>(basePath, { method: 'GET' }),
     get: (id: string) => $fetch<TaskItem>(`${basePath}/${id}`, { method: 'GET' }),
