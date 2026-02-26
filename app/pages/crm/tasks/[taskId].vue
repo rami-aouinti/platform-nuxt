@@ -125,14 +125,6 @@ function getErrorMessage(error: unknown, fallback: string) {
   return fallback
 }
 
-function resolveRequestTaskId(request: CrmTaskRequest): string {
-  if (typeof request.task === 'string') return request.task
-  if (request.task && typeof request.task === 'object') {
-    return String(request.task.id ?? '')
-  }
-  return ''
-}
-
 function resolveRequesterId(request: CrmTaskRequestExtended): string | null {
   if (typeof request.requesterId === 'string') return request.requesterId
   if (request.requester && typeof request.requester === 'string') {
@@ -271,7 +263,7 @@ async function loadData() {
   try {
     const [taskResult, requestsResult] = await Promise.all([
       crmApi.getTask(taskId.value),
-      crmApi.listTaskRequests(),
+      crmApi.listTaskTaskRequests(taskId.value),
     ])
 
     task.value = taskResult as CrmTaskExtended
@@ -280,9 +272,7 @@ async function loadData() {
     taskForm.priority = task.value?.priority || 'medium'
     taskForm.dueDate = task.value?.dueDate || ''
 
-    requests.value = normalizeItems<CrmTaskRequestExtended>(requestsResult).filter(
-      (entry) => resolveRequestTaskId(entry) === taskId.value,
-    )
+    requests.value = normalizeItems<CrmTaskRequestExtended>(requestsResult)
   } catch (error) {
     errorMessage.value = getErrorMessage(
       error,

@@ -75,14 +75,6 @@ function normalizeItems<T>(value: unknown): T[] {
   return []
 }
 
-function resolveProjectCompanyId(project: CrmProjectExtended): string {
-  if (typeof project.companyId === 'string') return project.companyId
-  if (typeof project.company === 'string') return project.company
-  if (project.company && typeof project.company === 'object')
-    return String(project.company.id ?? '')
-  return ''
-}
-
 const canCreateProjectInCompany = computed(() => {
   if (!company.value) return false
   const entry = company.value as CrmCompany & {
@@ -114,7 +106,7 @@ async function loadData() {
   try {
     const [companiesResult, projectsResult] = await Promise.all([
       crmApi.listCompanies(),
-      crmApi.listProjects(),
+      crmApi.listCompanyProjects(companyId.value),
     ])
 
     const companies = normalizeItems<CrmCompany>(companiesResult)
@@ -126,9 +118,7 @@ async function loadData() {
       .filter((entry) => entry.role === 'owner' || entry.role === 'member')
       .map((entry) => entry.id)
 
-    projects.value = projectItems.filter(
-      (entry) => resolveProjectCompanyId(entry) === companyId.value,
-    )
+    projects.value = projectItems
 
     if (!company.value) {
       errorMessage.value = 'Company introuvable ou non accessible.'
