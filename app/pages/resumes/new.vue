@@ -23,11 +23,6 @@ const form = ref<CreateResumePayload>({
   isPublic: false,
 })
 
-function toErrorMessage(errorValue: unknown) {
-  if (errorValue instanceof Error) return errorValue.message
-  return 'Une erreur API est survenue.'
-}
-
 async function submit() {
   const validationResult = await resumeFormRef.value?.validate()
   if (!validationResult?.valid) {
@@ -45,10 +40,9 @@ async function submit() {
       isPublic: Boolean(form.value.isPublic),
     })
 
-    Notify.success('CV créé.')
     await router.push(`/resumes/${resume.id}`)
-  } catch (errorValue) {
-    Notify.error(toErrorMessage(errorValue))
+  } catch {
+    // Notifications already handled by useResumeApi.
   } finally {
     loading.value = false
   }

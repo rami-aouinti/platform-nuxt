@@ -1,4 +1,5 @@
-import { type HttpMethod, httpRequest } from '../../services/http/client'
+import { HttpRequestError, type HttpMethod, httpRequest } from '../../services/http/client'
+import { Notify } from '~/stores/notification'
 
 export type Id = string
 
@@ -185,14 +186,104 @@ function request<T>(method: HttpMethod, path: string, options: { query?: ResumeL
   })
 }
 
+function collectFieldErrors(details: unknown): string[] {
+  if (!details) {
+    return []
+  }
+
+  if (Array.isArray(details)) {
+    return details.flatMap((entry) => collectFieldErrors(entry))
+  }
+
+  if (typeof details === 'string') {
+    return [details]
+  }
+
+  if (typeof details !== 'object') {
+    return []
+  }
+
+  const objectDetails = details as Record<string, unknown>
+
+  if ('field' in objectDetails && 'message' in objectDetails && typeof objectDetails.field === 'string' && typeof objectDetails.message === 'string') {
+    return [`${objectDetails.field}: ${objectDetails.message}`]
+  }
+
+  return Object.entries(objectDetails).flatMap(([key, value]) => {
+    if (Array.isArray(value)) {
+      return value
+        .map((item) => typeof item === 'string' ? `${key}: ${item}` : '')
+        .filter(Boolean)
+    }
+
+    if (typeof value === 'string') {
+      return [`${key}: ${value}`]
+    }
+
+    return collectFieldErrors(value)
+  })
+}
+
+function getResumeCrudErrorMessage(errorValue: unknown): string {
+  if (!(errorValue instanceof HttpRequestError)) {
+    if (errorValue instanceof Error) {
+      return errorValue.message
+    }
+
+    return 'Une erreur API est survenue.'
+  }
+
+  if (errorValue.statusCode === 401) {
+    return 'Session expirée ou non authentifiée. Veuillez vous reconnecter.'
+  }
+
+  if (errorValue.statusCode === 403) {
+    return "Action interdite : ce CV appartient à un autre utilisateur."
+  }
+
+  if (errorValue.statusCode === 404) {
+    return 'CV introuvable ou CV privé non accessible.'
+  }
+
+  if (errorValue.statusCode === 400) {
+    const fieldErrors = collectFieldErrors(errorValue.details)
+    if (fieldErrors.length) {
+      return `Payload invalide : ${fieldErrors.join(' · ')}`
+    }
+    return 'Payload invalide. Vérifiez les données envoyées.'
+  }
+
+  return errorValue.message || 'Une erreur API est survenue.'
+}
+
+async function withCrudNotifications<T>(messages: { success: string; errorContext: string }, run: () => Promise<T>): Promise<T> {
+  try {
+    const result = await run()
+    Notify.success(messages.success)
+    return result
+  } catch (errorValue) {
+    const message = getResumeCrudErrorMessage(errorValue)
+    Notify.error(`${messages.errorContext} ${message}`)
+    throw errorValue
+  }
+}
+
 function createCrudApi<TItem, TCreate, TUpdate, TPatch>(basePath: string) {
   return {
     list: (query?: ResumeListQuery) => request<PaginatedResponse<TItem>>('GET', basePath, { query }),
     get: (id: Id) => request<TItem>('GET', `${basePath}/${id}`),
-    create: (payload: TCreate) => request<TItem>('POST', basePath, { body: payload }),
-    update: (id: Id, payload: TUpdate) => request<TItem>('PUT', `${basePath}/${id}`, { body: payload }),
-    patch: (id: Id, payload: TPatch) => request<TItem>('PATCH', `${basePath}/${id}`, { body: payload }),
-    remove: (id: Id) => request<unknown>('DELETE', `${basePath}/${id}`),
+    create: (payload: TCreate, notifications?: { success: string; errorContext: string }) => notifications
+      ? withCrudNotifications(notifications, () => request<TItem>('POST', basePath, { body: payload }))
+      : request<TItem>('POST', basePath, { body: payload }),
+    update: (id: Id, payload: TUpdate, notifications?: { success: string; errorContext: string }) => notifications
+      ? withCrudNotifications(notifications, () => request<TItem>('PUT', `${basePath}/${id}`, { body: payload }))
+      : request<TItem>('PUT', `${basePath}/${id}`, { body: payload }),
+    patch: (id: Id, payload: TPatch, notifications?: { success: string; errorContext: string }) => notifications
+      ? withCrudNotifications(notifications, () => request<TItem>('PATCH', `${basePath}/${id}`, { body: payload }))
+      : request<TItem>('PATCH', `${basePath}/${id}`, { body: payload }),
+    remove: (id: Id, notifications?: { success: string; errorContext: string }) => notifications
+      ? withCrudNotifications(notifications, () => request<unknown>('DELETE', `${basePath}/${id}`))
+      : request<unknown>('DELETE', `${basePath}/${id}`),
   }
 }
 
@@ -206,30 +297,78 @@ export function useResumeApi() {
     getMyResumes: (query?: ResumeListQuery) => request<PaginatedResponse<Resume>>('GET', '/api/v1/resumes/my', { query }),
     getResumes: resumesApi.list,
     getResume: resumesApi.get,
-    createResume: resumesApi.create,
-    updateResume: resumesApi.update,
-    patchResume: resumesApi.patch,
-    deleteResume: resumesApi.remove,
+    createResume: (payload: CreateResumePayload) => resumesApi.create(payload, {
+      success: 'CV créé.',
+      errorContext: 'Création du CV impossible.',
+    }),
+    updateResume: (id: Id, payload: UpdateResumePayload) => resumesApi.update(id, payload, {
+      success: 'CV mis à jour.',
+      errorContext: 'Mise à jour du CV impossible.',
+    }),
+    patchResume: (id: Id, payload: PatchResumePayload) => resumesApi.patch(id, payload, {
+      success: 'CV mis à jour.',
+      errorContext: 'Mise à jour partielle du CV impossible.',
+    }),
+    deleteResume: (id: Id) => resumesApi.remove(id, {
+      success: 'CV supprimé.',
+      errorContext: 'Suppression du CV impossible.',
+    }),
 
     getResumeExperiences: experiencesApi.list,
     getResumeExperience: experiencesApi.get,
-    createResumeExperience: experiencesApi.create,
-    updateResumeExperience: experiencesApi.update,
-    patchResumeExperience: experiencesApi.patch,
-    deleteResumeExperience: experiencesApi.remove,
+    createResumeExperience: (payload: CreateResumeExperiencePayload) => experiencesApi.create(payload, {
+      success: 'Expérience créée.',
+      errorContext: "Création de l'expérience impossible.",
+    }),
+    updateResumeExperience: (id: Id, payload: UpdateResumeExperiencePayload) => experiencesApi.update(id, payload, {
+      success: 'Expérience mise à jour.',
+      errorContext: "Mise à jour de l'expérience impossible.",
+    }),
+    patchResumeExperience: (id: Id, payload: PatchResumeExperiencePayload) => experiencesApi.patch(id, payload, {
+      success: 'Expérience mise à jour.',
+      errorContext: "Mise à jour partielle de l'expérience impossible.",
+    }),
+    deleteResumeExperience: (id: Id) => experiencesApi.remove(id, {
+      success: 'Expérience supprimée.',
+      errorContext: "Suppression de l'expérience impossible.",
+    }),
 
     getResumeEducationList: educationApi.list,
     getResumeEducation: educationApi.get,
-    createResumeEducation: educationApi.create,
-    updateResumeEducation: educationApi.update,
-    patchResumeEducation: educationApi.patch,
-    deleteResumeEducation: educationApi.remove,
+    createResumeEducation: (payload: CreateResumeEducationPayload) => educationApi.create(payload, {
+      success: 'Formation créée.',
+      errorContext: 'Création de la formation impossible.',
+    }),
+    updateResumeEducation: (id: Id, payload: UpdateResumeEducationPayload) => educationApi.update(id, payload, {
+      success: 'Formation mise à jour.',
+      errorContext: 'Mise à jour de la formation impossible.',
+    }),
+    patchResumeEducation: (id: Id, payload: PatchResumeEducationPayload) => educationApi.patch(id, payload, {
+      success: 'Formation mise à jour.',
+      errorContext: 'Mise à jour partielle de la formation impossible.',
+    }),
+    deleteResumeEducation: (id: Id) => educationApi.remove(id, {
+      success: 'Formation supprimée.',
+      errorContext: 'Suppression de la formation impossible.',
+    }),
 
     getResumeSkills: skillsApi.list,
     getResumeSkill: skillsApi.get,
-    createResumeSkill: skillsApi.create,
-    updateResumeSkill: skillsApi.update,
-    patchResumeSkill: skillsApi.patch,
-    deleteResumeSkill: skillsApi.remove,
+    createResumeSkill: (payload: CreateResumeSkillPayload) => skillsApi.create(payload, {
+      success: 'Compétence créée.',
+      errorContext: 'Création de la compétence impossible.',
+    }),
+    updateResumeSkill: (id: Id, payload: UpdateResumeSkillPayload) => skillsApi.update(id, payload, {
+      success: 'Compétence mise à jour.',
+      errorContext: 'Mise à jour de la compétence impossible.',
+    }),
+    patchResumeSkill: (id: Id, payload: PatchResumeSkillPayload) => skillsApi.patch(id, payload, {
+      success: 'Compétence mise à jour.',
+      errorContext: 'Mise à jour partielle de la compétence impossible.',
+    }),
+    deleteResumeSkill: (id: Id) => skillsApi.remove(id, {
+      success: 'Compétence supprimée.',
+      errorContext: 'Suppression de la compétence impossible.',
+    }),
   }
 }
