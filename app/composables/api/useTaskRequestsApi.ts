@@ -1,49 +1,10 @@
 import { apiRequest, type ApiListQuery, type Id, type PaginatedResponse } from './httpUiErrors'
-
-export enum TaskRequestStatus {
-  PENDING = 'pending',
-  APPROVED = 'approved',
-  REJECTED = 'rejected',
-  CANCELED = 'canceled',
-}
-
-export enum TaskRequestPriority {
-  LOW = 'low',
-  MEDIUM = 'medium',
-  HIGH = 'high',
-  URGENT = 'urgent',
-}
-
-export interface TaskRequest {
-  id: Id
-  taskId: Id
-  requesterId: Id
-  reason: string
-  status: TaskRequestStatus
-  priority: TaskRequestPriority
-  comment?: string | null
-  createdAt: string
-  updatedAt: string
-}
-
-export interface CreateTaskRequestPayload {
-  taskId: Id
-  requesterId: Id
-  reason: string
-  priority?: TaskRequestPriority
-  comment?: string | null
-}
-
-export interface UpdateTaskRequestPayload {
-  taskId: Id
-  requesterId: Id
-  reason: string
-  status: TaskRequestStatus
-  priority: TaskRequestPriority
-  comment?: string | null
-}
-
-export type PatchTaskRequestPayload = Partial<UpdateTaskRequestPayload>
+import type {
+  CreateTaskRequestPayload,
+  PatchTaskRequestPayload,
+  TaskRequest,
+  UpdateTaskRequestPayload,
+} from '~/types/task-manager'
 
 const basePath = '/api/v1/task-requests'
 

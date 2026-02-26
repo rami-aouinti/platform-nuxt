@@ -1,53 +1,10 @@
 import { apiRequest, type ApiListQuery, type Id, type PaginatedResponse } from './httpUiErrors'
-
-export enum TaskStatus {
-  TODO = 'todo',
-  IN_PROGRESS = 'in_progress',
-  COMPLETED = 'completed',
-  ARCHIVED = 'archived',
-}
-
-export enum TaskPriority {
-  LOW = 'low',
-  MEDIUM = 'medium',
-  HIGH = 'high',
-  URGENT = 'urgent',
-}
-
-export interface Task {
-  id: Id
-  projectId: Id
-  title: string
-  description?: string | null
-  status: TaskStatus
-  priority: TaskPriority
-  dueDate?: string | null
-  assigneeId?: Id | null
-  createdAt: string
-  updatedAt: string
-}
-
-export interface CreateTaskPayload {
-  projectId: Id
-  title: string
-  description?: string | null
-  status?: TaskStatus
-  priority?: TaskPriority
-  dueDate?: string | null
-  assigneeId?: Id | null
-}
-
-export interface UpdateTaskPayload {
-  projectId: Id
-  title: string
-  description?: string | null
-  status: TaskStatus
-  priority: TaskPriority
-  dueDate?: string | null
-  assigneeId?: Id | null
-}
-
-export type PatchTaskPayload = Partial<UpdateTaskPayload>
+import type {
+  CreateTaskPayload,
+  PatchTaskPayload,
+  Task,
+  UpdateTaskPayload,
+} from '~/types/task-manager'
 
 const basePath = '/api/v1/tasks'
 
