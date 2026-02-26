@@ -8,7 +8,7 @@ const router = useRouter()
 
 definePageMeta({
   icon: 'mdi-account-group-outline',
-  title: 'CRM',
+  title: 'CRM · Companies',
   drawerIndex: 7,
   requiresAuth: true,
   middleware: ['auth'],
@@ -27,10 +27,20 @@ const companyForm = reactive({
 
 function normalizeItems<T>(value: unknown): T[] {
   if (Array.isArray(value)) return value as T[]
-  if (value && typeof value === 'object' && 'items' in value && Array.isArray((value as { items?: unknown }).items)) {
+  if (
+    value &&
+    typeof value === 'object' &&
+    'items' in value &&
+    Array.isArray((value as { items?: unknown }).items)
+  ) {
     return (value as { items: T[] }).items
   }
-  if (value && typeof value === 'object' && 'data' in value && Array.isArray((value as { data?: unknown }).data)) {
+  if (
+    value &&
+    typeof value === 'object' &&
+    'data' in value &&
+    Array.isArray((value as { data?: unknown }).data)
+  ) {
     return (value as { data: T[] }).data
   }
   return []
@@ -52,7 +62,8 @@ function getRoleLabel(company: CrmCompany) {
 
 function getProjectsCount(company: CrmCompany) {
   if (typeof company.projectsCount === 'number') return company.projectsCount
-  if (company.stats && typeof company.stats.projectsCount === 'number') return company.stats.projectsCount
+  if (company.stats && typeof company.stats.projectsCount === 'number')
+    return company.stats.projectsCount
   if (Array.isArray(company.projects)) return company.projects.length
   if (typeof company.projects === 'number') return company.projects
   return null
@@ -65,7 +76,10 @@ async function loadCompanies() {
     const companiesResult = await crmApi.listCompanies()
     companies.value = normalizeItems<CrmCompany>(companiesResult)
   } catch (error) {
-    errorMessage.value = getErrorMessage(error, 'Erreur de chargement des companies.')
+    errorMessage.value = getErrorMessage(
+      error,
+      'Erreur de chargement des companies.',
+    )
   } finally {
     loading.value = false
   }
@@ -108,10 +122,20 @@ onMounted(loadCompanies)
     <div class="d-flex align-center justify-space-between mb-4 flex-wrap ga-2">
       <h1 class="text-h5">CRM · Companies</h1>
       <div class="d-flex ga-2">
-        <v-btn color="primary" variant="tonal" prepend-icon="mdi-refresh" :loading="loading" @click="loadCompanies">
+        <v-btn
+          color="primary"
+          variant="tonal"
+          prepend-icon="mdi-refresh"
+          :loading="loading"
+          @click="loadCompanies"
+        >
           Recharger
         </v-btn>
-        <v-btn color="primary" prepend-icon="mdi-plus" @click="createDialog = true">
+        <v-btn
+          color="primary"
+          prepend-icon="mdi-plus"
+          @click="createDialog = true"
+        >
           Ajouter une company
         </v-btn>
       </div>
@@ -125,7 +149,13 @@ onMounted(loadCompanies)
       :text="errorMessage"
     >
       <template #append>
-        <v-btn size="small" variant="text" prepend-icon="mdi-refresh" @click="loadCompanies">Réessayer</v-btn>
+        <v-btn
+          size="small"
+          variant="text"
+          prepend-icon="mdi-refresh"
+          @click="loadCompanies"
+          >Réessayer</v-btn
+        >
       </template>
     </v-alert>
 
@@ -154,7 +184,9 @@ onMounted(loadCompanies)
         <v-card class="h-100" hover @click="openCompany(company.id)">
           <v-card-title class="d-flex align-center justify-space-between ga-2">
             <span class="text-truncate">{{ company.name }}</span>
-            <v-chip size="small" color="primary" variant="tonal">{{ getRoleLabel(company) }}</v-chip>
+            <v-chip size="small" color="primary" variant="tonal">{{
+              getRoleLabel(company)
+            }}</v-chip>
           </v-card-title>
           <v-card-text>
             <p class="text-body-2 text-medium-emphasis mb-3">
@@ -166,7 +198,10 @@ onMounted(loadCompanies)
               prepend-icon="mdi-briefcase-outline"
               variant="outlined"
             >
-              {{ getProjectsCount(company) }} projet<span v-if="getProjectsCount(company) !== 1">s</span>
+              {{ getProjectsCount(company) }} projet<span
+                v-if="getProjectsCount(company) !== 1"
+                >s</span
+              >
             </v-chip>
           </v-card-text>
         </v-card>
@@ -178,12 +213,23 @@ onMounted(loadCompanies)
         <v-card-title>Ajouter une company</v-card-title>
         <v-card-text>
           <v-text-field v-model="companyForm.name" label="Nom" autofocus />
-          <v-textarea v-model="companyForm.description" label="Description" rows="3" />
+          <v-textarea
+            v-model="companyForm.description"
+            label="Description"
+            rows="3"
+          />
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn variant="text" :disabled="createLoading" @click="createDialog = false">Annuler</v-btn>
-          <v-btn color="primary" :loading="createLoading" @click="createCompany">Créer</v-btn>
+          <v-btn
+            variant="text"
+            :disabled="createLoading"
+            @click="createDialog = false"
+            >Annuler</v-btn
+          >
+          <v-btn color="primary" :loading="createLoading" @click="createCompany"
+            >Créer</v-btn
+          >
         </v-card-actions>
       </v-card>
     </v-dialog>
