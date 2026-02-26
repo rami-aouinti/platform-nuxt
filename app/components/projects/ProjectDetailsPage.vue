@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { useCrmApi, type CrmProject, type CrmTask, type CrmTaskStatus } from '~/composables/api/useCrmApi'
 import { Notify } from '~/stores/notification'
+import { useAuthStore } from '~/stores/auth'
 import { canManageProject, canManageTask, type ProjectPermissionSubject, type TaskManagerUser } from '~/utils/permissions/task-manager'
 
 type ProjectDetailsState = 'loading' | 'empty' | 'error' | 'success'
@@ -7,14 +9,28 @@ type ProjectDetailsState = 'loading' | 'empty' | 'error' | 'success'
 interface ProjectTask {
   id: string
   title: string
+  status: CrmTaskStatus
   assigneeId?: string | null
+}
+
+type CrmProjectExtended = CrmProject & {
+  owner?: { id?: string } | string | null
+  ownerId?: string | null
+  managers?: Array<{ id?: string } | string> | null
+}
+
+type CrmTaskExtended = CrmTask & {
+  assignee?: { id?: string } | string | null
+  assigneeId?: string | null
+  projectId?: string | null
 }
 
 const props = defineProps<{ projectId: string }>()
 const authStore = useAuthStore()
+const crmApi = useCrmApi()
 
 const state = ref<ProjectDetailsState>('loading')
-const project = ref<ProjectPermissionSubject>({ ownerId: '12', managerIds: ['34'] })
+const project = ref<ProjectPermissionSubject>({ ownerId: null, managerIds: [] })
 const tasks = ref<ProjectTask[]>([])
 const projectDeniedMessage = 'Action interdite : vous ne pouvez pas gérer ce projet.'
 const taskDeniedMessage = 'Action interdite : vous ne pouvez pas éditer/supprimer cette tâche.'
@@ -28,16 +44,60 @@ function isForbiddenError(errorValue: unknown) {
   return Boolean(errorValue && typeof errorValue === 'object' && 'status' in errorValue && errorValue.status === 403)
 }
 
-function fakeApi(action: 'edit' | 'delete', task?: ProjectTask) {
-  return new Promise<void>((resolve, reject) => {
-    window.setTimeout(() => {
-      if (action === 'delete' && task?.id === 'P-TASK-2') {
-        reject({ status: 403, message: 'Forbidden' })
-        return
-      }
-      resolve()
-    }, 200)
-  })
+function normalizeItems<T>(value: unknown): T[] {
+  if (Array.isArray(value)) return value as T[]
+  if (value && typeof value === 'object' && 'items' in value && Array.isArray((value as { items?: unknown }).items)) {
+    return (value as { items: T[] }).items
+  }
+  if (value && typeof value === 'object' && 'data' in value && Array.isArray((value as { data?: unknown }).data)) {
+    return (value as { data: T[] }).data
+  }
+  return []
+}
+
+function mapProjectPermissions(item: CrmProjectExtended): ProjectPermissionSubject {
+  const ownerId =
+    typeof item.ownerId === 'string'
+      ? item.ownerId
+      : item.owner && typeof item.owner === 'object'
+        ? item.owner.id || null
+        : typeof item.owner === 'string'
+          ? item.owner
+          : null
+
+  const managerIds = Array.isArray(item.managers)
+    ? item.managers
+      .map((entry) => (typeof entry === 'string' ? entry : entry.id || ''))
+      .filter(Boolean)
+    : []
+
+  return { ownerId, managerIds }
+}
+
+function mapTask(item: CrmTaskExtended): ProjectTask {
+  const assigneeId =
+    typeof item.assigneeId === 'string'
+      ? item.assigneeId
+      : item.assignee && typeof item.assignee === 'object'
+        ? item.assignee.id || null
+        : typeof item.assignee === 'string'
+          ? item.assignee
+          : null
+
+  return {
+    id: item.id,
+    title: item.title,
+    status: item.status,
+    assigneeId,
+  }
+}
+
+function taskBelongsToProject(task: CrmTaskExtended) {
+  if (typeof task.projectId === 'string') return task.projectId === props.projectId
+  if (task.project && !Array.isArray(task.project) && typeof task.project === 'object') {
+    return String(task.project.id || '') === props.projectId
+  }
+  return false
 }
 
 async function editTask(task: ProjectTask) {
@@ -47,7 +107,7 @@ async function editTask(task: ProjectTask) {
   }
 
   try {
-    await fakeApi('edit', task)
+    await crmApi.patchTask(task.id, { status: task.status })
     Notify.success(`Tâche « ${task.title} » éditée.`)
   } catch (errorValue) {
     if (isForbiddenError(errorValue)) {
@@ -68,7 +128,7 @@ async function deleteTask(task: ProjectTask) {
   tasks.value = tasks.value.filter((entry) => entry.id !== task.id)
 
   try {
-    await fakeApi('delete', task)
+    await crmApi.deleteTask(task.id)
     Notify.success(`Tâche « ${task.title} » supprimée.`)
   } catch (errorValue) {
     tasks.value = previous
@@ -80,22 +140,33 @@ async function deleteTask(task: ProjectTask) {
   }
 }
 
-function load(stateMode: ProjectDetailsState = 'success') {
+async function load() {
+  if (!props.projectId) {
+    state.value = 'empty'
+    return
+  }
+
   state.value = 'loading'
 
-  window.setTimeout(() => {
-    state.value = stateMode
-    tasks.value = stateMode === 'success'
-      ? [
-          { id: 'P-TASK-1', title: 'Kick-off équipe', assigneeId: '12' },
-          { id: 'P-TASK-2', title: 'Cadrage UX', assigneeId: '34' },
-          { id: 'P-TASK-3', title: 'Livrable Sprint 1', assigneeId: '99' },
-        ]
-      : []
-  }, 500)
+  try {
+    const [projectResult, tasksResult] = await Promise.all([
+      crmApi.getProject(props.projectId),
+      crmApi.listTasks(),
+    ])
+
+    project.value = mapProjectPermissions(projectResult as CrmProjectExtended)
+    tasks.value = normalizeItems<CrmTaskExtended>(tasksResult)
+      .filter(taskBelongsToProject)
+      .map(mapTask)
+
+    state.value = tasks.value.length ? 'success' : 'empty'
+  } catch {
+    tasks.value = []
+    state.value = 'error'
+  }
 }
 
-watch(() => props.projectId, () => load('success'), { immediate: true })
+watch(() => props.projectId, load, { immediate: true })
 </script>
 
 <template>
@@ -112,9 +183,7 @@ watch(() => props.projectId, () => load('success'), { immediate: true })
             </span>
           </template>
         </v-tooltip>
-        <v-btn variant="text" prepend-icon="mdi-sync" @click="load('success')">Reload</v-btn>
-        <v-btn variant="text" @click="load('empty')">Simuler empty</v-btn>
-        <v-btn variant="text" color="error" @click="load('error')">Simuler error</v-btn>
+        <v-btn variant="text" prepend-icon="mdi-sync" @click="load">Reload</v-btn>
       </div>
     </div>
 
@@ -130,7 +199,7 @@ watch(() => props.projectId, () => load('success'), { immediate: true })
     <v-alert v-else-if="state === 'error'" type="error" variant="tonal" border="start">
       Une erreur est survenue lors du chargement du projet.
       <template #append>
-        <v-btn size="small" color="error" variant="outlined" @click="load('success')">Réessayer</v-btn>
+        <v-btn size="small" color="error" variant="outlined" @click="load">Réessayer</v-btn>
       </template>
     </v-alert>
 
@@ -139,7 +208,15 @@ watch(() => props.projectId, () => load('success'), { immediate: true })
       <v-card-text>
         <p class="mb-3">Identifiant : <strong>{{ projectId }}</strong></p>
         <v-list density="compact" lines="one">
-          <v-list-item v-for="task in tasks" :key="task.id" prepend-icon="mdi-check-circle-outline" :title="task.title">
+          <v-list-item
+            v-for="task in tasks"
+            :key="task.id"
+            prepend-icon="mdi-check-circle-outline"
+            :title="task.title"
+            :subtitle="task.status"
+            append-icon="mdi-chevron-right"
+            :to="`/crm/tasks/${task.id}`"
+          >
             <template #append>
               <div class="d-flex ga-2">
                 <v-tooltip :text="canManageTask(currentUser, task, project) ? '' : taskDeniedMessage">
