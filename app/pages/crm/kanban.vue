@@ -139,7 +139,7 @@ async function loadSprintTaskRequests() {
         : 'Erreur chargement task requests du sprint.',
     )
   } finally {
-    requestsLoading.value = false
+    loading.value = false
   }
 }
 
