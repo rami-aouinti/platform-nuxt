@@ -4,12 +4,13 @@ import { Notify } from '~/stores/notification'
 import { useAuthStore } from '~/stores/auth'
 import {
   canCancelTaskRequest,
-  canReviewTaskRequest,
+  canUpdateTaskRequestStatus,
   type ProjectPermissionSubject,
   type TaskManagerUser,
   type TaskPermissionSubject,
   type TaskRequestContext,
 } from '~/utils/permissions/task-manager'
+import { PERMISSION_MESSAGES } from '~/utils/permissions/messages'
 
 type TaskRequestsState = 'loading' | 'empty' | 'error' | 'success'
 type TaskRequestAction = 'approve' | 'reject' | 'cancel'
@@ -50,7 +51,7 @@ const crmApi = useCrmApi()
 const state = ref<TaskRequestsState>('loading')
 const rows = ref<TaskRequestRow[]>([])
 
-const actionDeniedMessage = 'Action interdite sur cette demande.'
+const actionDeniedMessage = PERMISSION_MESSAGES.updateTaskRequestStatus
 
 const currentUser = computed<TaskManagerUser>(() => ({
   id: authStore.profile?.id ?? '99',
@@ -196,7 +197,7 @@ function canAction(row: TaskRequestRow, action: TaskRequestAction) {
     return canCancelTaskRequest(currentUser.value, row)
   }
 
-  return canReviewTaskRequest(currentUser.value, row, context)
+  return canUpdateTaskRequestStatus(currentUser.value, row, context)
 }
 
 function nextStatus(action: TaskRequestAction): TaskRequestRow['status'] {
@@ -230,7 +231,7 @@ async function runAction(row: TaskRequestRow, action: TaskRequestAction) {
   } catch (errorValue) {
     row.status = previous
     if (isForbiddenError(errorValue)) {
-      Notify.error('Action refusée (403). Le statut de la demande est inchangé.')
+      Notify.error(PERMISSION_MESSAGES.forbiddenTaskRequestStatus)
       return
     }
     Notify.error('Le traitement de la demande a échoué.')

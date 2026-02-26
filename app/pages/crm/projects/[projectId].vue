@@ -1,13 +1,23 @@
 <script setup lang="ts">
 import { Notify } from '~/stores/notification'
 import { useCrmApi } from '~/composables/api/useCrmApi'
+import { useAuthStore } from '~/stores/auth'
 import type { CrmProject, CrmTask } from '~/composables/api/useCrmApi'
+import { PERMISSION_MESSAGES } from '~/utils/permissions/messages'
+import {
+  canCreateTask,
+  type ProjectPermissionSubject,
+  type TaskManagerUser,
+} from '~/utils/permissions/task-manager'
 
 type CrmProjectExtended = CrmProject & {
   company?: { id?: string; role?: string } | string | null
   companyId?: string | null
   permissions?: { canCreateTask?: boolean } | null
   canCreateTask?: boolean
+  owner?: { id?: string } | string | null
+  ownerId?: string | null
+  managers?: Array<{ id?: string } | string> | null
 }
 
 type CrmTaskExtended = CrmTask & {
@@ -17,6 +27,7 @@ type CrmTaskExtended = CrmTask & {
 const route = useRoute()
 const router = useRouter()
 const crmApi = useCrmApi()
+const authStore = useAuthStore()
 
 definePageMeta({
   icon: 'mdi-briefcase-outline',
@@ -81,17 +92,48 @@ function resolveTaskProjectId(task: CrmTaskExtended): string {
   return ''
 }
 
-const canCreateTask = computed(() => {
+function resolveOwnerId(projectValue: CrmProjectExtended | null) {
+  if (!projectValue) return null
+  if (typeof projectValue.ownerId === 'string') return projectValue.ownerId
+  if (projectValue.owner && typeof projectValue.owner === 'string') {
+    return projectValue.owner
+  }
+  if (projectValue.owner && typeof projectValue.owner === 'object') {
+    return projectValue.owner.id || null
+  }
+  return null
+}
+
+function resolveManagerIds(projectValue: CrmProjectExtended | null) {
+  if (!projectValue || !Array.isArray(projectValue.managers)) return []
+  return projectValue.managers
+    .map((entry) => (typeof entry === 'string' ? entry : entry.id || ''))
+    .filter(Boolean)
+}
+
+const currentUser = computed<TaskManagerUser>(() => ({
+  id: authStore.profile?.id ?? null,
+  roles: authStore.roles,
+}))
+
+const projectPermissionSubject = computed<ProjectPermissionSubject>(() => ({
+  ownerId: resolveOwnerId(project.value),
+  managerIds: resolveManagerIds(project.value),
+  companyId: project.value?.companyId || null,
+}))
+
+const canCreateTaskInProject = computed(() => {
   if (!project.value) return false
-  if (typeof project.value.canCreateTask === 'boolean')
+  if (typeof project.value.canCreateTask === 'boolean') {
     return project.value.canCreateTask
+  }
   if (
     project.value.permissions &&
     typeof project.value.permissions.canCreateTask === 'boolean'
   ) {
     return project.value.permissions.canCreateTask
   }
-  return true
+  return canCreateTask(currentUser.value, projectPermissionSubject.value)
 })
 
 const companyLink = computed(() => {
@@ -144,6 +186,11 @@ async function loadData() {
 }
 
 async function createTask() {
+  if (!canCreateTaskInProject.value) {
+    Notify.error(PERMISSION_MESSAGES.createTask)
+    return
+  }
+
   if (!taskForm.title.trim()) {
     Notify.error('Le titre de la task est requis.')
     return
@@ -206,9 +253,10 @@ watch(projectId, loadData)
           >Recharger</v-btn
         >
         <v-btn
-          v-if="canCreateTask"
           color="primary"
           prepend-icon="mdi-plus"
+          :disabled="!canCreateTaskInProject"
+          :title="canCreateTaskInProject ? undefined : PERMISSION_MESSAGES.createTask"
           @click="createDialog = true"
           >Créer une task</v-btn
         >

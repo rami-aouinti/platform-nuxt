@@ -2,7 +2,8 @@
 import { useCrmApi, type CrmProject, type CrmTask, type CrmTaskStatus } from '~/composables/api/useCrmApi'
 import { Notify } from '~/stores/notification'
 import { useAuthStore } from '~/stores/auth'
-import { canManageProject, canManageTask, type ProjectPermissionSubject, type TaskManagerUser } from '~/utils/permissions/task-manager'
+import { canManageProject, canUpdateTaskStatus, type ProjectPermissionSubject, type TaskManagerUser } from '~/utils/permissions/task-manager'
+import { PERMISSION_MESSAGES } from '~/utils/permissions/messages'
 
 type ProjectDetailsState = 'loading' | 'empty' | 'error' | 'success'
 
@@ -32,8 +33,8 @@ const crmApi = useCrmApi()
 const state = ref<ProjectDetailsState>('loading')
 const project = ref<ProjectPermissionSubject>({ ownerId: null, managerIds: [] })
 const tasks = ref<ProjectTask[]>([])
-const projectDeniedMessage = 'Action interdite : vous ne pouvez pas gérer ce projet.'
-const taskDeniedMessage = 'Action interdite : vous ne pouvez pas éditer/supprimer cette tâche.'
+const projectDeniedMessage = PERMISSION_MESSAGES.manageProject
+const taskDeniedMessage = PERMISSION_MESSAGES.manageTask
 
 const currentUser = computed<TaskManagerUser>(() => ({
   id: authStore.profile?.id ?? '99',
@@ -101,7 +102,7 @@ function taskBelongsToProject(task: CrmTaskExtended) {
 }
 
 async function editTask(task: ProjectTask) {
-  if (!canManageTask(currentUser.value, task, project.value)) {
+  if (!canUpdateTaskStatus(currentUser.value, task, project.value)) {
     Notify.error(taskDeniedMessage)
     return
   }
@@ -111,7 +112,7 @@ async function editTask(task: ProjectTask) {
     Notify.success(`Tâche « ${task.title} » éditée.`)
   } catch (errorValue) {
     if (isForbiddenError(errorValue)) {
-      Notify.error('Édition refusée (403). Aucun changement appliqué.')
+      Notify.error(PERMISSION_MESSAGES.forbiddenPatch)
       return
     }
     Notify.error('Impossible d\'éditer la tâche.')
@@ -119,7 +120,7 @@ async function editTask(task: ProjectTask) {
 }
 
 async function deleteTask(task: ProjectTask) {
-  if (!canManageTask(currentUser.value, task, project.value)) {
+  if (!canUpdateTaskStatus(currentUser.value, task, project.value)) {
     Notify.error(taskDeniedMessage)
     return
   }
@@ -133,7 +134,7 @@ async function deleteTask(task: ProjectTask) {
   } catch (errorValue) {
     tasks.value = previous
     if (isForbiddenError(errorValue)) {
-      Notify.error('Suppression refusée (403). Liste inchangée.')
+      Notify.error(PERMISSION_MESSAGES.forbiddenDelete)
       return
     }
     Notify.error('Impossible de supprimer la tâche.')
@@ -219,17 +220,17 @@ watch(() => props.projectId, load, { immediate: true })
           >
             <template #append>
               <div class="d-flex ga-2">
-                <v-tooltip :text="canManageTask(currentUser, task, project) ? '' : taskDeniedMessage">
+                <v-tooltip :text="canUpdateTaskStatus(currentUser, task, project) ? '' : taskDeniedMessage">
                   <template #activator="{ props: tooltipProps }">
                     <span v-bind="tooltipProps">
-                      <v-btn size="x-small" variant="outlined" :disabled="!canManageTask(currentUser, task, project)" @click="editTask(task)">Edit</v-btn>
+                      <v-btn size="x-small" variant="outlined" :disabled="!canUpdateTaskStatus(currentUser, task, project)" @click="editTask(task)">Edit</v-btn>
                     </span>
                   </template>
                 </v-tooltip>
-                <v-tooltip :text="canManageTask(currentUser, task, project) ? '' : taskDeniedMessage">
+                <v-tooltip :text="canUpdateTaskStatus(currentUser, task, project) ? '' : taskDeniedMessage">
                   <template #activator="{ props: tooltipProps }">
                     <span v-bind="tooltipProps">
-                      <v-btn size="x-small" variant="outlined" color="error" :disabled="!canManageTask(currentUser, task, project)" @click="deleteTask(task)">Delete</v-btn>
+                      <v-btn size="x-small" variant="outlined" color="error" :disabled="!canUpdateTaskStatus(currentUser, task, project)" @click="deleteTask(task)">Delete</v-btn>
                     </span>
                   </template>
                 </v-tooltip>

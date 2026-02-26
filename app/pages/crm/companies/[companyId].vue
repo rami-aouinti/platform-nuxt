@@ -1,7 +1,14 @@
 <script setup lang="ts">
 import { Notify } from '~/stores/notification'
 import { useCrmApi } from '~/composables/api/useCrmApi'
+import { useAuthStore } from '~/stores/auth'
 import type { CrmCompany, CrmProject } from '~/composables/api/useCrmApi'
+import { PERMISSION_MESSAGES } from '~/utils/permissions/messages'
+import {
+  canCreateProject,
+  type CompanyPermissionSubject,
+  type TaskManagerUser,
+} from '~/utils/permissions/task-manager'
 
 type CrmProjectExtended = CrmProject & {
   company?: { id?: string; name?: string } | string | null
@@ -12,6 +19,7 @@ type CrmProjectExtended = CrmProject & {
 const route = useRoute()
 const router = useRouter()
 const crmApi = useCrmApi()
+const authStore = useAuthStore()
 
 definePageMeta({
   icon: 'mdi-office-building-outline',
@@ -26,6 +34,7 @@ const companyId = computed(() =>
 const loading = ref(false)
 const createLoading = ref(false)
 const company = ref<CrmCompany | null>(null)
+const companyMembershipIds = ref<string[]>([])
 const projects = ref<CrmProjectExtended[]>([])
 const errorMessage = ref('')
 const createDialog = ref(false)
@@ -34,6 +43,16 @@ const projectForm = reactive({
   name: '',
   description: '',
 })
+
+const currentUser = computed<TaskManagerUser>(() => ({
+  id: authStore.profile?.id ?? null,
+  roles: authStore.roles,
+  membershipCompanyIds: companyMembershipIds.value,
+}))
+
+const companyPermissionSubject = computed<CompanyPermissionSubject>(() => ({
+  companyId: companyId.value || null,
+}))
 
 function normalizeItems<T>(value: unknown): T[] {
   if (Array.isArray(value)) return value as T[]
@@ -64,7 +83,7 @@ function resolveProjectCompanyId(project: CrmProjectExtended): string {
   return ''
 }
 
-const canCreateProject = computed(() => {
+const canCreateProjectInCompany = computed(() => {
   if (!company.value) return false
   const entry = company.value as CrmCompany & {
     canCreateProject?: boolean
@@ -79,7 +98,7 @@ const canCreateProject = computed(() => {
     return entry.permissions.canCreateProject
   }
 
-  return entry.role === 'owner'
+  return canCreateProject(currentUser.value, companyPermissionSubject.value)
 })
 
 function getErrorMessage(error: unknown, fallback: string) {
@@ -103,6 +122,10 @@ async function loadData() {
 
     company.value =
       companies.find((entry) => entry.id === companyId.value) ?? null
+    companyMembershipIds.value = companies
+      .filter((entry) => entry.role === 'owner' || entry.role === 'member')
+      .map((entry) => entry.id)
+
     projects.value = projectItems.filter(
       (entry) => resolveProjectCompanyId(entry) === companyId.value,
     )
@@ -121,6 +144,11 @@ async function loadData() {
 }
 
 async function createProject() {
+  if (!canCreateProjectInCompany.value) {
+    Notify.error(PERMISSION_MESSAGES.createProject)
+    return
+  }
+
   if (!projectForm.name.trim()) {
     Notify.error('Le nom du projet est requis.')
     return
@@ -173,9 +201,12 @@ watch(companyId, loadData)
           >Recharger</v-btn
         >
         <v-btn
-          v-if="canCreateProject"
           color="primary"
           prepend-icon="mdi-plus"
+          :disabled="!canCreateProjectInCompany"
+          :title="
+            canCreateProjectInCompany ? undefined : PERMISSION_MESSAGES.createProject
+          "
           @click="createDialog = true"
         >
           Créer un projet

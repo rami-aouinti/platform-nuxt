@@ -5,11 +5,17 @@ export type PermissionId = string | number
 export interface TaskManagerUser {
   id?: PermissionId | null
   roles?: string[] | null
+  membershipCompanyIds?: PermissionId[] | null
+}
+
+export interface CompanyPermissionSubject {
+  companyId?: PermissionId | null
 }
 
 export interface ProjectPermissionSubject {
   ownerId?: PermissionId | null
   managerIds?: PermissionId[] | null
+  companyId?: PermissionId | null
 }
 
 export interface TaskPermissionSubject {
@@ -45,6 +51,26 @@ function isUserId(user: TaskManagerUser | null | undefined, candidateId: Permiss
   return Boolean(userId && targetId && userId === targetId)
 }
 
+export function hasCompanyMembership(
+  user: TaskManagerUser | null | undefined,
+  companyId: PermissionId | null | undefined,
+) {
+  if (hasPrivilegedRole(user)) {
+    return true
+  }
+
+  const targetCompanyId = normalizeId(companyId)
+  if (!targetCompanyId) {
+    return false
+  }
+
+  if (!Array.isArray(user?.membershipCompanyIds)) {
+    return false
+  }
+
+  return user.membershipCompanyIds.some((entry) => normalizeId(entry) === targetCompanyId)
+}
+
 export function canManageProject(user: TaskManagerUser | null | undefined, project: ProjectPermissionSubject | null | undefined) {
   if (hasPrivilegedRole(user)) {
     return true
@@ -66,6 +92,28 @@ export function canManageProject(user: TaskManagerUser | null | undefined, proje
   return project.managerIds.some((managerId) => normalizeId(managerId) === userId)
 }
 
+export function canCreateProject(
+  user: TaskManagerUser | null | undefined,
+  subject: CompanyPermissionSubject | null | undefined,
+) {
+  if (hasPrivilegedRole(user)) {
+    return true
+  }
+
+  if (!subject) {
+    return false
+  }
+
+  return hasCompanyMembership(user, subject.companyId)
+}
+
+export function canCreateTask(
+  user: TaskManagerUser | null | undefined,
+  project: ProjectPermissionSubject | null | undefined,
+) {
+  return canManageProject(user, project)
+}
+
 export function canManageTask(
   user: TaskManagerUser | null | undefined,
   task: TaskPermissionSubject | null | undefined,
@@ -78,16 +126,40 @@ export function canManageTask(
   return Boolean(task && isUserId(user, task.assigneeId))
 }
 
-export function canReviewTaskRequest(
+export function canUpdateTaskStatus(
   user: TaskManagerUser | null | undefined,
-  _taskRequest: TaskRequestPermissionSubject | null | undefined,
+  task: TaskPermissionSubject | null | undefined,
+  project: ProjectPermissionSubject | null | undefined,
+) {
+  return canManageTask(user, task, project)
+}
+
+export function canCreateTaskRequest(
+  user: TaskManagerUser | null | undefined,
+  task: TaskPermissionSubject | null | undefined,
+  project: ProjectPermissionSubject | null | undefined,
+) {
+  return canManageTask(user, task, project)
+}
+
+export function canUpdateTaskRequestStatus(
+  user: TaskManagerUser | null | undefined,
+  taskRequest: TaskRequestPermissionSubject | null | undefined,
   taskContext: TaskRequestContext | null | undefined,
 ) {
   if (hasPrivilegedRole(user)) {
     return true
   }
 
-  return canManageTask(user, taskContext?.task, taskContext?.project)
+  return canManageTask(user, taskContext?.task, taskContext?.project) || isUserId(user, taskRequest?.requesterId)
+}
+
+export function canReviewTaskRequest(
+  user: TaskManagerUser | null | undefined,
+  taskRequest: TaskRequestPermissionSubject | null | undefined,
+  taskContext: TaskRequestContext | null | undefined,
+) {
+  return canUpdateTaskRequestStatus(user, taskRequest, taskContext)
 }
 
 export function canCancelTaskRequest(
