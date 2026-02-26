@@ -11,12 +11,14 @@ import { PERMISSION_MESSAGES } from '~/utils/permissions/messages'
 import {
   canCreateTaskRequest,
   canManageTask,
+  canUpdateTaskStatus,
   canUpdateTaskRequestStatus,
   type ProjectPermissionSubject,
   type TaskManagerUser,
   type TaskPermissionSubject,
   type TaskRequestPermissionSubject,
 } from '~/utils/permissions/task-manager'
+import { TaskRequestStatus, TaskStatus } from '~/types/task-manager'
 
 type CrmTaskExtended = CrmTask & {
   projectId?: string | null
@@ -25,6 +27,7 @@ type CrmTaskExtended = CrmTask & {
   project?:
     | {
       id?: string
+      name?: string
       owner?: { id?: string } | string | null
       ownerId?: string | null
       managers?: Array<{ id?: string } | string> | null
@@ -56,13 +59,25 @@ const taskId = computed(() =>
 )
 const loading = ref(false)
 const requestLoading = ref(false)
+const taskLoading = ref(false)
 const task = ref<CrmTaskExtended | null>(null)
 const requests = ref<CrmTaskRequestExtended[]>([])
 const errorMessage = ref('')
 
 const createDialog = ref(false)
 const editDialog = ref(false)
+const taskEditDialog = ref(false)
 const editedRequest = ref<CrmTaskRequestExtended | null>(null)
+
+const createRequestFormRef = ref()
+const editRequestFormRef = ref()
+
+const taskForm = reactive({
+  title: '',
+  description: '',
+  priority: 'medium' as CrmTask['priority'],
+  dueDate: '',
+})
 
 const requestForm = reactive({
   requestedStatus: 'in_progress' as CrmTaskStatus,
@@ -70,6 +85,19 @@ const requestForm = reactive({
 })
 
 const requestStatuses = ['pending', 'approved', 'rejected', 'cancelled'] as const
+const requestedTaskStatuses: CrmTaskStatus[] = ['todo', 'in_progress', 'done', 'archived']
+
+const requestStatusLabels: Record<(typeof requestStatuses)[number], string> = {
+  pending: 'En attente',
+  approved: 'Approuvée',
+  rejected: 'Rejetée',
+  cancelled: 'Annulée',
+}
+
+const requestRules = {
+  requestedStatus: [(value: string) => Boolean(value) || 'Le statut demandé est requis.'],
+  note: [(value: string) => !value || value.length <= 600 || 'La note ne peut pas dépasser 600 caractères.'],
+}
 
 function normalizeItems<T>(value: unknown): T[] {
   if (Array.isArray(value)) return value as T[]
@@ -99,8 +127,9 @@ function getErrorMessage(error: unknown, fallback: string) {
 
 function resolveRequestTaskId(request: CrmTaskRequest): string {
   if (typeof request.task === 'string') return request.task
-  if (request.task && typeof request.task === 'object')
+  if (request.task && typeof request.task === 'object') {
     return String(request.task.id ?? '')
+  }
   return ''
 }
 
@@ -164,6 +193,25 @@ function resolveProjectSubject(taskValue: CrmTaskExtended | null): ProjectPermis
   }
 }
 
+function resetRequestForm() {
+  requestForm.requestedStatus = 'in_progress'
+  requestForm.note = ''
+}
+
+function toTaskChipStatus(status?: CrmTaskStatus | null): TaskStatus {
+  if (status === 'done') return TaskStatus.COMPLETED
+  if (status === 'archived') return TaskStatus.ARCHIVED
+  if (status === 'in_progress') return TaskStatus.IN_PROGRESS
+  return TaskStatus.TODO
+}
+
+function toRequestChipStatus(status: CrmTaskRequest['status']): TaskRequestStatus {
+  if (status === 'approved') return TaskRequestStatus.APPROVED
+  if (status === 'rejected') return TaskRequestStatus.REJECTED
+  if (status === 'cancelled') return TaskRequestStatus.CANCELED
+  return TaskRequestStatus.PENDING
+}
+
 const currentUser = computed<TaskManagerUser>(() => ({
   id: authStore.profile?.id ?? null,
   roles: authStore.roles,
@@ -177,6 +225,12 @@ const projectSubject = computed<ProjectPermissionSubject>(() =>
   resolveProjectSubject(task.value),
 )
 
+const canManageCurrentTask = computed(() =>
+  canManageTask(currentUser.value, taskSubject.value, projectSubject.value),
+)
+const canChangeTaskStatus = computed(() =>
+  canUpdateTaskStatus(currentUser.value, taskSubject.value, projectSubject.value),
+)
 const canCreateRequest = computed(() =>
   canCreateTaskRequest(currentUser.value, taskSubject.value, projectSubject.value),
 )
@@ -186,6 +240,18 @@ const canEditRequest = computed(() =>
 const canDeleteRequest = computed(() =>
   canManageTask(currentUser.value, taskSubject.value, projectSubject.value),
 )
+
+const projectId = computed(() => {
+  const rawProject = task.value?.project
+  if (!rawProject || Array.isArray(rawProject)) return ''
+  return String(rawProject.id ?? '')
+})
+
+const projectLink = computed(() => (projectId.value ? `/crm/projects/${projectId.value}` : '/crm'))
+const projectKanbanLink = computed(() =>
+  projectId.value ? `/crm/kanban?projectId=${projectId.value}` : '/crm/kanban',
+)
+
 function canUpdateSingleRequestStatus(request: CrmTaskRequestExtended) {
   const requestSubject: TaskRequestPermissionSubject = {
     requesterId: resolveRequesterId(request),
@@ -209,6 +275,11 @@ async function loadData() {
     ])
 
     task.value = taskResult as CrmTaskExtended
+    taskForm.title = task.value?.title || ''
+    taskForm.description = task.value?.description || ''
+    taskForm.priority = task.value?.priority || 'medium'
+    taskForm.dueDate = task.value?.dueDate || ''
+
     requests.value = normalizeItems<CrmTaskRequestExtended>(requestsResult).filter(
       (entry) => resolveRequestTaskId(entry) === taskId.value,
     )
@@ -228,6 +299,9 @@ async function createRequest() {
     return
   }
 
+  const validation = await createRequestFormRef.value?.validate?.()
+  if (validation && !validation.valid) return
+
   requestLoading.value = true
   try {
     await crmApi.createTaskRequest({
@@ -237,8 +311,7 @@ async function createRequest() {
       note: requestForm.note.trim() || undefined,
     })
     createDialog.value = false
-    requestForm.requestedStatus = 'in_progress'
-    requestForm.note = ''
+    resetRequestForm()
     Notify.success('Request créée.')
     await loadData()
   } catch (error) {
@@ -268,6 +341,9 @@ async function updateRequest() {
     return
   }
 
+  const validation = await editRequestFormRef.value?.validate?.()
+  if (validation && !validation.valid) return
+
   requestLoading.value = true
   try {
     await crmApi.patchTaskRequest(editedRequest.value.id, {
@@ -276,8 +352,7 @@ async function updateRequest() {
     })
     editDialog.value = false
     editedRequest.value = null
-    requestForm.requestedStatus = 'in_progress'
-    requestForm.note = ''
+    resetRequestForm()
     Notify.success('Request mise à jour.')
     await loadData()
   } catch (error) {
@@ -320,9 +395,7 @@ async function changeRequestStatus(
     if (status === 'rejected') await crmApi.rejectTaskRequest(request.id)
     if (status === 'cancelled') await crmApi.cancelTaskRequest(request.id)
     if (status === 'pending') {
-      Notify.info(
-        'Le statut pending est un état initial, aucun endpoint dédié.',
-      )
+      Notify.info('Le statut pending est un état initial, aucun endpoint dédié.')
       requestLoading.value = false
       return
     }
@@ -332,6 +405,93 @@ async function changeRequestStatus(
     Notify.error(getErrorMessage(error, 'Erreur changement statut request.'))
   } finally {
     requestLoading.value = false
+  }
+}
+
+function openTaskEditDialog() {
+  if (!canManageCurrentTask.value) {
+    Notify.error(PERMISSION_MESSAGES.manageTask)
+    return
+  }
+
+  taskForm.title = task.value?.title || ''
+  taskForm.description = task.value?.description || ''
+  taskForm.priority = task.value?.priority || 'medium'
+  taskForm.dueDate = task.value?.dueDate || ''
+  taskEditDialog.value = true
+}
+
+async function updateTask() {
+  if (!task.value) return
+
+  if (!canManageCurrentTask.value) {
+    Notify.error(PERMISSION_MESSAGES.manageTask)
+    return
+  }
+
+  if (!taskForm.title.trim()) {
+    Notify.error('Le titre de la task est requis.')
+    return
+  }
+
+  taskLoading.value = true
+  try {
+    await crmApi.patchTask(task.value.id, {
+      title: taskForm.title.trim(),
+      description: taskForm.description.trim() || undefined,
+      priority: taskForm.priority,
+      dueDate: taskForm.dueDate || undefined,
+    })
+    taskEditDialog.value = false
+    Notify.success('Task mise à jour.')
+    await loadData()
+  } catch (error) {
+    Notify.error(getErrorMessage(error, 'Erreur de mise à jour task.'))
+  } finally {
+    taskLoading.value = false
+  }
+}
+
+async function deleteTask() {
+  if (!task.value) return
+
+  if (!canManageCurrentTask.value) {
+    Notify.error(PERMISSION_MESSAGES.manageTask)
+    return
+  }
+
+  taskLoading.value = true
+  try {
+    await crmApi.deleteTask(task.value.id)
+    Notify.success('Task supprimée.')
+    await navigateTo(projectLink.value)
+  } catch (error) {
+    Notify.error(getErrorMessage(error, 'Erreur de suppression task.'))
+  } finally {
+    taskLoading.value = false
+  }
+}
+
+async function updateTaskStatus(action: 'start' | 'complete' | 'archive' | 'reopen') {
+  if (!task.value) return
+
+  if (!canChangeTaskStatus.value) {
+    Notify.error(PERMISSION_MESSAGES.manageTask)
+    return
+  }
+
+  taskLoading.value = true
+  try {
+    if (action === 'start') await crmApi.startTask(task.value.id)
+    if (action === 'complete') await crmApi.completeTask(task.value.id)
+    if (action === 'archive') await crmApi.archiveTask(task.value.id)
+    if (action === 'reopen') await crmApi.reopenTask(task.value.id)
+    Notify.success('Statut de la task mis à jour.')
+    await loadData()
+  } catch (error) {
+    Notify.error(getErrorMessage(error, 'Erreur changement statut task.'))
+  } finally {
+    taskLoading.value = false
   }
 }
 
@@ -346,25 +506,25 @@ watch(taskId, loadData)
         <h1 class="text-h5">CRM · Task {{ task?.title || '' }}</h1>
         <p class="text-body-2 text-medium-emphasis">ID: {{ taskId }}</p>
       </div>
-      <div class="d-flex ga-2">
+      <div class="d-flex ga-2 flex-wrap justify-end">
+        <v-btn variant="tonal" prepend-icon="mdi-arrow-left" :to="projectLink">
+          Retour projet
+        </v-btn>
         <v-btn
           variant="tonal"
-          prepend-icon="mdi-briefcase-outline"
-          :to="
-            task?.project && !Array.isArray(task.project)
-              ? `/crm/projects/${task.project.id || ''}`
-              : '/crm'
-          "
+          prepend-icon="mdi-view-kanban-outline"
+          :to="projectKanbanLink"
         >
-          Projet
+          Kanban projet
         </v-btn>
         <v-btn
           variant="tonal"
           prepend-icon="mdi-refresh"
           :loading="loading"
           @click="loadData"
-          >Recharger</v-btn
         >
+          Recharger
+        </v-btn>
         <v-tooltip
           :text="canCreateRequest ? '' : PERMISSION_MESSAGES.createTaskRequest"
           location="top"
@@ -376,8 +536,9 @@ watch(taskId, loadData)
                 prepend-icon="mdi-plus"
                 :disabled="!canCreateRequest"
                 @click="createDialog = true"
-                >Créer request</v-btn
               >
+                Créer request
+              </v-btn>
             </span>
           </template>
         </v-tooltip>
@@ -393,23 +554,96 @@ watch(taskId, loadData)
     />
 
     <v-card class="mb-4">
-      <v-card-title>Détails task</v-card-title>
+      <v-card-title>Informations task</v-card-title>
       <v-card-text>
         <v-skeleton-loader v-if="loading" type="article" />
         <template v-else>
-          <p class="mb-2">
-            <strong>Titre :</strong> {{ task?.title || 'N/A' }}
-          </p>
-          <p class="mb-2">
-            <strong>Statut :</strong> {{ task?.status || 'N/A' }}
-          </p>
-          <p class="mb-2">
-            <strong>Priorité :</strong> {{ task?.priority || 'N/A' }}
-          </p>
-          <p class="mb-0">
-            <strong>Description :</strong>
-            {{ task?.description || 'Aucune description.' }}
-          </p>
+          <div class="d-flex flex-column ga-2">
+            <p class="mb-0"><strong>Title :</strong> {{ task?.title || 'N/A' }}</p>
+            <p class="mb-0">
+              <strong>Description :</strong>
+              {{ task?.description || 'Aucune description.' }}
+            </p>
+            <p class="mb-0">
+              <strong>Status :</strong>
+              <TaskStatusChip
+                v-if="task?.status"
+                :status="toTaskChipStatus(task.status)"
+              />
+              <span v-else>N/A</span>
+            </p>
+            <p class="mb-0"><strong>Priority :</strong> {{ task?.priority || 'N/A' }}</p>
+            <p class="mb-0"><strong>Due date :</strong> {{ task?.dueDate || '-' }}</p>
+            <p class="mb-0"><strong>Project :</strong> {{ projectId || '-' }}</p>
+          </div>
+
+          <div class="d-flex ga-2 flex-wrap mt-4">
+            <v-tooltip
+              :text="canManageCurrentTask ? '' : PERMISSION_MESSAGES.manageTask"
+              location="top"
+            >
+              <template #activator="{ props }">
+                <span v-bind="props">
+                  <v-btn
+                    variant="tonal"
+                    prepend-icon="mdi-pencil"
+                    :disabled="!canManageCurrentTask"
+                    @click="openTaskEditDialog"
+                  >
+                    Éditer
+                  </v-btn>
+                </span>
+              </template>
+            </v-tooltip>
+
+            <v-tooltip
+              :text="canManageCurrentTask ? '' : PERMISSION_MESSAGES.manageTask"
+              location="top"
+            >
+              <template #activator="{ props }">
+                <span v-bind="props">
+                  <v-btn
+                    variant="tonal"
+                    color="error"
+                    prepend-icon="mdi-delete"
+                    :disabled="!canManageCurrentTask"
+                    :loading="taskLoading"
+                    @click="deleteTask"
+                  >
+                    Supprimer
+                  </v-btn>
+                </span>
+              </template>
+            </v-tooltip>
+
+            <v-tooltip
+              :text="canChangeTaskStatus ? '' : PERMISSION_MESSAGES.manageTask"
+              location="top"
+            >
+              <template #activator="{ props }">
+                <span v-bind="props">
+                  <v-menu :disabled="!canChangeTaskStatus">
+                    <template #activator="{ props: menuProps }">
+                      <v-btn
+                        variant="tonal"
+                        prepend-icon="mdi-swap-horizontal"
+                        v-bind="menuProps"
+                        :disabled="!canChangeTaskStatus"
+                      >
+                        Changer statut
+                      </v-btn>
+                    </template>
+                    <v-list density="compact">
+                      <v-list-item title="Démarrer" @click="updateTaskStatus('start')" />
+                      <v-list-item title="Terminer" @click="updateTaskStatus('complete')" />
+                      <v-list-item title="Archiver" @click="updateTaskStatus('archive')" />
+                      <v-list-item title="Rouvrir" @click="updateTaskStatus('reopen')" />
+                    </v-list>
+                  </v-menu>
+                </span>
+              </template>
+            </v-tooltip>
+          </div>
         </template>
       </v-card-text>
     </v-card>
@@ -430,7 +664,11 @@ watch(taskId, loadData)
           <tr v-for="request in requests" :key="request.id">
             <td>{{ request.id }}</td>
             <td>{{ request.requestedStatus || '-' }}</td>
-            <td>{{ request.status }}</td>
+            <td>
+              <TaskRequestStatusChip
+                :status="toRequestChipStatus(request.status)"
+              />
+            </td>
             <td>{{ request.note || '-' }}</td>
             <td class="text-right">
               <v-tooltip
@@ -449,6 +687,7 @@ watch(taskId, loadData)
                   </span>
                 </template>
               </v-tooltip>
+
               <v-tooltip
                 :text="
                   canUpdateSingleRequestStatus(request)
@@ -473,7 +712,7 @@ watch(taskId, loadData)
                         <v-list-item
                           v-for="status in requestStatuses"
                           :key="status"
-                          :title="status"
+                          :title="requestStatusLabels[status]"
                           @click="changeRequestStatus(request, status)"
                         />
                       </v-list>
@@ -481,6 +720,7 @@ watch(taskId, loadData)
                   </span>
                 </template>
               </v-tooltip>
+
               <v-tooltip
                 :text="canDeleteRequest ? '' : PERMISSION_MESSAGES.updateTaskRequest"
                 location="top"
@@ -513,12 +753,21 @@ watch(taskId, loadData)
       <v-card>
         <v-card-title>Créer une request</v-card-title>
         <v-card-text>
-          <v-select
-            v-model="requestForm.requestedStatus"
-            :items="['todo', 'in_progress', 'done', 'archived']"
-            label="Statut demandé"
-          />
-          <v-textarea v-model="requestForm.note" label="Note" rows="3" />
+          <v-form ref="createRequestFormRef">
+            <v-select
+              v-model="requestForm.requestedStatus"
+              :items="requestedTaskStatuses"
+              label="Statut demandé"
+              :rules="requestRules.requestedStatus"
+            />
+            <v-textarea
+              v-model="requestForm.note"
+              label="Note"
+              rows="3"
+              counter="600"
+              :rules="requestRules.note"
+            />
+          </v-form>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -526,15 +775,17 @@ watch(taskId, loadData)
             variant="text"
             :disabled="requestLoading"
             @click="createDialog = false"
-            >Annuler</v-btn
           >
+            Annuler
+          </v-btn>
           <v-btn
             color="primary"
             :loading="requestLoading"
             :disabled="!canCreateRequest"
             @click="createRequest"
-            >Créer</v-btn
           >
+            Créer
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -543,12 +794,21 @@ watch(taskId, loadData)
       <v-card>
         <v-card-title>Éditer request</v-card-title>
         <v-card-text>
-          <v-select
-            v-model="requestForm.requestedStatus"
-            :items="['todo', 'in_progress', 'done', 'archived']"
-            label="Statut demandé"
-          />
-          <v-textarea v-model="requestForm.note" label="Note" rows="3" />
+          <v-form ref="editRequestFormRef">
+            <v-select
+              v-model="requestForm.requestedStatus"
+              :items="requestedTaskStatuses"
+              label="Statut demandé"
+              :rules="requestRules.requestedStatus"
+            />
+            <v-textarea
+              v-model="requestForm.note"
+              label="Note"
+              rows="3"
+              counter="600"
+              :rules="requestRules.note"
+            />
+          </v-form>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -556,15 +816,47 @@ watch(taskId, loadData)
             variant="text"
             :disabled="requestLoading"
             @click="editDialog = false"
-            >Annuler</v-btn
           >
+            Annuler
+          </v-btn>
           <v-btn
             color="primary"
             :loading="requestLoading"
             :disabled="!canEditRequest"
             @click="updateRequest"
-            >Enregistrer</v-btn
           >
+            Enregistrer
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="taskEditDialog" max-width="560">
+      <v-card>
+        <v-card-title>Éditer task</v-card-title>
+        <v-card-text>
+          <v-text-field v-model="taskForm.title" label="Title" autofocus />
+          <v-textarea v-model="taskForm.description" label="Description" rows="3" />
+          <v-select
+            v-model="taskForm.priority"
+            :items="['low', 'medium', 'high', 'critical']"
+            label="Priority"
+          />
+          <v-text-field v-model="taskForm.dueDate" label="Due date" type="date" />
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" :disabled="taskLoading" @click="taskEditDialog = false">
+            Annuler
+          </v-btn>
+          <v-btn
+            color="primary"
+            :loading="taskLoading"
+            :disabled="!canManageCurrentTask"
+            @click="updateTask"
+          >
+            Enregistrer
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
