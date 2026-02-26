@@ -25,6 +25,7 @@ const drawerPaths = [
   '/jobs',
   '/jobs/my-offers',
   '/jobs/applications',
+  '/tasks',
   '/resumes',
 ]
 const routes = computed(() =>

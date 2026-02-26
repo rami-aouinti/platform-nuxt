@@ -1,25 +1,26 @@
-import { apiRequest, type ApiListQuery, type Id, type PaginatedResponse } from './httpUiErrors'
-import type {
-  CreateTaskPayload,
-  PatchTaskPayload,
-  Task,
-  UpdateTaskPayload,
-} from '~/types/task-manager'
+export type TaskPriority = 'low' | 'medium' | 'high' | 'critical'
+export type TaskStatus = 'todo' | 'in_progress' | 'done' | 'archived'
 
-const basePath = '/api/v1/tasks'
+export type TaskItem = {
+  id: string
+  owner: unknown
+  project: unknown | null
+  title: string
+  description: string
+  priority: TaskPriority
+  status: TaskStatus
+  dueDate: string | null
+  completedAt: string | null
+}
 
 export function useTasksApi() {
-  return {
-    list: (query?: ApiListQuery) => apiRequest<PaginatedResponse<Task>>('GET', basePath, { query }),
-    get: (id: Id) => apiRequest<Task>('GET', `${basePath}/${id}`),
-    create: (payload: CreateTaskPayload) => apiRequest<Task>('POST', basePath, { body: payload }),
-    update: (id: Id, payload: UpdateTaskPayload) => apiRequest<Task>('PUT', `${basePath}/${id}`, { body: payload }),
-    patch: (id: Id, payload: PatchTaskPayload) => apiRequest<Task>('PATCH', `${basePath}/${id}`, { body: payload }),
-    delete: (id: Id) => apiRequest<unknown>('DELETE', `${basePath}/${id}`),
+  function list() {
+    return $fetch<TaskItem[]>('/api/v1/tasks', {
+      method: 'GET',
+    })
+  }
 
-    start: (id: Id) => apiRequest<Task>('PATCH', `${basePath}/${id}/start`),
-    complete: (id: Id) => apiRequest<Task>('PATCH', `${basePath}/${id}/complete`),
-    archive: (id: Id) => apiRequest<Task>('PATCH', `${basePath}/${id}/archive`),
-    reopen: (id: Id) => apiRequest<Task>('PATCH', `${basePath}/${id}/reopen`),
+  return {
+    list,
   }
 }
