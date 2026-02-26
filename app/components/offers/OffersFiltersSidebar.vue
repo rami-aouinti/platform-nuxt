@@ -69,11 +69,11 @@ function isSelected(sectionKey: string, value: string) {
       </div>
     </template>
 
-    <v-card v-else class="offers-filters-sidebar__card" variant="flat">
+    <v-card v-else class="offers-filters-sidebar__card" rounded="xl" variant="flat">
       <div
         v-for="(section, index) in sections"
         :key="section.key"
-        class="offers-filters-sidebar__section"
+        class="offers-filters-sidebar__section pa-3"
       >
         <p class="offers-filters-sidebar__section-title">{{ section.title }}</p>
 
@@ -95,7 +95,7 @@ function isSelected(sectionKey: string, value: string) {
           </v-chip>
         </div>
 
-        <v-divider v-if="index < sections.length - 1" class="mt-4" />
+        <v-divider v-if="index < sections.length - 1" color="primary" class="mt-2" />
       </div>
     </v-card>
   </aside>
