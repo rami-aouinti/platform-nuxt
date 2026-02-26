@@ -6,6 +6,7 @@ definePageMeta({
   icon: 'mdi-lock-check-outline',
   title: 'Login',
   middleware: 'guest',
+  layout: 'auth',
 })
 
 const authStore = useAuthStore()
@@ -140,7 +141,7 @@ function logout() {
 
 <style scoped>
 .login-page {
-  min-height: calc(100vh - 64px);
+  min-height: 100%;
   background:
     radial-gradient(circle at 10% 20%, rgb(209 233 255 / 65%), transparent 42%),
     radial-gradient(circle at 90% 15%, rgb(213 174 255 / 35%), transparent 38%),
