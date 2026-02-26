@@ -4,7 +4,7 @@ import { useCrmApi } from '~/composables/api/useCrmApi'
 import type {
   CrmTask,
   CrmTaskRequest,
-  CrmTaskRequestStatus,
+  CrmTaskStatus,
 } from '~/composables/api/useCrmApi'
 
 const crmApi = useCrmApi()
@@ -29,10 +29,10 @@ const taskRequests = ref<CrmTaskRequest[]>([])
 const draggedRequestId = ref<string>('')
 
 const requestColumns = [
-  { key: 'pending', label: 'Pending', color: 'warning' },
-  { key: 'approved', label: 'Approved', color: 'success' },
-  { key: 'rejected', label: 'Rejected', color: 'error' },
-  { key: 'cancelled', label: 'Cancelled', color: 'default' },
+  { key: 'todo', label: 'Todo', color: 'info' },
+  { key: 'in_progress', label: 'In Progress', color: 'warning' },
+  { key: 'done', label: 'Done', color: 'success' },
+  { key: 'archived', label: 'Archived', color: 'default' },
 ] as const
 
 function normalizeItems<T>(value: unknown): T[] {
@@ -64,15 +64,15 @@ const requestsByStatus = computed(() => {
   return requestColumns.reduce(
     (acc, column) => {
       acc[column.key] = taskRequests.value.filter(
-        (request) => request.status === column.key,
+        (request) => request.requestedStatus === column.key,
       )
       return acc
     },
     {
-      pending: [] as CrmTaskRequest[],
-      approved: [] as CrmTaskRequest[],
-      rejected: [] as CrmTaskRequest[],
-      cancelled: [] as CrmTaskRequest[],
+      todo: [] as CrmTaskRequest[],
+      in_progress: [] as CrmTaskRequest[],
+      done: [] as CrmTaskRequest[],
+      archived: [] as CrmTaskRequest[],
     },
   )
 })
@@ -81,7 +81,7 @@ function getRequestTitle(request: CrmTaskRequest) {
   return request.note?.trim() || `Request ${request.id.slice(0, 8)}`
 }
 
-function requestCount(status: CrmTaskRequestStatus) {
+function requestCount(status: CrmTaskStatus) {
   return requestsByStatus.value[status].length
 }
 
@@ -91,8 +91,9 @@ async function loadProjectsAndTasks() {
     const projectsResult = await crmApi.listProjects()
     projects.value = normalizeItems<{ id: string; name: string }>(projectsResult)
 
-    if (!selectedProjectId.value && projects.value.length) {
-      selectedProjectId.value = String(projects.value[0].id)
+    if (!selectedProjectId.value) {
+      const firstProject = projects.value.at(0)
+      if (firstProject) selectedProjectId.value = String(firstProject.id)
     }
 
     if (!selectedProjectId.value) {
@@ -148,12 +149,12 @@ function onRequestDragEnd() {
   draggedRequestId.value = ''
 }
 
-async function updateRequestStatus(requestId: string, nextStatus: CrmTaskRequestStatus) {
+async function updateRequestStatus(requestId: string, nextStatus: CrmTaskStatus) {
   const request = taskRequests.value.find((item) => item.id === requestId)
-  if (!request || request.status === nextStatus) return
+  if (!request || request.requestedStatus === nextStatus) return
 
-  const previousStatus = request.status
-  request.status = nextStatus
+  const previousStatus = request.requestedStatus
+  request.requestedStatus = nextStatus
   changingRequestStatus.value = requestId
 
   try {
@@ -162,7 +163,7 @@ async function updateRequestStatus(requestId: string, nextStatus: CrmTaskRequest
     Notify.success('Status de la request mis à jour.')
     await loadTaskRequests()
   } catch (error) {
-    request.status = previousStatus
+    request.requestedStatus = previousStatus
     Notify.error(
       error instanceof Error
         ? error.message
@@ -174,12 +175,19 @@ async function updateRequestStatus(requestId: string, nextStatus: CrmTaskRequest
   }
 }
 
-function onDropRequest(status: CrmTaskRequestStatus) {
+function onDropRequest(status: CrmTaskStatus) {
   if (!draggedRequestId.value) return
   updateRequestStatus(draggedRequestId.value, status)
 }
 
-function statusChipColor(status: CrmTaskRequestStatus) {
+function statusChipColor(status?: CrmTaskStatus | null) {
+  if (status === 'done') return 'success'
+  if (status === 'archived') return 'default'
+  if (status === 'in_progress') return 'warning'
+  return 'info'
+}
+
+function requestStatusChipColor(status: CrmTaskRequest['status']) {
   if (status === 'approved') return 'success'
   if (status === 'rejected') return 'error'
   if (status === 'cancelled') return 'default'
@@ -226,7 +234,7 @@ onMounted(() => {
       <div>
         <h1 class="text-h5">CRM Kanban</h1>
         <p class="text-body-2 text-medium-emphasis mb-0">
-          5 colonnes : 1 Tasks + 4 statuts de Task Requests
+          5 colonnes : 1 Tasks + 4 statuts demandés (requestedStatus)
         </p>
       </div>
       <div class="d-flex ga-2">
@@ -355,9 +363,14 @@ onMounted(() => {
               <v-card-text class="pt-0">
                 <div class="d-flex align-center justify-space-between">
                   <span class="text-caption text-medium-emphasis">{{ request.id.slice(0, 8) }}</span>
-                  <v-chip size="x-small" :color="statusChipColor(request.status)" variant="tonal">
-                    {{ request.status }}
-                  </v-chip>
+                  <div class="d-flex ga-1">
+                    <v-chip size="x-small" :color="statusChipColor(request.requestedStatus)" variant="tonal">
+                      {{ request.requestedStatus || 'todo' }}
+                    </v-chip>
+                    <v-chip size="x-small" :color="requestStatusChipColor(request.status)" variant="outlined">
+                      {{ request.status }}
+                    </v-chip>
+                  </div>
                 </div>
               </v-card-text>
             </v-card>
@@ -378,7 +391,7 @@ onMounted(() => {
       class="mt-4"
       type="success"
       variant="tonal"
-      :text="`Task active: ${selectedTask.title}`"
+      :text="`Task active: ${selectedTask.title} (${selectedTask.status})`"
     />
   </v-container>
 </template>

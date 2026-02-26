@@ -6,6 +6,7 @@ type ProjectsViewState = 'loading' | 'empty' | 'error' | 'success'
 interface ProjectRow {
   id: string
   name: string
+  image?: string
   owner: string
   ownerId: string | null
   managerIds: string[]
@@ -78,6 +79,7 @@ function mapProjectToRow(project: CrmProjectExtended): ProjectRow {
   return {
     id: project.id,
     name: project.name,
+    image: project.image || project.photo || project.photoUrl || undefined,
     owner: owner.name,
     ownerId: owner.id,
     managerIds: mapManagers(project),
@@ -128,7 +130,13 @@ onMounted(load)
 
     <v-data-table v-else :headers="headers" :items="rows" item-value="id" class="elevation-1" hover>
       <template #item.name="{ item }">
-        <NuxtLink :to="`/projects/${item.id}`" class="text-decoration-none">{{ item.name }}</NuxtLink>
+        <div class="d-flex align-center ga-2">
+          <v-avatar size="28">
+            <v-img v-if="item.image" :src="item.image" :alt="item.name" />
+            <span v-else>{{ item.name.slice(0, 1).toUpperCase() }}</span>
+          </v-avatar>
+          <NuxtLink :to="`/projects/${item.id}`" class="text-decoration-none">{{ item.name }}</NuxtLink>
+        </div>
       </template>
       <template #item.actions="{ item }">
         <v-btn size="small" color="primary" variant="text" :to="`/projects/${item.id}`">Voir</v-btn>
