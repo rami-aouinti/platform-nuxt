@@ -50,8 +50,16 @@ const {
 
 const loading = ref(false)
 const busy = ref(false)
+const resumeFormRef = ref()
+const experienceFormRef = ref()
+const educationFormRef = ref()
+const skillFormRef = ref()
+const isResumeFormValid = ref(false)
+const isExperienceFormValid = ref(false)
+const isEducationFormValid = ref(false)
+const isSkillFormValid = ref(false)
 const resume = ref<Resume | null>(null)
-const resumeForm = ref<UpdateResumePayload>({ title: '', headline: '', summary: '', location: '' })
+const resumeForm = ref<UpdateResumePayload>({ title: '', headline: '', summary: '', location: '', isPublic: false })
 
 const experiences = ref<ResumeExperience[]>([])
 const experienceForm = ref<UpdateResumeExperiencePayload>({ resume: '', company: '', role: '', startDate: '' })
@@ -86,6 +94,7 @@ async function loadData() {
       headline: resumeResponse.headline || '',
       summary: resumeResponse.summary || '',
       location: resumeResponse.location || '',
+      isPublic: Boolean(resumeResponse.isPublic),
     }
     experiences.value = experiencesResponse.data || []
     educationList.value = educationResponse.data || []
@@ -116,7 +125,17 @@ function resetSkillForm() {
   skillForm.value = { resume: resumeId.value, name: '' }
 }
 
+async function validateForm(formRef: { validate?: () => Promise<{ valid: boolean }> }) {
+  const validationResult = await formRef?.validate?.()
+  return Boolean(validationResult?.valid)
+}
+
 async function saveResume() {
+  if (!await validateForm(resumeFormRef.value)) {
+    Notify.error('Les informations du CV contiennent des erreurs. Merci de les corriger.')
+    return
+  }
+
   busy.value = true
   try {
     await updateResume(resumeId.value, resumeForm.value)
@@ -165,6 +184,11 @@ function editExperience(item: ResumeExperience) {
 }
 
 async function submitExperience() {
+  if (!await validateForm(experienceFormRef.value)) {
+    Notify.error("L'expérience contient des erreurs. Merci de les corriger.")
+    return
+  }
+
   busy.value = true
   try {
     const payload = { ...experienceForm.value, resume: resumeId.value }
@@ -216,6 +240,11 @@ function editEducation(item: ResumeEducation) {
 }
 
 async function submitEducation() {
+  if (!await validateForm(educationFormRef.value)) {
+    Notify.error('La formation contient des erreurs. Merci de les corriger.')
+    return
+  }
+
   busy.value = true
   try {
     const payload = { ...educationForm.value, resume: resumeId.value }
@@ -267,6 +296,11 @@ function editSkill(item: ResumeSkill) {
 }
 
 async function submitSkill() {
+  if (!await validateForm(skillFormRef.value)) {
+    Notify.error('La compétence contient des erreurs. Merci de les corriger.')
+    return
+  }
+
   busy.value = true
   try {
     const payload = { ...skillForm.value, resume: resumeId.value }
@@ -330,21 +364,25 @@ onMounted(loadData)
     <v-expansion-panels multiple>
       <v-expansion-panel title="Informations du CV">
         <v-expansion-panel-text>
-          <ResumeForm v-model="resumeForm" :disabled="loading || busy" />
+          <v-form ref="resumeFormRef" v-model="isResumeFormValid">
+            <ResumeForm v-model="resumeForm" :disabled="loading || busy" />
+          </v-form>
           <div class="d-flex justify-end ga-2">
-            <v-btn color="primary" :loading="busy" :disabled="loading || busy" @click="saveResume">Mettre à jour (PUT)</v-btn>
-            <v-btn variant="outlined" :loading="busy" :disabled="loading || busy" @click="patchResumeData">Patch (PATCH)</v-btn>
+            <v-btn color="primary" :loading="busy" :disabled="loading || busy || !isResumeFormValid" @click="saveResume">Mettre à jour (PUT)</v-btn>
+            <v-btn variant="outlined" :loading="busy" :disabled="loading || busy || !isResumeFormValid" @click="patchResumeData">Patch (PATCH)</v-btn>
           </div>
         </v-expansion-panel-text>
       </v-expansion-panel>
 
       <v-expansion-panel title="Expériences">
         <v-expansion-panel-text>
-          <ResumeExperienceForm v-model="experienceForm" :disabled="loading || busy" />
+          <v-form ref="experienceFormRef" v-model="isExperienceFormValid">
+            <ResumeExperienceForm v-model="experienceForm" :disabled="loading || busy" />
+          </v-form>
           <div class="d-flex justify-end ga-2 mb-4">
             <v-btn variant="text" :disabled="loading || busy" @click="resetExperienceForm">Annuler</v-btn>
-            <v-btn color="primary" :loading="busy" :disabled="loading || busy" @click="submitExperience">{{ editingExperienceId ? 'Mettre à jour (PUT)' : 'Ajouter' }}</v-btn>
-            <v-btn v-if="editingExperienceId" variant="outlined" :loading="busy" :disabled="loading || busy" @click="patchSelectedExperience">Patch</v-btn>
+            <v-btn color="primary" :loading="busy" :disabled="loading || busy || !isExperienceFormValid" @click="submitExperience">{{ editingExperienceId ? 'Mettre à jour (PUT)' : 'Ajouter' }}</v-btn>
+            <v-btn v-if="editingExperienceId" variant="outlined" :loading="busy" :disabled="loading || busy || !isExperienceFormValid" @click="patchSelectedExperience">Patch</v-btn>
           </div>
           <v-list lines="two">
             <v-list-item v-for="item in experiences" :key="item.id" :title="`${item.role} · ${item.company}`" :subtitle="item.startDate">
@@ -359,11 +397,13 @@ onMounted(loadData)
 
       <v-expansion-panel title="Formations">
         <v-expansion-panel-text>
-          <ResumeEducationForm v-model="educationForm" :disabled="loading || busy" />
+          <v-form ref="educationFormRef" v-model="isEducationFormValid">
+            <ResumeEducationForm v-model="educationForm" :disabled="loading || busy" />
+          </v-form>
           <div class="d-flex justify-end ga-2 mb-4">
             <v-btn variant="text" :disabled="loading || busy" @click="resetEducationForm">Annuler</v-btn>
-            <v-btn color="primary" :loading="busy" :disabled="loading || busy" @click="submitEducation">{{ editingEducationId ? 'Mettre à jour (PUT)' : 'Ajouter' }}</v-btn>
-            <v-btn v-if="editingEducationId" variant="outlined" :loading="busy" :disabled="loading || busy" @click="patchSelectedEducation">Patch</v-btn>
+            <v-btn color="primary" :loading="busy" :disabled="loading || busy || !isEducationFormValid" @click="submitEducation">{{ editingEducationId ? 'Mettre à jour (PUT)' : 'Ajouter' }}</v-btn>
+            <v-btn v-if="editingEducationId" variant="outlined" :loading="busy" :disabled="loading || busy || !isEducationFormValid" @click="patchSelectedEducation">Patch</v-btn>
           </div>
           <v-list lines="two">
             <v-list-item v-for="item in educationList" :key="item.id" :title="item.institution" :subtitle="item.degree || '-'">
@@ -378,11 +418,13 @@ onMounted(loadData)
 
       <v-expansion-panel title="Compétences">
         <v-expansion-panel-text>
-          <ResumeSkillForm v-model="skillForm" :disabled="loading || busy" />
+          <v-form ref="skillFormRef" v-model="isSkillFormValid">
+            <ResumeSkillForm v-model="skillForm" :disabled="loading || busy" />
+          </v-form>
           <div class="d-flex justify-end ga-2 mb-4">
             <v-btn variant="text" :disabled="loading || busy" @click="resetSkillForm">Annuler</v-btn>
-            <v-btn color="primary" :loading="busy" :disabled="loading || busy" @click="submitSkill">{{ editingSkillId ? 'Mettre à jour (PUT)' : 'Ajouter' }}</v-btn>
-            <v-btn v-if="editingSkillId" variant="outlined" :loading="busy" :disabled="loading || busy" @click="patchSelectedSkill">Patch</v-btn>
+            <v-btn color="primary" :loading="busy" :disabled="loading || busy || !isSkillFormValid" @click="submitSkill">{{ editingSkillId ? 'Mettre à jour (PUT)' : 'Ajouter' }}</v-btn>
+            <v-btn v-if="editingSkillId" variant="outlined" :loading="busy" :disabled="loading || busy || !isSkillFormValid" @click="patchSelectedSkill">Patch</v-btn>
           </div>
           <v-list lines="two">
             <v-list-item v-for="item in skills" :key="item.id" :title="item.name" :subtitle="item.level || '-'">
