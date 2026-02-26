@@ -3,6 +3,7 @@ import { useDisplay } from 'vuetify'
 import { Notify } from '~/stores/notification'
 import { httpGet, HttpRequestError } from '../../../services/http/client'
 import * as jobOffersApi from '../../../services/admin/job-offers/index'
+import { jobApplicationsService } from '../../../services/admin/job-applications'
 import type { JobOffer } from '../../../services/admin/job-offers/index'
 
 definePageMeta({
@@ -135,6 +136,31 @@ function formatRelativeDate(input?: string) {
   return `Il y a ${days} jours`
 }
 
+
+function applicationStatusLabel(status?: string) {
+  if (status === 'accepted') return 'Acceptée'
+  if (status === 'rejected') return 'Rejetée'
+  if (status === 'withdrawn') return 'Retirée'
+  return 'En attente'
+}
+
+function applicationStatusColor(status?: string) {
+  if (status === 'accepted') return 'success'
+  if (status === 'rejected') return 'error'
+  if (status === 'withdrawn') return 'default'
+  return 'warning'
+}
+
+function applicationCandidateName(application: NonNullable<JobOffer['jobApplications']>[number]) {
+  const candidate = application.candidate
+  if (!candidate || typeof candidate === 'string') return '-'
+  return candidate.firstName || candidate.username || candidate.email || '-'
+}
+
+function canDecideApplication(application: NonNullable<JobOffer['jobApplications']>[number]) {
+  return application.status === 'pending'
+}
+
 const mappedOffers = computed(() =>
   rows.value.map((row, index) => ({
     id: String(row.id),
@@ -161,6 +187,10 @@ const selectedOffer = computed(
   () =>
     mappedOffers.value.find((offer) => offer.id === selectedId.value) ??
     mappedOffers.value[0],
+)
+
+const selectedRow = computed(() =>
+  rows.value.find((item) => String(item.id) === selectedOffer.value?.id),
 )
 
 const pageState = computed(() => {
@@ -308,6 +338,28 @@ async function deleteOffer(offerId: string) {
   }
 }
 
+
+async function decideApplication(
+  id: string,
+  action: 'accept' | 'reject' | 'withdraw',
+  successMessage: string,
+) {
+  actionLoading.value = true
+
+  try {
+    if (action === 'accept') await jobApplicationsService.accept(id)
+    else if (action === 'reject') await jobApplicationsService.reject(id)
+    else await jobApplicationsService.withdraw(id)
+
+    Notify.success(successMessage)
+    await loadRows()
+  } catch (errorValue) {
+    Notify.error(toErrorMessage(errorValue))
+  } finally {
+    actionLoading.value = false
+  }
+}
+
 watch([page, pageSize], loadRows)
 watchDebounced(
   [search, location, selectedFilters],
@@ -376,32 +428,98 @@ onMounted(loadRows)
             </v-btn>
           </div>
 
-          <OffersOfferDetailsPanel
-            v-if="selectedOffer"
-            :title="selectedOffer.title"
-            :company="selectedOffer.company"
-            :location="selectedOffer.location"
-            :salary="selectedOffer.salary"
-            :description="
-              editing.description ||
-              'Mettez à jour votre description pour présenter la mission.'
-            "
-            :highlights="[
-              'Ajuster les missions pour refléter le besoin actuel',
-              'Vérifier les prérequis et la stack technique',
-              'Mettre à jour les informations de rémunération',
-            ]"
-            :requirements="[
-              'Expérience adaptée au poste',
-              'Bon niveau de communication',
-              'Autonomie et sens de l\'organisation',
-            ]"
-            :perks="[
-              'Télétravail possible',
-              'Prime annuelle',
-              'Mutuelle premium',
-            ]"
-          />
+          <div v-if="selectedOffer" class="d-flex flex-column ga-4">
+            <OffersOfferDetailsPanel
+              :title="selectedOffer.title"
+              :company="selectedOffer.company"
+              :location="selectedOffer.location"
+              :salary="selectedOffer.salary"
+              :description="
+                selectedRow?.description ||
+                'Mettez à jour votre description pour présenter la mission.'
+              "
+              :highlights="[
+                'Ajuster les missions pour refléter le besoin actuel',
+                'Vérifier les prérequis et la stack technique',
+                'Mettre à jour les informations de rémunération',
+              ]"
+              :requirements="[
+                'Expérience adaptée au poste',
+                'Bon niveau de communication',
+                'Autonomie et sens de l\'organisation',
+              ]"
+              :perks="[
+                'Télétravail possible',
+                'Prime annuelle',
+                'Mutuelle premium',
+              ]"
+            />
+
+            <v-card variant="flat" rounded="lg" border>
+              <v-card-title class="text-subtitle-1">Candidatures</v-card-title>
+              <v-divider />
+              <v-list lines="two" density="comfortable">
+                <template
+                  v-for="application in selectedRow?.jobApplications || []"
+                  :key="application.id"
+                >
+                  <v-list-item>
+                    <template #title>
+                      <div class="d-flex align-center ga-2">
+                        <span>{{ applicationCandidateName(application) }}</span>
+                        <v-chip
+                          size="small"
+                          :color="applicationStatusColor(application.status)"
+                          variant="tonal"
+                          >{{ applicationStatusLabel(application.status) }}</v-chip
+                        >
+                      </div>
+                    </template>
+                    <template #subtitle>
+                      <span>Application ID: {{ application.id }}</span>
+                    </template>
+                    <template #append>
+                      <div class="d-flex ga-1">
+                        <v-btn
+                          v-if="canDecideApplication(application)"
+                          size="small"
+                          color="success"
+                          variant="text"
+                          icon="mdi-check"
+                          :loading="actionLoading"
+                          @click="decideApplication(String(application.id), 'accept', 'Candidature acceptée.')"
+                        />
+                        <v-btn
+                          v-if="canDecideApplication(application)"
+                          size="small"
+                          color="error"
+                          variant="text"
+                          icon="mdi-close"
+                          :loading="actionLoading"
+                          @click="decideApplication(String(application.id), 'reject', 'Candidature rejetée.')"
+                        />
+                        <v-btn
+                          size="small"
+                          color="default"
+                          variant="text"
+                          icon="mdi-undo-variant"
+                          :loading="actionLoading"
+                          @click="decideApplication(String(application.id), 'withdraw', 'Candidature retirée.')"
+                        />
+                      </div>
+                    </template>
+                  </v-list-item>
+                  <v-divider />
+                </template>
+
+                <v-list-item
+                  v-if="!(selectedRow?.jobApplications || []).length"
+                  title="Aucune candidature"
+                  subtitle="Cette offre n'a pas encore reçu de candidature."
+                />
+              </v-list>
+            </v-card>
+          </div>
         </div>
       </section>
     </div>

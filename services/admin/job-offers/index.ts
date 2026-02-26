@@ -35,6 +35,18 @@ export interface JobOffer {
   jobCategory?: string
   skills?: string[]
   languages?: string[]
+  jobApplications?: Array<{
+    id: Id
+    status?: 'pending' | 'accepted' | 'rejected' | 'withdrawn' | string
+    cvUrl?: string | null
+    attachments?: string[] | null
+    candidate?: {
+      id?: Id
+      username?: string
+      firstName?: string
+      email?: string
+    } | Id
+  }>
 }
 
 export interface CreateJobOfferRequest {
