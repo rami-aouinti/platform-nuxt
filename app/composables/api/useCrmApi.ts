@@ -100,6 +100,10 @@ export function useCrmApi() {
 
     // Project endpoints
     listProjects: () => $fetch<CrmProject[]>(projectsBase, { method: 'GET' }),
+    listCompanyProjects: (companyId: string) =>
+      $fetch<CrmProject[]>(`${companiesBase}/${companyId}/projects`, {
+        method: 'GET',
+      }),
     createProject: (payload: CreateProjectPayload) => $fetch<CrmProject>(projectsBase, { method: 'POST', body: payload }),
     getProject: (id: string) => $fetch<CrmProject>(`${projectsBase}/${id}`, { method: 'GET' }),
     updateProject: (id: string, payload: UpdateProjectPayload) => $fetch<CrmProject>(`${projectsBase}/${id}`, { method: 'PUT', body: payload }),
