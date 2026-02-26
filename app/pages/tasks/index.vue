@@ -2,6 +2,7 @@
 import { Notify } from '~/stores/notification'
 import { HttpRequestError } from '../../../services/http/client'
 import type { TaskItem } from '~/composables/api/useTasksApi'
+import {useTasksApi} from "~/composables/api/useTasksApi"
 
 definePageMeta({
   icon: 'mdi-format-list-checks',

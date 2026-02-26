@@ -25,7 +25,17 @@ export type CreateTaskPayload = {
 export type UpdateTaskPayload = CreateTaskPayload
 export type PatchTaskPayload = Partial<CreateTaskPayload>
 
-const basePath = '/api/v1/tasks'
+export type TaskItem = {
+  id: string
+  owner: unknown
+  project: unknown | null
+  title: string
+  description: string
+  priority: TaskPriority
+  status: TaskStatus
+  dueDate: string | null
+  completedAt: string | null
+}
 
 export function useTasksApi() {
   return {
