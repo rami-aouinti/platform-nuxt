@@ -2,6 +2,19 @@ export type CrmProjectStatus = 'active' | 'archived'
 export type CrmTaskPriority = 'low' | 'medium' | 'high' | 'critical'
 export type CrmTaskStatus = 'todo' | 'in_progress' | 'done' | 'archived'
 export type CrmTaskRequestStatus = 'pending' | 'approved' | 'rejected' | 'cancelled'
+export type CrmCompanyRole = 'owner' | 'member' | string
+
+export type CrmCompany = {
+  id: string
+  name: string
+  description?: string | null
+  role?: CrmCompanyRole | null
+  projectsCount?: number | null
+  projects?: unknown[] | number | null
+  stats?: {
+    projectsCount?: number | null
+  } | null
+}
 
 export type CrmProject = {
   id: string
@@ -27,6 +40,11 @@ export type CrmTaskRequest = {
   requestedStatus?: CrmTaskStatus | null
   status: CrmTaskRequestStatus
   note?: string | null
+}
+
+export type CreateCompanyPayload = {
+  name: string
+  description?: string
 }
 
 export type CreateProjectPayload = {
@@ -68,15 +86,17 @@ export type UpdateTaskRequestPayload = CreateTaskRequestPayload & {
 
 export type PatchTaskRequestPayload = Partial<UpdateTaskRequestPayload>
 
+const companiesBase = '/api/v1/companies'
 const projectsBase = '/api/v1/projects'
 const tasksBase = '/api/v1/tasks'
 const taskRequestsBase = '/api/v1/task-requests'
 
 export function useCrmApi() {
   return {
-    // User asked for company creation from CRM page.
-    createCompany: (payload: { name: string; description?: string }) =>
-      $fetch('/api/v1/companies', { method: 'POST', body: payload }),
+    // Companies endpoints
+    listCompanies: () => $fetch<CrmCompany[]>(companiesBase, { method: 'GET' }),
+    createCompany: (payload: CreateCompanyPayload) =>
+      $fetch<CrmCompany>(companiesBase, { method: 'POST', body: payload }),
 
     // Project endpoints
     listProjects: () => $fetch<CrmProject[]>(projectsBase, { method: 'GET' }),
