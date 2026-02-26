@@ -1,47 +1,10 @@
 import { apiRequest, type ApiListQuery, type Id, type PaginatedResponse } from './httpUiErrors'
-
-export enum ProjectStatus {
-  DRAFT = 'draft',
-  ACTIVE = 'active',
-  ARCHIVED = 'archived',
-  COMPLETED = 'completed',
-}
-
-export enum ProjectPriority {
-  LOW = 'low',
-  MEDIUM = 'medium',
-  HIGH = 'high',
-  CRITICAL = 'critical',
-}
-
-export interface Project {
-  id: Id
-  name: string
-  description?: string | null
-  status: ProjectStatus
-  priority: ProjectPriority
-  dueDate?: string | null
-  createdAt: string
-  updatedAt: string
-}
-
-export interface CreateProjectPayload {
-  name: string
-  description?: string | null
-  status?: ProjectStatus
-  priority?: ProjectPriority
-  dueDate?: string | null
-}
-
-export interface UpdateProjectPayload {
-  name: string
-  description?: string | null
-  status: ProjectStatus
-  priority: ProjectPriority
-  dueDate?: string | null
-}
-
-export type PatchProjectPayload = Partial<UpdateProjectPayload>
+import type {
+  CreateProjectPayload,
+  PatchProjectPayload,
+  Project,
+  UpdateProjectPayload,
+} from '~/types/task-manager'
 
 const basePath = '/api/v1/projects'
 
