@@ -53,6 +53,14 @@ function getErrorMessage(error: unknown, fallback: string) {
   return fallback
 }
 
+function getCompanyDisplayName(company: CrmCompany) {
+  return company.legalName?.trim() || company.name
+}
+
+function getCompanyAvatar(company: CrmCompany) {
+  return company.image || company.photo || company.photoUrl || undefined
+}
+
 function getRoleLabel(company: CrmCompany) {
   if (company.role === 'owner') return 'Owner'
   if (company.role === 'member') return 'Member'
@@ -183,7 +191,17 @@ onMounted(loadCompanies)
       >
         <v-card class="h-100" hover @click="openCompany(company.id)">
           <v-card-title class="d-flex align-center justify-space-between ga-2">
-            <span class="text-truncate">{{ company.name }}</span>
+            <div class="d-flex align-center ga-3 min-w-0">
+              <v-avatar size="32">
+                <v-img
+                  v-if="getCompanyAvatar(company)"
+                  :src="getCompanyAvatar(company)"
+                  :alt="getCompanyDisplayName(company)"
+                />
+                <span v-else>{{ getCompanyDisplayName(company).slice(0, 1).toUpperCase() }}</span>
+              </v-avatar>
+              <span class="text-truncate">{{ getCompanyDisplayName(company) }}</span>
+            </div>
             <v-chip size="small" color="primary" variant="tonal">{{
               getRoleLabel(company)
             }}</v-chip>

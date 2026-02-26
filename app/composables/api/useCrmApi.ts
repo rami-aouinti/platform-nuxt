@@ -7,8 +7,12 @@ export type CrmCompanyRole = 'owner' | 'member' | string
 export type CrmCompany = {
   id: string
   name: string
+  legalName?: string | null
   description?: string | null
   role?: CrmCompanyRole | null
+  photoUrl?: string | null
+  photo?: string | null
+  image?: string | null
   projectsCount?: number | null
   projects?: unknown[] | number | null
   stats?: {
@@ -21,6 +25,9 @@ export type CrmProject = {
   name: string
   description?: string | null
   status: CrmProjectStatus
+  photoUrl?: string | null
+  photo?: string | null
+  image?: string | null
 }
 
 export type CrmTask = {
@@ -134,7 +141,7 @@ export function useCrmApi() {
     getTaskRequest: (id: string) => $fetch<CrmTaskRequest>(`${taskRequestsBase}/${id}`, { method: 'GET' }),
     updateTaskRequest: (id: string, payload: UpdateTaskRequestPayload) => $fetch<CrmTaskRequest>(`${taskRequestsBase}/${id}`, { method: 'PUT', body: payload }),
     patchTaskRequest: (id: string, payload: PatchTaskRequestPayload) => $fetch<CrmTaskRequest>(`${taskRequestsBase}/${id}`, { method: 'PATCH', body: payload }),
-    patchTaskRequestRequestedStatus: (id: string, status: CrmTaskRequestStatus) =>
+    patchTaskRequestRequestedStatus: (id: string, status: CrmTaskStatus) =>
       $fetch<CrmTaskRequest>(`${taskRequestsBase}/${id}/requested-status/${status}`, { method: 'PATCH' }),
     deleteTaskRequest: (id: string) => $fetch<unknown>(`${taskRequestsBase}/${id}`, { method: 'DELETE' }),
     approveTaskRequest: (id: string) => $fetch<CrmTaskRequest>(`${taskRequestsBase}/${id}/approve`, { method: 'PATCH' }),
