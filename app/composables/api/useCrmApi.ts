@@ -47,6 +47,17 @@ export type CrmTaskRequest = {
   requestedStatus?: CrmTaskStatus | null
   status: CrmTaskRequestStatus
   note?: string | null
+  time?: string | null
+}
+
+export type CrmSprintTaskRequestsGroup = {
+  task: CrmTask
+  taskRequests: CrmTaskRequest[]
+}
+
+export type CrmSprintTaskRequestsResponse = {
+  sprintId: string
+  groupedByTask: CrmSprintTaskRequestsGroup[]
 }
 
 export type CreateCompanyPayload = {
@@ -136,6 +147,11 @@ export function useCrmApi() {
     listTaskTaskRequests: (taskId: string) =>
       $fetch<CrmTaskRequest[]>(`${tasksBase}/${taskId}/task-requests`, {
         method: 'GET',
+      }),
+    listTaskRequestsBySprintGroupedByTask: (sprintId: string, userId?: string) =>
+      $fetch<CrmSprintTaskRequestsResponse>(`${taskRequestsBase}/sprints/${sprintId}/grouped-by-task`, {
+        method: 'GET',
+        query: userId ? { user: userId } : undefined,
       }),
     createTaskRequest: (payload: CreateTaskRequestPayload) => $fetch<CrmTaskRequest>(taskRequestsBase, { method: 'POST', body: payload }),
     getTaskRequest: (id: string) => $fetch<CrmTaskRequest>(`${taskRequestsBase}/${id}`, { method: 'GET' }),
