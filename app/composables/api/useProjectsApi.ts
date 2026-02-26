@@ -6,9 +6,9 @@ import type {
   UpdateProjectPayload,
 } from '~/types/task-manager'
 
-const basePath = '/api/v1/projects'
-
 export function useProjectsApi() {
+  const basePath = '/api/v1/projects'
+
   return {
     list: (query?: ApiListQuery) => apiRequest<PaginatedResponse<Project>>('GET', basePath, { query }),
     get: (id: Id) => apiRequest<Project>('GET', `${basePath}/${id}`),

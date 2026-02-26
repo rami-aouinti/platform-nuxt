@@ -6,9 +6,9 @@ import type {
   UpdateTaskPayload,
 } from '~/types/task-manager'
 
-const basePath = '/api/v1/tasks'
-
 export function useTasksApi() {
+  const basePath = '/api/v1/tasks'
+
   return {
     list: (query?: ApiListQuery) => apiRequest<PaginatedResponse<Task>>('GET', basePath, { query }),
     get: (id: Id) => apiRequest<Task>('GET', `${basePath}/${id}`),
