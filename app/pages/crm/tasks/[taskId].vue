@@ -1,23 +1,48 @@
 <script setup lang="ts">
 import { Notify } from '~/stores/notification'
 import { useCrmApi } from '~/composables/api/useCrmApi'
+import { useAuthStore } from '~/stores/auth'
 import type {
   CrmTask,
   CrmTaskRequest,
   CrmTaskStatus,
 } from '~/composables/api/useCrmApi'
+import { PERMISSION_MESSAGES } from '~/utils/permissions/messages'
+import {
+  canCreateTaskRequest,
+  canManageTask,
+  canUpdateTaskRequestStatus,
+  type ProjectPermissionSubject,
+  type TaskManagerUser,
+  type TaskPermissionSubject,
+  type TaskRequestPermissionSubject,
+} from '~/utils/permissions/task-manager'
 
 type CrmTaskExtended = CrmTask & {
-  permissions?: {
-    canCreateRequest?: boolean
-    canEditRequest?: boolean
-    canDeleteRequest?: boolean
-    canChangeRequestStatus?: boolean
-  } | null
+  projectId?: string | null
+  assignee?: { id?: string } | string | null
+  assigneeId?: string | null
+  project?:
+    | {
+      id?: string
+      owner?: { id?: string } | string | null
+      ownerId?: string | null
+      managers?: Array<{ id?: string } | string> | null
+      company?: { id?: string } | string | null
+      companyId?: string | null
+    }
+    | null
+    | []
+}
+
+type CrmTaskRequestExtended = CrmTaskRequest & {
+  requester?: { id?: string; name?: string } | string | null
+  requesterId?: string | null
 }
 
 const route = useRoute()
 const crmApi = useCrmApi()
+const authStore = useAuthStore()
 
 definePageMeta({
   icon: 'mdi-format-list-checks',
@@ -32,24 +57,19 @@ const taskId = computed(() =>
 const loading = ref(false)
 const requestLoading = ref(false)
 const task = ref<CrmTaskExtended | null>(null)
-const requests = ref<CrmTaskRequest[]>([])
+const requests = ref<CrmTaskRequestExtended[]>([])
 const errorMessage = ref('')
 
 const createDialog = ref(false)
 const editDialog = ref(false)
-const editedRequest = ref<CrmTaskRequest | null>(null)
+const editedRequest = ref<CrmTaskRequestExtended | null>(null)
 
 const requestForm = reactive({
   requestedStatus: 'in_progress' as CrmTaskStatus,
   note: '',
 })
 
-const requestStatuses = [
-  'pending',
-  'approved',
-  'rejected',
-  'cancelled',
-] as const
+const requestStatuses = ['pending', 'approved', 'rejected', 'cancelled'] as const
 
 function normalizeItems<T>(value: unknown): T[] {
   if (Array.isArray(value)) return value as T[]
@@ -84,18 +104,98 @@ function resolveRequestTaskId(request: CrmTaskRequest): string {
   return ''
 }
 
-const canCreateRequest = computed(
-  () => task.value?.permissions?.canCreateRequest ?? true,
+function resolveRequesterId(request: CrmTaskRequestExtended): string | null {
+  if (typeof request.requesterId === 'string') return request.requesterId
+  if (request.requester && typeof request.requester === 'string') {
+    return request.requester
+  }
+  if (request.requester && typeof request.requester === 'object') {
+    return request.requester.id || null
+  }
+  return null
+}
+
+function resolveAssigneeId(taskValue: CrmTaskExtended | null): string | null {
+  if (!taskValue) return null
+  if (typeof taskValue.assigneeId === 'string') return taskValue.assigneeId
+  if (taskValue.assignee && typeof taskValue.assignee === 'string') {
+    return taskValue.assignee
+  }
+  if (taskValue.assignee && typeof taskValue.assignee === 'object') {
+    return taskValue.assignee.id || null
+  }
+  return null
+}
+
+function resolveProjectSubject(taskValue: CrmTaskExtended | null): ProjectPermissionSubject {
+  const rawProject = taskValue?.project
+  if (!rawProject || Array.isArray(rawProject)) {
+    return { ownerId: null, managerIds: [], companyId: null }
+  }
+
+  const ownerId =
+    typeof rawProject.ownerId === 'string'
+      ? rawProject.ownerId
+      : typeof rawProject.owner === 'string'
+        ? rawProject.owner
+        : rawProject.owner && typeof rawProject.owner === 'object'
+          ? rawProject.owner.id || null
+          : null
+
+  const managerIds = Array.isArray(rawProject.managers)
+    ? rawProject.managers
+      .map((entry) => (typeof entry === 'string' ? entry : entry.id || ''))
+      .filter(Boolean)
+    : []
+
+  const companyId =
+    typeof rawProject.companyId === 'string'
+      ? rawProject.companyId
+      : rawProject.company && typeof rawProject.company === 'string'
+        ? rawProject.company
+        : rawProject.company && typeof rawProject.company === 'object'
+          ? rawProject.company.id || null
+          : null
+
+  return {
+    ownerId,
+    managerIds,
+    companyId,
+  }
+}
+
+const currentUser = computed<TaskManagerUser>(() => ({
+  id: authStore.profile?.id ?? null,
+  roles: authStore.roles,
+}))
+
+const taskSubject = computed<TaskPermissionSubject>(() => ({
+  assigneeId: resolveAssigneeId(task.value),
+}))
+
+const projectSubject = computed<ProjectPermissionSubject>(() =>
+  resolveProjectSubject(task.value),
 )
-const canEditRequest = computed(
-  () => task.value?.permissions?.canEditRequest ?? true,
+
+const canCreateRequest = computed(() =>
+  canCreateTaskRequest(currentUser.value, taskSubject.value, projectSubject.value),
 )
-const canDeleteRequest = computed(
-  () => task.value?.permissions?.canDeleteRequest ?? true,
+const canEditRequest = computed(() =>
+  canManageTask(currentUser.value, taskSubject.value, projectSubject.value),
 )
-const canChangeRequestStatus = computed(
-  () => task.value?.permissions?.canChangeRequestStatus ?? true,
+const canDeleteRequest = computed(() =>
+  canManageTask(currentUser.value, taskSubject.value, projectSubject.value),
 )
+function canUpdateSingleRequestStatus(request: CrmTaskRequestExtended) {
+  const requestSubject: TaskRequestPermissionSubject = {
+    requesterId: resolveRequesterId(request),
+  }
+
+  return canUpdateTaskRequestStatus(currentUser.value, requestSubject, {
+    task: taskSubject.value,
+    project: projectSubject.value,
+  })
+}
 
 async function loadData() {
   if (!taskId.value) return
@@ -109,7 +209,7 @@ async function loadData() {
     ])
 
     task.value = taskResult as CrmTaskExtended
-    requests.value = normalizeItems<CrmTaskRequest>(requestsResult).filter(
+    requests.value = normalizeItems<CrmTaskRequestExtended>(requestsResult).filter(
       (entry) => resolveRequestTaskId(entry) === taskId.value,
     )
   } catch (error) {
@@ -123,6 +223,11 @@ async function loadData() {
 }
 
 async function createRequest() {
+  if (!canCreateRequest.value) {
+    Notify.error(PERMISSION_MESSAGES.createTaskRequest)
+    return
+  }
+
   requestLoading.value = true
   try {
     await crmApi.createTaskRequest({
@@ -143,7 +248,12 @@ async function createRequest() {
   }
 }
 
-function openEditRequest(request: CrmTaskRequest) {
+function openEditRequest(request: CrmTaskRequestExtended) {
+  if (!canEditRequest.value) {
+    Notify.error(PERMISSION_MESSAGES.updateTaskRequest)
+    return
+  }
+
   editedRequest.value = request
   requestForm.requestedStatus = request.requestedStatus ?? 'in_progress'
   requestForm.note = request.note ?? ''
@@ -152,6 +262,11 @@ function openEditRequest(request: CrmTaskRequest) {
 
 async function updateRequest() {
   if (!editedRequest.value) return
+
+  if (!canEditRequest.value) {
+    Notify.error(PERMISSION_MESSAGES.updateTaskRequest)
+    return
+  }
 
   requestLoading.value = true
   try {
@@ -173,6 +288,11 @@ async function updateRequest() {
 }
 
 async function removeRequest(requestId: string) {
+  if (!canDeleteRequest.value) {
+    Notify.error(PERMISSION_MESSAGES.updateTaskRequest)
+    return
+  }
+
   requestLoading.value = true
   try {
     await crmApi.deleteTaskRequest(requestId)
@@ -186,14 +306,19 @@ async function removeRequest(requestId: string) {
 }
 
 async function changeRequestStatus(
-  requestId: string,
+  request: CrmTaskRequestExtended,
   status: (typeof requestStatuses)[number],
 ) {
+  if (!canUpdateSingleRequestStatus(request)) {
+    Notify.error(PERMISSION_MESSAGES.updateTaskRequestStatus)
+    return
+  }
+
   requestLoading.value = true
   try {
-    if (status === 'approved') await crmApi.approveTaskRequest(requestId)
-    if (status === 'rejected') await crmApi.rejectTaskRequest(requestId)
-    if (status === 'cancelled') await crmApi.cancelTaskRequest(requestId)
+    if (status === 'approved') await crmApi.approveTaskRequest(request.id)
+    if (status === 'rejected') await crmApi.rejectTaskRequest(request.id)
+    if (status === 'cancelled') await crmApi.cancelTaskRequest(request.id)
     if (status === 'pending') {
       Notify.info(
         'Le statut pending est un état initial, aucun endpoint dédié.',
@@ -240,13 +365,22 @@ watch(taskId, loadData)
           @click="loadData"
           >Recharger</v-btn
         >
-        <v-btn
-          v-if="canCreateRequest"
-          color="primary"
-          prepend-icon="mdi-plus"
-          @click="createDialog = true"
-          >Créer request</v-btn
+        <v-tooltip
+          :text="canCreateRequest ? '' : PERMISSION_MESSAGES.createTaskRequest"
+          location="top"
         >
+          <template #activator="{ props }">
+            <span v-bind="props">
+              <v-btn
+                color="primary"
+                prepend-icon="mdi-plus"
+                :disabled="!canCreateRequest"
+                @click="createDialog = true"
+                >Créer request</v-btn
+              >
+            </span>
+          </template>
+        </v-tooltip>
       </div>
     </div>
 
@@ -299,39 +433,71 @@ watch(taskId, loadData)
             <td>{{ request.status }}</td>
             <td>{{ request.note || '-' }}</td>
             <td class="text-right">
-              <v-btn
-                v-if="canEditRequest"
-                size="small"
-                variant="text"
-                icon="mdi-pencil"
-                @click="openEditRequest(request)"
-              />
-              <v-menu v-if="canChangeRequestStatus">
+              <v-tooltip
+                :text="canEditRequest ? '' : PERMISSION_MESSAGES.updateTaskRequest"
+                location="top"
+              >
                 <template #activator="{ props }">
-                  <v-btn
-                    size="small"
-                    variant="text"
-                    icon="mdi-swap-horizontal"
-                    v-bind="props"
-                  />
+                  <span v-bind="props">
+                    <v-btn
+                      size="small"
+                      variant="text"
+                      icon="mdi-pencil"
+                      :disabled="!canEditRequest"
+                      @click="openEditRequest(request)"
+                    />
+                  </span>
                 </template>
-                <v-list density="compact">
-                  <v-list-item
-                    v-for="status in requestStatuses"
-                    :key="status"
-                    :title="status"
-                    @click="changeRequestStatus(request.id, status)"
-                  />
-                </v-list>
-              </v-menu>
-              <v-btn
-                v-if="canDeleteRequest"
-                size="small"
-                variant="text"
-                color="error"
-                icon="mdi-delete"
-                @click="removeRequest(request.id)"
-              />
+              </v-tooltip>
+              <v-tooltip
+                :text="
+                  canUpdateSingleRequestStatus(request)
+                    ? ''
+                    : PERMISSION_MESSAGES.updateTaskRequestStatus
+                "
+                location="top"
+              >
+                <template #activator="{ props }">
+                  <span v-bind="props">
+                    <v-menu :disabled="!canUpdateSingleRequestStatus(request)">
+                      <template #activator="{ props: menuProps }">
+                        <v-btn
+                          size="small"
+                          variant="text"
+                          icon="mdi-swap-horizontal"
+                          v-bind="menuProps"
+                          :disabled="!canUpdateSingleRequestStatus(request)"
+                        />
+                      </template>
+                      <v-list density="compact">
+                        <v-list-item
+                          v-for="status in requestStatuses"
+                          :key="status"
+                          :title="status"
+                          @click="changeRequestStatus(request, status)"
+                        />
+                      </v-list>
+                    </v-menu>
+                  </span>
+                </template>
+              </v-tooltip>
+              <v-tooltip
+                :text="canDeleteRequest ? '' : PERMISSION_MESSAGES.updateTaskRequest"
+                location="top"
+              >
+                <template #activator="{ props }">
+                  <span v-bind="props">
+                    <v-btn
+                      size="small"
+                      variant="text"
+                      color="error"
+                      icon="mdi-delete"
+                      :disabled="!canDeleteRequest"
+                      @click="removeRequest(request.id)"
+                    />
+                  </span>
+                </template>
+              </v-tooltip>
             </td>
           </tr>
           <tr v-if="!loading && !requests.length">
@@ -365,6 +531,7 @@ watch(taskId, loadData)
           <v-btn
             color="primary"
             :loading="requestLoading"
+            :disabled="!canCreateRequest"
             @click="createRequest"
             >Créer</v-btn
           >
@@ -394,6 +561,7 @@ watch(taskId, loadData)
           <v-btn
             color="primary"
             :loading="requestLoading"
+            :disabled="!canEditRequest"
             @click="updateRequest"
             >Enregistrer</v-btn
           >
