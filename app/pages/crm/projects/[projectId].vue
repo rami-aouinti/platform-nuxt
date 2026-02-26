@@ -80,18 +80,6 @@ function normalizeItems<T>(value: unknown): T[] {
   return []
 }
 
-function resolveTaskProjectId(task: CrmTaskExtended): string {
-  if (typeof task.projectId === 'string') return task.projectId
-  if (
-    task.project &&
-    !Array.isArray(task.project) &&
-    typeof task.project === 'object'
-  ) {
-    return String(task.project.id ?? '')
-  }
-  return ''
-}
-
 function resolveOwnerId(projectValue: CrmProjectExtended | null) {
   if (!projectValue) return null
   if (typeof projectValue.ownerId === 'string') return projectValue.ownerId
@@ -167,14 +155,11 @@ async function loadData() {
   try {
     const [projectResult, tasksResult] = await Promise.all([
       crmApi.getProject(projectId.value),
-      crmApi.listTasks(),
+      crmApi.listProjectTasks(projectId.value),
     ])
 
     project.value = projectResult as CrmProjectExtended
-    const taskItems = normalizeItems<CrmTaskExtended>(tasksResult)
-    tasks.value = taskItems.filter(
-      (entry) => resolveTaskProjectId(entry) === projectId.value,
-    )
+    tasks.value = normalizeItems<CrmTaskExtended>(tasksResult)
   } catch (error) {
     errorMessage.value = getErrorMessage(
       error,

@@ -112,6 +112,8 @@ export function useCrmApi() {
 
     // Task endpoints
     listTasks: () => $fetch<CrmTask[]>(tasksBase, { method: 'GET' }),
+    listProjectTasks: (projectId: string) =>
+      $fetch<CrmTask[]>(`${projectsBase}/${projectId}/tasks`, { method: 'GET' }),
     createTask: (payload: CreateTaskPayload) => $fetch<CrmTask>(tasksBase, { method: 'POST', body: payload }),
     getTask: (id: string) => $fetch<CrmTask>(`${tasksBase}/${id}`, { method: 'GET' }),
     updateTask: (id: string, payload: UpdateTaskPayload) => $fetch<CrmTask>(`${tasksBase}/${id}`, { method: 'PUT', body: payload }),
@@ -124,6 +126,10 @@ export function useCrmApi() {
 
     // Task request endpoints
     listTaskRequests: () => $fetch<CrmTaskRequest[]>(taskRequestsBase, { method: 'GET' }),
+    listTaskTaskRequests: (taskId: string) =>
+      $fetch<CrmTaskRequest[]>(`${tasksBase}/${taskId}/task-requests`, {
+        method: 'GET',
+      }),
     createTaskRequest: (payload: CreateTaskRequestPayload) => $fetch<CrmTaskRequest>(taskRequestsBase, { method: 'POST', body: payload }),
     getTaskRequest: (id: string) => $fetch<CrmTaskRequest>(`${taskRequestsBase}/${id}`, { method: 'GET' }),
     updateTaskRequest: (id: string, payload: UpdateTaskRequestPayload) => $fetch<CrmTaskRequest>(`${taskRequestsBase}/${id}`, { method: 'PUT', body: payload }),
