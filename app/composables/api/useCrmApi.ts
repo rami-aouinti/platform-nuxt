@@ -100,6 +100,10 @@ export function useCrmApi() {
 
     // Project endpoints
     listProjects: () => $fetch<CrmProject[]>(projectsBase, { method: 'GET' }),
+    listCompanyProjects: (companyId: string) =>
+      $fetch<CrmProject[]>(`${companiesBase}/${companyId}/projects`, {
+        method: 'GET',
+      }),
     createProject: (payload: CreateProjectPayload) => $fetch<CrmProject>(projectsBase, { method: 'POST', body: payload }),
     getProject: (id: string) => $fetch<CrmProject>(`${projectsBase}/${id}`, { method: 'GET' }),
     updateProject: (id: string, payload: UpdateProjectPayload) => $fetch<CrmProject>(`${projectsBase}/${id}`, { method: 'PUT', body: payload }),
@@ -108,6 +112,8 @@ export function useCrmApi() {
 
     // Task endpoints
     listTasks: () => $fetch<CrmTask[]>(tasksBase, { method: 'GET' }),
+    listProjectTasks: (projectId: string) =>
+      $fetch<CrmTask[]>(`${projectsBase}/${projectId}/tasks`, { method: 'GET' }),
     createTask: (payload: CreateTaskPayload) => $fetch<CrmTask>(tasksBase, { method: 'POST', body: payload }),
     getTask: (id: string) => $fetch<CrmTask>(`${tasksBase}/${id}`, { method: 'GET' }),
     updateTask: (id: string, payload: UpdateTaskPayload) => $fetch<CrmTask>(`${tasksBase}/${id}`, { method: 'PUT', body: payload }),
@@ -120,10 +126,16 @@ export function useCrmApi() {
 
     // Task request endpoints
     listTaskRequests: () => $fetch<CrmTaskRequest[]>(taskRequestsBase, { method: 'GET' }),
+    listTaskTaskRequests: (taskId: string) =>
+      $fetch<CrmTaskRequest[]>(`${tasksBase}/${taskId}/task-requests`, {
+        method: 'GET',
+      }),
     createTaskRequest: (payload: CreateTaskRequestPayload) => $fetch<CrmTaskRequest>(taskRequestsBase, { method: 'POST', body: payload }),
     getTaskRequest: (id: string) => $fetch<CrmTaskRequest>(`${taskRequestsBase}/${id}`, { method: 'GET' }),
     updateTaskRequest: (id: string, payload: UpdateTaskRequestPayload) => $fetch<CrmTaskRequest>(`${taskRequestsBase}/${id}`, { method: 'PUT', body: payload }),
     patchTaskRequest: (id: string, payload: PatchTaskRequestPayload) => $fetch<CrmTaskRequest>(`${taskRequestsBase}/${id}`, { method: 'PATCH', body: payload }),
+    patchTaskRequestRequestedStatus: (id: string, status: CrmTaskRequestStatus) =>
+      $fetch<CrmTaskRequest>(`${taskRequestsBase}/${id}/requested-status/${status}`, { method: 'PATCH' }),
     deleteTaskRequest: (id: string) => $fetch<unknown>(`${taskRequestsBase}/${id}`, { method: 'DELETE' }),
     approveTaskRequest: (id: string) => $fetch<CrmTaskRequest>(`${taskRequestsBase}/${id}/approve`, { method: 'PATCH' }),
     rejectTaskRequest: (id: string) => $fetch<CrmTaskRequest>(`${taskRequestsBase}/${id}/reject`, { method: 'PATCH' }),
