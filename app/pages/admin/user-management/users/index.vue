@@ -6,13 +6,11 @@ import { useAuthStore } from '~/stores/auth'
 import { canManageUsers, isRoot } from '~/utils/permissions/admin'
 import { useInternalEventTracking } from '~/composables/useInternalEventTracking'
 import { extractCollectionFromPayload } from '~/utils/admin/extractCollectionFromPayload'
+import type { AdminResourceSchema, AdminSchemaField } from '~/types/admin-schema'
 
 type UserRecord = {
   id: string
-  username: string
-  firstName: string
-  lastName: string
-  email: string
+  [key: string]: unknown
 }
 
 type UserGroup = {
@@ -59,25 +57,126 @@ const createForm = reactive({
   password: '',
 })
 
-const columns: DataTableHeader[] = [
+const fallbackColumns: DataTableHeader[] = [
   { title: 'Username', key: 'username' },
   { title: 'First name', key: 'firstName' },
   { title: 'Last name', key: 'lastName' },
   { title: 'Email', key: 'email' },
 ]
 
+const fallbackDetailFields = [
+  { key: 'username', label: 'Username' },
+  { key: 'firstName', label: 'First name' },
+  { key: 'lastName', label: 'Last name' },
+  { key: 'email', label: 'Email' },
+]
+
+const userSchema = ref<AdminResourceSchema | null>(null)
+
+function toFieldLabel(fieldName: string) {
+  return fieldName
+    .replace(/([a-z\d])([A-Z])/g, '$1 $2')
+    .replace(/[_.-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/^./, value => value.toUpperCase())
+}
+
+function normalizeSchemaField(entry: unknown): AdminSchemaField | null {
+  if (!entry || typeof entry !== 'object') {
+    return null
+  }
+
+  const row = entry as Record<string, unknown>
+  const name = String(row.name ?? '').trim()
+
+  if (!name) {
+    return null
+  }
+
+  return {
+    name,
+    type: String(row.type ?? '').trim() || undefined,
+    targetClass: String(row.targetClass ?? '').trim() || undefined,
+    endpoint: String(row.endpoint ?? '').trim() || undefined,
+  }
+}
+
+function normalizeSchema(payload: unknown): AdminResourceSchema | null {
+  if (!payload || typeof payload !== 'object') {
+    return null
+  }
+
+  const body = payload as { displayable?: unknown; editable?: unknown }
+  const displayable = Array.isArray(body.displayable)
+    ? body.displayable.map(normalizeSchemaField).filter((field): field is AdminSchemaField => Boolean(field))
+    : []
+  const editable = Array.isArray(body.editable)
+    ? body.editable.map(normalizeSchemaField).filter((field): field is AdminSchemaField => Boolean(field))
+    : []
+
+  if (displayable.length === 0 && editable.length === 0) {
+    return null
+  }
+
+  return { displayable, editable }
+}
+
+const columns = computed<DataTableHeader[]>(() => {
+  if (!userSchema.value?.displayable?.length) {
+    return fallbackColumns
+  }
+
+  return userSchema.value.displayable.map(field => ({
+    title: toFieldLabel(field.name),
+    key: field.name,
+  }))
+})
+
+const detailFields = computed(() => {
+  if (!userSchema.value?.editable?.length) {
+    return fallbackDetailFields
+  }
+
+  return userSchema.value.editable.map(field => ({
+    key: field.name,
+    label: toFieldLabel(field.name),
+  }))
+})
+
+const editableFields = computed(() => detailFields.value)
+
 function normalize(payload: unknown): UserRecord[] {
   return extractCollectionFromPayload(payload).map((entry, index) => {
     const row = entry as Record<string, unknown>
-
-    return {
+    const normalizedRow: UserRecord = {
+      ...row,
       id: String(row.id ?? row.uuid ?? index),
-      username: String(row.username ?? ''),
-      firstName: String(row.firstName ?? ''),
-      lastName: String(row.lastName ?? ''),
-      email: String(row.email ?? ''),
     }
+
+    for (const [key, value] of Object.entries(normalizedRow)) {
+      if (value === null || value === undefined) {
+        continue
+      }
+
+      if (typeof value === 'object') {
+        normalizedRow[key] = JSON.stringify(value)
+      } else {
+        normalizedRow[key] = String(value)
+      }
+    }
+
+    return normalizedRow
   })
+}
+
+async function loadSchema() {
+  try {
+    const payload = await $fetch('/api/user/schema')
+    userSchema.value = normalizeSchema(payload)
+  } catch {
+    userSchema.value = null
+  }
 }
 
 function normalizeStringList(payload: unknown): string[] {
@@ -238,7 +337,7 @@ function buildQuery({
   search: string
 }) {
   const activeSort = sortBy[0]
-  const order = activeSort && activeSort.order && activeSort.order !== false
+  const order = activeSort && (activeSort.order === 'asc' || activeSort.order === 'desc')
     ? `${activeSort.key}:${activeSort.order === 'desc' ? 'desc' : 'asc'}`
     : undefined
 
@@ -279,9 +378,27 @@ const {
     return { payload, countPayload }
   },
   saveEdit: async (row) => {
-    if (String(row.password ?? '').trim().length < 8) {
+    const passwordValue = String(row.password ?? '').trim()
+    if (passwordValue && passwordValue.length < 8) {
       Notify.error('Le mot de passe est requis (8 caractères minimum).')
       return
+    }
+
+    const schemaEditableFields = userSchema.value?.editable?.map(field => field.name) ?? []
+    const editableFieldNames = schemaEditableFields.length > 0
+      ? schemaEditableFields
+      : fallbackDetailFields.map(field => field.key)
+
+    const patchBody = editableFieldNames.reduce<Record<string, unknown>>((acc, fieldName) => {
+      if (fieldName in row) {
+        acc[fieldName] = row[fieldName]
+      }
+
+      return acc
+    }, {})
+
+    if (passwordValue) {
+      patchBody.password = passwordValue
     }
 
     try {
@@ -289,13 +406,7 @@ const {
         `/api/user/${encodeURIComponent(String(row.id ?? ''))}` as any,
         {
           method: 'PATCH' as any,
-          body: {
-            username: row.username,
-            email: row.email,
-            firstName: row.firstName,
-            lastName: row.lastName,
-            password: row.password,
-          },
+          body: patchBody,
         },
       )
 
@@ -395,6 +506,7 @@ async function submitCreateRow() {
 
 onMounted(async () => {
   await authStore.ensureRolesLoaded()
+  await loadSchema()
   await Promise.all([loadRows(), loadAvailableGroups()])
 })
 </script>
@@ -412,18 +524,8 @@ onMounted(async () => {
       :sort-by="sortBy"
       :search="search"
       :filters="filters"
-      :detail-fields="[
-        { key: 'username', label: 'Username' },
-        { key: 'firstName', label: 'First name' },
-        { key: 'lastName', label: 'Last name' },
-        { key: 'email', label: 'Email' },
-      ]"
-      :editable-fields="[
-        { key: 'username', label: 'Username' },
-        { key: 'firstName', label: 'First name' },
-        { key: 'lastName', label: 'Last name' },
-        { key: 'email', label: 'Email' },
-      ]"
+      :detail-fields="detailFields"
+      :editable-fields="editableFields"
       :can-show="canShow"
       :can-create="canCreate"
       :can-edit="canEdit"
@@ -444,21 +546,9 @@ onMounted(async () => {
       <template #detail-content>
         <div v-if="selectedDetailUser">
           <v-row dense>
-            <v-col cols="12" md="6">
-              <div class="text-subtitle-2">Username</div>
-              <div class="text-body-1">{{ selectedDetailUser.username || '-' }}</div>
-            </v-col>
-            <v-col cols="12" md="6">
-              <div class="text-subtitle-2">Email</div>
-              <div class="text-body-1">{{ selectedDetailUser.email || '-' }}</div>
-            </v-col>
-            <v-col cols="12" md="6">
-              <div class="text-subtitle-2">First name</div>
-              <div class="text-body-1">{{ selectedDetailUser.firstName || '-' }}</div>
-            </v-col>
-            <v-col cols="12" md="6">
-              <div class="text-subtitle-2">Last name</div>
-              <div class="text-body-1">{{ selectedDetailUser.lastName || '-' }}</div>
+            <v-col v-for="field in detailFields" :key="field.key" cols="12" md="6">
+              <div class="text-subtitle-2">{{ field.label }}</div>
+              <div class="text-body-1">{{ String(selectedDetailUser[field.key] ?? '-') }}</div>
             </v-col>
           </v-row>
 
