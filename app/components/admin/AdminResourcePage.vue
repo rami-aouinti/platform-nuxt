@@ -15,6 +15,11 @@ type FilterConfig = {
 type FieldConfig = {
   key: string
   label: string
+  type?: 'normal' | 'string' | 'int' | 'date' | 'image' | 'boolean' | 'object'
+  endpoint?: string
+  targetClass?: string
+  readonly?: boolean
+  patchable?: boolean
 }
 
 const props = withDefaults(
@@ -101,10 +106,85 @@ const localSearch = computed({
 const canTeleportControls = computed(
   () => isMounted.value && mdAndUp.value && hasAppBarTarget.value,
 )
-
 const appBarGridStyle = computed(() => ({
   gridTemplateColumns: `minmax(220px, 1.4fr) repeat(${props.filterConfigs.length}, minmax(150px, 1fr)) auto`,
 }))
+
+
+const dateFormatter = new Intl.DateTimeFormat('fr-FR', {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+})
+
+const fieldConfigByKey = computed(() => {
+  const configs = [...props.detailFields, ...props.editableFields]
+  return configs.reduce<Record<string, FieldConfig>>((acc, config) => {
+    if (!acc[config.key]) {
+      acc[config.key] = config
+    }
+
+    return acc
+  }, {})
+})
+
+function getFieldType(key: string) {
+  return fieldConfigByKey.value[key]?.type ?? 'normal'
+}
+
+function getObjectDisplayLabel(value: unknown) {
+  if (!value || typeof value !== 'object') {
+    return String(value ?? '-').trim() || '-'
+  }
+
+  const candidate = value as Record<string, unknown>
+  return String(candidate.label ?? candidate.name ?? candidate.title ?? candidate.id ?? '-').trim() || '-'
+}
+
+function getDisplayValue(value: unknown, type: FieldConfig['type']) {
+  if (value == null || value === '') {
+    return '-'
+  }
+
+  if (type === 'date') {
+    const parsedDate = new Date(String(value))
+    return Number.isNaN(parsedDate.getTime()) ? String(value) : dateFormatter.format(parsedDate)
+  }
+
+  if (type === 'object') {
+    if (Array.isArray(value)) {
+      return value.map((item) => getObjectDisplayLabel(item)).join(', ')
+    }
+
+    return getObjectDisplayLabel(value)
+  }
+
+  return String(value)
+}
+
+function normalizeBooleanValue(value: unknown) {
+  return Boolean(value)
+}
+
+function getObjectList(value: unknown) {
+  return Array.isArray(value) ? value : []
+}
+
+function toNumericValue(value: unknown) {
+  const numericValue = Number(value)
+  return Number.isNaN(numericValue) ? null : numericValue
+}
+
+function updateEditableValue(field: FieldConfig, value: unknown) {
+  if (!editableRow.value || field.readonly || field.patchable === false) {
+    return
+  }
+
+  editableRow.value[field.key] = value
+}
+
+function isFieldDisabled(field: FieldConfig) {
+  return field.readonly || field.patchable === false || props.mutationLoading
+}
 
 function updateAppBarTargetPresence() {
   if (import.meta.server) {
@@ -342,7 +422,44 @@ onMounted(() => {
         :key="`resource-cell-${String(column.key)}`"
         #[`cell:${String(column.key)}`]="slotProps"
       >
-        <slot :name="`cell:${String(column.key)}`" v-bind="slotProps" />
+        <slot :name="`cell:${String(column.key)}`" v-bind="slotProps">
+          <template v-if="getFieldType(String(column.key)) === 'image'">
+            <v-avatar size="38" rounded="lg">
+              <v-img :src="String(slotProps.item[String(column.key)] ?? '')" cover />
+            </v-avatar>
+          </template>
+
+          <v-checkbox-btn
+            v-else-if="getFieldType(String(column.key)) === 'boolean'"
+            :model-value="normalizeBooleanValue(slotProps.item[String(column.key)])"
+            density="compact"
+            readonly
+            disabled
+          />
+
+          <template v-else-if="getFieldType(String(column.key)) === 'object'">
+            <div
+              v-if="Array.isArray(slotProps.item[String(column.key)])"
+              class="d-flex flex-wrap ga-1"
+            >
+              <v-chip
+                v-for="relation in getObjectList(slotProps.item[String(column.key)])"
+                :key="getObjectDisplayLabel(relation)"
+                size="small"
+                variant="tonal"
+              >
+                {{ getObjectDisplayLabel(relation) }}
+              </v-chip>
+            </div>
+            <v-chip v-else size="small" variant="tonal">
+              {{ getObjectDisplayLabel(slotProps.item[String(column.key)]) }}
+            </v-chip>
+          </template>
+
+          <span v-else>
+            {{ getDisplayValue(slotProps.item[String(column.key)], getFieldType(String(column.key))) }}
+          </span>
+        </slot>
       </template>
     </AdminTable>
 
@@ -374,13 +491,73 @@ onMounted(() => {
       <v-card v-if="editableRow">
         <v-card-title>Éditer {{ resourceName }}</v-card-title>
         <v-card-text>
-          <v-text-field
+          <template
             v-for="field in editableFields"
-            :key="field.key"
-            v-model="editableRow[field.key]"
-            :label="field.label"
-            class="mb-2"
-          />
+            :key="`edit-field-${field.key}`"
+          >
+            <v-switch
+              v-if="field.type === 'boolean'"
+              :model-value="normalizeBooleanValue(editableRow[field.key])"
+              :label="field.label"
+              :disabled="isFieldDisabled(field)"
+              color="primary"
+              class="mb-2"
+              hide-details
+              inset
+              @update:model-value="updateEditableValue(field, $event)"
+            />
+
+            <v-text-field
+              v-else-if="field.type === 'date'"
+              :model-value="String(editableRow[field.key] ?? '')"
+              :label="field.label"
+              :disabled="isFieldDisabled(field)"
+              type="datetime-local"
+              class="mb-2"
+              @update:model-value="updateEditableValue(field, $event)"
+            />
+
+            <div v-else-if="field.type === 'image'" class="mb-2">
+              <v-text-field
+                :model-value="String(editableRow[field.key] ?? '')"
+                :label="field.label"
+                :disabled="isFieldDisabled(field)"
+                @update:model-value="updateEditableValue(field, $event)"
+              />
+              <v-avatar size="52" rounded="lg" class="mt-1">
+                <v-img :src="String(editableRow[field.key] ?? '')" cover />
+              </v-avatar>
+            </div>
+
+            <v-text-field
+              v-else-if="field.type === 'int'"
+              :model-value="editableRow[field.key] ?? ''"
+              :label="field.label"
+              :disabled="isFieldDisabled(field)"
+              type="number"
+              class="mb-2"
+              @update:model-value="updateEditableValue(field, toNumericValue($event))"
+            />
+
+            <v-textarea
+              v-else-if="field.type === 'object'"
+              :model-value="getDisplayValue(editableRow[field.key], 'object')"
+              :label="field.label"
+              readonly
+              class="mb-2"
+              hint="Relation affichée en lecture seule"
+              persistent-hint
+            />
+
+            <v-text-field
+              v-else
+              :model-value="String(editableRow[field.key] ?? '')"
+              :label="field.label"
+              :disabled="isFieldDisabled(field)"
+              class="mb-2"
+              @update:model-value="updateEditableValue(field, $event)"
+            />
+          </template>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
