@@ -91,6 +91,7 @@ const {
     const [payload, countPayload] = await Promise.all([
       $fetch('/api/user', { query }),
       $fetch('/api/user/count'),
+      $fetch('/api/user/ids'),
     ])
 
     return { payload, countPayload }
@@ -140,7 +141,29 @@ const {
 })
 
 async function createRow() {
-  Notify.info('TODO: brancher le flux de création utilisateur.')
+  const suffix = Date.now().toString().slice(-6)
+
+  try {
+    await $fetch('/api/user', {
+      method: 'POST' as any,
+      body: {
+        username: `user_${suffix}`,
+        email: `user_${suffix}@example.com`,
+        firstName: 'New',
+        lastName: 'User',
+        password: `Pwd-${suffix}Aa!`,
+      },
+    })
+
+    Notify.success('Action réussie : utilisateur créé.')
+    track({
+      name: 'admin.users.create',
+      payload: { username: `user_${suffix}` },
+    })
+    await loadRows()
+  } catch (errorValue) {
+    Notify.error(`Action échouée : ${errorValue instanceof Error ? errorValue.message : 'Erreur API.'}`)
+  }
 }
 
 onMounted(async () => {
