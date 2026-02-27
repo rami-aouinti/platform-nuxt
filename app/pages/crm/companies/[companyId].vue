@@ -6,6 +6,7 @@ import type {
   CrmCompany,
   CrmProject,
   CrmSprint,
+  CrmCompanyMember,
   CreateSprintPayload,
 } from '~/composables/api/useCrmApi'
 import { PERMISSION_MESSAGES } from '~/utils/permissions/messages'
@@ -42,6 +43,7 @@ const company = ref<CrmCompany | null>(null)
 const companyMembershipIds = ref<string[]>([])
 const projects = ref<CrmProjectExtended[]>([])
 const sprints = ref<CrmSprint[]>([])
+const companyMembers = ref<CrmCompanyMember[]>([])
 const errorMessage = ref('')
 const createDialog = ref(false)
 const createSprintDialog = ref(false)
@@ -130,6 +132,16 @@ function sprintProjectName(sprint: CrmSprint) {
   return sprint.project.name || sprint.project.id || 'Projet inconnu'
 }
 
+
+function memberLabel(member: CrmCompanyMember) {
+  const fullName = [member.firstName, member.lastName].filter(Boolean).join(' ').trim()
+  return fullName || member.username || member.email || member.id
+}
+
+function openSprint(sprintId: string) {
+  router.push(`/crm/kanban?sprintId=${encodeURIComponent(sprintId)}`)
+}
+
 function getErrorMessage(error: unknown, fallback: string) {
   if (error instanceof Error) return error.message
   return fallback
@@ -168,15 +180,17 @@ async function loadData() {
   loading.value = true
   errorMessage.value = ''
   try {
-    const [companiesResult, projectsResult, sprintsResult] = await Promise.all([
+    const [companiesResult, projectsResult, sprintsResult, membersResult] = await Promise.all([
       crmApi.listCompanies(),
       crmApi.listCompanyProjects(companyId.value),
-      crmApi.listSprints(),
+      crmApi.listCompanySprints(companyId.value),
+      crmApi.listCompanyMembers(companyId.value),
     ])
 
     const companies = normalizeItems<CrmCompany>(companiesResult)
     const projectItems = normalizeItems<CrmProjectExtended>(projectsResult)
     const sprintItems = normalizeItems<CrmSprint>(sprintsResult)
+    const memberItems = normalizeItems<CrmCompanyMember>(membersResult)
 
     company.value =
       companies.find((entry) => entry.id === companyId.value) ?? null
@@ -185,15 +199,8 @@ async function loadData() {
       .map((entry) => entry.id)
 
     projects.value = projectItems
-    const companyProjectIds = new Set(projectItems.map((project) => project.id))
-    sprints.value = sprintItems.filter((sprint) => {
-      if (!sprint.project) return false
-      if (typeof sprint.project === 'string')
-        return companyProjectIds.has(sprint.project)
-      return typeof sprint.project.id === 'string'
-        ? companyProjectIds.has(sprint.project.id)
-        : false
-    })
+    sprints.value = sprintItems
+    companyMembers.value = memberItems
 
     if (!company.value) {
       errorMessage.value = 'Company introuvable ou non accessible.'
@@ -322,45 +329,42 @@ watch(
 
 <template>
   <v-container fluid>
-    <div class="d-flex align-center justify-space-between mb-4 flex-wrap ga-2">
-      <div>
-        <h1 class="text-h5">CRM · {{ getCompanyDisplayName(company) }}</h1>
-        <p class="text-body-2 text-medium-emphasis">ID: {{ companyId }}</p>
-      </div>
-      <div class="d-flex ga-2">
-        <v-btn variant="tonal" prepend-icon="mdi-arrow-left" to="/crm"
-          >Companies</v-btn
-        >
-        <v-btn
-          variant="tonal"
-          prepend-icon="mdi-refresh"
-          :loading="loading"
-          @click="loadData"
-          >Recharger</v-btn
-        >
-        <v-btn
-          color="primary"
-          prepend-icon="mdi-plus"
-          :disabled="!canCreateProjectInCompany"
-          :title="
-            canCreateProjectInCompany
-              ? undefined
-              : PERMISSION_MESSAGES.createProject
-          "
-          @click="createDialog = true"
-        >
-          Créer un projet
-        </v-btn>
-        <v-btn
-          color="secondary"
-          prepend-icon="mdi-calendar-plus"
-          :disabled="!projects.length"
-          @click="createSprintDialog = true"
-        >
-          Ajouter un sprint
-        </v-btn>
-      </div>
-    </div>
+    <client-only>
+      <teleport to="#app-bar">
+        <div class="d-flex ga-2 flex-wrap">
+          <v-btn variant="tonal" prepend-icon="mdi-arrow-left" to="/crm">Companies</v-btn>
+          <v-btn
+            variant="tonal"
+            prepend-icon="mdi-refresh"
+            :loading="loading"
+            @click="loadData"
+          >
+            Recharger
+          </v-btn>
+          <v-btn
+            color="primary"
+            prepend-icon="mdi-plus"
+            :disabled="!canCreateProjectInCompany"
+            :title="
+              canCreateProjectInCompany
+                ? undefined
+                : PERMISSION_MESSAGES.createProject
+            "
+            @click="createDialog = true"
+          >
+            Créer un projet
+          </v-btn>
+          <v-btn
+            color="secondary"
+            prepend-icon="mdi-calendar-plus"
+            :disabled="!projects.length"
+            @click="createSprintDialog = true"
+          >
+            Ajouter un sprint
+          </v-btn>
+        </div>
+      </teleport>
+    </client-only>
 
     <v-alert
       v-if="errorMessage"
@@ -370,124 +374,104 @@ watch(
       class="mb-4"
     />
 
-    <v-card class="mb-4">
-      <v-card-title>Détails company</v-card-title>
-      <v-card-text>
-        <v-skeleton-loader v-if="loading" type="article" />
-        <template v-else>
-          <div class="d-flex align-center ga-3 mb-2">
-            <v-avatar size="40">
-              <v-img
-                v-if="getCompanyAvatar(company)"
-                :src="getCompanyAvatar(company)"
-                :alt="getCompanyDisplayName(company)"
-              />
-              <span v-else>{{
-                getCompanyDisplayName(company).slice(0, 1).toUpperCase()
-              }}</span>
-            </v-avatar>
-            <p class="mb-0">
-              <strong>Nom :</strong>
-              {{ getCompanyDisplayName(company) || 'N/A' }}
-            </p>
-          </div>
-          <p class="mb-2">
-            <strong>Rôle :</strong> {{ company?.role || 'member' }}
-          </p>
-          <p class="mb-0">
-            <strong>Description :</strong>
-            {{ company?.description || 'Aucune description.' }}
-          </p>
-        </template>
-      </v-card-text>
-    </v-card>
-
     <v-row>
-      <v-col
-        v-for="project in projects"
-        :key="project.id"
-        cols="12"
-        md="6"
-        lg="4"
-      >
-        <v-card class="h-100" hover @click="openProject(project.id)">
-          <v-card-title class="d-flex align-center justify-space-between ga-2">
-            <div class="d-flex align-center ga-3 min-w-0">
-              <v-avatar size="28">
-                <v-img
-                  v-if="getProjectAvatar(project)"
-                  :src="getProjectAvatar(project)"
-                  :alt="project.name"
-                />
-                <span v-else>{{ project.name.slice(0, 1).toUpperCase() }}</span>
-              </v-avatar>
-              <span class="text-truncate">{{ project.name }}</span>
-            </div>
-            <v-chip
-              size="small"
-              :color="project.status === 'active' ? 'success' : 'default'"
-              variant="tonal"
-            >
-              {{ project.status }}
-            </v-chip>
-          </v-card-title>
-          <v-card-text>
-            {{ project.description || 'Aucune description projet.' }}
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
+      <v-col cols="12" md="9">
+        <v-row class="mb-6">
+          <v-col
+            v-for="project in projects"
+            :key="project.id"
+            cols="12"
+            md="6"
+          >
+            <v-card class="h-100" hover @click="openProject(project.id)">
+              <v-card-title class="d-flex align-center justify-space-between ga-2">
+                <div class="d-flex align-center ga-3 min-w-0">
+                  <v-avatar size="28">
+                    <v-img
+                      v-if="getProjectAvatar(project)"
+                      :src="getProjectAvatar(project)"
+                      :alt="project.name"
+                    />
+                    <span v-else>{{ project.name.slice(0, 1).toUpperCase() }}</span>
+                  </v-avatar>
+                  <span class="text-truncate">{{ project.name }}</span>
+                </div>
+                <v-chip
+                  size="small"
+                  :color="project.status === 'active' ? 'success' : 'default'"
+                  variant="tonal"
+                >
+                  {{ project.status }}
+                </v-chip>
+              </v-card-title>
+              <v-card-text>
+                {{ project.description || 'Aucune description projet.' }}
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
 
-    <v-card class="mt-6">
-      <v-card-title>Sprints</v-card-title>
-      <v-card-text>
         <v-row v-if="sprints.length">
           <v-col
             v-for="sprint in sprints"
             :key="sprint.id"
             cols="12"
             md="6"
-            lg="4"
           >
-            <v-card variant="outlined" class="h-100">
-              <v-card-title
-                class="d-flex justify-space-between align-center ga-2"
-              >
-                <span class="text-truncate">{{
-                  sprint.name || sprint.id
-                }}</span>
-                <v-chip size="small" variant="tonal">{{
-                  sprint.status || 'planned'
-                }}</v-chip>
+            <v-card variant="outlined" class="h-100" hover @click="openSprint(sprint.id)">
+              <v-card-title class="d-flex justify-space-between align-center ga-2">
+                <span class="text-truncate">{{ sprint.name || sprint.id }}</span>
+                <v-chip size="small" variant="tonal">{{ sprint.status || 'planned' }}</v-chip>
               </v-card-title>
               <v-card-text>
-                <p class="mb-1">
-                  <strong>Projet :</strong> {{ sprintProjectName(sprint) }}
-                </p>
-                <p class="mb-0">
-                  <strong>Objectif :</strong>
-                  {{ sprint.goal || 'Aucun objectif.' }}
-                </p>
+                <p class="mb-1"><strong>Projet :</strong> {{ sprintProjectName(sprint) }}</p>
+                <p class="mb-0"><strong>Objectif :</strong> {{ sprint.goal || 'Aucun objectif.' }}</p>
               </v-card-text>
             </v-card>
           </v-col>
         </v-row>
+
         <v-alert
-          v-else
+          v-if="!loading && !projects.length"
           type="info"
           variant="tonal"
-          text="Aucun sprint pour les projets de cette company."
+          text="Aucun projet lié à cette company."
+          class="mt-4"
         />
-      </v-card-text>
-    </v-card>
+      </v-col>
 
-    <v-alert
-      v-if="!loading && !projects.length"
-      type="info"
-      variant="tonal"
-      text="Aucun projet lié à cette company."
-      class="mt-4"
-    />
+      <v-col cols="12" md="3">
+        <v-card>
+          <v-card-title>{{ getCompanyDisplayName(company) }}</v-card-title>
+          <v-card-text>
+            <div class="d-flex align-center ga-3 mb-3">
+              <v-avatar size="40">
+                <v-img
+                  v-if="getCompanyAvatar(company)"
+                  :src="getCompanyAvatar(company)"
+                  :alt="getCompanyDisplayName(company)"
+                />
+                <span v-else>{{ getCompanyDisplayName(company).slice(0, 1).toUpperCase() }}</span>
+              </v-avatar>
+              <v-chip size="small" variant="tonal">{{ company?.role || 'member' }}</v-chip>
+            </div>
+            <p class="mb-3">{{ company?.description || 'Aucune description.' }}</p>
+            <div>
+              <p class="text-caption text-medium-emphasis mb-2">Members</p>
+              <v-chip
+                v-for="member in companyMembers"
+                :key="member.id"
+                size="small"
+                class="ma-1"
+                variant="outlined"
+              >
+                {{ memberLabel(member) }}
+              </v-chip>
+            </div>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
 
     <v-dialog v-model="createDialog" max-width="560">
       <v-card>
