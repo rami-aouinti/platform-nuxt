@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { useDisplay } from 'vuetify'
+import { storeToRefs } from 'pinia'
 import { Notify } from '~/stores/notification'
-import { buildApiPlatformQuery } from '../../../services/admin/_shared'
-import { httpGet, HttpRequestError } from '../../../services/http/client'
-import {
-  jobApplicationsService,
-  type JobApplication,
-} from '../../../services/admin/job-applications'
+import { useJobApplicationStore } from '~/stores/job-application'
+import { canWithdrawApplication } from '~/domain/offers/helpers'
+import { HttpRequestError } from '../../../services/http/client'
 
 definePageMeta({
   icon: 'mdi-account-check-outline',
@@ -16,61 +14,39 @@ definePageMeta({
   middleware: ['auth'],
 })
 
-const rows = ref<JobApplication[]>([])
-const loading = ref(false)
+const applicationStore = useJobApplicationStore()
+
+const {
+  rows,
+  error,
+  selectedId,
+  selectedFilters,
+  search,
+  pagination,
+  mappedOffers,
+  selectedOffer,
+  pageState,
+  statusCounters,
+} = storeToRefs(applicationStore)
+
 const actionLoading = ref(false)
-const error = ref<string | null>(null)
-const forbidden = ref(false)
-const page = ref(1)
-const pageSize = ref(10)
-const search = ref('')
 const location = ref('')
-const selectedId = ref('')
-const filters = ref({ status: '' })
-const selectedFilters = ref<Record<string, string[]>>({})
 const mobileFilters = ref(false)
 
 const { smAndDown } = useDisplay()
 
-const filterSections = [
+const filterSections = computed(() => [
   {
     key: 'status',
     title: 'Status',
     items: [
-      { label: 'En attente', value: 'pending', count: 5 },
-      { label: 'Acceptée', value: 'accepted', count: 2 },
-      { label: 'Rejetée', value: 'rejected', count: 3 },
-      { label: 'Retirée', value: 'withdrawn', count: 1 },
+      { label: 'En attente', value: 'pending', count: statusCounters.value.pending },
+      { label: 'Acceptée', value: 'accepted', count: statusCounters.value.accepted },
+      { label: 'Rejetée', value: 'rejected', count: statusCounters.value.rejected },
+      { label: 'Retirée', value: 'withdrawn', count: statusCounters.value.withdrawn },
     ],
   },
-]
-
-const pageState = computed(() => {
-  if (forbidden.value) return 'forbidden'
-  if (error.value) return 'error'
-  if (loading.value) return 'loading'
-  if (!rows.value.length) return 'empty'
-  return 'ready'
-})
-
-const mappedOffers = computed(() =>
-  rows.value.map((row, index) => ({
-    id: String(row.id),
-    title: `Candidature #${row.id}`,
-    company: String(row.jobOffer),
-    matchingScore: 72 + (index % 3) * 8,
-    location: location.value || 'Remote',
-    salary: row.cvUrl ? 'CV joint' : 'Sans CV',
-    tags: [row.status, row.coverLetter ? 'Lettre jointe' : 'Sans lettre'],
-    status: statusMeta(row.status).label,
-  })),
-)
-
-const selectedOffer = computed(
-  () =>
-    mappedOffers.value.find((offer) => offer.id === selectedId.value) ??
-    mappedOffers.value[0],
-)
+])
 
 function toErrorMessage(errorValue: unknown) {
   if (errorValue instanceof HttpRequestError) return errorValue.message
@@ -78,81 +54,13 @@ function toErrorMessage(errorValue: unknown) {
   return 'Erreur API.'
 }
 
-function statusMeta(status: string) {
-  if (status === 'accepted')
-    return { label: 'Acceptée', tone: 'success' as const }
-  if (status === 'rejected') return { label: 'Rejetée', tone: 'error' as const }
-  if (status === 'withdrawn')
-    return { label: 'Retirée', tone: 'neutral' as const }
-  return { label: 'En attente', tone: 'warning' as const }
-}
-
-function canWithdraw(row: JobApplication) {
-  return row.status === 'pending'
-}
-
-function toApplicationsArray(payload: unknown): JobApplication[] {
-  if (Array.isArray(payload)) return payload as JobApplication[]
-  if (!payload || typeof payload !== 'object') return []
-
-  const objectPayload = payload as {
-    data?: unknown
-    items?: unknown
-    member?: unknown
-    'hydra:member'?: unknown
-  }
-
-  const collection =
-    objectPayload.data ??
-    objectPayload.items ??
-    objectPayload.member ??
-    objectPayload['hydra:member']
-
-  return Array.isArray(collection) ? (collection as JobApplication[]) : []
-}
-
 async function loadRows() {
-  loading.value = true
-  error.value = null
-  forbidden.value = false
-
-  try {
-    const response = await httpGet<unknown>('/api/job-applications', {
-      query: {
-        ...buildApiPlatformQuery({
-          page: page.value,
-          pageSize: pageSize.value,
-          search: search.value,
-          sortBy: 'id',
-          sortOrder: 'desc',
-          filters: { status: filters.value.status || undefined },
-        }),
-      },
-    })
-
-    rows.value = toApplicationsArray(response)
-    const firstOffer = rows.value.at(0)
-    if (!selectedId.value && firstOffer) {
-      selectedId.value = String(firstOffer.id)
-    }
-  } catch (errorValue) {
-    if (
-      errorValue instanceof HttpRequestError &&
-      errorValue.statusCode === 403
-    ) {
-      forbidden.value = true
-      return
-    }
-
-    error.value = toErrorMessage(errorValue)
-  } finally {
-    loading.value = false
-  }
+  await applicationStore.fetchWithFilters()
 }
 
 async function withdraw(offerId: string) {
   const item = rows.value.find((row) => String(row.id) === offerId)
-  if (!item || !canWithdraw(item)) {
+  if (!item || !canWithdrawApplication(item)) {
     Notify.error('Seules les candidatures en attente peuvent être retirées.')
     return
   }
@@ -160,7 +68,7 @@ async function withdraw(offerId: string) {
   actionLoading.value = true
 
   try {
-    await jobApplicationsService.withdraw(offerId)
+    await applicationStore.withdraw(offerId)
     Notify.success('Candidature retirée.')
     await loadRows()
   } catch (errorValue) {
@@ -170,22 +78,18 @@ async function withdraw(offerId: string) {
   }
 }
 
-watch([page, pageSize], loadRows)
+watch(
+  () => [pagination.value.page, pagination.value.pageSize],
+  loadRows,
+)
 watchDebounced(
-  [search, location, filters],
+  [search, selectedFilters, location],
   () => {
-    page.value = 1
+    pagination.value.page = 1
+    selectedFilters.value.location = location.value ? [location.value] : []
     void loadRows()
   },
   { debounce: 300, maxWait: 1000 },
-)
-
-watch(
-  selectedFilters,
-  (value) => {
-    filters.value.status = value.status?.[0] || ''
-  },
-  { deep: true },
 )
 
 onMounted(loadRows)
