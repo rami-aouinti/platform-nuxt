@@ -7,6 +7,7 @@ import type { HTMLAttributes } from 'vue'
 const theme = useTheme()
 const drawer = useState('drawer')
 const route = useRoute()
+const isAdministrationRoute = computed(() => route.path.startsWith('/administration'))
 const breadcrumbs = computed(() => {
   return route!.matched
     .filter((item) => item.meta && item.meta.title)
@@ -71,30 +72,31 @@ function createActivatorProps(
 <template>
   <v-app-bar flat>
     <v-app-bar-nav-icon @click="drawer = !drawer" />
-    <v-breadcrumbs :items="breadcrumbs" />
+    <v-breadcrumbs :items="breadcrumbs" :class="{ 'app-bar__breadcrumbs--hidden': isAdministrationRoute }" />
     <v-spacer />
     <div id="app-bar" class="app-bar__portal" />
-    <v-switch
-      v-model="isDark"
-      color=""
-      hide-details
-      density="compact"
-      inset
-      false-icon="mdi-white-balance-sunny"
-      true-icon="mdi-weather-night"
-      class="opacity-80"
-    />
-    <v-btn
-      icon
-      href="https://github.com/rami-aouinti/platform-nuxt"
-      size="small"
-      class="ml-2"
-      target="_blank"
-    >
-      <v-icon size="30" icon="mdi-github" />
-    </v-btn>
-    <v-menu location="bottom">
-      <template #activator="{ props: menu }">
+    <div class="app-bar__right-actions d-flex align-center">
+      <v-switch
+        v-model="isDark"
+        color=""
+        hide-details
+        density="compact"
+        inset
+        false-icon="mdi-white-balance-sunny"
+        true-icon="mdi-weather-night"
+        class="opacity-80"
+      />
+      <v-btn
+        icon
+        href="https://github.com/rami-aouinti/platform-nuxt"
+        size="small"
+        class="ml-2"
+        target="_blank"
+      >
+        <v-icon size="26" icon="mdi-github" />
+      </v-btn>
+      <v-menu location="bottom">
+        <template #activator="{ props: menu }">
         <v-tooltip location="bottom">
           <template #activator="{ props: tooltip }">
             <v-btn
@@ -107,8 +109,8 @@ function createActivatorProps(
           </template>
           <span>{{ userDisplayName }}</span>
         </v-tooltip>
-      </template>
-      <v-list>
+        </template>
+        <v-list>
         <v-list-item
           v-if="!isAuthenticated"
           title="Login"
@@ -151,7 +153,19 @@ function createActivatorProps(
           prepend-icon="mdi-logout"
           @click="logout"
         />
-      </v-list>
-    </v-menu>
+        </v-list>
+      </v-menu>
+    </div>
   </v-app-bar>
 </template>
+
+<style scoped>
+.app-bar__breadcrumbs--hidden {
+  display: none;
+}
+
+.app-bar__right-actions {
+  flex-shrink: 0;
+}
+</style>
+

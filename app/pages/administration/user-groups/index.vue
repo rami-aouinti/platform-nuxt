@@ -7,7 +7,7 @@ import { canManageUsers, isRoot } from '~/utils/permissions/admin'
 import { useInternalEventTracking } from '~/composables/useInternalEventTracking'
 import { extractCollectionFromPayload } from '~/utils/admin/extractCollectionFromPayload'
 
-type GroupRecord = { id: string; name: string; description: string }
+type GroupRecord = { id: string; name: string }
 
 definePageMeta({
   icon: 'mdi-account-group-outline',
@@ -33,13 +33,10 @@ const createOpen = ref(false)
 const creating = ref(false)
 const createForm = reactive({
   name: '',
-  description: '',
 })
 
 const columns: DataTableHeader[] = [
-  { title: 'ID', key: 'id' },
   { title: 'Nom', key: 'name' },
-  { title: 'Description', key: 'description' },
 ]
 
 function normalize(payload: unknown): GroupRecord[] {
@@ -48,7 +45,6 @@ function normalize(payload: unknown): GroupRecord[] {
     return {
       id: String(row.id ?? row.uuid ?? index),
       name: String(row.name ?? ''),
-      description: String(row.description ?? ''),
     }
   })
 }
@@ -60,6 +56,7 @@ const {
   total,
   page,
   pageSize,
+  sortBy,
   search,
   filters,
   mutationLoading,
@@ -69,10 +66,17 @@ const {
 } = useAdminResourcePage<GroupRecord, Record<string, string>>({
   initialFilters: {},
   normalize,
-  loadRows: async ({ page, pageSize, search }) => {
+  loadRows: async ({ page, pageSize, sortBy, search }) => {
     const [payload, countPayload] = await Promise.all([
       $fetch('/api/user_group', {
-        query: { page, limit: pageSize, search: search || undefined },
+        query: {
+          limit: pageSize,
+          offset: Math.max(page - 1, 0) * pageSize,
+          order: sortBy[0] && sortBy[0].order && sortBy[0].order !== false
+            ? `${sortBy[0].key}:${sortBy[0].order === 'desc' ? 'desc' : 'asc'}`
+            : undefined,
+          search: search || undefined,
+        },
       }),
       $fetch('/api/user_group/count'),
       $fetch('/api/user_group/ids'),
@@ -86,7 +90,7 @@ const {
         `/api/user_group/${encodeURIComponent(String(row.id ?? ''))}` as any,
         {
           method: 'PATCH' as any,
-          body: { name: row.name, description: row.description },
+          body: { name: row.name },
         },
       )
       Notify.success('Action réussie : groupe mis à jour.')
@@ -135,7 +139,6 @@ function createRow() {
   }
 
   createForm.name = ''
-  createForm.description = ''
   createOpen.value = true
 }
 
@@ -152,7 +155,6 @@ async function submitCreateRow() {
       method: 'POST' as any,
       body: {
         name: createForm.name.trim(),
-        description: createForm.description.trim() || undefined,
       },
     })
 
@@ -181,8 +183,6 @@ onMounted(async () => {
 <template>
   <div>
     <AdminResourcePage
-      title="User Groups"
-      description="Même pattern que Users pour brancher rapidement le CRUD groupes."
       :columns="columns"
       :rows="rows"
       :loading="loading"
@@ -190,26 +190,21 @@ onMounted(async () => {
       :total="total"
       :page="page"
       :page-size="pageSize"
+      :sort-by="sortBy"
       :search="search"
       :filters="filters"
-      :detail-fields="[
-        { key: 'id', label: 'ID' },
-        { key: 'name', label: 'Nom' },
-        { key: 'description', label: 'Description' },
-      ]"
-      :editable-fields="[
-        { key: 'name', label: 'Nom' },
-        { key: 'description', label: 'Description' },
-      ]"
+      :detail-fields="[{ key: 'name', label: 'Nom' }]"
+      :editable-fields="[{ key: 'name', label: 'Nom' }]"
       :can-show="canShow"
       :can-create="canCreate"
       :can-edit="canEdit"
       :can-delete="canDelete"
       :mutation-loading="mutationLoading"
       resource-name="le groupe"
-      create-label="Créer un groupe"
+      detail-route-base="/administration/user-groups"
       @update:page="page = $event"
       @update:page-size="pageSize = $event"
+      @update:sort-by="sortBy = $event"
       @update:search="search = $event"
       @update:filters="filters = $event"
       @create="createRow"
@@ -223,11 +218,6 @@ onMounted(async () => {
         <v-card-title>Créer un groupe</v-card-title>
         <v-card-text>
           <v-text-field v-model="createForm.name" label="Nom*" class="mb-2" />
-          <v-textarea
-            v-model="createForm.description"
-            label="Description"
-            rows="3"
-          />
         </v-card-text>
         <v-card-actions>
           <v-spacer />

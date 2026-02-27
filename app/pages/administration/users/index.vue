@@ -10,9 +10,9 @@ import { extractCollectionFromPayload } from '~/utils/admin/extractCollectionFro
 type UserRecord = {
   id: string
   username: string
+  firstName: string
+  lastName: string
   email: string
-  roles: string
-  userGroups: string
 }
 
 definePageMeta({
@@ -46,27 +46,22 @@ const createForm = reactive({
 })
 
 const columns: DataTableHeader[] = [
-  { title: 'ID', key: 'id' },
   { title: 'Username', key: 'username' },
+  { title: 'First name', key: 'firstName' },
+  { title: 'Last name', key: 'lastName' },
   { title: 'Email', key: 'email' },
-  { title: 'Rôles', key: 'roles' },
-  { title: 'Groupes', key: 'userGroups' },
 ]
 
 function normalize(payload: unknown): UserRecord[] {
   return extractCollectionFromPayload(payload).map((entry, index) => {
     const row = entry as Record<string, unknown>
-    const roleList = Array.isArray(row.roles) ? row.roles.map(String) : []
-    const groupList = Array.isArray(row.userGroups)
-      ? row.userGroups.map(String)
-      : []
 
     return {
       id: String(row.id ?? row.uuid ?? index),
       username: String(row.username ?? ''),
+      firstName: String(row.firstName ?? ''),
+      lastName: String(row.lastName ?? ''),
       email: String(row.email ?? ''),
-      roles: roleList.join(', '),
-      userGroups: groupList.join(', '),
     }
   })
 }
@@ -74,20 +69,24 @@ function normalize(payload: unknown): UserRecord[] {
 function buildQuery({
   page,
   pageSize,
+  sortBy,
   search,
-  filters,
 }: {
   page: number
   pageSize: number
+  sortBy: readonly { key: string; order?: 'asc' | 'desc' | boolean }[]
   search: string
-  filters: Record<string, string>
 }) {
+  const activeSort = sortBy[0]
+  const order = activeSort && activeSort.order && activeSort.order !== false
+    ? `${activeSort.key}:${activeSort.order === 'desc' ? 'desc' : 'asc'}`
+    : undefined
+
   return {
-    page,
     limit: pageSize,
+    offset: Math.max(page - 1, 0) * pageSize,
+    order,
     search: search || undefined,
-    role: filters.role || undefined,
-    group: filters.group || undefined,
   }
 }
 
@@ -98,6 +97,7 @@ const {
   total,
   page,
   pageSize,
+  sortBy,
   search,
   filters,
   mutationLoading,
@@ -105,7 +105,7 @@ const {
   saveEdit,
   deleteRow,
 } = useAdminResourcePage<UserRecord, Record<string, string>>({
-  initialFilters: { role: '', group: '' },
+  initialFilters: {},
   normalize,
   buildQuery,
   loadRows: async (ctx) => {
@@ -132,6 +132,8 @@ const {
           body: {
             username: row.username,
             email: row.email,
+            firstName: row.firstName,
+            lastName: row.lastName,
             password: row.password,
           },
         },
@@ -240,8 +242,6 @@ onMounted(async () => {
 <template>
   <div>
     <AdminResourcePage
-      title="Users"
-      description="Référence CRUD admin (liste/consultation/édition/suppression) pilotée par permissions."
       :columns="columns"
       :rows="rows"
       :loading="loading"
@@ -249,29 +249,19 @@ onMounted(async () => {
       :total="total"
       :page="page"
       :page-size="pageSize"
+      :sort-by="sortBy"
       :search="search"
       :filters="filters"
-      :filter-configs="[
-        {
-          key: 'role',
-          label: 'Filtre rôle',
-          icon: 'mdi-shield-account-outline',
-        },
-        {
-          key: 'group',
-          label: 'Filtre groupe',
-          icon: 'mdi-account-group-outline',
-        },
-      ]"
       :detail-fields="[
-        { key: 'id', label: 'ID' },
         { key: 'username', label: 'Username' },
+        { key: 'firstName', label: 'First name' },
+        { key: 'lastName', label: 'Last name' },
         { key: 'email', label: 'Email' },
-        { key: 'roles', label: 'Rôles' },
-        { key: 'userGroups', label: 'Groupes' },
       ]"
       :editable-fields="[
         { key: 'username', label: 'Username' },
+        { key: 'firstName', label: 'First name' },
+        { key: 'lastName', label: 'Last name' },
         { key: 'email', label: 'Email' },
       ]"
       :can-show="canShow"
@@ -280,9 +270,10 @@ onMounted(async () => {
       :can-delete="canDelete"
       :mutation-loading="mutationLoading"
       resource-name="l'utilisateur"
-      create-label="Créer un utilisateur"
+      detail-route-base="/administration/users"
       @update:page="page = $event"
       @update:page-size="pageSize = $event"
+      @update:sort-by="sortBy = $event"
       @update:search="search = $event"
       @update:filters="filters = $event"
       @create="createRow"

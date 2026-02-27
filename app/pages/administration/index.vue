@@ -105,7 +105,8 @@ onMounted(async () => {
         :key="entry.to"
         cols="12"
         sm="6"
-        lg="4"
+        md="4"
+        lg="3"
       >
         <v-card rounded="lg" variant="outlined" class="h-100 d-flex flex-column">
           <v-card-title class="d-flex align-center ga-2">

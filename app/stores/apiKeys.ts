@@ -138,6 +138,25 @@ export const useApiKeysStore = defineStore('api-keys', () => {
     }
   }
 
+  async function createForVersion(version: ApiVersion, payload: CreateApiKeyPayload) {
+    busy.value = true
+    error.value = null
+
+    try {
+      activeVersion.value = version
+      const created = await resolveService(version).create(payload)
+      Notify.success(`Clé API créée (${version.toUpperCase()}).`)
+      await refreshRowsSafe()
+      return created
+    } catch (errorValue) {
+      error.value = toUiErrorMessage(errorValue)
+      Notify.error(error.value)
+      throw errorValue
+    } finally {
+      busy.value = false
+    }
+  }
+
   async function update(id: string, payload: UpdateApiKeyPayload) {
     busy.value = true
     error.value = null
@@ -221,6 +240,12 @@ export const useApiKeysStore = defineStore('api-keys', () => {
     pagination.value.page = 1
   }
 
+  function setPreferredVersion(value: ApiVersion) {
+    preferredVersion.value = value
+    activeVersion.value = value
+    pagination.value.page = 1
+  }
+
   return {
     rows,
     item,
@@ -238,11 +263,13 @@ export const useApiKeysStore = defineStore('api-keys', () => {
     fetchIds,
     fetchItem,
     create,
+    createForVersion,
     update,
     patch,
     remove,
     setPage,
     setPerPage,
     setSearch,
+    setPreferredVersion,
   }
 })

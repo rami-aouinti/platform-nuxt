@@ -23,6 +23,11 @@ type UserProfile = {
   lastName: string
 }
 
+type UserGroup = {
+  id: string
+  name: string
+}
+
 const route = useRoute()
 const authStore = useAuthStore()
 const { roles } = storeToRefs(authStore)
@@ -31,16 +36,30 @@ const userId = computed(() => {
   const paramId = (route.params as Record<string, unknown>).id
   return Array.isArray(paramId) ? String(paramId[0] ?? '') : String(paramId ?? '')
 })
+
 const loading = ref(false)
 const busyAction = ref(false)
+const loadingGroupOptions = ref(false)
 const activeTab = ref('profile')
+
 const userProfile = ref<UserProfile | null>(null)
 const userRoles = ref<string[]>([])
-const userGroups = ref<string[]>([])
-const newGroup = ref('')
+const userGroups = ref<UserGroup[]>([])
+const availableGroups = ref<UserGroup[]>([])
+const selectedGroupId = ref('')
 
 const canManageGroups = computed(() => isRoot(roles.value))
 const canManageProfile = computed(() => isRoot(roles.value))
+
+const availableGroupOptions = computed(() => {
+  const attached = new Set(userGroups.value.map((group) => group.id))
+  return availableGroups.value
+    .filter((group) => !attached.has(group.id))
+    .map((group) => ({
+      title: group.name,
+      value: group.id,
+    }))
+})
 
 function normalizeStringList(payload: unknown): string[] {
   const records = Array.isArray(payload)
@@ -77,6 +96,29 @@ function normalizeProfile(payload: unknown): UserProfile {
   }
 }
 
+function normalizeGroupList(payload: unknown): UserGroup[] {
+  const records = Array.isArray(payload)
+    ? payload
+    : payload && typeof payload === 'object' && Array.isArray((payload as { items?: unknown[] }).items)
+      ? (payload as { items: unknown[] }).items
+      : payload && typeof payload === 'object' && Array.isArray((payload as { data?: unknown[] }).data)
+        ? (payload as { data: unknown[] }).data
+        : []
+
+  return records
+    .map((entry) => {
+      if (!entry || typeof entry !== 'object') {
+        return null
+      }
+
+      const row = entry as Record<string, unknown>
+      return {
+        id: String(row.id ?? '').trim(),
+        name: String(row.name ?? row.id ?? '').trim(),
+      }
+    })
+    .filter((group): group is UserGroup => Boolean(group?.id))
+}
 
 async function saveProfile() {
   if (!userProfile.value || !canManageProfile.value) {
@@ -105,6 +147,26 @@ async function saveProfile() {
   }
 }
 
+async function loadAvailableGroups() {
+  loadingGroupOptions.value = true
+
+  try {
+    const payload = await $fetch('/api/user_group', {
+      query: {
+        limit: 200,
+        offset: 0,
+      },
+    })
+
+    availableGroups.value = normalizeGroupList(payload)
+  } catch (error) {
+    Notify.error(toUiErrorMessage(error))
+    availableGroups.value = []
+  } finally {
+    loadingGroupOptions.value = false
+  }
+}
+
 async function loadUserData() {
   if (!userId.value) {
     return
@@ -121,7 +183,7 @@ async function loadUserData() {
 
     userProfile.value = normalizeProfile(profileResponse)
     userRoles.value = normalizeStringList(rolesResponse)
-    userGroups.value = normalizeStringList(groupsResponse)
+    userGroups.value = normalizeGroupList(groupsResponse)
   } catch (error) {
     Notify.error(toUiErrorMessage(error))
   } finally {
@@ -130,9 +192,9 @@ async function loadUserData() {
 }
 
 async function attachGroup() {
-  const groupValue = newGroup.value.trim()
+  const groupId = selectedGroupId.value.trim()
 
-  if (!groupValue) {
+  if (!groupId) {
     return
   }
 
@@ -144,12 +206,12 @@ async function attachGroup() {
   busyAction.value = true
 
   try {
-    await $fetch(`/api/user/${encodeURIComponent(userId.value)}/group/${encodeURIComponent(groupValue)}`, {
+    await $fetch(`/api/user/${encodeURIComponent(userId.value)}/group/${encodeURIComponent(groupId)}`, {
       method: 'POST',
     })
 
-    Notify.success(`Groupe ${groupValue} attaché.`)
-    newGroup.value = ''
+    Notify.success('Groupe attaché à l’utilisateur.')
+    selectedGroupId.value = ''
     await loadUserData()
   } catch (error) {
     Notify.error(toUiErrorMessage(error))
@@ -158,7 +220,7 @@ async function attachGroup() {
   }
 }
 
-async function detachGroup(groupName: string) {
+async function detachGroup(groupId: string) {
   if (!canManageGroups.value) {
     Notify.error('Action réservée aux utilisateurs ROLE_ROOT.')
     return
@@ -167,11 +229,11 @@ async function detachGroup(groupName: string) {
   busyAction.value = true
 
   try {
-    await $fetch(`/api/user/${encodeURIComponent(userId.value)}/group/${encodeURIComponent(groupName)}`, {
+    await $fetch(`/api/user/${encodeURIComponent(userId.value)}/group/${encodeURIComponent(groupId)}`, {
       method: 'DELETE',
     })
 
-    Notify.success(`Groupe ${groupName} retiré.`)
+    Notify.success('Groupe retiré de l’utilisateur.')
     await loadUserData()
   } catch (error) {
     Notify.error(toUiErrorMessage(error))
@@ -182,7 +244,7 @@ async function detachGroup(groupName: string) {
 
 onMounted(async () => {
   await authStore.ensureRolesLoaded()
-  await loadUserData()
+  await Promise.all([loadUserData(), loadAvailableGroups()])
 })
 </script>
 
@@ -226,17 +288,18 @@ onMounted(async () => {
           <v-card variant="tonal" rounded="lg" class="pa-4">
             <div class="text-subtitle-1 mb-2">Rôles utilisateur</div>
             <div v-if="userRoles.length === 0" class="text-medium-emphasis">Aucun rôle.</div>
-            <div v-else class="d-flex flex-wrap ga-2">
-              <v-chip
+            <v-list v-else density="comfortable" lines="one" class="bg-transparent pa-0">
+              <v-list-item
                 v-for="roleName in userRoles"
                 :key="roleName"
-                size="small"
-                color="primary"
-                variant="flat"
+                class="px-0"
               >
-                {{ roleName }}
-              </v-chip>
-            </div>
+                <template #prepend>
+                  <v-icon icon="mdi-shield-account-outline" size="18" class="mr-2" />
+                </template>
+                <v-list-item-title>{{ roleName }}</v-list-item-title>
+              </v-list-item>
+            </v-list>
           </v-card>
         </v-window-item>
 
@@ -250,31 +313,43 @@ onMounted(async () => {
             </div>
 
             <div v-if="userGroups.length === 0" class="text-medium-emphasis mb-3">Aucun groupe.</div>
-            <div v-else class="d-flex flex-wrap ga-2 mb-4">
-              <v-chip
-                v-for="groupName in userGroups"
-                :key="groupName"
-                size="small"
-                color="secondary"
-                variant="flat"
-                :append-icon="canManageGroups ? 'mdi-close' : undefined"
-                :disabled="busyAction"
-                @click:append="detachGroup(groupName)"
+            <v-list v-else density="comfortable" lines="one" class="bg-transparent pa-0 mb-4">
+              <v-list-item
+                v-for="group in userGroups"
+                :key="group.id"
+                class="px-0"
               >
-                {{ groupName }}
-              </v-chip>
-            </div>
+                <template #prepend>
+                  <v-icon icon="mdi-account-group" size="18" class="mr-2" />
+                </template>
+                <v-list-item-title>{{ group.name }}</v-list-item-title>
+                <template #append>
+                  <v-btn
+                    v-if="canManageGroups"
+                    size="small"
+                    variant="text"
+                    color="error"
+                    icon="mdi-close"
+                    :disabled="busyAction"
+                    @click="detachGroup(group.id)"
+                  />
+                </template>
+              </v-list-item>
+            </v-list>
 
             <v-row dense>
               <v-col cols="12" md="8">
-                <v-text-field
-                  v-model="newGroup"
-                  label="Ajouter un groupe (id ou nom)"
+                <v-select
+                  v-model="selectedGroupId"
+                  label="Ajouter un groupe"
                   prepend-inner-icon="mdi-account-group"
+                  :items="availableGroupOptions"
+                  item-title="title"
+                  item-value="value"
                   hide-details
                   density="comfortable"
+                  :loading="loadingGroupOptions"
                   :disabled="!canManageGroups || busyAction"
-                  @keydown.enter.prevent="attachGroup"
                 />
               </v-col>
               <v-col cols="12" md="4">
@@ -282,7 +357,7 @@ onMounted(async () => {
                   block
                   color="primary"
                   :loading="busyAction"
-                  :disabled="!canManageGroups || !newGroup.trim()"
+                  :disabled="!canManageGroups || !selectedGroupId"
                   @click="attachGroup"
                 >
                   Attacher

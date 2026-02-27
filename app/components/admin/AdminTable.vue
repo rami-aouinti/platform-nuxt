@@ -14,6 +14,7 @@ const props = withDefaults(
     total?: number
     page?: number
     pageSize?: number
+    sortBy?: readonly { key: string; order?: 'asc' | 'desc' | boolean }[]
     selectable?: boolean
     error?: string | null
     emptyTitle?: string
@@ -25,6 +26,7 @@ const props = withDefaults(
     total: 0,
     page: 1,
     pageSize: 10,
+    sortBy: () => [],
     selectable: false,
     error: null,
     emptyTitle: 'Aucun résultat',
@@ -40,10 +42,12 @@ const emit = defineEmits<{
 }>()
 
 const normalizedColumns = computed(() =>
-  props.columns.map((column) => ({
-    ...column,
-    key: String(column.key),
-  })),
+  props.columns
+    .map((column) => ({
+      ...column,
+      key: String(column.key),
+    }))
+    .filter((column) => column.key !== 'id'),
 )
 
 const hasActionsSlot = computed(() => Boolean(useSlots()['row-actions']))
@@ -127,6 +131,8 @@ function getRowProps(payload: { item: AdminRow }) {
       :show-select="selectable"
       :page="page"
       :items-per-page="pageSize"
+      :sort-by="sortBy"
+      :items-per-page-options="[10, 20, 50]"
       :row-props="getRowProps"
       hover
       class="admin-table__datatable"
