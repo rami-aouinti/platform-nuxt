@@ -7,7 +7,9 @@ import { canManageUsers, isRoot } from '~/utils/permissions/admin'
 import { useInternalEventTracking } from '~/composables/useInternalEventTracking'
 import { extractCollectionFromPayload } from '~/utils/admin/extractCollectionFromPayload'
 import type { AdminResourceSchema, AdminSchemaField } from '~/types/admin-schema'
+import type { AdminResourceEndpoint } from '~/types/admin-resource'
 import { useRelationField } from '~/composables/admin/useRelationField'
+import { getAdminResourceDescriptor } from '~/services/admin/resource-descriptors'
 
 type UserRecord = {
   id: string
@@ -31,6 +33,7 @@ definePageMeta({
 })
 
 const authStore = useAuthStore()
+const usersDescriptor = getAdminResourceDescriptor('users')
 const { roles } = storeToRefs(authStore)
 const { track } = useInternalEventTracking()
 
@@ -102,6 +105,19 @@ const fallbackDetailFields = [
 ]
 
 const userSchema = ref<AdminResourceSchema | null>(null)
+
+
+function resolveResourceEndpoint(endpoint: AdminResourceEndpoint | undefined, id?: string) {
+  if (!endpoint) {
+    return null
+  }
+
+  if (typeof endpoint === 'function') {
+    return endpoint({ id })
+  }
+
+  return endpoint
+}
 
 function toFieldLabel(fieldName: string) {
   return fieldName
@@ -207,7 +223,7 @@ function normalize(payload: unknown): UserRecord[] {
 
 async function loadSchema() {
   try {
-    const payload = await $fetch('/api/user/schema')
+    const payload = await $fetch(String(usersDescriptor.schemaEndpoint ?? '/api/user/schema'))
     userSchema.value = normalizeSchema(payload)
   } catch {
     userSchema.value = null
@@ -254,8 +270,8 @@ async function loadUserDetails(userId: string) {
 
   try {
     const [rolesPayload, groupsPayload] = await Promise.all([
-      $fetch(`/api/user/${encodeURIComponent(userId)}/roles`),
-      $fetch(`/api/user/${encodeURIComponent(userId)}/groups`),
+      $fetch(resolveResourceEndpoint(usersDescriptor.relationActions?.roles?.list, userId) ?? `/api/user/${encodeURIComponent(userId)}/roles`),
+      $fetch(resolveResourceEndpoint(usersDescriptor.relationActions?.groups?.list, userId) ?? `/api/user/${encodeURIComponent(userId)}/groups`),
     ])
 
     detailRoles.value = normalizeStringList(rolesPayload)
@@ -355,14 +371,15 @@ const {
   saveEdit,
   deleteRow,
 } = useAdminResourcePage<UserRecord, Record<string, string>>({
+  resource: usersDescriptor,
   initialFilters: {},
   normalize,
   buildQuery,
   loadRows: async (ctx) => {
     const query = buildQuery(ctx)
     const [payload, countPayload] = await Promise.all([
-      $fetch('/api/user', { query }),
-      $fetch('/api/user/count'),
+      $fetch(resolveResourceEndpoint(typeof usersDescriptor.list === 'object' ? usersDescriptor.list.endpoint : usersDescriptor.list) as string, { query }),
+      $fetch(resolveResourceEndpoint(typeof usersDescriptor.list === 'object' ? usersDescriptor.list.countEndpoint : '/api/user/count') as string),
       $fetch('/api/user/ids'),
     ])
 
@@ -394,7 +411,7 @@ const {
 
     try {
       await $fetch(
-        `/api/user/${encodeURIComponent(String(row.id ?? ''))}` as any,
+        String(resolveResourceEndpoint(usersDescriptor.patch, String(row.id ?? '')) ?? `/api/user/${encodeURIComponent(String(row.id ?? ''))}`) as any,
         {
           method: 'PATCH' as any,
           body: patchBody,
@@ -419,7 +436,7 @@ const {
   deleteRow: async (row) => {
     try {
       await $fetch(
-        `/api/user/${encodeURIComponent(String(row.id ?? ''))}` as any,
+        String(resolveResourceEndpoint(usersDescriptor.delete, String(row.id ?? '')) ?? `/api/user/${encodeURIComponent(String(row.id ?? ''))}`) as any,
         {
           method: 'DELETE' as any,
         },
@@ -469,7 +486,7 @@ async function onRowPatch(payload: { rowId: string; field: string; value: boolea
   }
 
   try {
-    await $fetch(`/api/user/${encodeURIComponent(payload.rowId)}` as any, {
+    await $fetch(String(resolveResourceEndpoint(usersDescriptor.patch, payload.rowId) ?? `/api/user/${encodeURIComponent(payload.rowId)}`) as any, {
       method: 'PATCH' as any,
       body: {
         [payload.field]: payload.value,
@@ -512,7 +529,7 @@ async function submitCreateRow() {
   creating.value = true
 
   try {
-    await $fetch('/api/user', {
+    await $fetch(String(resolveResourceEndpoint(usersDescriptor.create) ?? '/api/user'), {
       method: 'POST' as any,
       body: {
         username: createForm.username.trim(),
