@@ -1,4 +1,4 @@
-import type { ComputedRef, Ref } from 'vue'
+import { computed, ref, type ComputedRef, type Ref } from 'vue'
 import type { ApiListQuery, Id } from '~/composables/api/httpUiErrors'
 
 export type EntitySort = { field: string; direction: 'asc' | 'desc' }
@@ -38,6 +38,17 @@ export function mergeEntityRow<T extends { id: Id }>(
   rows.value = rows.value.map((row) => (row.id === next.id ? next : row))
   if (!rows.value.some((row) => row.id === next.id)) rows.value = [next, ...rows.value]
   if (item.value?.id === next.id) item.value = next
+}
+
+
+
+export function removeEntityRow<T extends { id: Id }>(
+  rows: Ref<T[]>,
+  item: Ref<T | null>,
+  id: Id,
+) {
+  rows.value = rows.value.filter((row) => row.id !== id)
+  if (item.value?.id === id) item.value = null
 }
 
 export function createEntitySnapshot<T>(rows: Ref<T[]>, item: Ref<T | null>): EntitySnapshot<T> {
