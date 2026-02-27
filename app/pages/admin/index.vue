@@ -243,21 +243,21 @@ onMounted(async () => {
 
       <v-row class="mb-4" dense>
         <v-col cols="12" lg="6">
-          <v-card class="pa-2" height="340">
+          <v-card class="pa-12" height="340">
             <v-card-title class="text-subtitle-1">Évolution globale (30 jours)</v-card-title>
             <ChartLine :points="timeseries" series-name="Total" />
           </v-card>
         </v-col>
 
         <v-col cols="12" lg="6">
-          <v-card class="pa-2" height="340">
+          <v-card class="pa-12" height="340">
             <v-card-title class="text-subtitle-1">Top entités</v-card-title>
             <ChartBar :items="topEntities" series-name="Enregistrements" />
           </v-card>
         </v-col>
 
         <v-col cols="12" lg="6">
-          <v-card class="pa-2" height="340">
+          <v-card class="pa-12" height="340">
             <v-card-title class="text-subtitle-1">Statuts des offres d'emploi</v-card-title>
             <ChartPie :items="jobOfferStatuses" series-name="Offres" />
           </v-card>
