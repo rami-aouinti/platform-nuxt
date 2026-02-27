@@ -1,13 +1,10 @@
 <script setup lang="ts">
 import type { DataTableHeader } from 'vuetify'
 import { storeToRefs } from 'pinia'
-import { Notify } from '~/stores/notification'
 import { useAuthStore } from '~/stores/auth'
-import { apiKeysV1Service } from '../../../services/admin/api-keys/v1'
-import { apiKeysV2Service } from '../../../services/admin/api-keys/v2'
+import { Notify } from '~/stores/notification'
+import { useApiKeysStore } from '~/stores/apiKeys'
 import { canManageApiKeys } from '~/utils/permissions/admin'
-
-type ApiKeyRecord = { id: string; name: string; prefix: string; createdAt: string; status: string }
 
 definePageMeta({
   icon: 'mdi-key-variant',
@@ -21,117 +18,55 @@ definePageMeta({
 })
 
 const authStore = useAuthStore()
+const apiKeysStore = useApiKeysStore()
+
 const { roles } = storeToRefs(authStore)
+const { rows, loading, error, search, pagination } = storeToRefs(apiKeysStore)
 
-const rows = ref<ApiKeyRecord[]>([])
-const loading = ref(false)
-const error = ref<string | null>(null)
-const total = ref(0)
-const page = ref(1)
-const pageSize = ref(10)
-const search = ref('')
-const filters = ref<Record<string, string>>({ status: '' })
+const page = computed({
+  get: () => pagination.value.page,
+  set: (value: number) => apiKeysStore.setPage(value),
+})
 
-const apiKeysService = apiKeysV2Service
+const pageSize = computed({
+  get: () => pagination.value.perPage,
+  set: (value: number) => apiKeysStore.setPerPage(value),
+})
 
-type ApiKeysService = typeof apiKeysV2Service | typeof apiKeysV1Service
+const total = computed(() => pagination.value.total)
+const filters = ref<Record<string, string>>({})
 
 const isRoot = computed(() => canManageApiKeys(roles.value))
 
 const columns: DataTableHeader[] = [
   { title: 'ID', key: 'id' },
-  { title: 'Nom', key: 'name' },
-  { title: 'Prefix', key: 'prefix' },
-  { title: 'Créé le', key: 'createdAt' },
-  { title: 'Status', key: 'status' },
+  { title: 'Token', key: 'token' },
+  { title: 'Description', key: 'description' },
 ]
 
-function normalize(payload: unknown): ApiKeyRecord[] {
-  const list = Array.isArray(payload)
-    ? payload
-    : payload && typeof payload === 'object' && Array.isArray((payload as { items?: unknown[] }).items)
-      ? (payload as { items: unknown[] }).items
-      : payload && typeof payload === 'object' && Array.isArray((payload as { data?: unknown[] }).data)
-        ? (payload as { data: unknown[] }).data
-        : []
-
-  return list.map((entry, index) => {
-    const row = entry as Record<string, unknown>
-    return {
-      id: String(row.id ?? row.uuid ?? index),
-      name: String(row.label ?? row.name ?? ''),
-      prefix: String(row.keyPrefix ?? row.tokenPrefix ?? row.prefix ?? ''),
-      createdAt: String(row.createdAt ?? row.created_at ?? ''),
-      status: String(row.enabled === false ? 'disabled' : row.status ?? 'active'),
-    }
-  })
-}
-
-function toError(errorValue: unknown) {
-  if (errorValue instanceof Error) {
-    return errorValue.message
-  }
-
-  return 'Erreur API.'
-}
-
-async function loadWithFallback<T>(run: (service: ApiKeysService) => Promise<T>) {
-  try {
-    return await run(apiKeysService)
-  } catch (errorValue) {
-    if (isError(errorValue) && errorValue.statusCode === 404) {
-      return run(apiKeysV1Service)
-    }
-
-    throw errorValue
-  }
-}
-
-async function loadRows() {
-  loading.value = true
-  error.value = null
-  try {
-    const listQuery = {
-      page: page.value,
-      pageSize: pageSize.value,
-      search: search.value || undefined,
-      filters: {
-        status: filters.value.status || undefined,
-      },
-    }
-
-    const [listResponse, countResponse, idsResponse] = await Promise.all([
-      loadWithFallback((service) => service.list(listQuery)),
-      loadWithFallback<{ count: number }>((service) => service.count()),
-      loadWithFallback<string[]>((service) => service.ids()),
-    ])
-
-    rows.value = normalize(listResponse)
-    total.value = Number(countResponse.count ?? idsResponse.length ?? rows.value.length)
-  } catch (errorValue) {
-    error.value = toError(errorValue)
-  } finally {
-    loading.value = false
-  }
-}
-
 function createRow() {
-  Notify.info('TODO: brancher la génération d’API key.')
+  Notify.info('Utilisez la vue de gestion API Keys pour exécuter le CRUD complet.')
 }
 
-watch([page, pageSize], loadRows)
-watchDebounced([search, filters], loadRows, { debounce: 300, maxWait: 1000 })
+watch([page, pageSize], () => {
+  void apiKeysStore.refreshInventory()
+})
+
+watchDebounced(search, (value) => {
+  apiKeysStore.setSearch(value)
+  void apiKeysStore.refreshInventory()
+}, { debounce: 300, maxWait: 1000 })
 
 onMounted(async () => {
   await authStore.ensureRolesLoaded()
-  await loadRows()
+  await apiKeysStore.refreshInventory()
 })
 </script>
 
 <template>
   <AdminResourcePage
     title="API Keys"
-    description="Prototype API keys avec droits ROLE_ROOT et hooks CRUD prêts pour services backend."
+    description="Gestion des clés API (list/count/ids + CRUD), avec fallback automatique v2 → v1 si v2 n'est pas disponible."
     :columns="columns"
     :rows="rows"
     :loading="loading"
@@ -141,17 +76,14 @@ onMounted(async () => {
     :page-size="pageSize"
     :search="search"
     :filters="filters"
-    :filter-configs="[{ key: 'status', label: 'Filtre statut', icon: 'mdi-filter' }]"
     :detail-fields="[
       { key: 'id', label: 'ID' },
-      { key: 'name', label: 'Nom' },
-      { key: 'prefix', label: 'Prefix' },
-      { key: 'createdAt', label: 'Créé le' },
-      { key: 'status', label: 'Status' },
+      { key: 'token', label: 'Token' },
+      { key: 'description', label: 'Description' },
     ]"
     :editable-fields="[
-      { key: 'name', label: 'Nom' },
-      { key: 'status', label: 'Status' },
+      { key: 'token', label: 'Token' },
+      { key: 'description', label: 'Description' },
     ]"
     :can-show="isRoot"
     :can-create="isRoot"
@@ -164,6 +96,6 @@ onMounted(async () => {
     @update:search="search = $event"
     @update:filters="filters = $event"
     @create="createRow"
-    @refresh="loadRows"
+    @refresh="apiKeysStore.refreshInventory"
   />
 </template>

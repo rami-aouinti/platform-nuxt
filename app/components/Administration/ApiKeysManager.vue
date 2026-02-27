@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Notify } from '~/stores/notification'
 import { useInternalEventTracking } from '~/composables/useInternalEventTracking'
-import type { Id } from '~~/services/admin/shared/index'
+import type { CountResponse, Id, ListQuery } from '~~/services/admin/shared/index'
 import { toUiErrorMessage } from '~/utils/errors/toUiErrorMessage'
 import type {
   BaseApiKey,
@@ -10,10 +10,11 @@ import type {
   BaseUpdateApiKeyRequest,
 } from '~~/services/admin/api-keys/shared'
 
+
 interface ApiKeysService {
-  list: (query?: { page?: number; pageSize?: number }) => Promise<unknown>
-  count: () => Promise<unknown>
-  ids: () => Promise<unknown>
+  list: (query?: ListQuery) => Promise<unknown>
+  count: () => Promise<CountResponse>
+  ids: () => Promise<string[]>
   create: (payload: BaseCreateApiKeyRequest) => Promise<unknown>
   getById: (id: Id) => Promise<unknown>
   update: (id: Id, payload: BaseUpdateApiKeyRequest) => Promise<unknown>
@@ -39,21 +40,21 @@ const selectedId = ref('')
 const selectedItem = ref<BaseApiKey | null>(null)
 
 const createForm = reactive({
-  label: '',
-  scopes: '',
-  expiresAt: '',
+  token: '',
+  description: '',
 })
 
 const updateForm = reactive({
-  label: '',
-  scopes: '',
-  enabled: true,
-  expiresAt: '',
+  token: '',
+  description: '',
 })
 
-const patchForm = reactive({
-  field: 'enabled',
-  value: 'false',
+const PATCH_FIELDS = ['description', 'token'] as const
+type PatchField = typeof PATCH_FIELDS[number]
+
+const patchForm = reactive<{ field: PatchField; value: string }>({
+  field: 'description',
+  value: '',
 })
 
 const dialogDelete = useTemplateRef('dialogDelete')
@@ -71,12 +72,6 @@ function ensureRoot() {
   return false
 }
 
-function parseScopes(value: string) {
-  return value
-    .split(',')
-    .map((scope) => scope.trim())
-    .filter(Boolean)
-}
 
 function normalizeList(payload: unknown): BaseApiKey[] {
   if (Array.isArray(payload)) {
@@ -147,9 +142,8 @@ async function createApiKey() {
 
   try {
     const payload: BaseCreateApiKeyRequest = {
-      label: createForm.label.trim(),
-      scopes: parseScopes(createForm.scopes),
-      expiresAt: createForm.expiresAt || null,
+      token: createForm.token.trim(),
+      description: createForm.description.trim(),
     }
 
     await props.service.create(payload)
@@ -158,7 +152,7 @@ async function createApiKey() {
       payload: {
         version: props.version,
         prefix: props.apiPrefix,
-        label: payload.label,
+        token: payload.token,
       },
     })
 
@@ -198,10 +192,8 @@ async function updateById() {
 
   try {
     await props.service.update(selectedId.value, {
-      label: updateForm.label.trim() || undefined,
-      scopes: parseScopes(updateForm.scopes),
-      enabled: updateForm.enabled,
-      expiresAt: updateForm.expiresAt || null,
+      token: updateForm.token.trim() || undefined,
+      description: updateForm.description.trim() || undefined,
     })
 
     Notify.success(`Action réussie : clé ${selectedId.value} mise à jour (PUT).`)
@@ -225,7 +217,7 @@ async function patchById() {
     return
   }
 
-  const isCriticalPatch = patchForm.field === 'enabled' || patchForm.field === 'expiresAt'
+  const isCriticalPatch = patchForm.field === 'token'
   if (isCriticalPatch) {
     const confirmed = await dialogPatch.value?.open(
       `Confirmer le patch critique sur ${selectedId.value} (${patchForm.field}) ?`,
@@ -243,13 +235,8 @@ async function patchById() {
   busy.value = true
 
   try {
-    const value =
-      patchForm.field === 'enabled'
-        ? patchForm.value === 'true'
-        : patchForm.value
-
     await props.service.patch(selectedId.value, {
-      [patchForm.field]: value,
+      [patchForm.field]: patchForm.value,
     })
 
     Notify.success(`Action réussie : clé ${selectedId.value} mise à jour (PATCH).`)
@@ -354,22 +341,15 @@ onMounted(async () => {
     <v-row dense>
       <v-col cols="12" md="6">
         <v-text-field
-          v-model="createForm.label"
-          label="Create · label"
+          v-model="createForm.token"
+          label="Create · token"
           density="comfortable"
         />
       </v-col>
       <v-col cols="12" md="6">
         <v-text-field
-          v-model="createForm.scopes"
-          label="Create · scopes (csv)"
-          density="comfortable"
-        />
-      </v-col>
-      <v-col cols="12" md="6">
-        <v-text-field
-          v-model="createForm.expiresAt"
-          label="Create · expiresAt (ISO)"
+          v-model="createForm.description"
+          label="Create · description"
           density="comfortable"
         />
       </v-col>
@@ -428,34 +408,19 @@ onMounted(async () => {
     <v-row dense>
       <v-col cols="12" md="6">
         <v-text-field
-          v-model="updateForm.label"
-          label="Update · label"
+          v-model="updateForm.token"
+          label="Update · token"
           density="comfortable"
         />
       </v-col>
       <v-col cols="12" md="6">
         <v-text-field
-          v-model="updateForm.scopes"
-          label="Update · scopes (csv)"
+          v-model="updateForm.description"
+          label="Update · description"
           density="comfortable"
         />
       </v-col>
-      <v-col cols="12" md="4">
-        <v-switch
-          v-model="updateForm.enabled"
-          label="Update · enabled"
-          inset
-          hide-details
-        />
-      </v-col>
-      <v-col cols="12" md="4">
-        <v-text-field
-          v-model="updateForm.expiresAt"
-          label="Update · expiresAt"
-          density="comfortable"
-        />
-      </v-col>
-      <v-col cols="12" md="4" class="d-flex align-center">
+      <v-col cols="12" md="6" class="d-flex align-center">
         <v-tooltip :text="manageDisabledMessage" :disabled="isRoot">
           <template #activator="{ props: tooltipProps }">
             <span v-bind="tooltipProps">
@@ -474,7 +439,7 @@ onMounted(async () => {
       <v-col cols="12" md="4">
         <v-select
           v-model="patchForm.field"
-          :items="['label', 'enabled', 'expiresAt']"
+          :items="PATCH_FIELDS"
           label="Patch · field"
           density="comfortable"
         />

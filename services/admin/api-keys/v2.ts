@@ -8,18 +8,11 @@ import {
 
 const API_KEYS_V2_BASE_PATH = '/api/v2/api_key'
 
-export interface ApiKeyV2 extends BaseApiKey {
-  publicKey?: string
-  metadata?: Record<string, unknown>
-}
+export type ApiKeyV2 = BaseApiKey
 
-export interface CreateApiKeyV2Request extends BaseCreateApiKeyRequest {
-  metadata?: Record<string, unknown>
-}
+export type CreateApiKeyV2Request = BaseCreateApiKeyRequest
 
-export interface UpdateApiKeyV2Request extends BaseUpdateApiKeyRequest {
-  metadata?: Record<string, unknown>
-}
+export type UpdateApiKeyV2Request = BaseUpdateApiKeyRequest
 
 export type PatchApiKeyV2Request = PatchPayload
 
