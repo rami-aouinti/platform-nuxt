@@ -40,10 +40,12 @@ const emit = defineEmits<{
 }>()
 
 const normalizedColumns = computed(() =>
-  props.columns.map((column) => ({
-    ...column,
-    key: String(column.key),
-  })),
+  props.columns
+    .map((column) => ({
+      ...column,
+      key: String(column.key),
+    }))
+    .filter((column) => column.key !== 'id'),
 )
 
 const hasActionsSlot = computed(() => Boolean(useSlots()['row-actions']))
@@ -127,6 +129,7 @@ function getRowProps(payload: { item: AdminRow }) {
       :show-select="selectable"
       :page="page"
       :items-per-page="pageSize"
+      :items-per-page-options="[10, 20, 50]"
       :row-props="getRowProps"
       hover
       class="admin-table__datatable"
