@@ -350,14 +350,16 @@ onMounted(() => {
       <v-card>
         <v-card-title>Détails</v-card-title>
         <v-card-text>
-          <v-list v-if="selectedRow" lines="two" density="comfortable">
-            <v-list-item
-              v-for="field in detailFields"
-              :key="field.key"
-              :title="field.label"
-              :subtitle="String(selectedRow[field.key] ?? '-')"
-            />
-          </v-list>
+          <slot name="detail-content" :row="selectedRow">
+            <v-list v-if="selectedRow" lines="two" density="comfortable">
+              <v-list-item
+                v-for="field in detailFields"
+                :key="field.key"
+                :title="field.label"
+                :subtitle="String(selectedRow[field.key] ?? '-')"
+              />
+            </v-list>
+          </slot>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
