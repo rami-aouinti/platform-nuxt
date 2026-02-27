@@ -4,7 +4,7 @@ import type {
   PatchProjectPayload,
   Project,
   UpdateProjectPayload,
-} from '~/types/task-manager'
+} from '~/types/crm'
 
 export function useProjectsApi() {
   const basePath = '/api/v1/projects'

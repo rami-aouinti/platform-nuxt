@@ -1,7 +1,7 @@
 import { useTasksApi } from '~/composables/api/useTasksApi'
 import type { ApiListQuery, Id } from '~/composables/api/httpUiErrors'
 import { Notify } from '~/stores/notification'
-import { TaskStatus, type CreateTaskPayload, type PatchTaskPayload, type Task, type UpdateTaskPayload } from '~/types/task-manager'
+import { TaskStatus, type CreateTaskPayload, type PatchTaskPayload, type Task, type UpdateTaskPayload } from '~/types/crm'
 
 function toErrorMessage(errorValue: unknown) {
   if (errorValue && typeof errorValue === 'object' && 'message' in errorValue && typeof errorValue.message === 'string') {

@@ -7,7 +7,7 @@ import {
   type PatchTaskRequestPayload,
   type TaskRequest,
   type UpdateTaskRequestPayload,
-} from '~/types/task-manager'
+} from '~/types/crm'
 
 function toErrorMessage(errorValue: unknown) {
   if (errorValue && typeof errorValue === 'object' && 'message' in errorValue && typeof errorValue.message === 'string') {

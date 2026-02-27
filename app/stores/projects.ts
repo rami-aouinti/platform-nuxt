@@ -1,7 +1,7 @@
 import { useProjectsApi } from '~/composables/api/useProjectsApi'
 import type { Id, ApiListQuery } from '~/composables/api/httpUiErrors'
 import { Notify } from '~/stores/notification'
-import { ProjectStatus, type CreateProjectPayload, type PatchProjectPayload, type Project, type UpdateProjectPayload } from '~/types/task-manager'
+import { ProjectStatus, type CreateProjectPayload, type PatchProjectPayload, type Project, type UpdateProjectPayload } from '~/types/crm'
 
 function toErrorMessage(errorValue: unknown) {
   if (errorValue && typeof errorValue === 'object' && 'message' in errorValue && typeof errorValue.message === 'string') {

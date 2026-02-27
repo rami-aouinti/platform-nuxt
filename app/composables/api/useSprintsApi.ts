@@ -1,5 +1,5 @@
 import { apiRequest, type ApiListQuery, type Id } from './httpUiErrors'
-import type { CreateSprintPayload, CrmSprint } from './useCrmApi'
+import type { CreateSprintPayload, Sprint } from '~/types/crm'
 
 export type UpdateSprintPayload = Partial<CreateSprintPayload> & {
   name: string
@@ -13,11 +13,11 @@ export function useSprintsApi() {
 
   return {
     list: (query?: ApiListQuery) =>
-      apiRequest<CrmSprint[] | { data?: CrmSprint[]; items?: CrmSprint[]; meta?: { total?: number } }>('GET', basePath, { query }),
-    get: (id: Id) => apiRequest<CrmSprint>('GET', `${basePath}/${id}`),
-    create: (payload: CreateSprintPayload) => apiRequest<CrmSprint>('POST', basePath, { body: payload }),
-    update: (id: Id, payload: UpdateSprintPayload) => apiRequest<CrmSprint>('PUT', `${basePath}/${id}`, { body: payload }),
-    patch: (id: Id, payload: PatchSprintPayload) => apiRequest<CrmSprint>('PATCH', `${basePath}/${id}`, { body: payload }),
+      apiRequest<Sprint[] | { data?: Sprint[]; items?: Sprint[]; meta?: { total?: number } }>('GET', basePath, { query }),
+    get: (id: Id) => apiRequest<Sprint>('GET', `${basePath}/${id}`),
+    create: (payload: CreateSprintPayload) => apiRequest<Sprint>('POST', basePath, { body: payload }),
+    update: (id: Id, payload: UpdateSprintPayload) => apiRequest<Sprint>('PUT', `${basePath}/${id}`, { body: payload }),
+    patch: (id: Id, payload: PatchSprintPayload) => apiRequest<Sprint>('PATCH', `${basePath}/${id}`, { body: payload }),
     delete: (id: Id) => apiRequest<unknown>('DELETE', `${basePath}/${id}`),
   }
 }
