@@ -203,7 +203,7 @@ onMounted(loadRows)
       <v-sheet class="pa-6 text-center" rounded="lg" border>
         <div class="text-h6 mb-2">403 · Accès refusé</div>
         <p class="text-medium-emphasis mb-4">Vous n'êtes pas autorisé à consulter les offres d'administration.</p>
-        <v-btn to="/administration" prepend-icon="mdi-arrow-left">Retour à l'administration</v-btn>
+        <v-btn to="/admin" prepend-icon="mdi-arrow-left">Retour à l'administration</v-btn>
       </v-sheet>
     </template>
 

@@ -21,7 +21,7 @@ const rail = computed(() => !drawerState.value && !mobile.value)
 const drawerPaths = [
   '/homepage',
   '/dashboard',
-  '/administration',
+  '/admin',
   '/jobs',
   '/jobs/my-offers',
   '/jobs/applications',

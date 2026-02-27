@@ -89,7 +89,7 @@ onMounted(async () => {
       class="mb-4"
       variant="text"
       prepend-icon="mdi-arrow-left"
-      to="/administration"
+      to="/admin"
     >
       Retour à l'administration
     </v-btn>

@@ -7,7 +7,7 @@ import type { HTMLAttributes } from 'vue'
 const theme = useTheme()
 const drawer = useState('drawer')
 const route = useRoute()
-const isAdministrationRoute = computed(() => route.path.startsWith('/administration'))
+const isAdministrationRoute = computed(() => route.path.startsWith('/admin') || route.path.startsWith('/administration'))
 const breadcrumbs = computed(() => {
   return route!.matched
     .filter((item) => item.meta && item.meta.title)
@@ -145,7 +145,7 @@ function createActivatorProps(
           v-if="isAuthenticated && !rolesLoading && hasAdminAccess"
           title="Administration"
           prepend-icon="mdi-shield-account-outline"
-          to="/administration"
+          to="/admin"
         />
         <v-list-item
           v-if="isAuthenticated"
