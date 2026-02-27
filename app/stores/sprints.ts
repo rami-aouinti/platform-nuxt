@@ -6,6 +6,7 @@ import {
   createEntityPagination,
   createEntityQuery,
   createEntitySnapshot,
+  createPostMutationSync,
   mergeEntityRow,
   restoreEntitySnapshot,
   toUiErrorMessage,
@@ -37,6 +38,18 @@ export const useSprintsStore = defineStore('sprints', () => {
     } catch {
       // no-op
     }
+  }
+
+  const postMutationSyncMode = ref<'none' | 'background' | 'blocking'>('background')
+  const postMutationSync = createPostMutationSync(refreshRowsSafe, 120)
+
+  async function runPostMutationSync() {
+    if (postMutationSyncMode.value === 'none') return
+    if (postMutationSyncMode.value === 'blocking') {
+      await postMutationSync.blocking()
+      return
+    }
+    postMutationSync.background()
   }
 
   async function fetchRows(options: { silent?: boolean } = {}) {
@@ -84,7 +97,7 @@ export const useSprintsStore = defineStore('sprints', () => {
       const created = await api.create(payload)
       mergeEntityRow(rows, item, created)
       Notify.success('Sprint créé.')
-      await refreshRowsSafe()
+      await runPostMutationSync()
       return created
     } catch (errorValue) {
       error.value = toUiErrorMessage(errorValue)
@@ -107,7 +120,7 @@ export const useSprintsStore = defineStore('sprints', () => {
       const updated = await api.update(id, payload)
       mergeEntityRow(rows, item, updated)
       Notify.success('Sprint mis à jour.')
-      await refreshRowsSafe()
+      await runPostMutationSync()
       return updated
     } catch (errorValue) {
       restoreEntitySnapshot(rows, item, snapshot)
@@ -131,7 +144,7 @@ export const useSprintsStore = defineStore('sprints', () => {
       const patched = await api.patch(id, payload)
       mergeEntityRow(rows, item, patched)
       Notify.success('Sprint mis à jour.')
-      await refreshRowsSafe()
+      await runPostMutationSync()
       return patched
     } catch (errorValue) {
       restoreEntitySnapshot(rows, item, snapshot)
@@ -154,7 +167,7 @@ export const useSprintsStore = defineStore('sprints', () => {
     try {
       await api.delete(id)
       Notify.success('Sprint supprimé.')
-      await refreshRowsSafe()
+      await runPostMutationSync()
     } catch (errorValue) {
       restoreEntitySnapshot(rows, item, snapshot)
       error.value = toUiErrorMessage(errorValue)
@@ -178,6 +191,7 @@ export const useSprintsStore = defineStore('sprints', () => {
     pagination,
     sort,
     search,
+    postMutationSyncMode,
     fetchRows,
     fetchItem,
     setPage,

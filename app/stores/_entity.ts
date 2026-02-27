@@ -59,3 +59,58 @@ export function toUiErrorMessage(errorValue: unknown) {
   if (errorValue instanceof Error) return errorValue.message
   return 'Une erreur est survenue.'
 }
+
+export type PostMutationSyncMode = 'none' | 'background' | 'blocking'
+
+export function createPostMutationSync(refresh: () => Promise<void>, debounceMs = 120) {
+  let inFlight: Promise<void> | null = null
+  let hasPendingRefresh = false
+  let timer: ReturnType<typeof setTimeout> | null = null
+
+  async function runRefresh() {
+    if (inFlight) {
+      hasPendingRefresh = true
+      return inFlight
+    }
+
+    inFlight = (async () => {
+      try {
+        await refresh()
+      } finally {
+        inFlight = null
+        if (hasPendingRefresh) {
+          hasPendingRefresh = false
+          void runRefresh()
+        }
+      }
+    })()
+
+    return inFlight
+  }
+
+  function background() {
+    if (debounceMs <= 0) {
+      void runRefresh()
+      return
+    }
+
+    if (timer) clearTimeout(timer)
+    timer = setTimeout(() => {
+      timer = null
+      void runRefresh()
+    }, debounceMs)
+  }
+
+  async function blocking() {
+    if (timer) {
+      clearTimeout(timer)
+      timer = null
+    }
+    await runRefresh()
+  }
+
+  return {
+    background,
+    blocking,
+  }
+}

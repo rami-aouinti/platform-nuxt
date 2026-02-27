@@ -89,4 +89,71 @@ describe('createCrudEntityStore', () => {
     expect(store.rows.value).toEqual([])
     expect(store.detail.value).toBeNull()
   })
+
+  it('coalesces background refreshes during chained mutations', async () => {
+    vi.useFakeTimers()
+    const refresh = vi.fn(async () => {})
+    const store = createCrudEntityStore<Entity, Partial<Entity>, Partial<Entity>, Partial<Entity>>({
+      entityLabel: 'Entité',
+      fetch: async () => [],
+      create: async (payload) => ({ id: String(payload.id || crypto.randomUUID()), name: String(payload.name || 'New'), level: Number(payload.level || 1) }),
+      update: async (id, payload) => ({ id, name: String(payload.name || 'Updated'), level: Number(payload.level || 0) }),
+      patch: async (id, payload) => ({ id, name: String(payload.name || 'Patched'), level: Number(payload.level || 0) }),
+      remove: async () => {},
+      getId: entity => entity.id,
+      applyUpdate: (entity, payload) => ({ ...entity, ...payload }),
+      applyPatch: (entity, payload) => ({ ...entity, ...payload }),
+      postMutationSync: {
+        mode: 'background',
+        refresh,
+        debounceMs: 40,
+      },
+    })
+
+    await store.create({ id: '1', name: 'One' })
+    await store.create({ id: '2', name: 'Two' })
+    await store.create({ id: '3', name: 'Three' })
+    expect(refresh).toHaveBeenCalledTimes(0)
+
+    await vi.advanceTimersByTimeAsync(50)
+    expect(refresh).toHaveBeenCalledTimes(1)
+    vi.useRealTimers()
+  })
+
+  it('supports blocking and none post-mutation refresh modes', async () => {
+    const blockingRefresh = vi.fn(async () => {})
+    const noneRefresh = vi.fn(async () => {})
+
+    const blockingStore = createCrudEntityStore<Entity, Partial<Entity>, Partial<Entity>, Partial<Entity>>({
+      entityLabel: 'Entité',
+      fetch: async () => [],
+      create: async () => ({ id: '1', name: 'A', level: 1 }),
+      update: async (id, payload) => ({ id, name: String(payload.name || 'Updated'), level: Number(payload.level || 0) }),
+      patch: async (id, payload) => ({ id, name: String(payload.name || 'Patched'), level: Number(payload.level || 0) }),
+      remove: async () => {},
+      getId: entity => entity.id,
+      applyUpdate: (entity, payload) => ({ ...entity, ...payload }),
+      applyPatch: (entity, payload) => ({ ...entity, ...payload }),
+      postMutationSync: { mode: 'blocking', refresh: blockingRefresh },
+    })
+
+    await blockingStore.create({ name: 'A' })
+    expect(blockingRefresh).toHaveBeenCalledTimes(1)
+
+    const noneStore = createCrudEntityStore<Entity, Partial<Entity>, Partial<Entity>, Partial<Entity>>({
+      entityLabel: 'Entité',
+      fetch: async () => [],
+      create: async () => ({ id: '1', name: 'A', level: 1 }),
+      update: async (id, payload) => ({ id, name: String(payload.name || 'Updated'), level: Number(payload.level || 0) }),
+      patch: async (id, payload) => ({ id, name: String(payload.name || 'Patched'), level: Number(payload.level || 0) }),
+      remove: async () => {},
+      getId: entity => entity.id,
+      applyUpdate: (entity, payload) => ({ ...entity, ...payload }),
+      applyPatch: (entity, payload) => ({ ...entity, ...payload }),
+      postMutationSync: { mode: 'none', refresh: noneRefresh },
+    })
+
+    await noneStore.create({ name: 'A' })
+    expect(noneRefresh).toHaveBeenCalledTimes(0)
+  })
 })

@@ -5,6 +5,7 @@ import {
   createEntityPagination,
   createEntityQuery,
   createEntitySnapshot,
+  createPostMutationSync,
   mergeEntityRow,
   restoreEntitySnapshot,
   toUiErrorMessage,
@@ -31,6 +32,18 @@ export const useProjectsStore = defineStore('projects', () => {
     } catch {
       // no-op
     }
+  }
+
+  const postMutationSyncMode = ref<'none' | 'background' | 'blocking'>('background')
+  const postMutationSync = createPostMutationSync(refreshRowsSafe, 120)
+
+  async function runPostMutationSync() {
+    if (postMutationSyncMode.value === 'none') return
+    if (postMutationSyncMode.value === 'blocking') {
+      await postMutationSync.blocking()
+      return
+    }
+    postMutationSync.background()
   }
 
   async function fetchRows(options: { silent?: boolean } = {}) {
@@ -76,7 +89,7 @@ export const useProjectsStore = defineStore('projects', () => {
       const created = await api.create(payload)
       mergeEntityRow(rows, item, created)
       Notify.success('Projet créé avec succès.')
-      await refreshRowsSafe()
+      await runPostMutationSync()
       return created
     } catch (errorValue) {
       error.value = toUiErrorMessage(errorValue)
@@ -99,7 +112,7 @@ export const useProjectsStore = defineStore('projects', () => {
       const updated = await api.update(id, payload)
       mergeEntityRow(rows, item, updated)
       Notify.success('Projet mis à jour.')
-      await refreshRowsSafe()
+      await runPostMutationSync()
       return updated
     } catch (errorValue) {
       restoreEntitySnapshot(rows, item, snapshot)
@@ -123,7 +136,7 @@ export const useProjectsStore = defineStore('projects', () => {
       const patched = await api.patch(id, payload)
       mergeEntityRow(rows, item, patched)
       Notify.success('Projet mis à jour.')
-      await refreshRowsSafe()
+      await runPostMutationSync()
       return patched
     } catch (errorValue) {
       restoreEntitySnapshot(rows, item, snapshot)
@@ -146,7 +159,7 @@ export const useProjectsStore = defineStore('projects', () => {
     try {
       await api.delete(id)
       Notify.success('Projet supprimé.')
-      await refreshRowsSafe()
+      await runPostMutationSync()
     } catch (errorValue) {
       restoreEntitySnapshot(rows, item, snapshot)
       error.value = toUiErrorMessage(errorValue)
@@ -170,6 +183,7 @@ export const useProjectsStore = defineStore('projects', () => {
     pagination,
     sort,
     search,
+    postMutationSyncMode,
     fetchRows,
     fetchItem,
     setPage,

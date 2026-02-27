@@ -1,12 +1,12 @@
 import { ref } from 'vue'
 
 type CrudAction = 'fetch' | 'create' | 'update' | 'patch' | 'remove'
+type PostMutationSyncMode = 'none' | 'background' | 'blocking'
 
 interface CrudNotifier {
   success?: (action: CrudAction) => void
   error?: (action: CrudAction, error: unknown) => void
 }
-
 
 function getErrorMessage(error: unknown) {
   if (error instanceof Error) return error.message
@@ -25,6 +25,11 @@ interface CreateCrudEntityStoreOptions<TEntity, TCreatePayload, TUpdatePayload, 
   applyUpdate: (entity: TEntity, payload: TUpdatePayload) => TEntity
   applyPatch: (entity: TEntity, payload: TPatchPayload) => TEntity
   notifier?: CrudNotifier
+  postMutationSync?: {
+    mode?: PostMutationSyncMode
+    refresh: () => Promise<unknown>
+    debounceMs?: number
+  }
 }
 
 export function createCrudEntityStore<TEntity, TCreatePayload, TUpdatePayload, TPatchPayload>(
@@ -39,15 +44,83 @@ export function createCrudEntityStore<TEntity, TCreatePayload, TUpdatePayload, T
   const notifySuccess = options.notifier?.success || (() => {})
   const notifyError = options.notifier?.error || (() => {})
 
+  const postMutationSyncMode = options.postMutationSync?.mode ?? 'background'
+  const postMutationSyncDebounce = options.postMutationSync?.debounceMs ?? 120
+  let refreshInFlight: Promise<unknown> | null = null
+  let refreshPending = false
+  let refreshDebounceTimer: ReturnType<typeof setTimeout> | null = null
+
+  function getEntityId(entity: unknown) {
+    return options.getId(entity as TEntity)
+  }
+
   function syncDetailFromRows(entityId: string) {
-    const found = rows.value.find((item) => options.getId(item) === entityId)
+    const found = rows.value.find((item) => getEntityId(item) === entityId)
     if (found) detail.value = found
   }
 
   function replaceRow(next: TEntity) {
     const nextId = options.getId(next)
-    rows.value = rows.value.map((item) => options.getId(item) === nextId ? next : item)
+    rows.value = rows.value.map((item) => getEntityId(item) === nextId ? next : item)
+    if (!rows.value.some((item) => getEntityId(item) === nextId)) {
+      rows.value = [next, ...rows.value]
+    }
     syncDetailFromRows(nextId)
+  }
+
+  async function executeRefresh() {
+    if (!options.postMutationSync?.refresh) return
+
+    if (refreshInFlight) {
+      refreshPending = true
+      await refreshInFlight
+      return
+    }
+
+    refreshInFlight = (async () => {
+      try {
+        await options.postMutationSync?.refresh()
+      } finally {
+        refreshInFlight = null
+        if (refreshPending) {
+          refreshPending = false
+          void executeRefresh()
+        }
+      }
+    })()
+
+    await refreshInFlight
+  }
+
+  function scheduleBackgroundRefresh() {
+    if (!options.postMutationSync?.refresh) return
+
+    if (refreshDebounceTimer) clearTimeout(refreshDebounceTimer)
+
+    if (postMutationSyncDebounce <= 0) {
+      void executeRefresh()
+      return
+    }
+
+    refreshDebounceTimer = setTimeout(() => {
+      refreshDebounceTimer = null
+      void executeRefresh()
+    }, postMutationSyncDebounce)
+  }
+
+  async function runPostMutationSync() {
+    if (postMutationSyncMode === 'none') return
+
+    if (postMutationSyncMode === 'blocking') {
+      if (refreshDebounceTimer) {
+        clearTimeout(refreshDebounceTimer)
+        refreshDebounceTimer = null
+      }
+      await executeRefresh()
+      return
+    }
+
+    scheduleBackgroundRefresh()
   }
 
   async function fetch() {
@@ -56,7 +129,7 @@ export function createCrudEntityStore<TEntity, TCreatePayload, TUpdatePayload, T
     try {
       rows.value = await options.fetch()
       if (detail.value) {
-        syncDetailFromRows(options.getId(detail.value))
+        syncDetailFromRows(getEntityId(detail.value))
       }
       notifySuccess('fetch')
       return rows.value
@@ -74,9 +147,10 @@ export function createCrudEntityStore<TEntity, TCreatePayload, TUpdatePayload, T
     error.value = null
     try {
       const created = await options.create(payload)
-      rows.value = [...rows.value, created]
+      replaceRow(created)
       detail.value = created
       notifySuccess('create')
+      await runPostMutationSync()
       return created
     } catch (errorValue) {
       error.value = getErrorMessage(errorValue)
@@ -91,7 +165,7 @@ export function createCrudEntityStore<TEntity, TCreatePayload, TUpdatePayload, T
     const previousRows = [...rows.value]
     const previousDetail = detail.value
 
-    const current = rows.value.find((item) => options.getId(item) === id)
+    const current = rows.value.find((item) => getEntityId(item) === id)
     if (current) {
       replaceRow(options.applyUpdate(current, payload))
     }
@@ -102,6 +176,7 @@ export function createCrudEntityStore<TEntity, TCreatePayload, TUpdatePayload, T
       const updated = await options.update(id, payload)
       replaceRow(updated)
       notifySuccess('update')
+      await runPostMutationSync()
       return updated
     } catch (errorValue) {
       rows.value = previousRows
@@ -118,7 +193,7 @@ export function createCrudEntityStore<TEntity, TCreatePayload, TUpdatePayload, T
     const previousRows = [...rows.value]
     const previousDetail = detail.value
 
-    const current = rows.value.find((item) => options.getId(item) === id)
+    const current = rows.value.find((item) => getEntityId(item) === id)
     if (current) {
       replaceRow(options.applyPatch(current, payload))
     }
@@ -129,6 +204,7 @@ export function createCrudEntityStore<TEntity, TCreatePayload, TUpdatePayload, T
       const patched = await options.patch(id, payload)
       replaceRow(patched)
       notifySuccess('patch')
+      await runPostMutationSync()
       return patched
     } catch (errorValue) {
       rows.value = previousRows
@@ -145,8 +221,8 @@ export function createCrudEntityStore<TEntity, TCreatePayload, TUpdatePayload, T
     const previousRows = [...rows.value]
     const previousDetail = detail.value
 
-    rows.value = rows.value.filter((item) => options.getId(item) !== id)
-    if (detail.value && options.getId(detail.value) === id) {
+    rows.value = rows.value.filter((item) => getEntityId(item) !== id)
+    if (detail.value && getEntityId(detail.value) === id) {
       detail.value = null
     }
 
@@ -155,6 +231,7 @@ export function createCrudEntityStore<TEntity, TCreatePayload, TUpdatePayload, T
     try {
       await options.remove(id)
       notifySuccess('remove')
+      await runPostMutationSync()
     } catch (errorValue) {
       rows.value = previousRows
       detail.value = previousDetail
@@ -169,14 +246,14 @@ export function createCrudEntityStore<TEntity, TCreatePayload, TUpdatePayload, T
   function setRows(nextRows: TEntity[]) {
     rows.value = nextRows
     if (detail.value) {
-      syncDetailFromRows(options.getId(detail.value))
+      syncDetailFromRows(getEntityId(detail.value))
     }
   }
 
   function setDetail(nextDetail: TEntity | null) {
     detail.value = nextDetail
     if (nextDetail) {
-      syncDetailFromRows(options.getId(nextDetail))
+      syncDetailFromRows(getEntityId(nextDetail))
     }
   }
 

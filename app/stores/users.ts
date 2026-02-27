@@ -2,6 +2,7 @@ import { useUsersApi, type CreateUserPayload, type PatchUserPayload, type Update
 import type { ApiListQuery, Id } from '~/composables/api/httpUiErrors'
 import type { CrmUser } from '~/composables/api/useCrmApi'
 import { Notify } from '~/stores/notification'
+import { createPostMutationSync } from '~/stores/_entity'
 
 function toErrorMessage(errorValue: unknown) {
   if (errorValue && typeof errorValue === 'object' && 'message' in errorValue && typeof errorValue.message === 'string') {
@@ -50,6 +51,18 @@ export const useUsersStore = defineStore('users', () => {
     }
   }
 
+  const postMutationSyncMode = ref<'none' | 'background' | 'blocking'>('background')
+  const postMutationSync = createPostMutationSync(refreshRowsSafe, 120)
+
+  async function runPostMutationSync() {
+    if (postMutationSyncMode.value === 'none') return
+    if (postMutationSyncMode.value === 'blocking') {
+      await postMutationSync.blocking()
+      return
+    }
+    postMutationSync.background()
+  }
+
   async function fetchRows(options: { silent?: boolean } = {}) {
     if (!options.silent) loading.value = true
     error.value = null
@@ -95,7 +108,7 @@ export const useUsersStore = defineStore('users', () => {
       const created = await api.create(payload)
       mergeRow(created)
       Notify.success('Utilisateur créé.')
-      await refreshRowsSafe()
+      await runPostMutationSync()
       return created
     } catch (errorValue) {
       error.value = toErrorMessage(errorValue)
@@ -119,7 +132,7 @@ export const useUsersStore = defineStore('users', () => {
       const updated = await api.update(id, payload)
       mergeRow(updated)
       Notify.success('Utilisateur mis à jour.')
-      await refreshRowsSafe()
+      await runPostMutationSync()
       return updated
     } catch (errorValue) {
       rows.value = previousRows
@@ -145,7 +158,7 @@ export const useUsersStore = defineStore('users', () => {
       const patched = await api.patch(id, payload)
       mergeRow(patched)
       Notify.success('Utilisateur mis à jour.')
-      await refreshRowsSafe()
+      await runPostMutationSync()
       return patched
     } catch (errorValue) {
       rows.value = previousRows
@@ -170,7 +183,7 @@ export const useUsersStore = defineStore('users', () => {
     try {
       await api.delete(id)
       Notify.success('Utilisateur supprimé.')
-      await refreshRowsSafe()
+      await runPostMutationSync()
     } catch (errorValue) {
       rows.value = previousRows
       item.value = previousItem
@@ -195,6 +208,7 @@ export const useUsersStore = defineStore('users', () => {
     pagination,
     sort,
     search,
+    postMutationSyncMode,
     fetchRows,
     fetchItem,
     setPage,
