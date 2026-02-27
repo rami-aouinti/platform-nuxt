@@ -1,11 +1,26 @@
-import { createError, defineEventHandler, getRouterParam, type EventHandler, type H3Event } from 'h3'
+import {
+  createError,
+  defineEventHandler,
+  getMethod,
+  getQuery,
+  getRouterParam,
+  type EventHandler,
+  type H3Event,
+} from 'h3'
 import { proxyAuthApiGet, proxyAuthApiRequest } from './auth-api-proxy'
+import { buildQuerySuffix } from './query-string'
+import { requireAuthenticatedRequest } from './require-auth'
+import { buildQuerySuffixFromQuery } from './upstream-query'
 
 type ProxyHttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
 interface ProxyCollectionHandlerOptions {
   upstreamPath: string
   method: ProxyHttpMethod
+}
+
+interface ProxyCollectionHandlerWithQueryOptions {
+  upstreamBasePath: string
 }
 
 interface ProxyEntityHandlerOptions {
@@ -16,6 +31,14 @@ interface ProxyEntityHandlerOptions {
     statusMessage: string
     message: string
   }
+}
+
+function isSupportedMethod(method: string): method is ProxyHttpMethod {
+  return method === 'GET' || method === 'POST' || method === 'PUT' || method === 'PATCH' || method === 'DELETE'
+}
+
+function normalizeCatchAllPath(pathParam: string | string[] | undefined) {
+  return Array.isArray(pathParam) ? pathParam.join('/') : (pathParam ?? '')
 }
 
 export function validateRequiredRouteParam(
@@ -54,6 +77,17 @@ export function createProxyCollectionHandler(
   })
 }
 
+export function createProxyCollectionHandlerWithQuery(
+  options: ProxyCollectionHandlerWithQueryOptions,
+): EventHandler {
+  const { upstreamBasePath } = options
+
+  return defineEventHandler(async (event) => {
+    const suffix = buildQuerySuffix(event)
+    return await proxyAuthApiGet(event, `${upstreamBasePath}${suffix}`)
+  })
+}
+
 export function createProxyEntityHandler(options: ProxyEntityHandlerOptions): EventHandler {
   const { paramName, upstreamPathBuilder, method, missingParamError } = options
 
@@ -62,5 +96,44 @@ export function createProxyEntityHandler(options: ProxyEntityHandlerOptions): Ev
     const path = upstreamPathBuilder(paramValue)
 
     return await proxyRequestByMethod(event, path, method)
+  })
+}
+
+export function createVersionedCatchAllProxyHandler(version: 'v1' | 'v2'): EventHandler {
+  return defineEventHandler(async (event) => {
+    const method = getMethod(event).toUpperCase()
+
+    if (!isSupportedMethod(method)) {
+      throw createError({
+        statusCode: 405,
+        statusMessage: 'Method Not Allowed',
+        message: `Unsupported method: ${method}`,
+      })
+    }
+
+    const normalizedPath = normalizeCatchAllPath(getRouterParam(event, 'path'))
+
+    if (!normalizedPath) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'Invalid API path.',
+        message: 'A target API path is required.',
+      })
+    }
+
+    if (normalizedPath.startsWith('auth/')) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: 'Not Found',
+        message: 'Auth endpoints are handled by dedicated routes.',
+      })
+    }
+
+    requireAuthenticatedRequest(event)
+
+    const suffix = buildQuerySuffixFromQuery(getQuery(event))
+    const upstreamPath = `/api/${version}/${normalizedPath}${suffix}`
+
+    return await proxyAuthApiRequest(event, upstreamPath, method)
   })
 }

@@ -1,15 +1,11 @@
-import { proxyAuthApiRequest } from '../../../utils/auth-api-proxy'
+import { createProxyEntityHandler } from '../../../utils/proxy-handler-factory'
 
-export default defineEventHandler(async (event) => {
-  const id = getRouterParam(event, 'id')
-
-  if (!id) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Invalid user parameter.',
-      message: 'User identifier is required.',
-    })
-  }
-
-  return await proxyAuthApiRequest(event, `/api/v1/user/${encodeURIComponent(id)}`, 'PATCH')
+export default createProxyEntityHandler({
+  paramName: 'id',
+  method: 'PATCH',
+  missingParamError: {
+    statusMessage: 'Invalid user parameter.',
+    message: 'User identifier is required.',
+  },
+  upstreamPathBuilder: id => `/api/v1/user/${encodeURIComponent(id)}`,
 })

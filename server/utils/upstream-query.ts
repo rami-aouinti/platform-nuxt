@@ -1,5 +1,3 @@
-type QueryValue = string | number | boolean | null | undefined
-
 function parseOrderExpression(value: string) {
   const separatorIndex = value.lastIndexOf(':')
   if (separatorIndex <= 0 || separatorIndex >= value.length - 1) {
@@ -16,7 +14,7 @@ function parseOrderExpression(value: string) {
   return { field, direction }
 }
 
-export function appendUpstreamQueryParam(searchParams: URLSearchParams, key: string, rawValue: QueryValue) {
+export function appendUpstreamQueryParam(searchParams: URLSearchParams, key: string, rawValue: unknown) {
   if (rawValue === undefined || rawValue === null) {
     return
   }
@@ -35,7 +33,7 @@ export function appendUpstreamQueryParam(searchParams: URLSearchParams, key: str
 }
 
 export function buildQuerySuffixFromQuery(
-  query: Record<string, QueryValue | QueryValue[]>,
+  query: Record<string, unknown>,
 ) {
   const searchParams = new URLSearchParams()
 
