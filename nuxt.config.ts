@@ -79,6 +79,7 @@ export default defineNuxtConfig({
       password: '',
     },
     authApiBase: '',
+    authApiTimeoutMs: 8000,
     public: {
       authApiBase: 'http://localhost',
     },
