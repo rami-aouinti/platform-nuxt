@@ -7,6 +7,7 @@ import {
   type PatchJobOfferRequest,
 } from '../../services/admin/job-offers/index'
 import { HttpRequestError } from '../../services/http/client'
+import { toUiErrorMessage } from '~/utils/errors/toUiErrorMessage'
 import {
   asLabel,
   formatEmploymentType,
@@ -18,11 +19,6 @@ import {
   type FilterSelection,
 } from '../domain/offers/helpers'
 
-function toErrorMessage(error: unknown) {
-  if (error instanceof HttpRequestError) return error.message
-  if (error instanceof Error) return error.message
-  return 'Erreur API.'
-}
 
 export const useJobOfferStore = defineStore('job-offer', () => {
   const rows = ref<JobOffer[]>([])
@@ -89,7 +85,7 @@ export const useJobOfferStore = defineStore('job-offer', () => {
       rows.value = toCollectionArray<JobOffer>(response)
       return rows.value
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       throw errorValue
     } finally {
       loading.value = false
@@ -105,7 +101,7 @@ export const useJobOfferStore = defineStore('job-offer', () => {
       rows.value = response.data
       return rows.value
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       throw errorValue
     } finally {
       loading.value = false
@@ -146,7 +142,7 @@ export const useJobOfferStore = defineStore('job-offer', () => {
         return []
       }
 
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       throw errorValue
     } finally {
       loading.value = false
@@ -166,7 +162,7 @@ export const useJobOfferStore = defineStore('job-offer', () => {
       rows.value = [created, ...rows.value.filter((row) => row.id !== created.id)]
       return created
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       throw errorValue
     } finally {
       saving.value = false
@@ -182,7 +178,7 @@ export const useJobOfferStore = defineStore('job-offer', () => {
       rows.value = rows.value.map((row) => (row.id === updated.id ? updated : row))
       return updated
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       throw errorValue
     } finally {
       saving.value = false
@@ -198,7 +194,7 @@ export const useJobOfferStore = defineStore('job-offer', () => {
       rows.value = rows.value.map((row) => (row.id === patched.id ? patched : row))
       return patched
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       throw errorValue
     } finally {
       saving.value = false
@@ -213,7 +209,7 @@ export const useJobOfferStore = defineStore('job-offer', () => {
       await jobOffersService.remove(id)
       rows.value = rows.value.filter((row) => row.id !== id)
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       throw errorValue
     } finally {
       saving.value = false

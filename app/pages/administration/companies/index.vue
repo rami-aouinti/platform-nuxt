@@ -3,7 +3,7 @@ import type { DataTableHeader } from 'vuetify'
 import { Notify } from '~/stores/notification'
 import { companiesService, type Company, type CreateCompanyRequest, type UpdateCompanyRequest } from '../../../../services/admin/companies/index'
 import { buildApiPlatformQuery } from '../../../../services/admin/shared/index'
-import { HttpRequestError } from '../../../../services/http/client'
+import { toUiErrorMessage } from '~/utils/errors/toUiErrorMessage'
 
 definePageMeta({
   icon: 'mdi-domain',
@@ -23,17 +23,6 @@ const columns: DataTableHeader[] = [
   { title: 'Address', key: 'mainAddress' },
 ]
 
-function toErrorMessage(errorValue: unknown) {
-  if (errorValue instanceof HttpRequestError) {
-    return errorValue.message
-  }
-
-  if (errorValue instanceof Error) {
-    return errorValue.message
-  }
-
-  return 'Erreur API.'
-}
 
 function createPayloadFromDraft(): CreateCompanyRequest {
   const stamp = Date.now().toString()
@@ -89,7 +78,7 @@ async function createRow() {
     Notify.success('Société créée avec succès.')
     await loadRows()
   } catch (errorValue) {
-    Notify.error(toErrorMessage(errorValue))
+    Notify.error(toUiErrorMessage(errorValue))
   } finally {
     mutationLoading.value = false
   }
@@ -113,7 +102,7 @@ async function updateRow(row: Record<string, unknown>) {
     Notify.success('Société mise à jour.')
     await loadRows()
   } catch (errorValue) {
-    Notify.error(toErrorMessage(errorValue))
+    Notify.error(toUiErrorMessage(errorValue))
   } finally {
     mutationLoading.value = false
   }
@@ -131,7 +120,7 @@ async function deleteRow(row: Record<string, unknown>) {
     Notify.success('Société supprimée.')
     await loadRows()
   } catch (errorValue) {
-    Notify.error(toErrorMessage(errorValue))
+    Notify.error(toUiErrorMessage(errorValue))
   } finally {
     mutationLoading.value = false
   }

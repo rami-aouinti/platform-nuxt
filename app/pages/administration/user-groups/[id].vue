@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { FORBIDDEN_MESSAGE } from '~/utils/permissions/messages'
 import { storeToRefs } from 'pinia'
 import { Notify } from '~/stores/notification'
 import { isRoot } from '~/utils/permissions/admin'
 import { useAuthStore } from '~/stores/auth'
+import { toUiErrorMessage } from '~/utils/errors/toUiErrorMessage'
 
 type UserGroupProfile = {
   id: string
@@ -74,21 +74,6 @@ function normalizeUsers(payload: unknown): GroupUser[] {
   })
 }
 
-function toErrorMessage(error: unknown): string {
-  if (isError(error) && error.statusCode === 403) {
-    return FORBIDDEN_MESSAGE
-  }
-
-  if (isError(error) && typeof error.statusMessage === 'string') {
-    return error.statusMessage
-  }
-
-  if (error instanceof Error) {
-    return error.message
-  }
-
-  return 'Une erreur API est survenue.'
-}
 
 async function loadGroupData() {
   if (!groupId.value) {
@@ -106,7 +91,7 @@ async function loadGroupData() {
     group.value = normalizeGroup(groupResponse)
     users.value = normalizeUsers(usersResponse)
   } catch (error) {
-    Notify.error(toErrorMessage(error))
+    Notify.error(toUiErrorMessage(error))
   } finally {
     loading.value = false
   }
@@ -131,7 +116,7 @@ async function saveGroup() {
     Notify.success('Groupe mis à jour.')
     await loadGroupData()
   } catch (error) {
-    Notify.error(toErrorMessage(error))
+    Notify.error(toUiErrorMessage(error))
   } finally {
     saving.value = false
   }
@@ -171,7 +156,7 @@ async function attachUser() {
     newUserId.value = ''
     await loadGroupData()
   } catch (error) {
-    Notify.error(toErrorMessage(error))
+    Notify.error(toUiErrorMessage(error))
   } finally {
     saving.value = false
   }
@@ -201,7 +186,7 @@ async function detachUser(user: GroupUser) {
     Notify.success(`Utilisateur ${user.username || user.id} retiré.`)
     await loadGroupData()
   } catch (error) {
-    Notify.error(toErrorMessage(error))
+    Notify.error(toUiErrorMessage(error))
   } finally {
     saving.value = false
   }

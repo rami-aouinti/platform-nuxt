@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { FORBIDDEN_MESSAGE } from '~/utils/permissions/messages'
 import { Notify } from '~/stores/notification'
 import { useInternalEventTracking } from '~/composables/useInternalEventTracking'
 import type { Id } from '~~/services/admin/shared/index'
+import { toUiErrorMessage } from '~/utils/errors/toUiErrorMessage'
 import type {
   BaseApiKey,
   BaseCreateApiKeyRequest,
@@ -111,17 +111,6 @@ function normalizeCount(payload: unknown, fallback: number) {
   return fallback
 }
 
-function toErrorMessage(error: unknown): string {
-  if (isError(error) && error.statusCode === 403) {
-    return FORBIDDEN_MESSAGE
-  }
-
-  if (error instanceof Error) {
-    return error.message
-  }
-
-  return 'Une erreur API est survenue.'
-}
 
 async function loadInventory() {
   loading.value = true
@@ -142,7 +131,7 @@ async function loadInventory() {
       selectedId.value = ids.value[0]!
     }
   } catch (error) {
-    apiError.value = toErrorMessage(error)
+    apiError.value = toUiErrorMessage(error)
     Notify.error(apiError.value)
   } finally {
     loading.value = false
@@ -176,7 +165,7 @@ async function createApiKey() {
     Notify.success(`Action réussie : clé API ${props.version} créée.`)
     await loadInventory()
   } catch (error) {
-    Notify.error(`Action échouée : ${toErrorMessage(error)}`)
+    Notify.error(`Action échouée : ${toUiErrorMessage(error)}`)
   } finally {
     busy.value = false
   }
@@ -194,7 +183,7 @@ async function fetchById() {
     selectedItem.value = response as BaseApiKey
     Notify.success(`Détail récupéré pour ${selectedId.value}.`)
   } catch (error) {
-    Notify.error(`Action échouée : ${toErrorMessage(error)}`)
+    Notify.error(`Action échouée : ${toUiErrorMessage(error)}`)
   } finally {
     busy.value = false
   }
@@ -225,7 +214,7 @@ async function updateById() {
     })
     await loadInventory()
   } catch (error) {
-    Notify.error(`Action échouée : ${toErrorMessage(error)}`)
+    Notify.error(`Action échouée : ${toUiErrorMessage(error)}`)
   } finally {
     busy.value = false
   }
@@ -274,7 +263,7 @@ async function patchById() {
     })
     await loadInventory()
   } catch (error) {
-    Notify.error(`Action échouée : ${toErrorMessage(error)}`)
+    Notify.error(`Action échouée : ${toUiErrorMessage(error)}`)
   } finally {
     busy.value = false
   }
@@ -316,7 +305,7 @@ async function removeById() {
     selectedItem.value = null
     await loadInventory()
   } catch (error) {
-    Notify.error(`Action échouée : ${toErrorMessage(error)}`)
+    Notify.error(`Action échouée : ${toUiErrorMessage(error)}`)
   } finally {
     busy.value = false
   }
