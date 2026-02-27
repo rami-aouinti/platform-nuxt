@@ -7,24 +7,19 @@ import {
 
 export interface BaseApiKey {
   id: Id
-  label: string
-  scopes?: string[]
-  enabled?: boolean
-  expiresAt?: string | null
+  token: string
+  description: string
 }
 
 export interface BaseCreateApiKeyRequest {
-  label: string
-  scopes?: string[]
-  expiresAt?: string | null
+  token: string
+  description: string
   [key: string]: unknown
 }
 
 export interface BaseUpdateApiKeyRequest {
-  label?: string
-  scopes?: string[]
-  enabled?: boolean
-  expiresAt?: string | null
+  token?: string
+  description?: string
   [key: string]: unknown
 }
 
