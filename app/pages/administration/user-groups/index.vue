@@ -118,7 +118,7 @@ async function createRow() {
       method: 'POST' as any,
       body: {
         name: `group_${suffix}`,
-        description: 'Groupe créé depuis l'administration',
+        description: "Groupe créé depuis l'administration",
       },
     })
 
