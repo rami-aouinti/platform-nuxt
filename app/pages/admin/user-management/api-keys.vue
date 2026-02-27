@@ -5,6 +5,9 @@ import { useAuthStore } from '~/stores/auth'
 import { Notify } from '~/stores/notification'
 import { useApiKeysStore } from '~/stores/apiKeys'
 import { canManageApiKeys } from '~/utils/permissions/admin'
+import type { AdminResourceSchema } from '~/types/admin-schema'
+import { getAdminResourceDescriptor } from '~/services/admin/resource-descriptors'
+import { buildSchemaColumns, buildSchemaFieldConfigs, normalizeAdminSchema } from '~/utils/admin/schema'
 
 definePageMeta({
   icon: 'mdi-key-variant',
@@ -18,6 +21,7 @@ definePageMeta({
 })
 
 const authStore = useAuthStore()
+const apiKeysDescriptor = getAdminResourceDescriptor('apiKeys')
 const apiKeysStore = useApiKeysStore()
 
 const { roles } = storeToRefs(authStore)
@@ -46,10 +50,34 @@ const createForm = reactive({
   version: preferredVersion.value,
 })
 
-const columns: DataTableHeader[] = [
+const fallbackColumns: DataTableHeader[] = [
   { title: 'Token', key: 'token' },
   { title: 'Description', key: 'description' },
 ]
+
+const fallbackFields = [
+  { key: 'token', label: 'Token' },
+  { key: 'description', label: 'Description' },
+]
+
+const apiKeySchema = ref<AdminResourceSchema | null>(null)
+const columns = computed<DataTableHeader[]>(() => buildSchemaColumns(apiKeySchema.value, fallbackColumns))
+const detailFields = computed(() => buildSchemaFieldConfigs(apiKeySchema.value?.editable, fallbackFields))
+
+
+async function loadSchema() {
+  if (!apiKeysDescriptor.schemaEndpoint) {
+    apiKeySchema.value = null
+    return
+  }
+
+  try {
+    const payload = await $fetch(String(apiKeysDescriptor.schemaEndpoint))
+    apiKeySchema.value = normalizeAdminSchema(payload)
+  } catch {
+    apiKeySchema.value = null
+  }
+}
 
 function createRow() {
   if (!isRoot.value) {
@@ -100,6 +128,7 @@ watch(() => filters.value.version, (version) => {
 
 onMounted(async () => {
   await authStore.ensureRolesLoaded()
+  await loadSchema()
   await apiKeysStore.refreshInventory()
 })
 </script>
@@ -127,14 +156,8 @@ onMounted(async () => {
           ],
         },
       ]"
-      :detail-fields="[
-        { key: 'token', label: 'Token' },
-        { key: 'description', label: 'Description' },
-      ]"
-      :editable-fields="[
-        { key: 'token', label: 'Token' },
-        { key: 'description', label: 'Description' },
-      ]"
+      :detail-fields="detailFields"
+      :editable-fields="detailFields"
       :can-show="isRoot"
       :can-create="isRoot"
       :can-edit="isRoot"

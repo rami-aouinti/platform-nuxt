@@ -7,6 +7,9 @@ import { canManageUsers, isRoot } from '~/utils/permissions/admin'
 import { useInternalEventTracking } from '~/composables/useInternalEventTracking'
 import { extractCollectionFromPayload } from '~/utils/admin/extractCollectionFromPayload'
 import { useRelationField } from '~/composables/admin/useRelationField'
+import type { AdminResourceSchema } from '~/types/admin-schema'
+import { getAdminResourceDescriptor } from '~/services/admin/resource-descriptors'
+import { buildSchemaColumns, buildSchemaFieldConfigs, normalizeAdminSchema } from '~/utils/admin/schema'
 
 type GroupRecord = { id: string; name: string }
 type UserRecord = {
@@ -31,6 +34,7 @@ definePageMeta({
 const authStore = useAuthStore()
 const { roles } = storeToRefs(authStore)
 const { track } = useInternalEventTracking()
+const groupsDescriptor = getAdminResourceDescriptor('groups')
 
 const canShow = computed(() => canManageUsers(roles.value))
 const canEdit = computed(() => isRoot(roles.value))
@@ -84,9 +88,15 @@ const groupUsersRelation = useRelationField<UserRecord>({
 const detailUsers = groupUsersRelation.relationItems
 const userOptionsLoading = computed(() => groupUsersRelation.loadingOptions.value)
 
-const columns: DataTableHeader[] = [
+const fallbackColumns: DataTableHeader[] = [
   { title: 'Nom', key: 'name' },
 ]
+
+const fallbackFields = [{ key: 'name', label: 'Nom' }]
+const groupSchema = ref<AdminResourceSchema | null>(null)
+
+const columns = computed<DataTableHeader[]>(() => buildSchemaColumns(groupSchema.value, fallbackColumns))
+const detailFields = computed(() => buildSchemaFieldConfigs(groupSchema.value?.editable, fallbackFields))
 
 function normalize(payload: unknown): GroupRecord[] {
   return extractCollectionFromPayload(payload).map((entry, index) => {
@@ -96,6 +106,21 @@ function normalize(payload: unknown): GroupRecord[] {
       name: String(row.name ?? ''),
     }
   })
+}
+
+
+async function loadSchema() {
+  if (!groupsDescriptor.schemaEndpoint) {
+    groupSchema.value = null
+    return
+  }
+
+  try {
+    const payload = await $fetch(String(groupsDescriptor.schemaEndpoint))
+    groupSchema.value = normalizeAdminSchema(payload)
+  } catch {
+    groupSchema.value = null
+  }
 }
 
 const availableUserOptions = computed(() => {
@@ -319,6 +344,7 @@ const {
 
 onMounted(async () => {
   await authStore.ensureRolesLoaded()
+  await loadSchema()
   await Promise.all([loadRows(), loadAvailableUsers()])
 })
 </script>
@@ -336,8 +362,8 @@ onMounted(async () => {
       :sort-by="sortBy"
       :search="search"
       :filters="filters"
-      :detail-fields="[{ key: 'name', label: 'Nom' }]"
-      :editable-fields="[{ key: 'name', label: 'Nom' }]"
+      :detail-fields="detailFields"
+      :editable-fields="detailFields"
       :can-show="canShow"
       :can-create="canEdit"
       :can-edit="canEdit"
