@@ -1,5 +1,5 @@
 import { ref, type Ref } from 'vue'
-import type { ApiListQuery } from '~/composables/api/httpUiErrors'
+import { resolvePaginatedTotal, type ApiListQuery } from '~/composables/api/httpUiErrors'
 import {
   createEntityPagination,
   createEntityQuery,
@@ -126,7 +126,7 @@ export function createCrudEntityStore<TEntity extends { id: string }, TCreatePay
     try {
       const response = await options.fetchRows(query.value)
       setRows(response.data)
-      pagination.value.total = response.total ?? response.data.length
+      pagination.value.total = resolvePaginatedTotal(response.total, response.data.length)
       notifySuccess('fetchRows')
       return rows.value
     } catch (errorValue) {

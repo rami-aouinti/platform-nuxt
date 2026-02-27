@@ -1,5 +1,5 @@
 import { useSprintsApi, type PatchSprintPayload, type UpdateSprintPayload } from '~/composables/api/useSprintsApi'
-import type { Id } from '~/composables/api/httpUiErrors'
+import { resolvePaginatedTotal, type Id } from '~/composables/api/httpUiErrors'
 import type { CrmSprint, CreateSprintPayload } from '~/types/crm'
 import { Notify } from '~/stores/notification'
 import {
@@ -11,12 +11,6 @@ import {
   toUiErrorMessage,
   type EntitySort,
 } from '~/stores/_entity'
-
-function normalizeRows(payload: CrmSprint[] | { data?: CrmSprint[]; items?: CrmSprint[]; meta?: { total?: number } }) {
-  if (Array.isArray(payload)) return { data: payload, total: payload.length }
-  const data = payload.items ?? payload.data ?? []
-  return { data, total: payload.meta?.total ?? data.length }
-}
 
 export const useSprintsStore = defineStore('sprints', () => {
   const api = useSprintsApi()
@@ -45,9 +39,8 @@ export const useSprintsStore = defineStore('sprints', () => {
 
     try {
       const response = await api.list(query.value)
-      const normalized = normalizeRows(response)
-      rows.value = normalized.data
-      pagination.value.total = normalized.total
+      rows.value = response.data
+      pagination.value.total = resolvePaginatedTotal(response.meta?.total, response.data.length)
       return rows.value
     } catch (errorValue) {
       error.value = toUiErrorMessage(errorValue)

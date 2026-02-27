@@ -1,5 +1,5 @@
 import { useTaskRequestsApi } from '~/composables/api/useTaskRequestsApi'
-import type { Id } from '~/composables/api/httpUiErrors'
+import { resolvePaginatedTotal, type Id } from '~/composables/api/httpUiErrors'
 import { Notify } from '~/stores/notification'
 import {
   createEntityPagination,
@@ -46,7 +46,7 @@ export const useTaskRequestsStore = defineStore('task-requests', () => {
     try {
       const response = await api.list(query.value)
       rows.value = response.data
-      pagination.value.total = response.meta?.total ?? response.data.length
+      pagination.value.total = resolvePaginatedTotal(response.meta?.total, response.data.length)
       return rows.value
     } catch (errorValue) {
       error.value = toUiErrorMessage(errorValue)
