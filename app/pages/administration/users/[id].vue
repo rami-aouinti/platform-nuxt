@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { FORBIDDEN_MESSAGE } from '~/utils/permissions/messages'
 import { storeToRefs } from 'pinia'
 import { Notify } from '~/stores/notification'
 import { isRoot } from '~/utils/permissions/admin'
 import { useAuthStore } from '~/stores/auth'
+import { toUiErrorMessage } from '~/utils/errors/toUiErrorMessage'
 
 definePageMeta({
   icon: 'mdi-account-details-outline',
@@ -72,21 +72,6 @@ function normalizeProfile(payload: unknown): UserProfile {
   }
 }
 
-function toErrorMessage(error: unknown): string {
-  if (isError(error) && error.statusCode === 403) {
-    return FORBIDDEN_MESSAGE
-  }
-
-  if (isError(error) && typeof error.statusMessage === 'string') {
-    return error.statusMessage
-  }
-
-  if (error instanceof Error) {
-    return error.message
-  }
-
-  return 'Une erreur API est survenue.'
-}
 
 async function loadUserData() {
   if (!userId.value) {
@@ -106,7 +91,7 @@ async function loadUserData() {
     userRoles.value = normalizeStringList(rolesResponse)
     userGroups.value = normalizeStringList(groupsResponse)
   } catch (error) {
-    Notify.error(toErrorMessage(error))
+    Notify.error(toUiErrorMessage(error))
   } finally {
     loading.value = false
   }
@@ -135,7 +120,7 @@ async function attachGroup() {
     newGroup.value = ''
     await loadUserData()
   } catch (error) {
-    Notify.error(toErrorMessage(error))
+    Notify.error(toUiErrorMessage(error))
   } finally {
     busyAction.value = false
   }
@@ -157,7 +142,7 @@ async function detachGroup(groupName: string) {
     Notify.success(`Groupe ${groupName} retiré.`)
     await loadUserData()
   } catch (error) {
-    Notify.error(toErrorMessage(error))
+    Notify.error(toUiErrorMessage(error))
   } finally {
     busyAction.value = false
   }

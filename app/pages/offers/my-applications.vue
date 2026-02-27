@@ -4,7 +4,7 @@ import { storeToRefs } from 'pinia'
 import { Notify } from '~/stores/notification'
 import { useJobApplicationStore } from '~/stores/job-application'
 import { canWithdrawApplication } from '~/domain/offers/helpers'
-import { HttpRequestError } from '../../../services/http/client'
+import { toUiErrorMessage } from '~/utils/errors/toUiErrorMessage'
 
 definePageMeta({
   icon: 'mdi-account-check-outline',
@@ -48,11 +48,6 @@ const filterSections = computed(() => [
   },
 ])
 
-function toErrorMessage(errorValue: unknown) {
-  if (errorValue instanceof HttpRequestError) return errorValue.message
-  if (errorValue instanceof Error) return errorValue.message
-  return 'Erreur API.'
-}
 
 async function loadRows() {
   await applicationStore.fetchWithFilters()
@@ -72,7 +67,7 @@ async function withdraw(offerId: string) {
     Notify.success('Candidature retirée.')
     await loadRows()
   } catch (errorValue) {
-    Notify.error(toErrorMessage(errorValue))
+    Notify.error(toUiErrorMessage(errorValue))
   } finally {
     actionLoading.value = false
   }

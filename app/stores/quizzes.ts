@@ -2,14 +2,8 @@ import { useQuizzesApi } from '~/composables/api/useQuizzesApi'
 import type { Id } from '~/composables/api/httpUiErrors'
 import { Notify } from '~/stores/notification'
 import type { Quiz, QuizPayload } from '~/types/quiz'
+import { toUiErrorMessage } from '~/utils/errors/toUiErrorMessage'
 
-function toErrorMessage(errorValue: unknown) {
-  if (errorValue && typeof errorValue === 'object' && 'message' in errorValue && typeof errorValue.message === 'string') {
-    return errorValue.message
-  }
-  if (errorValue instanceof Error) return errorValue.message
-  return 'Une erreur est survenue.'
-}
 
 function normalizeList(payload: unknown): Quiz[] {
   if (Array.isArray(payload)) return payload as Quiz[]
@@ -44,7 +38,7 @@ export const useQuizzesStore = defineStore('quizzes', () => {
       rows.value = normalizeList(response)
       return rows.value
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       Notify.error(error.value)
       throw errorValue
     } finally {
@@ -61,7 +55,7 @@ export const useQuizzesStore = defineStore('quizzes', () => {
       mergeRow(response)
       return response
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       Notify.error(error.value)
       throw errorValue
     } finally {
@@ -79,7 +73,7 @@ export const useQuizzesStore = defineStore('quizzes', () => {
       await fetchRows()
       return created
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       Notify.error(error.value)
       throw errorValue
     } finally {
@@ -97,7 +91,7 @@ export const useQuizzesStore = defineStore('quizzes', () => {
       await fetchRows()
       return updated
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       Notify.error(error.value)
       throw errorValue
     } finally {
@@ -115,7 +109,7 @@ export const useQuizzesStore = defineStore('quizzes', () => {
       Notify.success('Quiz supprimé.')
       await fetchRows()
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       Notify.error(error.value)
       throw errorValue
     } finally {

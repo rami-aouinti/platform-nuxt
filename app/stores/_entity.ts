@@ -1,5 +1,6 @@
 import { computed, ref, type ComputedRef, type Ref } from 'vue'
 import type { ApiListQuery, Id } from '~/composables/api/httpUiErrors'
+import { toUiErrorMessage } from '~/utils/errors/toUiErrorMessage'
 
 export type EntitySort = { field: string; direction: 'asc' | 'desc' }
 export type EntityPagination = { page: number; perPage: number; total: number }
@@ -63,10 +64,4 @@ export function restoreEntitySnapshot<T>(rows: Ref<T[]>, item: Ref<T | null>, sn
   item.value = snapshot.item
 }
 
-export function toUiErrorMessage(errorValue: unknown) {
-  if (errorValue && typeof errorValue === 'object' && 'message' in errorValue && typeof errorValue.message === 'string') {
-    return errorValue.message
-  }
-  if (errorValue instanceof Error) return errorValue.message
-  return 'Une erreur est survenue.'
-}
+export { toUiErrorMessage }

@@ -2,14 +2,8 @@ import { useCalendarApi } from '~/composables/api/useCalendarApi'
 import type { Id } from '~/composables/api/httpUiErrors'
 import { Notify } from '~/stores/notification'
 import type { CalendarEvent, CalendarEventPayload } from '~/types/calendar'
+import { toUiErrorMessage } from '~/utils/errors/toUiErrorMessage'
 
-function toErrorMessage(errorValue: unknown) {
-  if (errorValue && typeof errorValue === 'object' && 'message' in errorValue && typeof errorValue.message === 'string') {
-    return errorValue.message
-  }
-  if (errorValue instanceof Error) return errorValue.message
-  return 'Une erreur est survenue.'
-}
 
 function normalizeList(payload: unknown): CalendarEvent[] {
   if (Array.isArray(payload)) return payload as CalendarEvent[]
@@ -44,7 +38,7 @@ export const useCalendarStore = defineStore('calendar', () => {
       rows.value = normalizeList(response)
       return rows.value
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       Notify.error(error.value)
       throw errorValue
     } finally {
@@ -61,7 +55,7 @@ export const useCalendarStore = defineStore('calendar', () => {
       mergeRow(response)
       return response
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       Notify.error(error.value)
       throw errorValue
     } finally {
@@ -79,7 +73,7 @@ export const useCalendarStore = defineStore('calendar', () => {
       await fetchRows()
       return created
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       Notify.error(error.value)
       throw errorValue
     } finally {
@@ -97,7 +91,7 @@ export const useCalendarStore = defineStore('calendar', () => {
       await fetchRows()
       return updated
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       Notify.error(error.value)
       throw errorValue
     } finally {
@@ -116,7 +110,7 @@ export const useCalendarStore = defineStore('calendar', () => {
       await fetchRows()
       return updated
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       Notify.error(error.value)
       throw errorValue
     } finally {
@@ -134,7 +128,7 @@ export const useCalendarStore = defineStore('calendar', () => {
       Notify.success('Événement supprimé.')
       await fetchRows()
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       Notify.error(error.value)
       throw errorValue
     } finally {

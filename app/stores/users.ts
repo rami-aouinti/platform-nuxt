@@ -2,14 +2,8 @@ import { useUsersApi, type CreateUserPayload, type PatchUserPayload, type Update
 import type { ApiListQuery, Id } from '~/composables/api/httpUiErrors'
 import type { CrmUser } from '~/composables/api/useCrmApi'
 import { Notify } from '~/stores/notification'
+import { toUiErrorMessage } from '~/utils/errors/toUiErrorMessage'
 
-function toErrorMessage(errorValue: unknown) {
-  if (errorValue && typeof errorValue === 'object' && 'message' in errorValue && typeof errorValue.message === 'string') {
-    return errorValue.message
-  }
-  if (errorValue instanceof Error) return errorValue.message
-  return 'Une erreur est survenue.'
-}
 
 function normalizeRows(payload: CrmUser[] | { data?: CrmUser[]; items?: CrmUser[]; meta?: { total?: number } }) {
   if (Array.isArray(payload)) return { data: payload, total: payload.length }
@@ -61,7 +55,7 @@ export const useUsersStore = defineStore('users', () => {
       pagination.value.total = normalized.total
       return rows.value
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       if (!options.silent) Notify.error(error.value)
       throw errorValue
     } finally {
@@ -79,7 +73,7 @@ export const useUsersStore = defineStore('users', () => {
       mergeRow(response)
       return response
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       Notify.error(error.value)
       throw errorValue
     } finally {
@@ -98,7 +92,7 @@ export const useUsersStore = defineStore('users', () => {
       await refreshRowsSafe()
       return created
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       Notify.error(error.value)
       throw errorValue
     } finally {
@@ -124,7 +118,7 @@ export const useUsersStore = defineStore('users', () => {
     } catch (errorValue) {
       rows.value = previousRows
       item.value = previousItem
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       Notify.error(error.value)
       throw errorValue
     } finally {
@@ -150,7 +144,7 @@ export const useUsersStore = defineStore('users', () => {
     } catch (errorValue) {
       rows.value = previousRows
       item.value = previousItem
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       Notify.error(error.value)
       throw errorValue
     } finally {
@@ -174,7 +168,7 @@ export const useUsersStore = defineStore('users', () => {
     } catch (errorValue) {
       rows.value = previousRows
       item.value = previousItem
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       Notify.error(error.value)
       throw errorValue
     } finally {

@@ -5,8 +5,8 @@ import { Notify } from '~/stores/notification'
 import { useJobApplicationStore } from '~/stores/job-application'
 import { useJobOfferStore } from '~/stores/job-offer'
 import { applicationStatusMeta } from '~/domain/offers/helpers'
-import { HttpRequestError } from '../../../services/http/client'
 import type { JobOffer } from '../../../services/admin/job-offers/index/index'
+import { toUiErrorMessage } from '~/utils/errors/toUiErrorMessage'
 
 definePageMeta({
   icon: 'mdi-briefcase-edit-outline',
@@ -71,11 +71,6 @@ const selectedRow = computed(() =>
   rows.value.find((item) => String(item.id) === selectedOffer.value?.id),
 )
 
-function toErrorMessage(errorValue: unknown) {
-  if (errorValue instanceof HttpRequestError) return errorValue.message
-  if (errorValue instanceof Error) return errorValue.message
-  return 'Erreur API.'
-}
 
 function applicationCandidateName(
   application: NonNullable<JobOffer['jobApplications']>[number],
@@ -125,7 +120,7 @@ async function saveOffer() {
     editDialog.value = false
     await loadRows()
   } catch (errorValue) {
-    Notify.error(toErrorMessage(errorValue))
+    Notify.error(toUiErrorMessage(errorValue))
   } finally {
     actionLoading.value = false
   }
@@ -153,7 +148,7 @@ async function deleteOffer(offerId: string) {
     Notify.success('Offre supprimée.')
     await loadRows()
   } catch (errorValue) {
-    Notify.error(toErrorMessage(errorValue))
+    Notify.error(toUiErrorMessage(errorValue))
   } finally {
     actionLoading.value = false
   }
@@ -176,7 +171,7 @@ async function decideApplication(
     Notify.success(successMessage)
     await loadRows()
   } catch (errorValue) {
-    Notify.error(toErrorMessage(errorValue))
+    Notify.error(toUiErrorMessage(errorValue))
   } finally {
     actionLoading.value = false
   }

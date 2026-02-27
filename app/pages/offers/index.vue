@@ -4,7 +4,7 @@ import { storeToRefs } from 'pinia'
 import { Notify } from '~/stores/notification'
 import { useJobApplicationStore } from '~/stores/job-application'
 import { useJobOfferStore } from '~/stores/job-offer'
-import { HttpRequestError } from '../../../services/http/client'
+import { toUiErrorMessage } from '~/utils/errors/toUiErrorMessage'
 
 definePageMeta({
   icon: 'mdi-briefcase-search-outline',
@@ -63,11 +63,6 @@ const filterSections = [
   },
 ]
 
-function toErrorMessage(errorValue: unknown) {
-  if (errorValue instanceof HttpRequestError) return errorValue.message
-  if (errorValue instanceof Error) return errorValue.message
-  return 'Erreur API.'
-}
 
 async function loadRows() {
   await offerStore.fetchWithFilters('all')
@@ -79,7 +74,7 @@ async function apply(offerId: string) {
     await applicationStore.apply(offerId)
     Notify.success('Candidature envoyée.')
   } catch (errorValue) {
-    Notify.error(toErrorMessage(errorValue))
+    Notify.error(toUiErrorMessage(errorValue))
   } finally {
     actionLoading.value = false
   }

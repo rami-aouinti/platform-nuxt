@@ -9,6 +9,7 @@ import AdminEmptyState from '~/components/admin/ui/AdminEmptyState.vue'
 import { buildApiPlatformQuery } from '../../../../services/admin/shared/index'
 import { HttpRequestError } from '../../../../services/http/client'
 import { jobOffersService, type JobOffer } from '../../../../services/admin/job-offers/index'
+import { toUiErrorMessage, toUiFieldErrors } from '~/utils/errors/toUiErrorMessage'
 
 definePageMeta({
   icon: 'mdi-briefcase-search-outline',
@@ -43,6 +44,7 @@ const filters = ref({ status: '' })
 const dialogDelete = useTemplateRef('dialogDelete')
 const editDialog = ref(false)
 const editing = ref<OfferForm>({ title: '', slug: '', description: '', company: '', status: 'draft' })
+const formErrors = ref<Record<string, string[]>>({})
 
 const columns: DataTableHeader[] = [
   { title: 'ID', key: 'id' },
@@ -60,11 +62,6 @@ const pageState = computed(() => {
   return 'ready'
 })
 
-function toErrorMessage(errorValue: unknown) {
-  if (errorValue instanceof HttpRequestError) return errorValue.message
-  if (errorValue instanceof Error) return errorValue.message
-  return 'Erreur API.'
-}
 
 function statusMeta(status: string) {
   if (status === 'open') return { label: 'Ouverte', tone: 'success' as const }
@@ -74,6 +71,7 @@ function statusMeta(status: string) {
 
 function openCreate() {
   editing.value = { title: '', slug: '', description: '', company: '', status: 'draft' }
+  formErrors.value = {}
   editDialog.value = true
 }
 
@@ -86,6 +84,7 @@ function openEdit(row: Record<string, unknown>) {
     company: String(row.company ?? ''),
     status: String(row.status ?? 'draft') as JobOffer['status'],
   }
+  formErrors.value = {}
   editDialog.value = true
 }
 
@@ -114,7 +113,7 @@ async function loadRows() {
       return
     }
 
-    error.value = toErrorMessage(errorValue)
+    error.value = toUiErrorMessage(errorValue)
   } finally {
     loading.value = false
   }
@@ -127,6 +126,7 @@ async function saveOffer() {
   }
 
   actionLoading.value = true
+  formErrors.value = {}
 
   try {
     if (editing.value.id) {
@@ -152,7 +152,8 @@ async function saveOffer() {
     editDialog.value = false
     await loadRows()
   } catch (errorValue) {
-    Notify.error(toErrorMessage(errorValue))
+    formErrors.value = toUiFieldErrors(errorValue)
+    Notify.error(toUiErrorMessage(errorValue))
   } finally {
     actionLoading.value = false
   }
@@ -174,7 +175,7 @@ async function deleteOffer(row: Record<string, unknown>) {
     Notify.success('Offre supprimée.')
     await loadRows()
   } catch (errorValue) {
-    Notify.error(toErrorMessage(errorValue))
+    Notify.error(toUiErrorMessage(errorValue))
   } finally {
     actionLoading.value = false
   }
@@ -266,9 +267,9 @@ onMounted(loadRows)
       <v-card>
         <v-card-title>{{ editing.id ? 'Modifier l\'offre' : 'Créer une offre' }}</v-card-title>
         <v-card-text class="admin-form pt-4">
-          <v-text-field v-model="editing.title" label="Titre" class="mb-2" />
-          <v-text-field v-model="editing.slug" label="Slug" class="mb-2" />
-          <v-text-field v-model="editing.company" label="ID entreprise" class="mb-2" />
+          <v-text-field v-model="editing.title" label="Titre" class="mb-2" :error-messages="formErrors.title" />
+          <v-text-field v-model="editing.slug" label="Slug" class="mb-2" :error-messages="formErrors.slug" />
+          <v-text-field v-model="editing.company" label="ID entreprise" class="mb-2" :error-messages="formErrors.company" />
           <v-select
             v-model="editing.status"
             :items="[
@@ -279,7 +280,7 @@ onMounted(loadRows)
             label="Statut"
             class="mb-2"
           />
-          <v-textarea v-model="editing.description" label="Description" rows="4" />
+          <v-textarea v-model="editing.description" label="Description" rows="4" :error-messages="formErrors.description" />
         </v-card-text>
         <v-card-actions>
           <v-spacer />

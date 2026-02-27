@@ -9,6 +9,7 @@ import AdminEmptyState from '~/components/admin/ui/AdminEmptyState.vue'
 import { buildApiPlatformQuery } from '../../../services/admin/shared/index'
 import { HttpRequestError } from '../../../services/http/client'
 import { jobApplicationsService, type JobApplication } from '../../../services/admin/job-applications/index'
+import { toUiErrorMessage } from '~/utils/errors/toUiErrorMessage'
 
 definePageMeta({
   icon: 'mdi-inbox-arrow-down-outline',
@@ -46,11 +47,6 @@ const pageState = computed(() => {
   return 'ready'
 })
 
-function toErrorMessage(errorValue: unknown) {
-  if (errorValue instanceof HttpRequestError) return errorValue.message
-  if (errorValue instanceof Error) return errorValue.message
-  return 'Erreur API.'
-}
 
 function statusMeta(status: string) {
   if (status === 'accepted') return { label: 'Acceptée', tone: 'success' as const }
@@ -88,7 +84,7 @@ async function loadRows() {
       return
     }
 
-    error.value = toErrorMessage(errorValue)
+    error.value = toUiErrorMessage(errorValue)
   } finally {
     loading.value = false
   }
@@ -102,7 +98,7 @@ async function runAction(label: string, action: () => Promise<unknown>) {
     Notify.success(label)
     await loadRows()
   } catch (errorValue) {
-    Notify.error(toErrorMessage(errorValue))
+    Notify.error(toUiErrorMessage(errorValue))
   } finally {
     actionLoading.value = false
   }

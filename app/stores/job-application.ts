@@ -7,6 +7,7 @@ import {
   type ApplyToJobOfferRequest,
 } from '../../services/admin/job-applications/index'
 import { HttpRequestError } from '../../services/http/client'
+import { toUiErrorMessage } from '~/utils/errors/toUiErrorMessage'
 import {
   applicationStatusMeta,
   canWithdrawApplication,
@@ -15,11 +16,6 @@ import {
   type FilterSelection,
 } from '../domain/offers/helpers'
 
-function toErrorMessage(error: unknown) {
-  if (error instanceof HttpRequestError) return error.message
-  if (error instanceof Error) return error.message
-  return 'Erreur API.'
-}
 
 export const useJobApplicationStore = defineStore('job-application', () => {
   const rows = ref<JobApplication[]>([])
@@ -86,7 +82,7 @@ export const useJobApplicationStore = defineStore('job-application', () => {
       rows.value = toCollectionArray<JobApplication>(response)
       return rows.value
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       throw errorValue
     } finally {
       loading.value = false
@@ -120,7 +116,7 @@ export const useJobApplicationStore = defineStore('job-application', () => {
         return []
       }
 
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       throw errorValue
     } finally {
       loading.value = false
@@ -140,7 +136,7 @@ export const useJobApplicationStore = defineStore('job-application', () => {
       rows.value = [created, ...rows.value.filter((row) => row.id !== created.id)]
       return created
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       throw errorValue
     } finally {
       saving.value = false
@@ -156,7 +152,7 @@ export const useJobApplicationStore = defineStore('job-application', () => {
       rows.value = [created, ...rows.value.filter((row) => row.id !== created.id)]
       return created
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       throw errorValue
     } finally {
       saving.value = false
@@ -172,7 +168,7 @@ export const useJobApplicationStore = defineStore('job-application', () => {
       rows.value = rows.value.map((row) => (row.id === updated.id ? updated : row))
       return updated
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       throw errorValue
     } finally {
       saving.value = false
@@ -188,7 +184,7 @@ export const useJobApplicationStore = defineStore('job-application', () => {
       rows.value = rows.value.map((row) => (row.id === patched.id ? patched : row))
       return patched
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       throw errorValue
     } finally {
       saving.value = false
@@ -203,7 +199,7 @@ export const useJobApplicationStore = defineStore('job-application', () => {
       await jobApplicationsService.remove(id)
       rows.value = rows.value.filter((row) => row.id !== id)
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       throw errorValue
     } finally {
       saving.value = false
@@ -219,7 +215,7 @@ export const useJobApplicationStore = defineStore('job-application', () => {
       rows.value = rows.value.map((row) => (row.id === updated.id ? updated : row))
       return updated
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       throw errorValue
     } finally {
       saving.value = false
@@ -235,7 +231,7 @@ export const useJobApplicationStore = defineStore('job-application', () => {
       rows.value = rows.value.map((row) => (row.id === updated.id ? updated : row))
       return updated
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       throw errorValue
     } finally {
       saving.value = false
@@ -251,7 +247,7 @@ export const useJobApplicationStore = defineStore('job-application', () => {
       rows.value = rows.value.map((row) => (row.id === updated.id ? updated : row))
       return updated
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       throw errorValue
     } finally {
       saving.value = false
