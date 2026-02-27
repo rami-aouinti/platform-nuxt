@@ -6,7 +6,7 @@ export interface Company {
   id: Id
   legalName: string
   slug: string
-  status: 'active' | 'inactive'
+  status: 'active' | 'suspended' | 'inactive'
   mainAddress: string
   owner: string
 }

@@ -84,6 +84,68 @@ async function createRow() {
   }
 }
 
+function normalizeCompanyStatus(status: unknown): UpdateCompanyRequest['status'] {
+  const normalized = String(status ?? '').toLowerCase()
+
+  if (normalized === 'suspended') {
+    return 'suspended'
+  }
+
+  if (normalized === 'inactive') {
+    return 'inactive'
+  }
+
+  return 'active'
+}
+
+async function patchCompanyStatus(companyId: string, status: UpdateCompanyRequest['status']) {
+  if (!companyId || mutationLoading.value) {
+    return
+  }
+
+  mutationLoading.value = true
+
+  try {
+    await companiesService.patch(companyId, { status })
+    Notify.success('Statut de la société mis à jour.')
+    await loadRows()
+  } catch (errorValue) {
+    Notify.error(toUiErrorMessage(errorValue))
+  } finally {
+    mutationLoading.value = false
+  }
+}
+
+async function toggleCompanyStatus(row: Record<string, unknown>, value: boolean | null) {
+  const id = String(row.id ?? '')
+  const currentStatus = normalizeCompanyStatus(row.status)
+  const requestedStatus = value ? 'active' : 'suspended'
+
+  if (!id || currentStatus === requestedStatus) {
+    return
+  }
+
+  await patchCompanyStatus(id, requestedStatus)
+}
+
+function isCompanyActive(status: unknown) {
+  return normalizeCompanyStatus(status) === 'active'
+}
+
+function getStatusLabel(status: unknown) {
+  const normalized = normalizeCompanyStatus(status)
+
+  if (normalized === 'suspended') {
+    return 'Suspended'
+  }
+
+  if (normalized === 'inactive') {
+    return 'Inactive'
+  }
+
+  return 'Active'
+}
+
 async function updateRow(row: Record<string, unknown>) {
   if (mutationLoading.value) {
     return
@@ -95,7 +157,7 @@ async function updateRow(row: Record<string, unknown>) {
     await companiesService.update(String(row.id ?? ''), {
       legalName: String(row.legalName ?? ''),
       slug: String(row.slug ?? ''),
-      status: (String(row.status ?? 'active') as UpdateCompanyRequest['status']) || 'active',
+      status: normalizeCompanyStatus(row.status),
       mainAddress: String(row.mainAddress ?? ''),
     })
 
@@ -172,5 +234,18 @@ onMounted(loadRows)
     @save-edit="updateRow"
     @row-delete="deleteRow"
     @refresh="loadRows"
-  />
+  >
+    <template #cell:status="{ item, value }">
+      <div class="d-flex align-center ga-3" @click.stop>
+        <v-checkbox-btn
+          :model-value="isCompanyActive(value)"
+          :disabled="mutationLoading"
+          color="primary"
+          :aria-label="`Activer la société ${String(item.legalName ?? item.id ?? '')}`"
+          @update:model-value="toggleCompanyStatus(item, $event)"
+        />
+        <span>{{ getStatusLabel(value) }}</span>
+      </div>
+    </template>
+  </AdminResourcePage>
 </template>
