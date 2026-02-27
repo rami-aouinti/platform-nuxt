@@ -119,6 +119,11 @@ const {
     return { payload, countPayload }
   },
   saveEdit: async (row) => {
+    if (String(row.password ?? '').trim().length < 8) {
+      Notify.error('Le mot de passe est requis (8 caractères minimum).')
+      return
+    }
+
     try {
       await $fetch(
         `/api/user/${encodeURIComponent(String(row.id ?? ''))}` as any,
@@ -127,6 +132,7 @@ const {
           body: {
             username: row.username,
             email: row.email,
+            password: row.password,
           },
         },
       )
