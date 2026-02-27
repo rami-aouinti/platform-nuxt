@@ -1,6 +1,6 @@
 import { useSprintsApi, type PatchSprintPayload, type UpdateSprintPayload } from '~/composables/api/useSprintsApi'
 import type { ApiListQuery, Id } from '~/composables/api/httpUiErrors'
-import type { CreateSprintPayload, CrmSprint } from '~/composables/api/useCrmApi'
+import type { CreateSprintPayload, CrmSprint } from '~/types/crm'
 import { Notify } from '~/stores/notification'
 
 function toErrorMessage(errorValue: unknown) {
