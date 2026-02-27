@@ -1,21 +1,12 @@
-import { proxyAuthApiGet } from '../../../utils/auth-api-proxy'
+import { createProxyEntityHandler } from '../../../utils/proxy-handler-factory'
 
-const UUID_PATTERN =
-  /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/
-
-export default defineEventHandler(async (event) => {
-  const role = getRouterParam(event, 'role')
-
-  if (!role || !UUID_PATTERN.test(role)) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Invalid role parameter.',
-      message: 'Role must be a valid UUID.',
-    })
-  }
-
-  return await proxyAuthApiGet(
-    event,
+export default createProxyEntityHandler({
+  paramName: 'role',
+  method: 'GET',
+  missingParamError: {
+    statusMessage: 'Invalid role parameter.',
+    message: 'Role identifier is required.',
+  },
+  upstreamPathBuilder: role =>
     `/api/v1/role/${encodeURIComponent(role)}/inherited`,
-  )
 })
