@@ -56,7 +56,7 @@ const availableGroupOptions = computed(() => {
   return availableGroups.value
     .filter((group) => !attached.has(group.id))
     .map((group) => ({
-      title: `${group.name} (${group.id})`,
+      title: group.name,
       value: group.id,
     }))
 })
@@ -288,17 +288,18 @@ onMounted(async () => {
           <v-card variant="tonal" rounded="lg" class="pa-4">
             <div class="text-subtitle-1 mb-2">Rôles utilisateur</div>
             <div v-if="userRoles.length === 0" class="text-medium-emphasis">Aucun rôle.</div>
-            <div v-else class="d-flex flex-wrap ga-2">
-              <v-chip
+            <v-list v-else density="comfortable" lines="one" class="bg-transparent pa-0">
+              <v-list-item
                 v-for="roleName in userRoles"
                 :key="roleName"
-                size="small"
-                color="primary"
-                variant="flat"
+                class="px-0"
               >
-                {{ roleName }}
-              </v-chip>
-            </div>
+                <template #prepend>
+                  <v-icon icon="mdi-shield-account-outline" size="18" class="mr-2" />
+                </template>
+                <v-list-item-title>{{ roleName }}</v-list-item-title>
+              </v-list-item>
+            </v-list>
           </v-card>
         </v-window-item>
 
@@ -312,20 +313,29 @@ onMounted(async () => {
             </div>
 
             <div v-if="userGroups.length === 0" class="text-medium-emphasis mb-3">Aucun groupe.</div>
-            <div v-else class="d-flex flex-wrap ga-2 mb-4">
-              <v-chip
+            <v-list v-else density="comfortable" lines="one" class="bg-transparent pa-0 mb-4">
+              <v-list-item
                 v-for="group in userGroups"
                 :key="group.id"
-                size="small"
-                color="secondary"
-                variant="flat"
-                :append-icon="canManageGroups ? 'mdi-close' : undefined"
-                :disabled="busyAction"
-                @click:append="detachGroup(group.id)"
+                class="px-0"
               >
-                {{ group.name }}
-              </v-chip>
-            </div>
+                <template #prepend>
+                  <v-icon icon="mdi-account-group" size="18" class="mr-2" />
+                </template>
+                <v-list-item-title>{{ group.name }}</v-list-item-title>
+                <template #append>
+                  <v-btn
+                    v-if="canManageGroups"
+                    size="small"
+                    variant="text"
+                    color="error"
+                    icon="mdi-close"
+                    :disabled="busyAction"
+                    @click="detachGroup(group.id)"
+                  />
+                </template>
+              </v-list-item>
+            </v-list>
 
             <v-row dense>
               <v-col cols="12" md="8">
