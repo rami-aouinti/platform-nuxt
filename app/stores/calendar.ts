@@ -105,6 +105,25 @@ export const useCalendarStore = defineStore('calendar', () => {
     }
   }
 
+
+  async function patch(id: Id, payload: Partial<CalendarEventPayload>) {
+    loading.value = true
+    error.value = null
+    try {
+      const updated = await api.patch(id, payload)
+      mergeRow(updated)
+      Notify.success('Événement mis à jour.')
+      await fetchRows()
+      return updated
+    } catch (errorValue) {
+      error.value = toErrorMessage(errorValue)
+      Notify.error(error.value)
+      throw errorValue
+    } finally {
+      loading.value = false
+    }
+  }
+
   async function remove(id: Id) {
     loading.value = true
     error.value = null
@@ -132,6 +151,7 @@ export const useCalendarStore = defineStore('calendar', () => {
     fetchItem,
     create,
     update,
+    patch,
     remove,
   }
 })

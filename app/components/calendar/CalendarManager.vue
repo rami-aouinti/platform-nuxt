@@ -24,6 +24,18 @@ interface FullCalendarInstance {
   addEventSource: (events: FullCalendarEventInput[]) => void
 }
 
+interface FullCalendarEventApi {
+  id: string
+  startStr: string
+  endStr?: string
+  allDay: boolean
+}
+
+interface FullCalendarEventChangeArg {
+  event: FullCalendarEventApi
+  revert: () => void
+}
+
 type FullCalendarCtor = new (
   element: HTMLElement,
   options: {
@@ -32,7 +44,12 @@ type FullCalendarCtor = new (
     height?: string
     headerToolbar?: Record<string, string>
     events?: FullCalendarEventInput[]
+    editable?: boolean
+    eventDurationEditable?: boolean
+    eventStartEditable?: boolean
     eventClick?: (arg: { event: { id: string } }) => void
+    eventDrop?: (arg: FullCalendarEventChangeArg) => void
+    eventResize?: (arg: FullCalendarEventChangeArg) => void
   },
 ) => FullCalendarInstance
 
@@ -138,6 +155,25 @@ function resetForm() {
   form.visibility = 'private'
 }
 
+function toDraggedPayload(event: FullCalendarEventApi): Partial<CalendarEventPayload> {
+  return {
+    startAt: event.startStr,
+    ...(event.endStr ? { endAt: event.endStr } : {}),
+    isAllDay: event.allDay,
+  }
+}
+
+async function handleEventDateChange({ event, revert }: FullCalendarEventChangeArg) {
+  errorMessage.value = ''
+
+  try {
+    await calendarStore.patch(event.id, toDraggedPayload(event))
+  } catch {
+    revert()
+    errorMessage.value = storeError.value ?? 'Impossible de déplacer ou redimensionner l\'événement.'
+  }
+}
+
 function openCreateDialog() {
   editingId.value = null
   resetForm()
@@ -175,11 +211,16 @@ async function initCalendar() {
       center: 'title',
       right: 'dayGridMonth,timeGridWeek,timeGridDay',
     },
+    editable: true,
+    eventDurationEditable: true,
+    eventStartEditable: true,
     events: calendarEventSource.value,
     eventClick: ({ event }) => {
       const eventItem = events.value.find((row) => row.id === event.id)
       if (eventItem) openEditDialog(eventItem)
     },
+    eventDrop: handleEventDateChange,
+    eventResize: handleEventDateChange,
   })
 
   calendarInstance.value.render()
