@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { Notify } from '~/stores/notification'
-import { httpGet, HttpRequestError } from '../../../services/http/client'
-import { jobApplicationsService } from '../../../services/admin/job-applications'
-import type { JobOffer } from '../../../services/admin/job-offers/index'
 import { useDisplay } from 'vuetify'
+import { storeToRefs } from 'pinia'
+import { Notify } from '~/stores/notification'
+import { useJobApplicationStore } from '~/stores/job-application'
+import { useJobOfferStore } from '~/stores/job-offer'
+import { HttpRequestError } from '../../../services/http/client'
 
 definePageMeta({
   icon: 'mdi-briefcase-search-outline',
@@ -13,19 +14,23 @@ definePageMeta({
   middleware: ['auth'],
 })
 
-const rows = ref<JobOffer[]>([])
-const loading = ref(false)
+const offerStore = useJobOfferStore()
+const applicationStore = useJobApplicationStore()
+
+const {
+  error,
+  selectedId,
+  selectedFilters,
+  search,
+  pagination,
+  mappedOffers,
+  selectedOffer,
+  pageState,
+} = storeToRefs(offerStore)
+
 const actionLoading = ref(false)
-const error = ref<string | null>(null)
-const forbidden = ref(false)
-const page = ref(1)
-const pageSize = ref(10)
-const search = ref('')
-const location = ref('')
-const selectedId = ref<string>('')
 const favorites = ref<string[]>([])
 const mobileFilters = ref(false)
-const selectedFilters = ref<Record<string, string[]>>({})
 const { smAndDown } = useDisplay()
 
 const filterSections = [
@@ -58,146 +63,6 @@ const filterSections = [
   },
 ]
 
-const pageState = computed(() => {
-  if (forbidden.value) return 'forbidden'
-  if (error.value) return 'error'
-  if (loading.value) return 'loading'
-  if (!rows.value.length) return 'empty'
-  return 'ready'
-})
-
-function firstFilter(key: string) {
-  return selectedFilters.value[key]?.[0]
-}
-
-function resolveCompanyName(offer: JobOffer) {
-  if (typeof offer.company === 'string')
-    return offer.companyName || offer.company
-  const typedCompany = offer.company as {
-    id?: string
-    name?: string
-    legalName?: string
-  }
-  return (
-    offer.companyName ||
-    typedCompany?.name ||
-    typedCompany?.legalName ||
-    String(typedCompany?.id || '')
-  )
-}
-
-function asLabel(value: unknown) {
-  if (typeof value === 'string') return value
-  if (!value || typeof value !== 'object') return undefined
-
-  const typedValue = value as Record<string, unknown>
-  const label = typedValue.name ?? typedValue.title ?? typedValue.code
-  return typeof label === 'string' ? label : undefined
-}
-
-function toOffersArray(payload: unknown): JobOffer[] {
-  if (Array.isArray(payload)) return payload as JobOffer[]
-  if (!payload || typeof payload !== 'object') return []
-
-  const objectPayload = payload as {
-    data?: unknown
-    items?: unknown
-    member?: unknown
-    'hydra:member'?: unknown
-  }
-
-  const collection =
-    objectPayload.data ??
-    objectPayload.items ??
-    objectPayload.member ??
-    objectPayload['hydra:member']
-
-  return Array.isArray(collection) ? (collection as JobOffer[]) : []
-}
-
-function formatEmploymentType(offer: JobOffer) {
-  const key = offer.employmentType || offer.workTime
-  const labels: Record<string, string> = {
-    'full-time': 'Vollzeit',
-    'part-time': 'Teilzeit',
-    freelance: 'Freelance',
-    intern: 'Praktikum',
-    contract: 'Befristet',
-  }
-  return key ? labels[key] || key : 'Vollzeit'
-}
-
-function formatSalary(offer: JobOffer) {
-  if (!offer.salaryMin && !offer.salaryMax) return 'Gehalt auf Anfrage'
-  const currency = offer.salaryCurrency || 'EUR'
-  const min =
-    typeof offer.salaryMin === 'number'
-      ? offer.salaryMin.toLocaleString('de-DE')
-      : undefined
-  const max =
-    typeof offer.salaryMax === 'number'
-      ? offer.salaryMax.toLocaleString('de-DE')
-      : undefined
-  const range = min && max ? `${min} - ${max}` : min || max || ''
-  const periodMap: Record<string, string> = {
-    yearly: ' / an',
-    monthly: ' / mois',
-    weekly: ' / semaine',
-    daily: ' / jour',
-    hourly: ' / heure',
-  }
-  return `${range} ${currency}${periodMap[offer.salaryPeriod || 'yearly'] || ''}`.trim()
-}
-
-function formatRelativeDate(input?: string) {
-  if (!input) return undefined
-  const date = new Date(input)
-  if (Number.isNaN(date.getTime())) return undefined
-  const days = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24))
-  if (days <= 0) return "Aujourd'hui"
-  if (days === 1) return 'Hier'
-  if (days < 7) return `Il y a ${days} jours`
-  const weeks = Math.floor(days / 7)
-  if (weeks < 5) return `Il y a ${weeks} sem.`
-  return new Intl.DateTimeFormat('fr-FR').format(date)
-}
-
-const mappedOffers = computed(() =>
-  rows.value.map((row, index) => ({
-    id: String(row.id),
-    title: row.title,
-    company: resolveCompanyName(row),
-    matchingScore: 76 + (index % 4) * 5,
-    matchingLabel: 'Passt hervorragend',
-    location:
-      row.location ||
-      [asLabel(row.city), asLabel(row.region)].filter(Boolean).join(', ') ||
-      location.value ||
-      'Standort flexibel',
-    workMode: row.remoteMode || formatEmploymentType(row),
-    salary: formatSalary(row),
-    publishedAtLabel: formatRelativeDate(row.publishedAt),
-    tags: [
-      asLabel(row.jobCategory),
-      ...(row.skills || [])
-        .slice(0, 2)
-        .map((value) => asLabel(value))
-        .filter(Boolean),
-      ...(row.languages || [])
-        .slice(0, 1)
-        .map((value) => asLabel(value))
-        .filter(Boolean),
-    ].filter(Boolean) as string[],
-    status: row.status === 'open' ? 'Offen' : row.status,
-  })),
-)
-
-const selectedOffer = computed(
-  () =>
-    mappedOffers.value.find((offer) => offer.id === selectedId.value) ??
-    mappedOffers.value[0],
-)
-
 function toErrorMessage(errorValue: unknown) {
   if (errorValue instanceof HttpRequestError) return errorValue.message
   if (errorValue instanceof Error) return errorValue.message
@@ -205,66 +70,13 @@ function toErrorMessage(errorValue: unknown) {
 }
 
 async function loadRows() {
-  loading.value = true
-  error.value = null
-  forbidden.value = false
-
-  try {
-    const where = {
-      status: 'open',
-      location: location.value || undefined,
-      remoteMode: firstFilter('remoteMode'),
-      employmentType: firstFilter('employmentType'),
-      salaryMin: firstFilter('salaryMin'),
-      salaryMax: firstFilter('salaryMax'),
-      skills: firstFilter('skills'),
-      languages: firstFilter('languages'),
-      city: firstFilter('city'),
-      region: firstFilter('region'),
-      jobCategory: firstFilter('jobCategory'),
-      publishedWithinDays: firstFilter('publishedWithinDays'),
-    }
-
-    const normalizedWhere = Object.fromEntries(
-      Object.entries(where).filter(
-        ([, value]) => value !== undefined && value !== null && value !== '',
-      ),
-    )
-
-    const data = await httpGet<unknown>('/api/job-offers', {
-      query: {
-        where: JSON.stringify(normalizedWhere),
-        order: 'publishedAt:desc',
-        limit: pageSize.value,
-        offset: Math.max(page.value - 1, 0) * pageSize.value,
-        ...(search.value.trim() ? { search: search.value.trim() } : {}),
-      },
-    })
-
-    rows.value = toOffersArray(data)
-    const firstOffer = rows.value.at(0)
-    if (!selectedId.value && firstOffer) {
-      selectedId.value = String(firstOffer.id)
-    }
-  } catch (errorValue) {
-    if (
-      errorValue instanceof HttpRequestError &&
-      errorValue.statusCode === 403
-    ) {
-      forbidden.value = true
-      return
-    }
-
-    error.value = toErrorMessage(errorValue)
-  } finally {
-    loading.value = false
-  }
+  await offerStore.fetchWithFilters('all')
 }
 
 async function apply(offerId: string) {
   actionLoading.value = true
   try {
-    await jobApplicationsService.apply(offerId)
+    await applicationStore.apply(offerId)
     Notify.success('Candidature envoyée.')
   } catch (errorValue) {
     Notify.error(toErrorMessage(errorValue))
@@ -279,11 +91,15 @@ function toggleFavorite(offerId: string) {
     : [...favorites.value, offerId]
 }
 
-watch([page, pageSize], loadRows)
+watch(
+  () => [pagination.value.page, pagination.value.pageSize],
+  loadRows,
+)
+
 watchDebounced(
-  [search, location, selectedFilters],
+  [search, selectedFilters],
   () => {
-    page.value = 1
+    pagination.value.page = 1
     void loadRows()
   },
   { debounce: 300, maxWait: 1000 },
@@ -299,7 +115,6 @@ onMounted(loadRows)
   >
     <OffersSearchBar
       v-model:query="search"
-      v-model:location="location"
       app-bar-teleport
       show-filter-drawer-button
       :filter-drawer-open="mobileFilters"

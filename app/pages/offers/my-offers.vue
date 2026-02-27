@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { useDisplay } from 'vuetify'
+import { storeToRefs } from 'pinia'
 import { Notify } from '~/stores/notification'
-import { httpGet, HttpRequestError } from '../../../services/http/client'
-import * as jobOffersApi from '../../../services/admin/job-offers/index'
-import { jobApplicationsService } from '../../../services/admin/job-applications'
+import { useJobApplicationStore } from '~/stores/job-application'
+import { useJobOfferStore } from '~/stores/job-offer'
+import { applicationStatusMeta } from '~/domain/offers/helpers'
+import { HttpRequestError } from '../../../services/http/client'
 import type { JobOffer } from '../../../services/admin/job-offers/index'
 
 definePageMeta({
@@ -23,19 +25,26 @@ type OfferForm = {
   status: JobOffer['status']
 }
 
-const jobOffersService = jobOffersApi.jobOffersService
+const offerStore = useJobOfferStore()
+const applicationStore = useJobApplicationStore()
 
-const rows = ref<JobOffer[]>([])
-const loading = ref(false)
+const {
+  rows,
+  error,
+  selectedId,
+  selectedFilters,
+  search,
+  pagination,
+  mappedOffers,
+  selectedOffer,
+  pageState,
+} = storeToRefs(offerStore)
+
 const actionLoading = ref(false)
-const error = ref<string | null>(null)
-const forbidden = ref(false)
-const page = ref(1)
-const pageSize = ref(10)
-const search = ref('')
-const location = ref('')
-const selectedId = ref('')
 const editDialog = ref(false)
+const location = ref('')
+const dialogDelete = useTemplateRef('dialogDelete')
+const { smAndDown } = useDisplay()
 
 const editing = ref<OfferForm>({
   title: '',
@@ -44,8 +53,6 @@ const editing = ref<OfferForm>({
   company: '',
   status: 'draft',
 })
-const dialogDelete = useTemplateRef('dialogDelete')
-const { smAndDown } = useDisplay()
 
 const filterSections = [
   {
@@ -58,153 +65,24 @@ const filterSections = [
     ],
   },
 ]
-const selectedFilters = ref<Record<string, string[]>>({})
 const mobileFilters = ref(false)
-
-function firstFilter(key: string) {
-  return selectedFilters.value[key]?.[0]
-}
-
-function resolveCompanyName(offer: JobOffer) {
-  if (typeof offer.company === 'string')
-    return offer.companyName || offer.company
-  const typedCompany = offer.company as {
-    id?: string
-    name?: string
-    legalName?: string
-  }
-  return (
-    offer.companyName ||
-    typedCompany?.name ||
-    typedCompany?.legalName ||
-    String(typedCompany?.id || '')
-  )
-}
-
-function asLabel(value: unknown) {
-  if (typeof value === 'string') return value
-  if (!value || typeof value !== 'object') return undefined
-
-  const typedValue = value as Record<string, unknown>
-  const label = typedValue.name ?? typedValue.title ?? typedValue.code
-  return typeof label === 'string' ? label : undefined
-}
-
-function toOffersArray(payload: unknown): JobOffer[] {
-  if (Array.isArray(payload)) return payload as JobOffer[]
-  if (!payload || typeof payload !== 'object') return []
-
-  const objectPayload = payload as {
-    data?: unknown
-    items?: unknown
-    member?: unknown
-    'hydra:member'?: unknown
-  }
-
-  const collection =
-    objectPayload.data ??
-    objectPayload.items ??
-    objectPayload.member ??
-    objectPayload['hydra:member']
-
-  return Array.isArray(collection) ? (collection as JobOffer[]) : []
-}
-
-function formatSalary(offer: JobOffer) {
-  if (!offer.salaryMin && !offer.salaryMax) return 'Gehalt auf Anfrage'
-  const currency = offer.salaryCurrency || 'EUR'
-  const min =
-    typeof offer.salaryMin === 'number'
-      ? offer.salaryMin.toLocaleString('de-DE')
-      : undefined
-  const max =
-    typeof offer.salaryMax === 'number'
-      ? offer.salaryMax.toLocaleString('de-DE')
-      : undefined
-  const period =
-    offer.salaryPeriod === 'yearly' || !offer.salaryPeriod ? ' / an' : ''
-  return `${min && max ? `${min} - ${max}` : min || max || ''} ${currency}${period}`.trim()
-}
-
-function formatRelativeDate(input?: string) {
-  if (!input) return undefined
-  const date = new Date(input)
-  if (Number.isNaN(date.getTime())) return undefined
-  const days = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24))
-  if (days <= 0) return "Aujourd'hui"
-  if (days === 1) return 'Hier'
-  return `Il y a ${days} jours`
-}
-
-
-function applicationStatusLabel(status?: string) {
-  if (status === 'accepted') return 'Acceptée'
-  if (status === 'rejected') return 'Rejetée'
-  if (status === 'withdrawn') return 'Retirée'
-  return 'En attente'
-}
-
-function applicationStatusColor(status?: string) {
-  if (status === 'accepted') return 'success'
-  if (status === 'rejected') return 'error'
-  if (status === 'withdrawn') return 'default'
-  return 'warning'
-}
-
-function applicationCandidateName(application: NonNullable<JobOffer['jobApplications']>[number]) {
-  const candidate = application.candidate
-  if (!candidate || typeof candidate === 'string') return '-'
-  return candidate.firstName || candidate.username || candidate.email || '-'
-}
-
-function canDecideApplication(application: NonNullable<JobOffer['jobApplications']>[number]) {
-  return application.status === 'pending'
-}
-
-const mappedOffers = computed(() =>
-  rows.value.map((row, index) => ({
-    id: String(row.id),
-    title: row.title,
-    company: resolveCompanyName(row),
-    matchingScore: 71 + (index % 5) * 4,
-    location:
-      row.location ||
-      [asLabel(row.city), asLabel(row.region)].filter(Boolean).join(', ') ||
-      location.value ||
-      'Paris',
-    salary: formatSalary(row),
-    workMode:
-      row.employmentType || row.workTime || row.remoteMode || 'full-time',
-    publishedAtLabel: formatRelativeDate(row.publishedAt),
-    tags: [row.slug, row.status, asLabel(row.jobCategory)].filter(
-      Boolean,
-    ) as string[],
-    status: row.status,
-  })),
-)
-
-const selectedOffer = computed(
-  () =>
-    mappedOffers.value.find((offer) => offer.id === selectedId.value) ??
-    mappedOffers.value[0],
-)
 
 const selectedRow = computed(() =>
   rows.value.find((item) => String(item.id) === selectedOffer.value?.id),
 )
 
-const pageState = computed(() => {
-  if (forbidden.value) return 'forbidden'
-  if (error.value) return 'error'
-  if (loading.value) return 'loading'
-  if (!rows.value.length) return 'empty'
-  return 'ready'
-})
-
 function toErrorMessage(errorValue: unknown) {
   if (errorValue instanceof HttpRequestError) return errorValue.message
   if (errorValue instanceof Error) return errorValue.message
   return 'Erreur API.'
+}
+
+function applicationCandidateName(
+  application: NonNullable<JobOffer['jobApplications']>[number],
+) {
+  const candidate = application.candidate
+  if (!candidate || typeof candidate === 'string') return '-'
+  return candidate.firstName || candidate.username || candidate.email || '-'
 }
 
 function openEdit(offerId: string) {
@@ -224,65 +102,8 @@ function openEdit(offerId: string) {
   editDialog.value = true
 }
 
-async function listMyOffers(query: Record<string, string | number>) {
-  const payload = await httpGet<unknown>('/api/job-offers/my', {
-    query,
-  })
-  return toOffersArray(payload)
-}
-
 async function loadRows() {
-  loading.value = true
-  error.value = null
-  forbidden.value = false
-
-  try {
-    const where = {
-      status: firstFilter('status'),
-      location: location.value || undefined,
-      remoteMode: firstFilter('remoteMode'),
-      salaryMin: firstFilter('salaryMin'),
-      salaryMax: firstFilter('salaryMax'),
-      skills: firstFilter('skills'),
-      languages: firstFilter('languages'),
-      city: firstFilter('city'),
-      region: firstFilter('region'),
-      jobCategory: firstFilter('jobCategory'),
-      publishedWithinDays: firstFilter('publishedWithinDays'),
-    }
-
-    const normalizedWhere = Object.fromEntries(
-      Object.entries(where).filter(
-        ([, value]) => value !== undefined && value !== null && value !== '',
-      ),
-    )
-
-    const response = await listMyOffers({
-      where: JSON.stringify(normalizedWhere),
-      order: 'publishedAt:desc',
-      limit: pageSize.value,
-      offset: Math.max(page.value - 1, 0) * pageSize.value,
-      ...(search.value.trim() ? { search: search.value.trim() } : {}),
-    })
-
-    rows.value = response
-    const firstOffer = rows.value.at(0)
-    if (!selectedId.value && firstOffer) {
-      selectedId.value = String(firstOffer.id)
-    }
-  } catch (errorValue) {
-    if (
-      errorValue instanceof HttpRequestError &&
-      errorValue.statusCode === 403
-    ) {
-      forbidden.value = true
-      return
-    }
-
-    error.value = toErrorMessage(errorValue)
-  } finally {
-    loading.value = false
-  }
+  await offerStore.fetchWithFilters('mine')
 }
 
 async function saveOffer() {
@@ -293,7 +114,7 @@ async function saveOffer() {
 
   actionLoading.value = true
   try {
-    await jobOffersService.update(editing.value.id, {
+    await offerStore.update(editing.value.id, {
       title: editing.value.title,
       slug: editing.value.slug,
       description: editing.value.description,
@@ -328,7 +149,7 @@ async function deleteOffer(offerId: string) {
   actionLoading.value = true
 
   try {
-    await jobOffersService.remove(offerId)
+    await offerStore.remove(offerId)
     Notify.success('Offre supprimée.')
     await loadRows()
   } catch (errorValue) {
@@ -338,7 +159,6 @@ async function deleteOffer(offerId: string) {
   }
 }
 
-
 async function decideApplication(
   id: string,
   action: 'accept' | 'reject' | 'withdraw',
@@ -347,9 +167,11 @@ async function decideApplication(
   actionLoading.value = true
 
   try {
-    if (action === 'accept') await jobApplicationsService.accept(id)
-    else if (action === 'reject') await jobApplicationsService.reject(id)
-    else await jobApplicationsService.withdraw(id)
+    const result = await applicationStore.transition(id, action)
+    if (!result) {
+      Notify.error('Transition de statut non autorisée.')
+      return
+    }
 
     Notify.success(successMessage)
     await loadRows()
@@ -360,11 +182,15 @@ async function decideApplication(
   }
 }
 
-watch([page, pageSize], loadRows)
+watch(
+  () => [pagination.value.page, pagination.value.pageSize],
+  loadRows,
+)
 watchDebounced(
-  [search, location, selectedFilters],
+  [search, selectedFilters, location],
   () => {
-    page.value = 1
+    pagination.value.page = 1
+    selectedFilters.value.location = location.value ? [location.value] : []
     void loadRows()
   },
   { debounce: 300, maxWait: 1000 },
@@ -469,9 +295,9 @@ onMounted(loadRows)
                         <span>{{ applicationCandidateName(application) }}</span>
                         <v-chip
                           size="small"
-                          :color="applicationStatusColor(application.status)"
+                          :color="applicationStatusMeta(application.status).tone"
                           variant="tonal"
-                          >{{ applicationStatusLabel(application.status) }}</v-chip
+                          >{{ applicationStatusMeta(application.status).label }}</v-chip
                         >
                       </div>
                     </template>
@@ -481,7 +307,7 @@ onMounted(loadRows)
                     <template #append>
                       <div class="d-flex ga-1">
                         <v-btn
-                          v-if="canDecideApplication(application)"
+                          v-if="application.status === 'pending'"
                           size="small"
                           color="success"
                           variant="text"
@@ -490,7 +316,7 @@ onMounted(loadRows)
                           @click="decideApplication(String(application.id), 'accept', 'Candidature acceptée.')"
                         />
                         <v-btn
-                          v-if="canDecideApplication(application)"
+                          v-if="application.status === 'pending'"
                           size="small"
                           color="error"
                           variant="text"
