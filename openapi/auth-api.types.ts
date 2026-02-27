@@ -97,9 +97,16 @@ export interface AuthApiPaths {
   '/api/v1/profile': { get: { response: UserDetail } }
   '/api/v1/profile/roles': { get: { response: UserWithRoles } }
   '/api/v1/profile/groups': { get: { response: UserWithGroups } }
-  '/api/v1/role/count': { get: { response: number } }
+  '/api/v1/role/count': { get: { response: { count: number } } }
   '/api/v1/role/ids': { get: { response: RoleId[] } }
   '/api/v1/role/inherited': { get: { response: Role[] } }
+  '/api/v1/role/{role}/inherited': {
+    get: {
+      params: { path: { role: RoleId } }
+      response: RoleId[]
+      errors: ErrorResponse
+    }
+  }
   '/api/v1/role/{role}': {
     get: {
       params: { path: { role: RoleId } }
@@ -116,7 +123,10 @@ export interface AuthApiPaths {
   }
   '/api/v1/companies/{id}/members': {
     get: {
-      params: { path: { id: CompanyId }; query?: { page?: number; pageSize?: number } }
+      params: {
+        path: { id: CompanyId }
+        query?: { page?: number; pageSize?: number }
+      }
       response: CompanyMemberListResponse
       errors: ErrorResponse
     }
