@@ -1,4 +1,5 @@
 import { extractCollectionFromPayload } from '~/utils/admin/extractCollectionFromPayload'
+import type { AdminResourceDescriptor, AdminResourceEndpoint, AdminResourceListEndpoint } from '~/types/admin-resource'
 
 type AdminFilters = Record<string, string>
 
@@ -17,6 +18,7 @@ type AdminResourceLoadResult = {
 }
 
 type UseAdminResourcePageOptions<TRow, TFilters extends AdminFilters> = {
+  resource?: AdminResourceDescriptor
   initialFilters: TFilters
   initialPage?: number
   initialPageSize?: number
@@ -28,6 +30,32 @@ type UseAdminResourcePageOptions<TRow, TFilters extends AdminFilters> = {
   deleteRow?: (row: Record<string, unknown>) => Promise<void>
   normalize?: (payload: unknown) => TRow[]
   buildQuery?: (context: AdminQueryContext<TFilters>) => Record<string, unknown>
+}
+
+function resolveEndpoint(endpoint: AdminResourceEndpoint | undefined, id?: string) {
+  if (!endpoint) {
+    return null
+  }
+
+  if (typeof endpoint === 'function') {
+    return endpoint({ id })
+  }
+
+  return endpoint
+}
+
+function resolveListEndpoints(endpoint: AdminResourceListEndpoint) {
+  if (typeof endpoint === 'string' || typeof endpoint === 'function') {
+    return {
+      listEndpoint: resolveEndpoint(endpoint),
+      countEndpoint: null,
+    }
+  }
+
+  return {
+    listEndpoint: resolveEndpoint(endpoint.endpoint),
+    countEndpoint: resolveEndpoint(endpoint.countEndpoint),
+  }
 }
 
 export function useAdminResourcePage<TRow, TFilters extends AdminFilters>(
@@ -82,7 +110,7 @@ export function useAdminResourcePage<TRow, TFilters extends AdminFilters>(
   }
 
   async function loadRows() {
-    if (!options.loadRows) {
+    if (!options.loadRows && !options.resource?.list) {
       return
     }
 
@@ -95,7 +123,28 @@ export function useAdminResourcePage<TRow, TFilters extends AdminFilters>(
         options.buildQuery(context)
       }
 
-      const result = resolveLoadResult(await options.loadRows(context))
+      let result: AdminResourceLoadResult
+      if (options.loadRows) {
+        result = resolveLoadResult(await options.loadRows(context))
+      } else {
+        const { listEndpoint, countEndpoint } = resolveListEndpoints(options.resource!.list)
+        if (!listEndpoint) {
+          throw new Error('List endpoint manquant pour cette ressource admin.')
+        }
+
+        const query = options.buildQuery ? options.buildQuery(context) : undefined
+
+        const [payload, countPayload] = await Promise.all([
+          $fetch(listEndpoint, { query }),
+          countEndpoint ? $fetch(countEndpoint) : Promise.resolve(undefined),
+        ])
+
+        result = {
+          payload,
+          countPayload,
+        }
+      }
+
       rows.value = normalize(result.payload)
 
       if (typeof result.total === 'number') {
@@ -128,26 +177,53 @@ export function useAdminResourcePage<TRow, TFilters extends AdminFilters>(
   }
 
   async function saveEdit(row: Record<string, unknown>) {
-    if (!options.saveEdit || mutationLoading.value) {
+    if (!options.saveEdit && !options.resource?.patch) {
+      return
+    }
+
+    if (mutationLoading.value) {
       return
     }
 
     mutationLoading.value = true
     try {
-      await options.saveEdit(row)
+      if (options.saveEdit) {
+        await options.saveEdit(row)
+      } else {
+        const endpoint = resolveEndpoint(options.resource?.patch, String(row.id ?? ''))
+        if (endpoint) {
+          await $fetch(endpoint, {
+            method: 'PATCH',
+            body: row,
+          })
+        }
+      }
     } finally {
       mutationLoading.value = false
     }
   }
 
   async function deleteRow(row: Record<string, unknown>) {
-    if (!options.deleteRow || mutationLoading.value) {
+    if (!options.deleteRow && !options.resource?.delete) {
+      return
+    }
+
+    if (mutationLoading.value) {
       return
     }
 
     mutationLoading.value = true
     try {
-      await options.deleteRow(row)
+      if (options.deleteRow) {
+        await options.deleteRow(row)
+      } else {
+        const endpoint = resolveEndpoint(options.resource?.delete, String(row.id ?? ''))
+        if (endpoint) {
+          await $fetch(endpoint, {
+            method: 'DELETE',
+          })
+        }
+      }
     } finally {
       mutationLoading.value = false
     }
