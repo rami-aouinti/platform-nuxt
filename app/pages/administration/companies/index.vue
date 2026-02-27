@@ -15,16 +15,6 @@ definePageMeta({
   middleware: ['auth', 'admin-access'],
 })
 
-const rows = ref<Company[]>([])
-const loading = ref(false)
-const mutationLoading = ref(false)
-const error = ref<string | null>(null)
-const total = ref(0)
-const page = ref(1)
-const pageSize = ref(10)
-const search = ref('')
-const filters = ref<Record<string, string>>({ status: '' })
-
 const columns: DataTableHeader[] = [
   { title: 'ID', key: 'id' },
   { title: 'Name', key: 'legalName' },
@@ -56,34 +46,42 @@ function createPayloadFromDraft(): CreateCompanyRequest {
   }
 }
 
-async function loadRows() {
-  loading.value = true
-  error.value = null
-
-  try {
+const {
+  rows,
+  loading,
+  mutationLoading,
+  error,
+  total,
+  page,
+  pageSize,
+  search,
+  filters,
+  loadRows,
+} = useAdminResourcePage<Company, Record<string, string>>({
+  initialFilters: { status: '' },
+  loadRows: async ({ page, pageSize, search, filters }) => {
     const response = await companiesService.list({
       ...buildApiPlatformQuery({
-        page: page.value,
-        pageSize: pageSize.value,
-        search: search.value,
+        page,
+        pageSize,
+        search,
         sortBy: 'legalName',
         sortOrder: 'asc',
         filters: {
-          status: filters.value.status || undefined,
+          status: filters.status || undefined,
         },
       }),
     })
 
-    rows.value = response.data
-    total.value = response.meta?.totalItems ?? response.data.length
-  } catch (errorValue) {
-    error.value = toErrorMessage(errorValue)
-  } finally {
-    loading.value = false
-  }
-}
+    return { payload: response.data, total: response.meta?.totalItems ?? response.data.length }
+  },
+})
 
 async function createRow() {
+  if (mutationLoading.value) {
+    return
+  }
+
   mutationLoading.value = true
 
   try {
@@ -98,6 +96,10 @@ async function createRow() {
 }
 
 async function updateRow(row: Record<string, unknown>) {
+  if (mutationLoading.value) {
+    return
+  }
+
   mutationLoading.value = true
 
   try {
@@ -118,6 +120,10 @@ async function updateRow(row: Record<string, unknown>) {
 }
 
 async function deleteRow(row: Record<string, unknown>) {
+  if (mutationLoading.value) {
+    return
+  }
+
   mutationLoading.value = true
 
   try {
@@ -131,8 +137,6 @@ async function deleteRow(row: Record<string, unknown>) {
   }
 }
 
-watch([page, pageSize], loadRows)
-watchDebounced([search, filters], loadRows, { debounce: 300, maxWait: 1000 })
 
 onMounted(loadRows)
 </script>

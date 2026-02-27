@@ -5,6 +5,7 @@ import { Notify } from '~/stores/notification'
 import { useAuthStore } from '~/stores/auth'
 import { canManageUsers, isRoot } from '~/utils/permissions/admin'
 import { useInternalEventTracking } from '~/composables/useInternalEventTracking'
+import { extractCollectionFromPayload } from '~/utils/admin/extractCollectionFromPayload'
 
 type UserRecord = {
   id: string
@@ -27,17 +28,6 @@ definePageMeta({
 
 const authStore = useAuthStore()
 const { roles } = storeToRefs(authStore)
-
-const loading = ref(false)
-const error = ref<string | null>(null)
-const rows = ref<UserRecord[]>([])
-const total = ref(0)
-const page = ref(1)
-const pageSize = ref(10)
-const search = ref('')
-const filters = ref<Record<string, string>>({ role: '', group: '' })
-const mutationLoading = ref(false)
-
 const { track } = useInternalEventTracking()
 
 const canCreate = computed(() => isRoot(roles.value))
@@ -54,15 +44,7 @@ const columns: DataTableHeader[] = [
 ]
 
 function normalize(payload: unknown): UserRecord[] {
-  const list = Array.isArray(payload)
-    ? payload
-    : payload && typeof payload === 'object' && Array.isArray((payload as { items?: unknown[] }).items)
-      ? (payload as { items: unknown[] }).items
-      : payload && typeof payload === 'object' && Array.isArray((payload as { data?: unknown[] }).data)
-        ? (payload as { data: unknown[] }).data
-        : []
-
-  return list.map((entry, index) => {
+  return extractCollectionFromPayload(payload).map((entry, index) => {
     const row = entry as Record<string, unknown>
     const roleList = Array.isArray(row.roles) ? row.roles.map(String) : []
     const groupList = Array.isArray(row.userGroups) ? row.userGroups.map(String) : []
@@ -77,111 +59,89 @@ function normalize(payload: unknown): UserRecord[] {
   })
 }
 
-function toError(errorValue: unknown) {
-  if (isError(errorValue) && typeof errorValue.statusMessage === 'string') {
-    return errorValue.statusMessage
+function buildQuery({ page, pageSize, search, filters }: { page: number; pageSize: number; search: string; filters: Record<string, string> }) {
+  return {
+    page,
+    limit: pageSize,
+    search: search || undefined,
+    role: filters.role || undefined,
+    group: filters.group || undefined,
   }
-
-  if (errorValue instanceof Error) {
-    return errorValue.message
-  }
-
-  return 'Erreur API.'
 }
 
-async function loadRows() {
-  loading.value = true
-  error.value = null
-
-  try {
-    const query = {
-      page: page.value,
-      limit: pageSize.value,
-      search: search.value || undefined,
-      role: filters.value.role || undefined,
-      group: filters.value.group || undefined,
-    }
-
-    const [listResponse, countResponse] = await Promise.all([
+const {
+  rows,
+  loading,
+  error,
+  total,
+  page,
+  pageSize,
+  search,
+  filters,
+  mutationLoading,
+  loadRows,
+  saveEdit,
+  deleteRow,
+} = useAdminResourcePage<UserRecord, Record<string, string>>({
+  initialFilters: { role: '', group: '' },
+  normalize,
+  buildQuery,
+  loadRows: async (ctx) => {
+    const query = buildQuery(ctx)
+    const [payload, countPayload] = await Promise.all([
       $fetch('/api/user', { query }),
       $fetch('/api/user/count'),
     ])
 
-    rows.value = normalize(listResponse)
-    total.value = typeof countResponse === 'number'
-      ? countResponse
-      : Number((countResponse as { count?: number })?.count ?? rows.value.length)
-  } catch (errorValue) {
-    error.value = toError(errorValue)
-  } finally {
-    loading.value = false
-  }
-}
+    return { payload, countPayload }
+  },
+  saveEdit: async (row) => {
+    try {
+      await $fetch(`/api/user/${encodeURIComponent(String(row.id ?? ''))}` as any, {
+        method: 'PATCH' as any,
+        body: {
+          username: row.username,
+          email: row.email,
+        },
+      })
+
+      Notify.success('Action réussie : utilisateur mis à jour.')
+      track({
+        name: 'admin.users.patch',
+        payload: {
+          id: String(row.id ?? ''),
+          username: String(row.username ?? ''),
+        },
+      })
+      await loadRows()
+    } catch (errorValue) {
+      Notify.error(`Action échouée : ${errorValue instanceof Error ? errorValue.message : 'Erreur API.'}`)
+    }
+  },
+  deleteRow: async (row) => {
+    try {
+      await $fetch(`/api/user/${encodeURIComponent(String(row.id ?? ''))}` as any, {
+        method: 'DELETE' as any,
+      })
+
+      Notify.success('Action réussie : utilisateur supprimé.')
+      track({
+        name: 'admin.users.delete',
+        payload: {
+          id: String(row.id ?? ''),
+          username: String(row.username ?? ''),
+        },
+      })
+      await loadRows()
+    } catch (errorValue) {
+      Notify.error(`Action échouée : ${errorValue instanceof Error ? errorValue.message : 'Erreur API.'}`)
+    }
+  },
+})
 
 async function createRow() {
   Notify.info('TODO: brancher le flux de création utilisateur.')
 }
-
-async function saveEdit(row: Record<string, unknown>) {
-  if (mutationLoading.value) {
-    return
-  }
-
-  mutationLoading.value = true
-  try {
-    await $fetch(`/api/user/${encodeURIComponent(String(row.id ?? ''))}` as any, {
-      method: 'PATCH' as any,
-      body: {
-        username: row.username,
-        email: row.email,
-      },
-    })
-
-    Notify.success('Action réussie : utilisateur mis à jour.')
-    track({
-      name: 'admin.users.patch',
-      payload: {
-        id: String(row.id ?? ''),
-        username: String(row.username ?? ''),
-      },
-    })
-    await loadRows()
-  } catch (errorValue) {
-    Notify.error(`Action échouée : ${toError(errorValue)}`)
-  } finally {
-    mutationLoading.value = false
-  }
-}
-
-async function deleteRow(row: Record<string, unknown>) {
-  if (mutationLoading.value) {
-    return
-  }
-
-  mutationLoading.value = true
-  try {
-    await $fetch(`/api/user/${encodeURIComponent(String(row.id ?? ''))}` as any, {
-      method: 'DELETE' as any,
-    })
-
-    Notify.success('Action réussie : utilisateur supprimé.')
-    track({
-      name: 'admin.users.delete',
-      payload: {
-        id: String(row.id ?? ''),
-        username: String(row.username ?? ''),
-      },
-    })
-    await loadRows()
-  } catch (errorValue) {
-    Notify.error(`Action échouée : ${toError(errorValue)}`)
-  } finally {
-    mutationLoading.value = false
-  }
-}
-
-watch([page, pageSize], loadRows)
-watchDebounced([search, filters], loadRows, { debounce: 300, maxWait: 1000 })
 
 onMounted(async () => {
   await authStore.ensureRolesLoaded()
@@ -223,7 +183,7 @@ onMounted(async () => {
     :can-delete="canDelete"
     :mutation-loading="mutationLoading"
     resource-name="l'utilisateur"
-    create-label="Créer un user"
+    create-label="Créer un utilisateur"
     @update:page="page = $event"
     @update:page-size="pageSize = $event"
     @update:search="search = $event"

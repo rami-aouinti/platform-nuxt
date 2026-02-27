@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { DataTableHeader } from 'vuetify'
 import { Notify } from '~/stores/notification'
+import { extractCollectionFromPayload } from '~/utils/admin/extractCollectionFromPayload'
 
 type NotificationRecord = { id: string; title: string; message: string; read: string; createdAt: string }
 
@@ -14,15 +15,6 @@ definePageMeta({
   middleware: ['auth', 'admin-access'],
 })
 
-const rows = ref<NotificationRecord[]>([])
-const loading = ref(false)
-const error = ref<string | null>(null)
-const total = ref(0)
-const page = ref(1)
-const pageSize = ref(10)
-const search = ref('')
-const filters = ref<Record<string, string>>({ read: '' })
-
 const columns: DataTableHeader[] = [
   { title: 'ID', key: 'id' },
   { title: 'Title', key: 'title' },
@@ -32,15 +24,7 @@ const columns: DataTableHeader[] = [
 ]
 
 function normalize(payload: unknown): NotificationRecord[] {
-  const list = Array.isArray(payload)
-    ? payload
-    : payload && typeof payload === 'object' && Array.isArray((payload as { items?: unknown[] }).items)
-      ? (payload as { items: unknown[] }).items
-      : payload && typeof payload === 'object' && Array.isArray((payload as { data?: unknown[] }).data)
-        ? (payload as { data: unknown[] }).data
-        : []
-
-  return list.map((entry, index) => {
+  return extractCollectionFromPayload(payload).map((entry, index) => {
     const row = entry as Record<string, unknown>
     return {
       id: String(row.id ?? row.uuid ?? index),
@@ -52,28 +36,31 @@ function normalize(payload: unknown): NotificationRecord[] {
   })
 }
 
-async function loadRows() {
-  loading.value = true
-  error.value = null
-  try {
-    const response = await $fetch('/api/notifications', {
-      query: { search: search.value || undefined, read: filters.value.read || undefined, page: page.value, limit: pageSize.value },
+const {
+  rows,
+  loading,
+  error,
+  total,
+  page,
+  pageSize,
+  search,
+  filters,
+  loadRows,
+} = useAdminResourcePage<NotificationRecord, Record<string, string>>({
+  initialFilters: { read: '' },
+  normalize,
+  loadRows: async ({ search, filters, page, pageSize }) => {
+    const payload = await $fetch('/api/notifications', {
+      query: { search: search || undefined, read: filters.read || undefined, page, limit: pageSize },
     })
-    rows.value = normalize(response)
-    total.value = rows.value.length
-  } catch (errorValue) {
-    error.value = errorValue instanceof Error ? errorValue.message : 'Erreur API.'
-  } finally {
-    loading.value = false
-  }
-}
+
+    return { payload }
+  },
+})
 
 function createRow() {
   Notify.info('TODO: brancher l’envoi d’une notification.')
 }
-
-watch([page, pageSize], loadRows)
-watchDebounced([search, filters], loadRows, { debounce: 300, maxWait: 1000 })
 
 onMounted(loadRows)
 </script>
