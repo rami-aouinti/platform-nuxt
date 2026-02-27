@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Notify } from '~/stores/notification'
+import { notifyFormValidationError } from '~/stores/_factories/storeNotifications'
 import type { ResumeFormModel } from '~/types/resume'
 
 definePageMeta({
@@ -26,7 +26,7 @@ const form = ref<ResumeFormModel>({
 async function submit() {
   const validationResult = await resumeFormRef.value?.validate()
   if (!validationResult?.valid) {
-    Notify.error('Le formulaire contient des erreurs. Merci de les corriger avant de soumettre.')
+    notifyFormValidationError('Le formulaire')
     return
   }
 
