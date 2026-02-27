@@ -1,4 +1,4 @@
-import { apiRequest, type ApiListQuery, type Id } from './httpUiErrors'
+import { apiRequest, normalizePaginatedResponse, type ApiListQuery, type ApiListResponse, type Id } from './httpUiErrors'
 import type { CrmUser } from './useCrmApi'
 
 export type CreateUserPayload = Partial<CrmUser> & {
@@ -15,8 +15,8 @@ export function useUsersApi() {
   const basePath = '/api/user'
 
   return {
-    list: (query?: ApiListQuery) =>
-      apiRequest<CrmUser[] | { data?: CrmUser[]; items?: CrmUser[]; meta?: { total?: number } }>('GET', basePath, { query }),
+    list: async (query?: ApiListQuery) =>
+      normalizePaginatedResponse(await apiRequest<ApiListResponse<CrmUser>>('GET', basePath, { query })),
     get: (id: Id) => apiRequest<CrmUser>('GET', `${basePath}/${id}`),
     create: (payload: CreateUserPayload) => apiRequest<CrmUser>('POST', basePath, { body: payload }),
     update: (id: Id, payload: UpdateUserPayload) => apiRequest<CrmUser>('PUT', `${basePath}/${id}`, { body: payload }),

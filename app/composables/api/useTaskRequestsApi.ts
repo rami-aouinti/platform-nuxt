@@ -1,4 +1,4 @@
-import { apiRequest, type ApiListQuery, type Id, type PaginatedResponse } from './httpUiErrors'
+import { apiRequest, normalizePaginatedResponse, type ApiListQuery, type ApiListResponse, type Id, type PaginatedResponse } from './httpUiErrors'
 import {
   normalizeTaskRequest,
   type CreateTaskRequestPayload,
@@ -18,7 +18,8 @@ export function useTaskRequestsApi() {
   const basePath = '/api/v1/task-requests'
 
   return {
-    list: async (query?: ApiListQuery) => normalizeTaskRequestPage(await apiRequest<PaginatedResponse<TaskRequest>>('GET', basePath, { query })),
+    list: async (query?: ApiListQuery) =>
+      normalizeTaskRequestPage(normalizePaginatedResponse(await apiRequest<ApiListResponse<TaskRequest>>('GET', basePath, { query }))),
     get: async (id: Id) => normalizeTaskRequest(await apiRequest<TaskRequest>('GET', `${basePath}/${id}`)),
     create: async (payload: CreateTaskRequestPayload) => normalizeTaskRequest(await apiRequest<TaskRequest>('POST', basePath, { body: payload })),
     update: async (id: Id, payload: UpdateTaskRequestPayload) => normalizeTaskRequest(await apiRequest<TaskRequest>('PUT', `${basePath}/${id}`, { body: payload })),

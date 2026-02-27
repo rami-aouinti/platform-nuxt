@@ -1,11 +1,12 @@
-import { apiRequest, type ApiListQuery, type Id, type PaginatedResponse } from './httpUiErrors'
+import { apiRequest, normalizePaginatedResponse, type ApiListQuery, type ApiListResponse, type Id } from './httpUiErrors'
 import type { Quiz, QuizPayload } from '~/types/quiz'
 
 export function useQuizzesApi() {
   const basePath = '/api/v1/quizzes'
 
   return {
-    list: (query?: ApiListQuery) => apiRequest<PaginatedResponse<Quiz> | Quiz[]>('GET', basePath, { query }),
+    list: async (query?: ApiListQuery) =>
+      normalizePaginatedResponse(await apiRequest<ApiListResponse<Quiz>>('GET', basePath, { query })),
     get: (id: Id) => apiRequest<Quiz>('GET', `${basePath}/${id}`),
     create: (payload: QuizPayload) => apiRequest<Quiz>('POST', basePath, { body: payload }),
     update: (id: Id, payload: QuizPayload) => apiRequest<Quiz>('PUT', `${basePath}/${id}`, { body: payload }),

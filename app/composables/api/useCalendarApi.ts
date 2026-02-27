@@ -1,11 +1,12 @@
-import { apiRequest, type ApiListQuery, type Id, type PaginatedResponse } from './httpUiErrors'
+import { apiRequest, normalizePaginatedResponse, type ApiListQuery, type ApiListResponse, type Id } from './httpUiErrors'
 import type { CalendarEvent, CalendarEventPayload } from '~/types/calendar'
 
 export function useCalendarApi() {
   const basePath = '/api/v1/calendar/events'
 
   return {
-    list: (query?: ApiListQuery) => apiRequest<PaginatedResponse<CalendarEvent> | CalendarEvent[]>('GET', basePath, { query }),
+    list: async (query?: ApiListQuery) =>
+      normalizePaginatedResponse(await apiRequest<ApiListResponse<CalendarEvent>>('GET', basePath, { query })),
     get: (id: Id) => apiRequest<CalendarEvent>('GET', `${basePath}/${id}`),
     create: (payload: CalendarEventPayload) => apiRequest<CalendarEvent>('POST', basePath, { body: payload }),
     update: (id: Id, payload: CalendarEventPayload) => apiRequest<CalendarEvent>('PUT', `${basePath}/${id}`, { body: payload }),

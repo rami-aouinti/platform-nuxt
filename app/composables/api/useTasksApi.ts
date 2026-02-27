@@ -1,4 +1,4 @@
-import { apiRequest, type ApiListQuery, type Id, type PaginatedResponse } from './httpUiErrors'
+import { apiRequest, normalizePaginatedResponse, type ApiListQuery, type ApiListResponse, type Id, type PaginatedResponse } from './httpUiErrors'
 import { normalizeTask, type CreateTaskPayload, type PatchTaskPayload, type Task, type UpdateTaskPayload } from '~/types/crm'
 
 function normalizeTaskPage(response: PaginatedResponse<Task>): PaginatedResponse<Task> {
@@ -12,7 +12,8 @@ export function useTasksApi() {
   const basePath = '/api/v1/tasks'
 
   return {
-    list: async (query?: ApiListQuery) => normalizeTaskPage(await apiRequest<PaginatedResponse<Task>>('GET', basePath, { query })),
+    list: async (query?: ApiListQuery) =>
+      normalizeTaskPage(normalizePaginatedResponse(await apiRequest<ApiListResponse<Task>>('GET', basePath, { query }))),
     get: async (id: Id) => normalizeTask(await apiRequest<Task>('GET', `${basePath}/${id}`)),
     create: async (payload: CreateTaskPayload) => normalizeTask(await apiRequest<Task>('POST', basePath, { body: payload })),
     update: async (id: Id, payload: UpdateTaskPayload) => normalizeTask(await apiRequest<Task>('PUT', `${basePath}/${id}`, { body: payload })),

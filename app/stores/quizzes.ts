@@ -1,26 +1,16 @@
 import { useQuizzesApi } from '~/composables/api/useQuizzesApi'
-import type { Id } from '~/composables/api/httpUiErrors'
+import { resolvePaginatedTotal, type Id } from '~/composables/api/httpUiErrors'
 import { Notify } from '~/stores/notification'
 import type { Quiz, QuizPayload } from '~/types/quiz'
 import { toUiErrorMessage } from '~/utils/errors/toUiErrorMessage'
 
-
-function normalizeList(payload: unknown): Quiz[] {
-  if (Array.isArray(payload)) return payload as Quiz[]
-  if (payload && typeof payload === 'object' && 'data' in payload && Array.isArray((payload as { data?: unknown }).data)) {
-    return (payload as { data: Quiz[] }).data
-  }
-  if (payload && typeof payload === 'object' && 'items' in payload && Array.isArray((payload as { items?: unknown }).items)) {
-    return (payload as { items: Quiz[] }).items
-  }
-  return []
-}
 
 export const useQuizzesStore = defineStore('quizzes', () => {
   const api = useQuizzesApi()
 
   const rows = ref<Quiz[]>([])
   const item = ref<Quiz | null>(null)
+  const pagination = ref({ total: 0 })
   const loading = ref(false)
   const error = ref<string | null>(null)
 
@@ -35,7 +25,8 @@ export const useQuizzesStore = defineStore('quizzes', () => {
     error.value = null
     try {
       const response = await api.list()
-      rows.value = normalizeList(response)
+      rows.value = response.data
+      pagination.value.total = resolvePaginatedTotal(response.meta?.total, response.data.length)
       return rows.value
     } catch (errorValue) {
       error.value = toUiErrorMessage(errorValue)
@@ -122,6 +113,7 @@ export const useQuizzesStore = defineStore('quizzes', () => {
     item,
     loading,
     error,
+    pagination,
     fetchRows,
     fetchItem,
     create,

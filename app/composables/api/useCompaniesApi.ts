@@ -1,4 +1,4 @@
-import { apiRequest, type ApiListQuery, type Id, type PaginatedResponse } from './httpUiErrors'
+import { apiRequest, normalizePaginatedResponse, type ApiListQuery, type ApiListResponse, type Id } from './httpUiErrors'
 import type { Company } from '~/types/crm'
 
 export type CreateCompanyPayload = {
@@ -13,7 +13,8 @@ export function useCompaniesApi() {
   const basePath = '/api/v1/companies'
 
   return {
-    list: (query?: ApiListQuery) => apiRequest<PaginatedResponse<Company>>('GET', basePath, { query }),
+    list: async (query?: ApiListQuery) =>
+      normalizePaginatedResponse(await apiRequest<ApiListResponse<Company>>('GET', basePath, { query })),
     get: (id: Id) => apiRequest<Company>('GET', `${basePath}/${id}`),
     create: (payload: CreateCompanyPayload) => apiRequest<Company>('POST', basePath, { body: payload }),
     update: (id: Id, payload: UpdateCompanyPayload) => apiRequest<Company>('PUT', `${basePath}/${id}`, { body: payload }),

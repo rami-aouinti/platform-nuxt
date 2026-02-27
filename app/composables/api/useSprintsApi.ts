@@ -1,4 +1,4 @@
-import { apiRequest, type ApiListQuery, type Id } from './httpUiErrors'
+import { apiRequest, normalizePaginatedResponse, type ApiListQuery, type ApiListResponse, type Id } from './httpUiErrors'
 import type { CreateSprintPayload, Sprint } from '~/types/crm'
 
 export type UpdateSprintPayload = Partial<CreateSprintPayload> & {
@@ -12,8 +12,8 @@ export function useSprintsApi() {
   const basePath = '/api/v1/sprints'
 
   return {
-    list: (query?: ApiListQuery) =>
-      apiRequest<Sprint[] | { data?: Sprint[]; items?: Sprint[]; meta?: { total?: number } }>('GET', basePath, { query }),
+    list: async (query?: ApiListQuery) =>
+      normalizePaginatedResponse(await apiRequest<ApiListResponse<Sprint>>('GET', basePath, { query })),
     get: (id: Id) => apiRequest<Sprint>('GET', `${basePath}/${id}`),
     create: (payload: CreateSprintPayload) => apiRequest<Sprint>('POST', basePath, { body: payload }),
     update: (id: Id, payload: UpdateSprintPayload) => apiRequest<Sprint>('PUT', `${basePath}/${id}`, { body: payload }),

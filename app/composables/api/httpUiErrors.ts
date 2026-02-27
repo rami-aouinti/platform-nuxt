@@ -20,6 +20,36 @@ export interface PaginatedResponse<T> {
   }
 }
 
+export type LegacyPaginatedResponse<T> = {
+  data?: T[]
+  items?: T[]
+  meta?: PaginatedResponse<T>['meta']
+}
+
+export function resolvePaginatedTotal(total: number | undefined, dataLength: number) {
+  return total ?? dataLength
+}
+
+export type ApiListResponse<T> = T[] | PaginatedResponse<T> | LegacyPaginatedResponse<T>
+
+export function normalizePaginatedResponse<T>(payload: ApiListResponse<T>): PaginatedResponse<T> {
+  if (Array.isArray(payload)) {
+    return {
+      data: payload,
+      meta: { total: payload.length },
+    }
+  }
+
+  const data = payload.data ?? ('items' in payload ? (payload.items ?? []) : [])
+  return {
+    data,
+    meta: {
+      ...payload.meta,
+      total: resolvePaginatedTotal(payload.meta?.total, data.length),
+    },
+  }
+}
+
 export interface UiApiError {
   statusCode: number
   type: 'forbidden' | 'not-found' | 'validation' | 'server' | 'unknown'

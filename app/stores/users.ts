@@ -1,15 +1,9 @@
 import { useUsersApi, type CreateUserPayload, type PatchUserPayload, type UpdateUserPayload } from '~/composables/api/useUsersApi'
-import type { ApiListQuery, Id } from '~/composables/api/httpUiErrors'
+import { resolvePaginatedTotal, type ApiListQuery, type Id } from '~/composables/api/httpUiErrors'
 import type { CrmUser } from '~/composables/api/useCrmApi'
 import { Notify } from '~/stores/notification'
 import { toUiErrorMessage } from '~/utils/errors/toUiErrorMessage'
 
-
-function normalizeRows(payload: CrmUser[] | { data?: CrmUser[]; items?: CrmUser[]; meta?: { total?: number } }) {
-  if (Array.isArray(payload)) return { data: payload, total: payload.length }
-  const data = payload.items ?? payload.data ?? []
-  return { data, total: payload.meta?.total ?? data.length }
-}
 
 export const useUsersStore = defineStore('users', () => {
   const api = useUsersApi()
@@ -50,9 +44,8 @@ export const useUsersStore = defineStore('users', () => {
 
     try {
       const response = await api.list(query.value)
-      const normalized = normalizeRows(response)
-      rows.value = normalized.data
-      pagination.value.total = normalized.total
+      rows.value = response.data
+      pagination.value.total = resolvePaginatedTotal(response.meta?.total, response.data.length)
       return rows.value
     } catch (errorValue) {
       error.value = toUiErrorMessage(errorValue)

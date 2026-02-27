@@ -1,26 +1,16 @@
 import { useCalendarApi } from '~/composables/api/useCalendarApi'
-import type { Id } from '~/composables/api/httpUiErrors'
+import { resolvePaginatedTotal, type Id } from '~/composables/api/httpUiErrors'
 import { Notify } from '~/stores/notification'
 import type { CalendarEvent, CalendarEventPayload } from '~/types/calendar'
 import { toUiErrorMessage } from '~/utils/errors/toUiErrorMessage'
 
-
-function normalizeList(payload: unknown): CalendarEvent[] {
-  if (Array.isArray(payload)) return payload as CalendarEvent[]
-  if (payload && typeof payload === 'object' && 'data' in payload && Array.isArray((payload as { data?: unknown }).data)) {
-    return (payload as { data: CalendarEvent[] }).data
-  }
-  if (payload && typeof payload === 'object' && 'items' in payload && Array.isArray((payload as { items?: unknown }).items)) {
-    return (payload as { items: CalendarEvent[] }).items
-  }
-  return []
-}
 
 export const useCalendarStore = defineStore('calendar', () => {
   const api = useCalendarApi()
 
   const rows = ref<CalendarEvent[]>([])
   const item = ref<CalendarEvent | null>(null)
+  const pagination = ref({ total: 0 })
   const loading = ref(false)
   const error = ref<string | null>(null)
 
@@ -35,7 +25,8 @@ export const useCalendarStore = defineStore('calendar', () => {
     error.value = null
     try {
       const response = await api.list()
-      rows.value = normalizeList(response)
+      rows.value = response.data
+      pagination.value.total = resolvePaginatedTotal(response.meta?.total, response.data.length)
       return rows.value
     } catch (errorValue) {
       error.value = toUiErrorMessage(errorValue)
@@ -141,6 +132,7 @@ export const useCalendarStore = defineStore('calendar', () => {
     item,
     loading,
     error,
+    pagination,
     fetchRows,
     fetchItem,
     create,
