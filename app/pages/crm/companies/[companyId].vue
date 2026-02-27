@@ -133,10 +133,30 @@ function sprintProjectName(sprint: CrmSprint) {
   return sprint.project.name || sprint.project.id || 'Projet inconnu'
 }
 
+function sprintTitle(sprint: CrmSprint) {
+  return sprint.name?.trim() || `Sprint ${sprint.id.slice(0, 8)}`
+}
+
+function sprintRequestCount(sprint: CrmSprint) {
+  return Array.isArray(sprint.taskRequests) ? sprint.taskRequests.length : 0
+}
 
 function memberLabel(member: CrmCompanyMember) {
-  const fullName = [member.firstName, member.lastName].filter(Boolean).join(' ').trim()
-  return fullName || member.username || member.email || member.id
+  const user = member.user
+  const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim()
+  return fullName || user?.username || user?.email || user?.id || member.id
+}
+
+function memberSubLabel(member: CrmCompanyMember) {
+  const user = member.user
+  return user?.email || user?.username || user?.id || ''
+}
+
+function formatDisplayDate(value?: string | null) {
+  if (!value) return '—'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  return date.toLocaleDateString('fr-FR')
 }
 
 function openSprint(sprintId: string) {
@@ -425,12 +445,13 @@ watch(
           >
             <v-card variant="outlined" class="h-100" hover @click="openSprint(sprint.id)">
               <v-card-title class="d-flex justify-space-between align-center ga-2">
-                <span class="text-truncate">{{ sprint.name || sprint.id }}</span>
-                <v-chip size="small" variant="tonal">{{ sprint.status || 'planned' }}</v-chip>
+                <span class="text-truncate">{{ sprintTitle(sprint) }}</span>
+                <v-chip size="small" :color="sprint.active ? 'success' : 'default'" variant="tonal">{{ sprint.active ? 'active' : 'inactive' }}</v-chip>
               </v-card-title>
               <v-card-text>
                 <p class="mb-1"><strong>Projet :</strong> {{ sprintProjectName(sprint) }}</p>
-                <p class="mb-0"><strong>Objectif :</strong> {{ sprint.goal || 'Aucun objectif.' }}</p>
+                <p class="mb-1"><strong>Période :</strong> {{ formatDisplayDate(sprint.startDate) }} - {{ formatDisplayDate(sprint.endDate) }}</p>
+                <p class="mb-0"><strong>Task requests :</strong> {{ sprintRequestCount(sprint) }}</p>
               </v-card-text>
             </v-card>
           </v-col>
@@ -463,15 +484,17 @@ watch(
             <p class="mb-3">{{ company?.description || 'Aucune description.' }}</p>
             <div>
               <p class="text-caption text-medium-emphasis mb-2">Members</p>
-              <v-chip
-                v-for="member in companyMembers"
-                :key="member.id"
-                size="small"
-                class="ma-1"
-                variant="outlined"
-              >
-                {{ memberLabel(member) }}
-              </v-chip>
+              <v-list v-if="companyMembers.length" density="compact" class="pa-0">
+                <v-list-item v-for="member in companyMembers" :key="member.id" class="px-0">
+                  <template #title>{{ memberLabel(member) }}</template>
+                  <template #subtitle>
+                    <div>{{ memberSubLabel(member) }}</div>
+                    <div>Role: {{ member.role || 'member' }} · Status: {{ member.status || 'unknown' }}</div>
+                    <div>Invité: {{ formatDisplayDate(member.invitedAt) }} · Rejoint: {{ formatDisplayDate(member.joinedAt) }}</div>
+                  </template>
+                </v-list-item>
+              </v-list>
+              <p v-else class="text-body-2 text-medium-emphasis mb-0">Aucun member.</p>
             </div>
           </v-card-text>
         </v-card>

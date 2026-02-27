@@ -42,6 +42,9 @@ export type CrmSprint = {
   startDate?: string | null
   endDate?: string | null
   project?: { id?: string; name?: string } | string | null
+  taskRequests?: CrmTaskRequest[] | null
+  company?: { id?: string; name?: string } | string | null | []
+  active?: boolean | null
 }
 
 export type CreateSprintPayload = {
@@ -86,10 +89,17 @@ export type CrmTaskRequest = {
 
 export type CrmCompanyMember = {
   id: string
-  username?: string
-  firstName?: string
-  lastName?: string
-  email?: string
+  user?: {
+    id?: string
+    username?: string
+    firstName?: string
+    lastName?: string
+    email?: string
+  } | null
+  role?: string | null
+  status?: string | null
+  invitedAt?: string | null
+  joinedAt?: string | null
 }
 
 export type CrmUser = {
