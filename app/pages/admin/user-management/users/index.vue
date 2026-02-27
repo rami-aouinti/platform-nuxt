@@ -159,6 +159,11 @@ function normalize(payload: unknown): UserRecord[] {
         continue
       }
 
+      if (typeof value === 'boolean' || typeof value === 'number') {
+        normalizedRow[key] = value
+        continue
+      }
+
       if (typeof value === 'object') {
         normalizedRow[key] = JSON.stringify(value)
       } else {
@@ -451,6 +456,50 @@ const {
   },
 })
 
+const rowPatchLoadingByKey = ref<Record<string, boolean>>({})
+
+const rowPatchLoadingKeys = computed(() => Object.keys(rowPatchLoadingByKey.value))
+
+function getRowPatchKey(rowId: string, field: string) {
+  return `${rowId}:${field}`
+}
+
+async function onRowPatch(payload: { rowId: string; field: string; value: boolean }) {
+  const rowPatchKey = getRowPatchKey(payload.rowId, payload.field)
+  if (rowPatchLoadingByKey.value[rowPatchKey]) {
+    return
+  }
+
+  const targetRow = rows.value.find((row) => String(row.id ?? '') === payload.rowId)
+  if (!targetRow) {
+    return
+  }
+
+  const previousValue = Boolean(targetRow[payload.field])
+  targetRow[payload.field] = payload.value
+  rowPatchLoadingByKey.value = {
+    ...rowPatchLoadingByKey.value,
+    [rowPatchKey]: true,
+  }
+
+  try {
+    await $fetch(`/api/user/${encodeURIComponent(payload.rowId)}` as any, {
+      method: 'PATCH' as any,
+      body: {
+        [payload.field]: payload.value,
+      },
+    })
+  } catch (errorValue) {
+    targetRow[payload.field] = previousValue
+    Notify.error(
+      `Action échouée : ${errorValue instanceof Error ? errorValue.message : 'Erreur API.'}`,
+    )
+  } finally {
+    const { [rowPatchKey]: _removed, ...remaining } = rowPatchLoadingByKey.value
+    rowPatchLoadingByKey.value = remaining
+  }
+}
+
 function createRow() {
   if (!canCreate.value) {
     return
@@ -531,6 +580,7 @@ onMounted(async () => {
       :can-edit="canEdit"
       :can-delete="canDelete"
       :mutation-loading="mutationLoading"
+      :row-patch-loading-keys="rowPatchLoadingKeys"
       resource-name="l'utilisateur"
       @update:page="page = $event"
       @update:page-size="pageSize = $event"
@@ -538,6 +588,7 @@ onMounted(async () => {
       @update:search="search = $event"
       @update:filters="filters = $event"
       @row-show="onRowShow"
+      @row-patch="onRowPatch"
       @create="createRow"
       @save-edit="saveEdit"
       @row-delete="deleteRow"

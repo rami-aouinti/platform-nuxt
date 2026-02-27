@@ -22,6 +22,12 @@ type FieldConfig = {
   patchable?: boolean
 }
 
+type RowPatchPayload = {
+  rowId: string
+  field: string
+  value: boolean
+}
+
 const props = withDefaults(
   defineProps<{
     title?: string
@@ -47,6 +53,7 @@ const props = withDefaults(
     resourceName?: string
     detailRouteBase?: string
     mutationLoading?: boolean
+    rowPatchLoadingKeys?: string[]
   }>(),
   {
     title: undefined,
@@ -70,6 +77,7 @@ const props = withDefaults(
     resourceName: 'élément',
     detailRouteBase: undefined,
     mutationLoading: false,
+    rowPatchLoadingKeys: () => [],
   },
 )
 
@@ -83,6 +91,7 @@ const emit = defineEmits<{
   'row-show': [row: AdminRow]
   'row-edit': [row: AdminRow]
   'row-delete': [row: AdminRow]
+  'row-patch': [payload: RowPatchPayload]
   'save-edit': [row: AdminRow]
   refresh: []
 }>()
@@ -127,6 +136,8 @@ const fieldConfigByKey = computed(() => {
   }, {})
 })
 
+const rowPatchLoadingSet = computed(() => new Set(props.rowPatchLoadingKeys))
+
 function getFieldType(key: string) {
   return fieldConfigByKey.value[key]?.type ?? 'normal'
 }
@@ -163,6 +174,27 @@ function getDisplayValue(value: unknown, type: FieldConfig['type']) {
 
 function normalizeBooleanValue(value: unknown) {
   return Boolean(value)
+}
+
+function getRowPatchKey(rowId: string, field: string) {
+  return `${rowId}:${field}`
+}
+
+function isRowPatchLoading(rowId: string, field: string) {
+  return rowPatchLoadingSet.value.has(getRowPatchKey(rowId, field))
+}
+
+function emitRowPatch(item: AdminRow, field: string, value: unknown) {
+  const rowId = String(item.id ?? '').trim()
+  if (!rowId || isRowPatchLoading(rowId, field)) {
+    return
+  }
+
+  emit('row-patch', {
+    rowId,
+    field,
+    value: Boolean(value),
+  })
 }
 
 function getObjectList(value: unknown) {
@@ -429,12 +461,17 @@ onMounted(() => {
             </v-avatar>
           </template>
 
-          <v-checkbox-btn
+          <v-switch
             v-else-if="getFieldType(String(column.key)) === 'boolean'"
             :model-value="normalizeBooleanValue(slotProps.item[String(column.key)])"
+            :loading="isRowPatchLoading(String(slotProps.item.id ?? ''), String(column.key))"
+            :disabled="isRowPatchLoading(String(slotProps.item.id ?? ''), String(column.key))"
             density="compact"
-            readonly
-            disabled
+            color="primary"
+            hide-details
+            inset
+            @click.stop
+            @update:model-value="emitRowPatch(slotProps.item, String(column.key), $event)"
           />
 
           <template v-else-if="getFieldType(String(column.key)) === 'object'">
