@@ -42,11 +42,14 @@ export type CrmSprint = {
   startDate?: string | null
   endDate?: string | null
   project?: { id?: string; name?: string } | string | null
+  taskRequests?: CrmTaskRequest[] | null
+  company?: { id?: string; name?: string } | string | null | []
+  active?: boolean | null
 }
 
 export type CreateSprintPayload = {
   name: string
-  project: string
+  company: string
   goal?: string
   status?: string
   startDate?: string
@@ -81,6 +84,22 @@ export type CrmTaskRequest = {
     | null
   requesterId?: string | null
   reviewerId?: string | null
+}
+
+
+export type CrmCompanyMember = {
+  id: string
+  user?: {
+    id?: string
+    username?: string
+    firstName?: string
+    lastName?: string
+    email?: string
+  } | null
+  role?: string | null
+  status?: string | null
+  invitedAt?: string | null
+  joinedAt?: string | null
 }
 
 export type CrmUser = {
@@ -162,6 +181,10 @@ export function useCrmApi() {
     listProjects: () => $fetch<CrmProject[]>(projectsBase, { method: 'GET' }),
     listCompanyProjects: (companyId: string) =>
       $fetch<CrmProject[]>(`${companiesBase}/${companyId}/projects`, {
+        method: 'GET',
+      }),
+    listCompanyMembers: (companyId: string) =>
+      $fetch<CrmCompanyMember[]>(`${companiesBase}/${companyId}/members`, {
         method: 'GET',
       }),
     createProject: (payload: CreateProjectPayload) =>
