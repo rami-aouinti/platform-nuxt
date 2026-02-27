@@ -6,9 +6,9 @@ import AdminCard from '~/components/admin/ui/AdminCard.vue'
 import AdminToolbar from '~/components/admin/ui/AdminToolbar.vue'
 import AdminErrorState from '~/components/admin/ui/AdminErrorState.vue'
 import AdminEmptyState from '~/components/admin/ui/AdminEmptyState.vue'
-import { buildApiPlatformQuery } from '../../../../services/admin/_shared'
+import { buildApiPlatformQuery } from '../../../../services/admin/shared/index'
 import { HttpRequestError } from '../../../../services/http/client'
-import { jobOffersService, type JobOffer } from '../../../../services/admin/job-offers'
+import { jobOffersService, type JobOffer } from '../../../../services/admin/job-offers/index'
 
 definePageMeta({
   icon: 'mdi-briefcase-search-outline',

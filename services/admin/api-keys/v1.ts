@@ -1,4 +1,4 @@
-import type { PatchPayload } from '../_shared'
+import type { PatchPayload } from '../shared/index'
 import {
   createApiKeysService,
   type BaseApiKey,

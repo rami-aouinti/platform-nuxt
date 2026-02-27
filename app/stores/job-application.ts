@@ -5,7 +5,7 @@ import {
   type UpdateJobApplicationRequest,
   type PatchJobApplicationRequest,
   type ApplyToJobOfferRequest,
-} from '../../services/admin/job-applications'
+} from '../../services/admin/job-applications/index'
 import { HttpRequestError } from '../../services/http/client'
 import {
   applicationStatusMeta,

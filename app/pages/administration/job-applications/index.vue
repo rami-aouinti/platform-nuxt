@@ -9,9 +9,9 @@ import AdminCard from '~/components/admin/ui/AdminCard.vue'
 import AdminToolbar from '~/components/admin/ui/AdminToolbar.vue'
 import AdminErrorState from '~/components/admin/ui/AdminErrorState.vue'
 import AdminEmptyState from '~/components/admin/ui/AdminEmptyState.vue'
-import { buildApiPlatformQuery } from '../../../../services/admin/_shared'
+import { buildApiPlatformQuery } from '../../../../services/admin/shared/index'
 import { HttpRequestError } from '../../../../services/http/client'
-import { jobApplicationsService, type JobApplication } from '../../../../services/admin/job-applications'
+import { jobApplicationsService, type JobApplication } from '../../../../services/admin/job-applications/index'
 
 definePageMeta({
   icon: 'mdi-file-document-check-outline',

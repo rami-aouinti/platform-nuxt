@@ -5,7 +5,7 @@ import {
   type CreateJobOfferRequest,
   type UpdateJobOfferRequest,
   type PatchJobOfferRequest,
-} from '../../services/admin/job-offers'
+} from '../../services/admin/job-offers/index'
 import { HttpRequestError } from '../../services/http/client'
 import {
   asLabel,

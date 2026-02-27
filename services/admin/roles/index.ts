@@ -1,4 +1,4 @@
-import { createAdminCrudService, type Id, type PatchPayload } from '../_shared'
+import { createAdminCrudService, type Id, type PatchPayload } from '../shared/index'
 
 const ROLES_BASE_PATH = '/api/v1/admin/roles'
 

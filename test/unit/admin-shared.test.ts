@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { normalizePaginatedResponse } from '../../services/admin/pagination'
+import { normalizePaginatedResponse } from '../../services/admin/pagination/index'
 
 describe('normalizePaginatedResponse', () => {
   it('normalizes array responses to paginated shape', () => {

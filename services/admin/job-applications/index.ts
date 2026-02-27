@@ -1,4 +1,4 @@
-import { type Id, type PatchPayload, createAdminCrudService } from '../_shared'
+import { type Id, type PatchPayload, createAdminCrudService } from '../shared/index'
 import { httpPatch, httpPost } from '../../http/client'
 
 const JOB_APPLICATIONS_BASE_PATH = '/api/job-applications'

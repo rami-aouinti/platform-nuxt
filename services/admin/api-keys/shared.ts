@@ -3,7 +3,7 @@ import {
   type AdminCrudService,
   type Id,
   type PatchPayload,
-} from '../_shared'
+} from '../shared/index'
 
 export interface BaseApiKey {
   id: Id

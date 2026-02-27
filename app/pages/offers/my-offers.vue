@@ -6,7 +6,7 @@ import { useJobApplicationStore } from '~/stores/job-application'
 import { useJobOfferStore } from '~/stores/job-offer'
 import { applicationStatusMeta } from '~/domain/offers/helpers'
 import { HttpRequestError } from '../../../services/http/client'
-import type { JobOffer } from '../../../services/admin/job-offers/index'
+import type { JobOffer } from '../../../services/admin/job-offers/index/index'
 
 definePageMeta({
   icon: 'mdi-briefcase-edit-outline',
