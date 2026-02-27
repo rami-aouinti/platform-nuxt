@@ -5,6 +5,7 @@ import { Notify } from '~/stores/notification'
 import { useAuthStore } from '~/stores/auth'
 import { canManageUsers, isRoot } from '~/utils/permissions/admin'
 import { useInternalEventTracking } from '~/composables/useInternalEventTracking'
+import { normalizeListResponse } from '~/utils/admin/normalize-list-response'
 
 type UserRecord = {
   id: string
@@ -53,15 +54,7 @@ const columns: DataTableHeader[] = [
   { title: 'Groupes', key: 'userGroups' },
 ]
 
-function normalize(payload: unknown): UserRecord[] {
-  const list = Array.isArray(payload)
-    ? payload
-    : payload && typeof payload === 'object' && Array.isArray((payload as { items?: unknown[] }).items)
-      ? (payload as { items: unknown[] }).items
-      : payload && typeof payload === 'object' && Array.isArray((payload as { data?: unknown[] }).data)
-        ? (payload as { data: unknown[] }).data
-        : []
-
+function toUsers(list: unknown[]): UserRecord[] {
   return list.map((entry, index) => {
     const row = entry as Record<string, unknown>
     const roleList = Array.isArray(row.roles) ? row.roles.map(String) : []
@@ -102,15 +95,11 @@ async function loadRows() {
       group: filters.value.group || undefined,
     }
 
-    const [listResponse, countResponse] = await Promise.all([
-      $fetch('/api/user', { query }),
-      $fetch('/api/user/count'),
-    ])
+    const listResponse = await $fetch('/api/user', { query })
+    const normalized = normalizeListResponse(listResponse)
 
-    rows.value = normalize(listResponse)
-    total.value = typeof countResponse === 'number'
-      ? countResponse
-      : Number((countResponse as { count?: number })?.count ?? rows.value.length)
+    rows.value = toUsers(normalized.rows)
+    total.value = normalized.total ?? rows.value.length
   } catch (errorValue) {
     error.value = toError(errorValue)
   } finally {

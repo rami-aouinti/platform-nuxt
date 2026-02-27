@@ -9,6 +9,7 @@ import AdminEmptyState from '~/components/admin/ui/AdminEmptyState.vue'
 import { buildApiPlatformQuery } from '../../../../services/admin/shared/index'
 import { HttpRequestError } from '../../../../services/http/client'
 import { jobOffersService, type JobOffer } from '../../../../services/admin/job-offers/index'
+import { normalizeListResponse } from '~/utils/admin/normalize-list-response'
 
 definePageMeta({
   icon: 'mdi-briefcase-search-outline',
@@ -95,19 +96,22 @@ async function loadRows() {
   forbidden.value = false
 
   try {
-    const response = await jobOffersService.list({
-      ...buildApiPlatformQuery({
-        page: page.value,
-        pageSize: pageSize.value,
-        search: search.value,
-        sortBy: 'title',
-        sortOrder: 'asc',
-        filters: { status: filters.value.status || undefined },
-      }),
+    const response = await $fetch('/api/job-offers', {
+      query: {
+        ...buildApiPlatformQuery({
+          page: page.value,
+          pageSize: pageSize.value,
+          search: search.value,
+          sortBy: 'title',
+          sortOrder: 'asc',
+          filters: { status: filters.value.status || undefined },
+        }),
+      },
     })
 
-    rows.value = response.data
-    total.value = response.meta?.totalItems ?? response.data.length
+    const normalized = normalizeListResponse<JobOffer>(response)
+    rows.value = normalized.rows
+    total.value = normalized.total ?? rows.value.length
   } catch (errorValue) {
     if (errorValue instanceof HttpRequestError && errorValue.statusCode === 403) {
       forbidden.value = true
@@ -182,7 +186,11 @@ async function deleteOffer(row: Record<string, unknown>) {
 
 watch([page, pageSize], loadRows)
 watchDebounced([search, filters], () => {
-  page.value = 1
+  if (page.value !== 1) {
+    page.value = 1
+    return
+  }
+
   void loadRows()
 }, { debounce: 300, maxWait: 1000 })
 

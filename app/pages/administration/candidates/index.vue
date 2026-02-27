@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { DataTableHeader } from 'vuetify'
 import { Notify } from '~/stores/notification'
+import { normalizeListResponse } from '~/utils/admin/normalize-list-response'
 
 type Candidate = { id: string; firstName: string; lastName: string; email: string; status: string }
 
@@ -31,15 +32,7 @@ const columns: DataTableHeader[] = [
   { title: 'Status', key: 'status' },
 ]
 
-function normalize(payload: unknown): Candidate[] {
-  const list = Array.isArray(payload)
-    ? payload
-    : payload && typeof payload === 'object' && Array.isArray((payload as { items?: unknown[] }).items)
-      ? (payload as { items: unknown[] }).items
-      : payload && typeof payload === 'object' && Array.isArray((payload as { data?: unknown[] }).data)
-        ? (payload as { data: unknown[] }).data
-        : []
-
+function toCandidates(list: unknown[]): Candidate[] {
   return list.map((entry, index) => {
     const row = entry as Record<string, unknown>
     return {
@@ -59,8 +52,9 @@ async function loadRows() {
     const response = await $fetch('/api/candidates', {
       query: { search: search.value || undefined, status: filters.value.status || undefined, page: page.value, limit: pageSize.value },
     })
-    rows.value = normalize(response)
-    total.value = rows.value.length
+    const normalized = normalizeListResponse(response)
+    rows.value = toCandidates(normalized.rows)
+    total.value = normalized.total ?? rows.value.length
   } catch (errorValue) {
     error.value = errorValue instanceof Error ? errorValue.message : 'Erreur API.'
   } finally {

@@ -1,4 +1,5 @@
 import { proxyAuthApiGet } from '../../utils/auth-api-proxy'
+import { normalizeListResponse } from '../../utils/normalize-list-response'
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
@@ -22,5 +23,7 @@ export default defineEventHandler(async (event) => {
   const suffix = searchParams.toString()
   const path = suffix ? `/api/v1/role?${suffix}` : '/api/v1/role'
 
-  return await proxyAuthApiGet(event, path)
+  const response = await proxyAuthApiGet(event, path)
+
+  return normalizeListResponse(response)
 })

@@ -2,6 +2,7 @@
 import type { DataTableHeader } from 'vuetify'
 import { Notify } from '~/stores/notification'
 import { companiesService, type Company, type CreateCompanyRequest, type UpdateCompanyRequest } from '../../../../services/admin/companies/index'
+import { normalizeListResponse } from '~/utils/admin/normalize-list-response'
 import { buildApiPlatformQuery } from '../../../../services/admin/shared/index'
 import { HttpRequestError } from '../../../../services/http/client'
 
@@ -61,21 +62,24 @@ async function loadRows() {
   error.value = null
 
   try {
-    const response = await companiesService.list({
-      ...buildApiPlatformQuery({
-        page: page.value,
-        pageSize: pageSize.value,
-        search: search.value,
-        sortBy: 'legalName',
-        sortOrder: 'asc',
-        filters: {
-          status: filters.value.status || undefined,
-        },
-      }),
+    const response = await $fetch('/api/companies', {
+      query: {
+        ...buildApiPlatformQuery({
+          page: page.value,
+          pageSize: pageSize.value,
+          search: search.value,
+          sortBy: 'legalName',
+          sortOrder: 'asc',
+          filters: {
+            status: filters.value.status || undefined,
+          },
+        }),
+      },
     })
 
-    rows.value = response.data
-    total.value = response.meta?.totalItems ?? response.data.length
+    const normalized = normalizeListResponse<Company>(response)
+    rows.value = normalized.rows
+    total.value = normalized.total ?? rows.value.length
   } catch (errorValue) {
     error.value = toErrorMessage(errorValue)
   } finally {
