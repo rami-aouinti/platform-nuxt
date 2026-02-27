@@ -40,6 +40,7 @@ const companyId = computed(() =>
 const loading = ref(false)
 const createLoading = ref(false)
 const company = ref<CrmCompany | null>(null)
+const companies = ref<CrmCompany[]>([])
 const companyMembershipIds = ref<string[]>([])
 const projects = ref<CrmProjectExtended[]>([])
 const sprints = ref<CrmSprint[]>([])
@@ -56,7 +57,7 @@ const projectForm = reactive({
 
 const sprintForm = reactive<CreateSprintPayload>({
   name: '',
-  project: '',
+  company: '',
   goal: '',
   status: 'planned',
   startDate: '',
@@ -187,14 +188,15 @@ async function loadData() {
       crmApi.listCompanyMembers(companyId.value),
     ])
 
-    const companies = normalizeItems<CrmCompany>(companiesResult)
+    const companyItems = normalizeItems<CrmCompany>(companiesResult)
     const projectItems = normalizeItems<CrmProjectExtended>(projectsResult)
     const sprintItems = normalizeItems<CrmSprint>(sprintsResult)
     const memberItems = normalizeItems<CrmCompanyMember>(membersResult)
 
+    companies.value = companyItems
     company.value =
-      companies.find((entry) => entry.id === companyId.value) ?? null
-    companyMembershipIds.value = companies
+      companyItems.find((entry) => entry.id === companyId.value) ?? null
+    companyMembershipIds.value = companyItems
       .filter((entry) => entry.role === 'owner' || entry.role === 'member')
       .map((entry) => entry.id)
 
@@ -256,8 +258,8 @@ async function createSprint() {
     return
   }
 
-  if (!sprintForm.project) {
-    Notify.error('Veuillez sélectionner un projet.')
+  if (!sprintForm.company) {
+    Notify.error('Veuillez sélectionner une company.')
     return
   }
 
@@ -275,7 +277,7 @@ async function createSprint() {
   try {
     await crmApi.createSprint({
       name: sprintForm.name.trim(),
-      project: sprintForm.project,
+      company: sprintForm.company,
       goal: sprintForm.goal?.trim() || undefined,
       status: sprintForm.status || undefined,
       startDate: toIsoDateTime(sprintForm.startDate),
@@ -283,7 +285,7 @@ async function createSprint() {
     })
 
     sprintForm.name = ''
-    sprintForm.project = projects.value[0]?.id || ''
+    sprintForm.company = company.value?.id || companies.value[0]?.id || ''
     sprintForm.goal = ''
     sprintForm.status = 'planned'
     resetSprintDates()
@@ -309,18 +311,21 @@ watch(createSprintDialog, (value) => {
 })
 
 watch(
-  projects,
+  companies,
   (value) => {
     if (!value.length) {
-      sprintForm.project = ''
+      sprintForm.company = ''
       return
     }
-    if (
-      !sprintForm.project ||
-      !value.some((project) => project.id === sprintForm.project)
-    ) {
-      const firstProject = value[0]
-      sprintForm.project = firstProject ? firstProject.id : ''
+
+    if (company.value?.id && value.some((entry) => entry.id === company.value?.id)) {
+      sprintForm.company = company.value.id
+      return
+    }
+
+    if (!sprintForm.company || !value.some((entry) => entry.id === sprintForm.company)) {
+      const firstCompany = value[0]
+      sprintForm.company = firstCompany ? firstCompany.id : ''
     }
   },
   { immediate: true },
@@ -509,9 +514,9 @@ watch(
             autofocus
           />
           <v-select
-            v-model="sprintForm.project"
-            label="Projet"
-            :items="projects"
+            v-model="sprintForm.company"
+            label="Company"
+            :items="companies"
             item-title="name"
             item-value="id"
           />

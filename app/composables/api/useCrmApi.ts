@@ -46,7 +46,7 @@ export type CrmSprint = {
 
 export type CreateSprintPayload = {
   name: string
-  project: string
+  company: string
   goal?: string
   status?: string
   startDate?: string
