@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Notify } from '~/stores/notification'
+import { notifyFormValidationError } from '~/stores/_factories/storeNotifications'
 import type { ResumeEducation, ResumeExperience, ResumeSkill } from '~/composables/useResumeApi'
 import type {
   ResumeEducationFormModel,
@@ -86,7 +86,7 @@ async function validateForm(formRef: { validate?: () => Promise<{ valid: boolean
 
 async function saveResume() {
   if (!await validateForm(resumeFormRef.value)) {
-    Notify.error('Les informations du CV contiennent des erreurs. Merci de les corriger.')
+    notifyFormValidationError('Les informations du CV')
     return
   }
 
@@ -112,7 +112,7 @@ function editExperience(item: ResumeExperience) {
 
 async function submitExperience() {
   if (!await validateForm(experienceFormRef.value)) {
-    Notify.error("L'expérience contient des erreurs. Merci de les corriger.")
+    notifyFormValidationError("L'expérience")
     return
   }
 
@@ -144,7 +144,7 @@ function editEducation(item: ResumeEducation) {
 
 async function submitEducation() {
   if (!await validateForm(educationFormRef.value)) {
-    Notify.error('La formation contient des erreurs. Merci de les corriger.')
+    notifyFormValidationError('La formation')
     return
   }
 
@@ -176,7 +176,7 @@ function editSkill(item: ResumeSkill) {
 
 async function submitSkill() {
   if (!await validateForm(skillFormRef.value)) {
-    Notify.error('La compétence contient des erreurs. Merci de les corriger.')
+    notifyFormValidationError('La compétence')
     return
   }
 
