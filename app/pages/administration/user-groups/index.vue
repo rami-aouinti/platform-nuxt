@@ -8,6 +8,7 @@ import { useInternalEventTracking } from '~/composables/useInternalEventTracking
 import { extractCollectionFromPayload } from '~/utils/admin/extractCollectionFromPayload'
 
 type GroupRecord = { id: string; name: string }
+type UserRecord = { id: string; username: string; email: string }
 
 definePageMeta({
   icon: 'mdi-account-group-outline',
@@ -25,15 +26,17 @@ const { roles } = storeToRefs(authStore)
 const { track } = useInternalEventTracking()
 
 const canShow = computed(() => canManageUsers(roles.value))
-const canCreate = computed(() => isRoot(roles.value))
 const canEdit = computed(() => isRoot(roles.value))
 const canDelete = computed(() => isRoot(roles.value))
+const canManageUsersInGroup = computed(() => isRoot(roles.value))
 
-const createOpen = ref(false)
-const creating = ref(false)
-const createForm = reactive({
-  name: '',
-})
+const detailUsers = ref<UserRecord[]>([])
+const detailLoading = ref(false)
+const detailActionLoading = ref(false)
+const selectedDetailGroup = ref<GroupRecord | null>(null)
+const selectedUserId = ref('')
+const availableUsers = ref<UserRecord[]>([])
+const loadingUserOptions = ref(false)
 
 const columns: DataTableHeader[] = [
   { title: 'Nom', key: 'name' },
@@ -47,6 +50,127 @@ function normalize(payload: unknown): GroupRecord[] {
       name: String(row.name ?? ''),
     }
   })
+}
+
+function normalizeUsers(payload: unknown): UserRecord[] {
+  const records = extractCollectionFromPayload(payload)
+
+  return records
+    .map((entry, index) => {
+      const row = entry as Record<string, unknown>
+      return {
+        id: String(row.id ?? row.uuid ?? index).trim(),
+        username: String(row.username ?? row.userName ?? '').trim(),
+        email: String(row.email ?? '').trim(),
+      }
+    })
+    .filter((user) => Boolean(user.id))
+}
+
+const availableUserOptions = computed(() => {
+  const attachedIds = new Set(detailUsers.value.map((user) => user.id))
+
+  return availableUsers.value
+    .filter((user) => !attachedIds.has(user.id))
+    .map((user) => ({
+      title: user.username
+        ? `${user.username}${user.email ? ` (${user.email})` : ''}`
+        : user.id,
+      value: user.id,
+    }))
+})
+
+async function loadAvailableUsers() {
+  loadingUserOptions.value = true
+
+  try {
+    const payload = await $fetch('/api/user', {
+      query: {
+        limit: 300,
+        offset: 0,
+      },
+    })
+    availableUsers.value = normalizeUsers(payload)
+  } catch (errorValue) {
+    Notify.error(
+      `Impossible de charger les utilisateurs : ${errorValue instanceof Error ? errorValue.message : 'Erreur API.'}`,
+    )
+    availableUsers.value = []
+  } finally {
+    loadingUserOptions.value = false
+  }
+}
+
+async function loadGroupUsers(groupId: string) {
+  if (!groupId) {
+    return
+  }
+
+  detailLoading.value = true
+
+  try {
+    const payload = await $fetch(`/api/user_group/${encodeURIComponent(groupId)}/users`)
+    detailUsers.value = normalizeUsers(payload)
+  } catch (errorValue) {
+    Notify.error(
+      `Impossible de charger les membres du groupe : ${errorValue instanceof Error ? errorValue.message : 'Erreur API.'}`,
+    )
+    detailUsers.value = []
+  } finally {
+    detailLoading.value = false
+  }
+}
+
+async function onRowShow(row: Record<string, unknown>) {
+  selectedDetailGroup.value = row as GroupRecord
+  selectedUserId.value = ''
+  detailUsers.value = []
+  await loadGroupUsers(String(row.id ?? ''))
+}
+
+async function attachUser() {
+  if (!canManageUsersInGroup.value || !selectedDetailGroup.value || !selectedUserId.value) {
+    return
+  }
+
+  detailActionLoading.value = true
+
+  try {
+    await $fetch(`/api/user_group/${encodeURIComponent(selectedDetailGroup.value.id)}/user/${encodeURIComponent(selectedUserId.value)}`, {
+      method: 'POST',
+    })
+    Notify.success('Utilisateur attaché avec succès.')
+    selectedUserId.value = ''
+    await loadGroupUsers(selectedDetailGroup.value.id)
+  } catch (errorValue) {
+    Notify.error(
+      `Impossible d'attacher l'utilisateur : ${errorValue instanceof Error ? errorValue.message : 'Erreur API.'}`,
+    )
+  } finally {
+    detailActionLoading.value = false
+  }
+}
+
+async function detachUser(userId: string) {
+  if (!canManageUsersInGroup.value || !selectedDetailGroup.value) {
+    return
+  }
+
+  detailActionLoading.value = true
+
+  try {
+    await $fetch(`/api/user_group/${encodeURIComponent(selectedDetailGroup.value.id)}/user/${encodeURIComponent(userId)}`, {
+      method: 'DELETE',
+    })
+    Notify.success('Utilisateur retiré du groupe.')
+    await loadGroupUsers(selectedDetailGroup.value.id)
+  } catch (errorValue) {
+    Notify.error(
+      `Impossible de retirer l'utilisateur : ${errorValue instanceof Error ? errorValue.message : 'Erreur API.'}`,
+    )
+  } finally {
+    detailActionLoading.value = false
+  }
 }
 
 const {
@@ -72,7 +196,7 @@ const {
         query: {
           limit: pageSize,
           offset: Math.max(page - 1, 0) * pageSize,
-          order: sortBy[0] && sortBy[0].order && sortBy[0].order !== false
+          order: sortBy[0] && sortBy[0].order
             ? `${sortBy[0].key}:${sortBy[0].order === 'desc' ? 'desc' : 'asc'}`
             : undefined,
           search: search || undefined,
@@ -133,50 +257,9 @@ const {
   },
 })
 
-function createRow() {
-  if (!canCreate.value) {
-    return
-  }
-
-  createForm.name = ''
-  createOpen.value = true
-}
-
-async function submitCreateRow() {
-  if (!createForm.name.trim()) {
-    Notify.error('Le nom du groupe est requis.')
-    return
-  }
-
-  creating.value = true
-
-  try {
-    await $fetch('/api/user_group', {
-      method: 'POST' as any,
-      body: {
-        name: createForm.name.trim(),
-      },
-    })
-
-    Notify.success('Action réussie : groupe créé.')
-    track({
-      name: 'admin.user-groups.create',
-      payload: { name: createForm.name.trim() },
-    })
-    createOpen.value = false
-    await loadRows()
-  } catch (errorValue) {
-    Notify.error(
-      `Action échouée : ${errorValue instanceof Error ? errorValue.message : 'Erreur API.'}`,
-    )
-  } finally {
-    creating.value = false
-  }
-}
-
 onMounted(async () => {
   await authStore.ensureRolesLoaded()
-  await loadRows()
+  await Promise.all([loadRows(), loadAvailableUsers()])
 })
 </script>
 
@@ -196,44 +279,75 @@ onMounted(async () => {
       :detail-fields="[{ key: 'name', label: 'Nom' }]"
       :editable-fields="[{ key: 'name', label: 'Nom' }]"
       :can-show="canShow"
-      :can-create="canCreate"
+      :can-create="false"
       :can-edit="canEdit"
       :can-delete="canDelete"
       :mutation-loading="mutationLoading"
       resource-name="le groupe"
-      detail-route-base="/administration/user-groups"
       @update:page="page = $event"
       @update:page-size="pageSize = $event"
       @update:sort-by="sortBy = $event"
       @update:search="search = $event"
       @update:filters="filters = $event"
-      @create="createRow"
+      @row-show="onRowShow"
       @save-edit="saveEdit"
       @row-delete="deleteRow"
       @refresh="loadRows"
-    />
+    >
+      <template #detail-content>
+        <div v-if="selectedDetailGroup">
+          <div class="text-subtitle-1 mb-2">Utilisateurs du groupe {{ selectedDetailGroup.name }}</div>
 
-    <v-dialog v-model="createOpen" max-width="640">
-      <v-card>
-        <v-card-title>Créer un groupe</v-card-title>
-        <v-card-text>
-          <v-text-field v-model="createForm.name" label="Nom*" class="mb-2" />
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" :disabled="creating" @click="createOpen = false"
-            >Annuler</v-btn
-          >
-          <v-btn
-            color="primary"
-            :loading="creating"
-            :disabled="creating"
-            @click="submitCreateRow"
-          >
-            Créer
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+          <v-progress-linear v-if="detailLoading" indeterminate color="primary" class="my-3" />
+
+          <div v-if="detailUsers.length === 0" class="text-medium-emphasis mb-3">Aucun utilisateur attaché.</div>
+
+          <v-list v-else density="comfortable" lines="one" class="bg-transparent pa-0 mb-3">
+            <v-list-item v-for="user in detailUsers" :key="user.id" class="px-0">
+              <v-list-item-title>{{ user.username || user.id }}</v-list-item-title>
+              <v-list-item-subtitle>{{ user.email || user.id }}</v-list-item-subtitle>
+              <template #prepend>
+                <v-btn
+                  v-if="canManageUsersInGroup"
+                  size="x-small"
+                  variant="text"
+                  color="error"
+                  icon="mdi-close"
+                  :disabled="detailActionLoading"
+                  @click="detachUser(user.id)"
+                />
+              </template>
+            </v-list-item>
+          </v-list>
+
+          <v-row dense>
+            <v-col cols="12" md="8">
+              <v-select
+                v-model="selectedUserId"
+                label="Ajouter un utilisateur"
+                :items="availableUserOptions"
+                item-title="title"
+                item-value="value"
+                hide-details
+                density="comfortable"
+                :loading="loadingUserOptions"
+                :disabled="!canManageUsersInGroup || detailActionLoading"
+              />
+            </v-col>
+            <v-col cols="12" md="4">
+              <v-btn
+                block
+                color="primary"
+                :loading="detailActionLoading"
+                :disabled="!canManageUsersInGroup || !selectedUserId"
+                @click="attachUser"
+              >
+                Attacher
+              </v-btn>
+            </v-col>
+          </v-row>
+        </div>
+      </template>
+    </AdminResourcePage>
   </div>
 </template>
