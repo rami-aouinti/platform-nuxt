@@ -49,6 +49,14 @@ type DistributionsResponse = {
   offers: DistributionPoint[]
 }
 
+type AdminSection = {
+  title: string
+  to?: string
+  icon: string
+  description: string
+  permission: AdminPermission
+}
+
 definePageMeta({
   icon: 'mdi-shield-crown-outline',
   title: 'Administration',
@@ -62,66 +70,77 @@ definePageMeta({
 const authStore = useAuthStore()
 const { roles } = storeToRefs(authStore)
 
-const links = [
+const sections: AdminSection[] = [
   {
-    title: 'Users',
-    to: '/administration/users',
+    title: 'User Management',
+    to: '/admin/user-management',
     icon: 'mdi-account-multiple-outline',
-    description: 'Gérer les utilisateurs de la plateforme.',
-    permission: 'manageUsers' as AdminPermission,
+    description: 'Administrer les utilisateurs, rôles, groupes et clés API.',
+    permission: 'manageUsers',
   },
   {
-    title: 'User Groups',
-    to: '/administration/user-groups',
-    icon: 'mdi-account-group-outline',
-    description: 'Organiser les utilisateurs en groupes.',
-    permission: 'manageUsers' as AdminPermission,
+    title: 'Configuration Management',
+    icon: 'mdi-cog-outline',
+    description: 'Piloter les paramètres et la configuration globale.',
+    permission: 'admin',
   },
   {
-    title: 'Roles',
-    to: '/administration/roles',
-    icon: 'mdi-shield-account-outline',
-    description: 'Configurer les rôles et permissions.',
-    permission: 'admin' as AdminPermission,
-  },
-  {
-    title: 'Api Keys',
-    to: '/administration/api-keys',
-    icon: 'mdi-key-variant',
-    description: 'Administrer les clés API.',
-    permission: 'manageApiKeys' as AdminPermission,
-  },
-  {
-    title: 'Companies',
+    title: 'Company Management',
     to: '/administration/companies',
     icon: 'mdi-domain',
-    description: 'Maintenir le référentiel entreprises.',
-    permission: 'admin' as AdminPermission,
+    description: 'Gérer les entreprises et leur cycle de vie.',
+    permission: 'admin',
   },
   {
-    title: 'Candidates',
-    to: '/administration/candidates',
-    icon: 'mdi-account-search',
-    description: 'Gérer le vivier de candidats.',
-    permission: 'admin' as AdminPermission,
-  },
-  {
-    title: 'Notifications',
+    title: 'Notification Management',
     to: '/administration/notifications',
     icon: 'mdi-bell-outline',
     description: 'Consulter et administrer les notifications.',
-    permission: 'admin' as AdminPermission,
+    permission: 'admin',
+  },
+  {
+    title: 'Media Management',
+    icon: 'mdi-image-multiple-outline',
+    description: 'Gérer les ressources médias de la plateforme.',
+    permission: 'admin',
+  },
+  {
+    title: 'Blog Management',
+    icon: 'mdi-post-outline',
+    description: 'Administrer les contenus éditoriaux du blog.',
+    permission: 'admin',
+  },
+  {
+    title: 'Quiz Management',
+    to: '/quiz',
+    icon: 'mdi-help-circle-outline',
+    description: 'Superviser les questionnaires et résultats quiz.',
+    permission: 'admin',
+  },
+  {
+    title: 'Recruit Management',
+    to: '/administration/candidates',
+    icon: 'mdi-briefcase-account-outline',
+    description: 'Suivre les recrutements, candidatures et offres.',
+    permission: 'admin',
+  },
+  {
+    title: 'Task Management',
+    to: '/tasks',
+    icon: 'mdi-format-list-checks',
+    description: 'Piloter les tâches, états et assignations.',
+    permission: 'admin',
   },
 ]
 
-const scopedLinks = computed(() =>
-  links.map((entry) => ({
-    ...entry,
-    disabled: !hasAdminPermission(roles.value, entry.permission),
+const scopedSections = computed(() =>
+  sections.map((section) => ({
+    ...section,
+    disabled: !hasAdminPermission(roles.value, section.permission),
   })),
 )
 
-const hasAnyLink = computed(() => scopedLinks.value.some((entry) => !entry.disabled))
+const hasAnySection = computed(() => scopedSections.value.some((entry) => !entry.disabled))
 
 const statisticsLoading = ref(false)
 const statisticsError = ref('')
@@ -180,7 +199,7 @@ onMounted(async () => {
   <AdminCard>
     <AdminToolbar
       title="Administration"
-      description="Accédez rapidement à chaque ressource d'administration depuis cette page."
+      description="Accédez rapidement à chaque section d'administration depuis cette page."
     >
       <template #actions>
         <AdminBadge status="info" label="Prototype" />
@@ -250,8 +269,8 @@ onMounted(async () => {
 
     <v-row class="mt-1" dense>
       <v-col
-        v-for="entry in scopedLinks"
-        :key="entry.to"
+        v-for="entry in scopedSections"
+        :key="entry.title"
         cols="12"
         sm="6"
         md="4"
@@ -272,10 +291,10 @@ onMounted(async () => {
               block
               color="primary"
               variant="tonal"
-              :to="entry.disabled ? undefined : entry.to"
-              :disabled="entry.disabled"
+              :to="entry.disabled || !entry.to ? undefined : entry.to"
+              :disabled="entry.disabled || !entry.to"
             >
-              Ouvrir
+              {{ entry.to ? 'Ouvrir' : 'Bientôt disponible' }}
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -283,7 +302,7 @@ onMounted(async () => {
     </v-row>
 
     <v-alert
-      v-if="!hasAnyLink"
+      v-if="!hasAnySection"
       class="mt-4"
       type="warning"
       variant="tonal"
