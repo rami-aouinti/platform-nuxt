@@ -1,161 +1,39 @@
 import { useTasksApi } from '~/composables/api/useTasksApi'
 import type { Id } from '~/composables/api/httpUiErrors'
+import { createEntitySnapshot, mergeEntityRow, restoreEntitySnapshot, toUiErrorMessage } from '~/stores/_entity'
+import { createCrudEntityStore } from '~/stores/_factories/createCrudEntityStore'
 import { Notify } from '~/stores/notification'
-import {
-  createEntityPagination,
-  createEntityQuery,
-  createEntitySnapshot,
-  mergeEntityRow,
-  restoreEntitySnapshot,
-  toUiErrorMessage,
-  type EntitySort,
-} from '~/stores/_entity'
 import { TaskStatus, type CreateTaskPayload, type PatchTaskPayload, type Task, type UpdateTaskPayload } from '~/types/crm'
 
 export const useTasksStore = defineStore('tasks', () => {
   const api = useTasksApi()
 
-  const rows = ref<Task[]>([])
-  const item = ref<Task | null>(null)
-  const loading = ref(false)
-  const error = ref<string | null>(null)
-
-  const pagination = createEntityPagination()
-  const sort = ref<EntitySort | null>(null)
-  const search = ref('')
-  const query = createEntityQuery(pagination, search, sort)
-
-  async function refreshRowsSafe() {
-    try {
-      await fetchRows({ silent: true })
-    } catch {
-      // no-op
-    }
-  }
-
-  async function fetchRows(options: { silent?: boolean } = {}) {
-    if (!options.silent) loading.value = true
-    error.value = null
-
-    try {
-      const response = await api.list(query.value)
-      rows.value = response.data
-      pagination.value.total = response.meta?.total ?? response.data.length
-      return rows.value
-    } catch (errorValue) {
-      error.value = toUiErrorMessage(errorValue)
-      if (!options.silent) Notify.error(error.value)
-      throw errorValue
-    } finally {
-      if (!options.silent) loading.value = false
-    }
-  }
-
-  async function fetchItem(id: Id) {
-    loading.value = true
-    error.value = null
-
-    try {
-      const response = await api.get(id)
-      item.value = response
-      mergeEntityRow(rows, item, response)
-      return response
-    } catch (errorValue) {
-      error.value = toUiErrorMessage(errorValue)
-      Notify.error(error.value)
-      throw errorValue
-    } finally {
-      loading.value = false
-    }
-  }
-
-  async function create(payload: CreateTaskPayload) {
-    loading.value = true
-    error.value = null
-    try {
-      const created = await api.create(payload)
-      mergeEntityRow(rows, item, created)
-      Notify.success('Tâche créée avec succès.')
-      await refreshRowsSafe()
-      return created
-    } catch (errorValue) {
-      error.value = toUiErrorMessage(errorValue)
-      Notify.error(error.value)
-      throw errorValue
-    } finally {
-      loading.value = false
-    }
-  }
-
-  async function update(id: Id, payload: UpdateTaskPayload) {
-    loading.value = true
-    error.value = null
-
-    const snapshot = createEntitySnapshot(rows, item)
-    const current = rows.value.find((row) => row.id === id) ?? item.value
-    if (current) mergeEntityRow(rows, item, { ...current, ...payload })
-
-    try {
-      const updated = await api.update(id, payload)
-      mergeEntityRow(rows, item, updated)
-      Notify.success('Tâche mise à jour.')
-      await refreshRowsSafe()
-      return updated
-    } catch (errorValue) {
-      restoreEntitySnapshot(rows, item, snapshot)
-      error.value = toUiErrorMessage(errorValue)
-      Notify.error(error.value)
-      throw errorValue
-    } finally {
-      loading.value = false
-    }
-  }
-
-  async function patch(id: Id, payload: PatchTaskPayload) {
-    loading.value = true
-    error.value = null
-
-    const snapshot = createEntitySnapshot(rows, item)
-    const current = rows.value.find((row) => row.id === id) ?? item.value
-    if (current) mergeEntityRow(rows, item, { ...current, ...payload })
-
-    try {
-      const patched = await api.patch(id, payload)
-      mergeEntityRow(rows, item, patched)
-      Notify.success('Tâche mise à jour.')
-      await refreshRowsSafe()
-      return patched
-    } catch (errorValue) {
-      restoreEntitySnapshot(rows, item, snapshot)
-      error.value = toUiErrorMessage(errorValue)
-      Notify.error(error.value)
-      throw errorValue
-    } finally {
-      loading.value = false
-    }
-  }
-
-  async function remove(id: Id) {
-    loading.value = true
-    error.value = null
-
-    const snapshot = createEntitySnapshot(rows, item)
-    rows.value = rows.value.filter((row) => row.id !== id)
-    if (item.value?.id === id) item.value = null
-
-    try {
-      await api.delete(id)
-      Notify.success('Tâche supprimée.')
-      await refreshRowsSafe()
-    } catch (errorValue) {
-      restoreEntitySnapshot(rows, item, snapshot)
-      error.value = toUiErrorMessage(errorValue)
-      Notify.error(error.value)
-      throw errorValue
-    } finally {
-      loading.value = false
-    }
-  }
+  const store = createCrudEntityStore<Task, CreateTaskPayload, UpdateTaskPayload, PatchTaskPayload>({
+    fetchRows: async (query) => {
+      const response = await api.list(query)
+      return {
+        data: response.data,
+        total: response.meta?.total ?? response.data.length,
+      }
+    },
+    fetchItem: (id: Id) => api.get(id),
+    create: (payload) => api.create(payload),
+    update: (id: Id, payload) => api.update(id, payload),
+    patch: (id: Id, payload) => api.patch(id, payload),
+    remove: async (id: Id) => { await api.delete(id) },
+    applyUpdate: (entity, payload) => ({ ...entity, ...payload }),
+    applyPatch: (entity, payload) => ({ ...entity, ...payload }),
+    notifications: {
+      success: {
+        create: 'Tâche créée avec succès.',
+        update: 'Tâche mise à jour.',
+        patch: 'Tâche mise à jour.',
+        remove: 'Tâche supprimée.',
+      },
+      notifySuccess: (message) => Notify.success(message),
+      notifyError: (message) => Notify.error(message),
+    },
+  })
 
   async function runWorkflowAction(
     id: Id,
@@ -163,33 +41,28 @@ export const useTasksStore = defineStore('tasks', () => {
     request: (taskId: Id) => Promise<Task>,
     successMessage: string,
   ) {
-    loading.value = true
-    error.value = null
+    store.loading.value = true
+    store.error.value = null
 
-    const snapshot = createEntitySnapshot(rows, item)
-    const current = rows.value.find((row) => row.id === id) ?? item.value
-    if (current) mergeEntityRow(rows, item, { ...current, status: optimisticStatus })
+    const snapshot = createEntitySnapshot(store.rows, store.item)
+    const current = store.rows.value.find((row) => row.id === id) ?? store.item.value
+    if (current) mergeEntityRow(store.rows, store.item, { ...current, status: optimisticStatus })
 
     try {
       const updated = await request(id)
-      mergeEntityRow(rows, item, updated)
+      mergeEntityRow(store.rows, store.item, updated)
       Notify.success(successMessage)
-      await refreshRowsSafe()
+      await store.fetchRows({ silent: true })
       return updated
     } catch (errorValue) {
-      restoreEntitySnapshot(rows, item, snapshot)
-      error.value = toUiErrorMessage(errorValue)
-      Notify.error(error.value)
+      restoreEntitySnapshot(store.rows, store.item, snapshot)
+      store.error.value = toUiErrorMessage(errorValue)
+      Notify.error(store.error.value)
       throw errorValue
     } finally {
-      loading.value = false
+      store.loading.value = false
     }
   }
-
-  function setPage(page: number) { pagination.value.page = page }
-  function setPerPage(perPage: number) { pagination.value.perPage = perPage; pagination.value.page = 1 }
-  function setSort(field: string, direction: 'asc' | 'desc') { sort.value = { field, direction } }
-  function setSearch(value: string) { search.value = value; pagination.value.page = 1 }
 
   const start = (id: Id) => runWorkflowAction(id, TaskStatus.IN_PROGRESS, api.start, 'Tâche démarrée.')
   const complete = (id: Id) => runWorkflowAction(id, TaskStatus.COMPLETED, api.complete, 'Tâche terminée.')
@@ -197,23 +70,7 @@ export const useTasksStore = defineStore('tasks', () => {
   const reopen = (id: Id) => runWorkflowAction(id, TaskStatus.TODO, api.reopen, 'Tâche rouverte.')
 
   return {
-    rows,
-    item,
-    loading,
-    error,
-    pagination,
-    sort,
-    search,
-    fetchRows,
-    fetchItem,
-    setPage,
-    setPerPage,
-    setSort,
-    setSearch,
-    create,
-    update,
-    patch,
-    remove,
+    ...store,
     start,
     complete,
     archive,
