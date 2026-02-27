@@ -3,6 +3,11 @@ import { resolveAuthorizationHeader } from './authorization'
 
 type ProxyHttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
+const DEFAULT_AUTH_API_TIMEOUT_MS = 8000
+const PREFERRED_UPSTREAM_TTL_MS = 60_000
+
+let preferredUpstream: { baseURL: string, expiresAt: number } | null = null
+
 function parseUpstreamErrorPayload(payload: unknown): string | null {
   if (typeof payload === 'string' && payload.length > 0) {
     return payload
@@ -38,8 +43,7 @@ async function parseUpstreamResponse(response: Response) {
 
 function getUpstreamCandidates(event: H3Event): string[] {
   const config = useRuntimeConfig(event)
-
-  return [
+  const candidates = [
     config.authApiBase,
     config.public.authApiBase,
     'http://host.docker.internal',
@@ -47,6 +51,59 @@ function getUpstreamCandidates(event: H3Event): string[] {
   ].filter((value, index, values): value is string => {
     return Boolean(value) && values.indexOf(value) === index
   })
+
+  const now = Date.now()
+  const cachedBaseURL = preferredUpstream?.expiresAt && preferredUpstream.expiresAt > now
+    ? preferredUpstream.baseURL
+    : null
+
+  if (!cachedBaseURL) {
+    preferredUpstream = null
+    return candidates
+  }
+
+  if (!candidates.includes(cachedBaseURL)) {
+    preferredUpstream = null
+    return candidates
+  }
+
+  return [cachedBaseURL, ...candidates.filter(candidate => candidate !== cachedBaseURL)]
+}
+
+function getAuthApiTimeoutMs(event: H3Event): number {
+  const timeout = Number(useRuntimeConfig(event).authApiTimeoutMs)
+
+  if (!Number.isFinite(timeout) || timeout <= 0) {
+    return DEFAULT_AUTH_API_TIMEOUT_MS
+  }
+
+  return timeout
+}
+
+function markPreferredUpstream(baseURL: string) {
+  preferredUpstream = {
+    baseURL,
+    expiresAt: Date.now() + PREFERRED_UPSTREAM_TTL_MS,
+  }
+}
+
+async function fetchWithTimeout(
+  input: string,
+  init: RequestInit,
+  timeoutMs: number,
+): Promise<Response> {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), timeoutMs)
+
+  try {
+    return await fetch(input, {
+      ...init,
+      signal: controller.signal,
+    })
+  }
+  finally {
+    clearTimeout(timeout)
+  }
 }
 
 export async function proxyAuthApiGet(event: H3Event, path: string) {
@@ -60,26 +117,37 @@ export async function proxyAuthApiRequest(
 ) {
   const authorization = resolveAuthorizationHeader(event)
   const upstreamCandidates = getUpstreamCandidates(event)
+  const timeoutMs = getAuthApiTimeoutMs(event)
   const body = ['GET', 'DELETE'].includes(method) ? undefined : await readBody(event)
 
   let lastError: unknown
 
   for (const baseURL of upstreamCandidates) {
     const targetURL = `${baseURL.replace(/\/$/, '')}${path}`
+    const startedAt = Date.now()
 
     try {
-      const response = await fetch(targetURL, {
-        method,
-        headers: authorization
-          ? {
-              authorization,
-              ...(body ? { 'content-type': 'application/json' } : {}),
-            }
-          : body
-            ? { 'content-type': 'application/json' }
-            : undefined,
-        ...(body ? { body: JSON.stringify(body) } : {}),
-      })
+      const response = await fetchWithTimeout(
+        targetURL,
+        {
+          method,
+          headers: authorization
+            ? {
+                authorization,
+                ...(body ? { 'content-type': 'application/json' } : {}),
+              }
+            : body
+              ? { 'content-type': 'application/json' }
+              : undefined,
+          ...(body ? { body: JSON.stringify(body) } : {}),
+        },
+        timeoutMs,
+      )
+
+      const durationMs = Date.now() - startedAt
+      console.debug(
+        `[auth-api-proxy] candidate=${baseURL} durationMs=${durationMs} status=${response.status}`,
+      )
 
       if (response.status === 401) {
         throw createError({
@@ -116,14 +184,24 @@ export async function proxyAuthApiRequest(
         continue
       }
 
+      markPreferredUpstream(baseURL)
       return await parseUpstreamResponse(response)
     }
     catch (error) {
+      const durationMs = Date.now() - startedAt
+      const status = isError(error) && error.statusCode ? error.statusCode : 'network'
+      console.debug(`[auth-api-proxy] candidate=${baseURL} durationMs=${durationMs} status=${status}`)
+
       if (isError(error) && error.statusCode && error.statusCode < 500) {
         throw error
       }
 
-      lastError = error
+      if (error instanceof Error && error.name === 'AbortError') {
+        lastError = new Error(`Upstream request timed out after ${timeoutMs}ms.`)
+      }
+      else {
+        lastError = error
+      }
     }
   }
 
