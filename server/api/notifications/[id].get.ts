@@ -1,17 +1,17 @@
-import { proxyAuthApiGet } from '../../utils/auth-api-proxy'
+import { createProxyEntityHandler } from '../../utils/proxy-handler-factory'
 import { requireAuthenticatedRequest } from '../../utils/require-auth'
+
+const proxyNotificationById = createProxyEntityHandler({
+  paramName: 'id',
+  method: 'GET',
+  missingParamError: {
+    statusMessage: 'Invalid notification parameter.',
+    message: 'Notification identifier is required.',
+  },
+  upstreamPathBuilder: id => `/api/v1/notifications/${encodeURIComponent(id)}`,
+})
 
 export default defineEventHandler(async (event) => {
   requireAuthenticatedRequest(event)
-  const id = getRouterParam(event, 'id')
-
-  if (!id) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Invalid notification parameter.',
-      message: 'Notification identifier is required.',
-    })
-  }
-
-  return await proxyAuthApiGet(event, `/api/v1/notifications/${encodeURIComponent(id)}`)
+  return await proxyNotificationById(event)
 })
