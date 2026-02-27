@@ -83,6 +83,15 @@ export type CrmTaskRequest = {
   reviewerId?: string | null
 }
 
+
+export type CrmCompanyMember = {
+  id: string
+  username?: string
+  firstName?: string
+  lastName?: string
+  email?: string
+}
+
 export type CrmUser = {
   id: string
   username?: string
@@ -162,6 +171,14 @@ export function useCrmApi() {
     listProjects: () => $fetch<CrmProject[]>(projectsBase, { method: 'GET' }),
     listCompanyProjects: (companyId: string) =>
       $fetch<CrmProject[]>(`${companiesBase}/${companyId}/projects`, {
+        method: 'GET',
+      }),
+    listCompanySprints: (companyId: string) =>
+      $fetch<CrmSprint[]>(`${companiesBase}/${companyId}/sprints`, {
+        method: 'GET',
+      }),
+    listCompanyMembers: (companyId: string) =>
+      $fetch<CrmCompanyMember[]>(`${companiesBase}/${companyId}/members`, {
         method: 'GET',
       }),
     createProject: (payload: CreateProjectPayload) =>
