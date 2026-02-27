@@ -437,16 +437,6 @@ onMounted(() => {
   padding-bottom: 0;
 }
 
-
-
-.app-bar-controls-grid :deep(.v-input) {
-  min-width: 220px;
-}
-
-.app-bar-controls-grid .admin-resource-controls__actions {
-  white-space: nowrap;
-}
-
 @media (min-width: 960px) {
   .local-controls-grid > :first-child {
     grid-column: span 5;

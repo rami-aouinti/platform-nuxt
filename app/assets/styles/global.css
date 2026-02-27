@@ -208,16 +208,3 @@ html.dark,
     margin-right: 4px;
   }
 }
-
-
-.admin-table {
-  .v-data-table-footer {
-    padding-top: 12px;
-    border-top: 1px solid rgba(var(--v-theme-on-surface), 0.08);
-  }
-
-  .v-data-table-footer__items-per-page,
-  .v-data-table-footer__pagination {
-    font-size: 0.85rem;
-  }
-}
