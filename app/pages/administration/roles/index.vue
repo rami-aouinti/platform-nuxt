@@ -22,7 +22,7 @@ definePageMeta({
 const authStore = useAuthStore()
 const { roles } = storeToRefs(authStore)
 const canShow = computed(() => canManageUsers(roles.value))
-const canMutate = computed(() => canManageUsers(roles.value))
+const canMutate = computed(() => canShow.value)
 
 const createOpen = ref(false)
 const creating = ref(false)
