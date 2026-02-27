@@ -188,10 +188,10 @@ onMounted(() => {
         <div class="admin-resource-controls app-bar-controls-grid" :style="appBarGridStyle">
           <v-text-field
             v-model="localSearch"
-            label="Recherche"
+            placeholder="Recherche"
             prepend-inner-icon="mdi-magnify"
             hide-details
-            density="comfortable"
+            density="compact"
             variant="outlined"
             clearable
           />
@@ -206,7 +206,7 @@ onMounted(() => {
             item-title="title"
             item-value="value"
             hide-details
-            density="comfortable"
+            density="compact"
             variant="outlined"
             clearable
             @update:model-value="setFilter(filter.key, String($event || ''))"
@@ -216,6 +216,7 @@ onMounted(() => {
               icon="mdi-refresh"
               color="primary"
               variant="text"
+              size="small"
               aria-label="Actualiser"
               @click="emit('refresh')"
             />
@@ -223,6 +224,7 @@ onMounted(() => {
               v-if="canCreate"
               color="primary"
               prepend-icon="mdi-plus"
+              size="small"
               @click="emit('create')"
             >
               New
@@ -250,10 +252,10 @@ onMounted(() => {
         <div v-if="!canTeleportControls" class="admin-resource-controls local-controls-grid mb-2">
           <v-text-field
             v-model="localSearch"
-            label="Recherche"
+            placeholder="Recherche"
             prepend-inner-icon="mdi-magnify"
             hide-details
-            density="comfortable"
+            density="compact"
             variant="outlined"
             clearable
           />
@@ -268,7 +270,7 @@ onMounted(() => {
             item-title="title"
             item-value="value"
             hide-details
-            density="comfortable"
+            density="compact"
             variant="outlined"
             clearable
             @update:model-value="setFilter(filter.key, String($event || ''))"
@@ -278,6 +280,7 @@ onMounted(() => {
               icon="mdi-refresh"
               color="primary"
               variant="text"
+              size="small"
               aria-label="Actualiser"
               @click="emit('refresh')"
             />
@@ -285,6 +288,7 @@ onMounted(() => {
               v-if="canCreate"
               color="primary"
               prepend-icon="mdi-plus"
+              size="small"
               @click="emit('create')"
             >
               New
@@ -407,9 +411,30 @@ onMounted(() => {
 }
 
 .app-bar-controls-grid {
-  width: min(980px, 100%);
+  width: min(640px, 100%);
   margin-left: auto;
   align-items: center;
+  gap: 6px;
+}
+
+
+
+.app-bar-controls-grid :deep(.v-input) {
+  min-width: 200px;
+}
+
+.app-bar-controls-grid :deep(.v-field) {
+  border-radius: 10px;
+}
+
+.app-bar-controls-grid .admin-resource-controls__actions {
+  white-space: nowrap;
+}
+
+.app-bar-controls-grid :deep(.v-field__input) {
+  min-height: 38px;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 
