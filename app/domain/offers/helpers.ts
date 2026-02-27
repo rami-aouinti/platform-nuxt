@@ -1,5 +1,5 @@
-import type { JobApplication } from '../../../services/admin/job-applications'
-import type { JobOffer } from '../../../services/admin/job-offers'
+import type { JobApplication } from '../../../services/admin/job-applications/index'
+import type { JobOffer } from '../../../services/admin/job-offers/index'
 
 export type FilterSelection = Record<string, string[]>
 

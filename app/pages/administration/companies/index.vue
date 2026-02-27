@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { DataTableHeader } from 'vuetify'
 import { Notify } from '~/stores/notification'
-import { companiesService, type Company, type CreateCompanyRequest, type UpdateCompanyRequest } from '../../../../services/admin/companies'
-import { buildApiPlatformQuery } from '../../../../services/admin/_shared'
+import { companiesService, type Company, type CreateCompanyRequest, type UpdateCompanyRequest } from '../../../../services/admin/companies/index'
+import { buildApiPlatformQuery } from '../../../../services/admin/shared/index'
 import { HttpRequestError } from '../../../../services/http/client'
 
 definePageMeta({

@@ -2,14 +2,14 @@ import { httpGet } from '../../http/client'
 import {
   normalizePaginatedResponse,
   type PaginatedResponse,
-} from '../pagination'
+} from '../pagination/index'
 import {
   createAdminCrudService,
   normalizeListQuery,
   type Id,
   type ListQuery,
   type PatchPayload,
-} from '../_shared'
+} from '../shared/index'
 
 const JOB_OFFERS_BASE_PATH = '/api/job-offers'
 

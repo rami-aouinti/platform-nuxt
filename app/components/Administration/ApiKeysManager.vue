@@ -2,13 +2,13 @@
 import { FORBIDDEN_MESSAGE } from '~/utils/permissions/messages'
 import { Notify } from '~/stores/notification'
 import { useInternalEventTracking } from '~/composables/useInternalEventTracking'
-import type { Id } from '~~/services/admin/_shared'
+import type { Id } from '~~/services/admin/shared/index'
 import type {
   BaseApiKey,
   BaseCreateApiKeyRequest,
   BasePatchApiKeyRequest,
   BaseUpdateApiKeyRequest,
-} from '~~/services/admin/apiKeys.shared'
+} from '~~/services/admin/api-keys/shared'
 
 interface ApiKeysService {
   list: (query?: { page?: number; pageSize?: number }) => Promise<unknown>

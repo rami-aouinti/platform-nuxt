@@ -1,4 +1,4 @@
-import { createAdminCrudService, type Id, type PatchPayload } from '../_shared'
+import { createAdminCrudService, type Id, type PatchPayload } from '../shared/index'
 
 const CANDIDATES_BASE_PATH = '/api/v1/candidates'
 

@@ -11,7 +11,8 @@
     "typecheck": "nuxt typecheck",
     "test": "vitest",
     "lint": "eslint . --fix",
-    "format": "prettier . --write"
+    "format": "prettier . --write",
+    "lint:admin-imports": "node scripts/check-admin-legacy-imports.mjs"
   },
   "devDependencies": {
     "@iconify-json/mdi": "^1.2.3",
