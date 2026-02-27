@@ -1,126 +1,57 @@
+import type { AuthGroup, AuthProfile, AuthRole } from '~/types/auth'
+import {
+  clearPersistedAuthState,
+  persistAuthState,
+  persistToken,
+  readCachedAuthState,
+  readPersistedToken,
+} from '~/utils/auth/state-cache'
 import { canAccessAdmin } from '~/utils/permissions/admin'
-
-type AuthProfile = {
-  id: string | number
-  username: string
-  firstName: string
-  lastName: string
-  email: string
-  [key: string]: unknown
-}
-
-type AuthGroup = {
-  id: string | number
-  role: {
-    id: string
-  }
-  name: string
-}
-
-const AUTH_TOKEN_STORAGE_KEY = 'auth_token'
-const AUTH_TOKEN_COOKIE_KEY = 'auth_token'
-const AUTH_STATE_STORAGE_KEY = 'auth_state'
-const AUTH_STATE_MAX_AGE_MS = 5 * 60 * 1000
-
-type StoredAuthState = {
-  token: string
-  profile: AuthProfile | null
-  groups: AuthGroup[]
-  roles: string[]
-  cachedAt: number
-}
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref<string | null>(null)
   const profile = ref<AuthProfile | null>(null)
   const groups = ref<AuthGroup[]>([])
-  const roles = ref<string[]>([])
+  const roles = ref<AuthRole[]>([])
   const rolesLoading = ref(false)
   const rolesError = ref<string | null>(null)
+  const profileRequest = ref<Promise<void> | null>(null)
 
   const isAuthenticated = computed(() => Boolean(token.value))
   const hasAdminAccess = computed(() => canAccessAdmin(roles.value))
 
-
-  function clearPersistedAuthState() {
-    if (!import.meta.client) {
-      return
-    }
-
-    sessionStorage.removeItem(AUTH_STATE_STORAGE_KEY)
-  }
-
-  function persistAuthState() {
-    if (!import.meta.client) {
-      return
-    }
-
+  function persistCurrentAuthState() {
     if (!token.value) {
       clearPersistedAuthState()
       return
     }
 
-    const authState: StoredAuthState = {
+    persistAuthState({
       token: token.value,
       profile: profile.value,
       groups: groups.value,
       roles: roles.value,
       cachedAt: Date.now(),
-    }
-
-    sessionStorage.setItem(AUTH_STATE_STORAGE_KEY, JSON.stringify(authState))
+    })
   }
 
   function hydrateAuthStateFromCache() {
-    if (!import.meta.client || !token.value) {
+    const cachedState = readCachedAuthState(token.value)
+
+    if (!cachedState) {
       return false
     }
 
-    const rawState = sessionStorage.getItem(AUTH_STATE_STORAGE_KEY)
+    profile.value = cachedState.profile
+    groups.value = cachedState.groups
+    roles.value = cachedState.roles
 
-    if (!rawState) {
-      return false
-    }
-
-    try {
-      const authState = JSON.parse(rawState) as StoredAuthState
-      const isExpired = Date.now() - authState.cachedAt > AUTH_STATE_MAX_AGE_MS
-      const hasMatchingToken = authState.token === token.value
-
-      if (isExpired || !hasMatchingToken) {
-        clearPersistedAuthState()
-        return false
-      }
-
-      profile.value = authState.profile
-      groups.value = authState.groups
-      roles.value = authState.roles
-
-      return true
-    } catch {
-      clearPersistedAuthState()
-      return false
-    }
-  }
-
-  function persistToken() {
-    if (!import.meta.client) {
-      return
-    }
-
-    if (token.value) {
-      sessionStorage.setItem(AUTH_TOKEN_STORAGE_KEY, token.value)
-      document.cookie = `${AUTH_TOKEN_COOKIE_KEY}=${encodeURIComponent(token.value)}; Path=/; SameSite=Lax`
-      return
-    }
-
-    sessionStorage.removeItem(AUTH_TOKEN_STORAGE_KEY)
-    document.cookie = `${AUTH_TOKEN_COOKIE_KEY}=; Path=/; Max-Age=0; SameSite=Lax`
+    return true
   }
 
   function setToken(newToken: string | null) {
     token.value = newToken
-    persistToken()
+    persistToken(newToken)
   }
 
   function authHeaders() {
@@ -154,28 +85,37 @@ export const useAuthStore = defineStore('auth', () => {
       return
     }
 
+    if (profileRequest.value) {
+      return await profileRequest.value
+    }
+
     const headers = authHeaders()
 
     rolesLoading.value = true
     rolesError.value = null
 
-    try {
-      const [profileResponse, groupsResponse, rolesResponse] = await Promise.all([
-        $fetch<AuthProfile>('/api/profile', { headers }),
-        $fetch<AuthGroup[]>('/api/profile/groups', { headers }),
-        $fetch<string[]>('/api/profile/roles', { headers }),
-      ])
+    profileRequest.value = (async () => {
+      try {
+        const [profileResponse, groupsResponse, rolesResponse] = await Promise.all([
+          $fetch<AuthProfile>('/api/profile', { headers }),
+          $fetch<AuthGroup[]>('/api/profile/groups', { headers }),
+          $fetch<AuthRole[]>('/api/profile/roles', { headers }),
+        ])
 
-      profile.value = profileResponse
-      groups.value = groupsResponse
-      roles.value = rolesResponse
-      persistAuthState()
-    } catch (error) {
-      rolesError.value = 'Impossible de charger les rôles utilisateur.'
-      throw error
-    } finally {
-      rolesLoading.value = false
-    }
+        profile.value = profileResponse
+        groups.value = groupsResponse
+        roles.value = rolesResponse
+        persistCurrentAuthState()
+      } catch (error) {
+        rolesError.value = 'Impossible de charger les rôles utilisateur.'
+        throw error
+      } finally {
+        rolesLoading.value = false
+        profileRequest.value = null
+      }
+    })()
+
+    return await profileRequest.value
   }
 
   async function ensureRolesLoaded(force = false) {
@@ -192,11 +132,11 @@ export const useAuthStore = defineStore('auth', () => {
     rolesError.value = null
 
     try {
-      const rolesResponse = await $fetch<string[]>('/api/profile/roles', {
+      const rolesResponse = await $fetch<AuthRole[]>('/api/profile/roles', {
         headers: authHeaders(),
       })
       roles.value = rolesResponse
-      persistAuthState()
+      persistCurrentAuthState()
       return roles.value
     } catch (error) {
       rolesError.value = 'Impossible de charger les rôles utilisateur.'
@@ -213,6 +153,7 @@ export const useAuthStore = defineStore('auth', () => {
     roles.value = []
     rolesError.value = null
     rolesLoading.value = false
+    profileRequest.value = null
     clearPersistedAuthState()
   }
 
@@ -221,7 +162,7 @@ export const useAuthStore = defineStore('auth', () => {
       return
     }
 
-    const storedToken = sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)
+    const storedToken = readPersistedToken()
 
     if (!storedToken) {
       logout()
@@ -257,4 +198,3 @@ export const useAuthStore = defineStore('auth', () => {
     initAuth,
   }
 })
-
