@@ -106,7 +106,7 @@ async function saveGroup() {
 
   try {
     await $fetch(`/api/user_group/${encodeURIComponent(group.value.id)}`, {
-      method: 'PATCH' as any,
+      method: 'PUT' as any,
       body: {
         name: group.value.name.trim(),
         description: group.value.description.trim(),
