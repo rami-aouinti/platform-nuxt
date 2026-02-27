@@ -1,6 +1,15 @@
 import { useTaskRequestsApi } from '~/composables/api/useTaskRequestsApi'
-import type { ApiListQuery, Id } from '~/composables/api/httpUiErrors'
+import type { Id } from '~/composables/api/httpUiErrors'
 import { Notify } from '~/stores/notification'
+import {
+  createEntityPagination,
+  createEntityQuery,
+  createEntitySnapshot,
+  mergeEntityRow,
+  restoreEntitySnapshot,
+  toUiErrorMessage,
+  type EntitySort,
+} from '~/stores/_entity'
 import {
   TaskRequestStatus,
   type CreateTaskRequestPayload,
@@ -8,14 +17,6 @@ import {
   type TaskRequest,
   type UpdateTaskRequestPayload,
 } from '~/types/crm'
-
-function toErrorMessage(errorValue: unknown) {
-  if (errorValue && typeof errorValue === 'object' && 'message' in errorValue && typeof errorValue.message === 'string') {
-    return errorValue.message
-  }
-  if (errorValue instanceof Error) return errorValue.message
-  return 'Une erreur est survenue.'
-}
 
 export const useTaskRequestsStore = defineStore('task-requests', () => {
   const api = useTaskRequestsApi()
@@ -25,22 +26,10 @@ export const useTaskRequestsStore = defineStore('task-requests', () => {
   const loading = ref(false)
   const error = ref<string | null>(null)
 
-  const pagination = ref({ page: 1, perPage: 10, total: 0 })
-  const sort = ref<{ field: string; direction: 'asc' | 'desc' } | null>(null)
+  const pagination = createEntityPagination()
+  const sort = ref<EntitySort | null>(null)
   const search = ref('')
-
-  const query = computed<ApiListQuery>(() => ({
-    limit: pagination.value.perPage,
-    offset: (pagination.value.page - 1) * pagination.value.perPage,
-    ...(search.value ? { search: search.value } : {}),
-    ...(sort.value ? { order: { [sort.value.field]: sort.value.direction } } : {}),
-  }))
-
-  function mergeRow(next: TaskRequest) {
-    rows.value = rows.value.map((row) => (row.id === next.id ? next : row))
-    if (!rows.value.some((row) => row.id === next.id)) rows.value = [next, ...rows.value]
-    if (item.value?.id === next.id) item.value = next
-  }
+  const query = createEntityQuery(pagination, search, sort)
 
   async function refreshRowsSafe() {
     try {
@@ -60,7 +49,7 @@ export const useTaskRequestsStore = defineStore('task-requests', () => {
       pagination.value.total = response.meta?.total ?? response.data.length
       return rows.value
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       if (!options.silent) Notify.error(error.value)
       throw errorValue
     } finally {
@@ -75,10 +64,10 @@ export const useTaskRequestsStore = defineStore('task-requests', () => {
     try {
       const response = await api.get(id)
       item.value = response
-      mergeRow(response)
+      mergeEntityRow(rows, item, response)
       return response
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       Notify.error(error.value)
       throw errorValue
     } finally {
@@ -92,12 +81,12 @@ export const useTaskRequestsStore = defineStore('task-requests', () => {
 
     try {
       const created = await api.create(payload)
-      mergeRow(created)
+      mergeEntityRow(rows, item, created)
       Notify.success('Demande de tâche créée.')
       await refreshRowsSafe()
       return created
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       Notify.error(error.value)
       throw errorValue
     } finally {
@@ -109,21 +98,19 @@ export const useTaskRequestsStore = defineStore('task-requests', () => {
     loading.value = true
     error.value = null
 
-    const previousRows = [...rows.value]
-    const previousItem = item.value
+    const snapshot = createEntitySnapshot(rows, item)
     const current = rows.value.find((row) => row.id === id) ?? item.value
-    if (current) mergeRow({ ...current, ...payload })
+    if (current) mergeEntityRow(rows, item, { ...current, ...payload })
 
     try {
       const updated = await api.update(id, payload)
-      mergeRow(updated)
+      mergeEntityRow(rows, item, updated)
       Notify.success('Demande de tâche mise à jour.')
       await refreshRowsSafe()
       return updated
     } catch (errorValue) {
-      rows.value = previousRows
-      item.value = previousItem
-      error.value = toErrorMessage(errorValue)
+      restoreEntitySnapshot(rows, item, snapshot)
+      error.value = toUiErrorMessage(errorValue)
       Notify.error(error.value)
       throw errorValue
     } finally {
@@ -135,21 +122,19 @@ export const useTaskRequestsStore = defineStore('task-requests', () => {
     loading.value = true
     error.value = null
 
-    const previousRows = [...rows.value]
-    const previousItem = item.value
+    const snapshot = createEntitySnapshot(rows, item)
     const current = rows.value.find((row) => row.id === id) ?? item.value
-    if (current) mergeRow({ ...current, ...payload })
+    if (current) mergeEntityRow(rows, item, { ...current, ...payload })
 
     try {
       const patched = await api.patch(id, payload)
-      mergeRow(patched)
+      mergeEntityRow(rows, item, patched)
       Notify.success('Demande de tâche mise à jour.')
       await refreshRowsSafe()
       return patched
     } catch (errorValue) {
-      rows.value = previousRows
-      item.value = previousItem
-      error.value = toErrorMessage(errorValue)
+      restoreEntitySnapshot(rows, item, snapshot)
+      error.value = toUiErrorMessage(errorValue)
       Notify.error(error.value)
       throw errorValue
     } finally {
@@ -161,8 +146,7 @@ export const useTaskRequestsStore = defineStore('task-requests', () => {
     loading.value = true
     error.value = null
 
-    const previousRows = [...rows.value]
-    const previousItem = item.value
+    const snapshot = createEntitySnapshot(rows, item)
     rows.value = rows.value.filter((row) => row.id !== id)
     if (item.value?.id === id) item.value = null
 
@@ -171,9 +155,8 @@ export const useTaskRequestsStore = defineStore('task-requests', () => {
       Notify.success('Demande de tâche supprimée.')
       await refreshRowsSafe()
     } catch (errorValue) {
-      rows.value = previousRows
-      item.value = previousItem
-      error.value = toErrorMessage(errorValue)
+      restoreEntitySnapshot(rows, item, snapshot)
+      error.value = toUiErrorMessage(errorValue)
       Notify.error(error.value)
       throw errorValue
     } finally {
@@ -190,21 +173,19 @@ export const useTaskRequestsStore = defineStore('task-requests', () => {
     loading.value = true
     error.value = null
 
-    const previousRows = [...rows.value]
-    const previousItem = item.value
+    const snapshot = createEntitySnapshot(rows, item)
     const current = rows.value.find((row) => row.id === id) ?? item.value
-    if (current) mergeRow({ ...current, status: optimisticStatus })
+    if (current) mergeEntityRow(rows, item, { ...current, status: optimisticStatus })
 
     try {
       const updated = await request(id)
-      mergeRow(updated)
+      mergeEntityRow(rows, item, updated)
       Notify.success(successMessage)
       await refreshRowsSafe()
       return updated
     } catch (errorValue) {
-      rows.value = previousRows
-      item.value = previousItem
-      error.value = toErrorMessage(errorValue)
+      restoreEntitySnapshot(rows, item, snapshot)
+      error.value = toUiErrorMessage(errorValue)
       Notify.error(error.value)
       throw errorValue
     } finally {
