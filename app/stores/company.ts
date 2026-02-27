@@ -1,141 +1,182 @@
+import { useCompaniesApi, type CreateCompanyPayload, type PatchCompanyPayload, type UpdateCompanyPayload } from '~/composables/api/useCompaniesApi'
+import type { Id } from '~/composables/api/httpUiErrors'
+import { Notify } from '~/stores/notification'
 import {
-  companiesService,
-  type Company,
-  type CreateCompanyRequest,
-  type UpdateCompanyRequest,
-  type PatchCompanyRequest,
-} from '../../services/admin/companies'
-import { HttpRequestError } from '../../services/http/client'
-
-function toCompaniesArray(payload: unknown): Company[] {
-  if (Array.isArray(payload)) return payload as Company[]
-  if (!payload || typeof payload !== 'object') return []
-
-  const objectPayload = payload as {
-    data?: unknown
-    items?: unknown
-    member?: unknown
-    'hydra:member'?: unknown
-  }
-
-  const collection =
-    objectPayload.data ??
-    objectPayload.items ??
-    objectPayload.member ??
-    objectPayload['hydra:member']
-
-  return Array.isArray(collection) ? (collection as Company[]) : []
-}
-
-function toErrorMessage(error: unknown) {
-  if (error instanceof HttpRequestError) return error.message
-  if (error instanceof Error) return error.message
-  return 'Erreur API.'
-}
+  createEntityPagination,
+  createEntityQuery,
+  createEntitySnapshot,
+  mergeEntityRow,
+  restoreEntitySnapshot,
+  toUiErrorMessage,
+  type EntitySort,
+} from '~/stores/_entity'
+import type { Company } from '~/types/crm'
 
 export const useCompanyStore = defineStore('company', () => {
+  const api = useCompaniesApi()
+
   const rows = ref<Company[]>([])
+  const item = ref<Company | null>(null)
   const loading = ref(false)
-  const saving = ref(false)
   const error = ref<string | null>(null)
 
-  async function fetchAll(query?: Record<string, string | number | undefined>) {
+  const pagination = createEntityPagination()
+  const sort = ref<EntitySort | null>(null)
+  const search = ref('')
+  const query = createEntityQuery(pagination, search, sort)
+
+  async function refreshRowsSafe() {
+    try {
+      await fetchRows({ silent: true })
+    } catch {
+      // no-op
+    }
+  }
+
+  async function fetchRows(options: { silent?: boolean } = {}) {
+    if (!options.silent) loading.value = true
+    error.value = null
+
+    try {
+      const response = await api.list(query.value)
+      rows.value = response.data
+      pagination.value.total = response.meta?.total ?? response.data.length
+      return rows.value
+    } catch (errorValue) {
+      error.value = toUiErrorMessage(errorValue)
+      if (!options.silent) Notify.error(error.value)
+      throw errorValue
+    } finally {
+      if (!options.silent) loading.value = false
+    }
+  }
+
+  async function fetchItem(id: Id) {
     loading.value = true
     error.value = null
 
     try {
-      const response = await companiesService.list(query ?? {})
-      rows.value = toCompaniesArray(response)
-      return rows.value
+      const response = await api.get(id)
+      item.value = response
+      mergeEntityRow(rows, item, response)
+      return response
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
+      Notify.error(error.value)
       throw errorValue
     } finally {
       loading.value = false
     }
   }
 
-  async function fetchById(id: string) {
-    return companiesService.getById(id)
-  }
-
-  async function create(payload: CreateCompanyRequest) {
-    saving.value = true
+  async function create(payload: CreateCompanyPayload) {
+    loading.value = true
     error.value = null
 
     try {
-      const created = await companiesService.create(payload)
-      rows.value = [
-        created,
-        ...rows.value.filter((row) => row.id !== created.id),
-      ]
+      const created = await api.create(payload)
+      mergeEntityRow(rows, item, created)
+      Notify.success('Entreprise créée avec succès.')
+      await refreshRowsSafe()
       return created
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
+      Notify.error(error.value)
       throw errorValue
     } finally {
-      saving.value = false
+      loading.value = false
     }
   }
 
-  async function update(id: string, payload: UpdateCompanyRequest) {
-    saving.value = true
+  async function update(id: Id, payload: UpdateCompanyPayload) {
+    loading.value = true
     error.value = null
 
+    const snapshot = createEntitySnapshot(rows, item)
+    const current = rows.value.find((row) => row.id === id) ?? item.value
+    if (current) mergeEntityRow(rows, item, { ...current, ...payload })
+
     try {
-      const updated = await companiesService.update(id, payload)
-      rows.value = rows.value.map((row) =>
-        row.id === updated.id ? updated : row,
-      )
+      const updated = await api.update(id, payload)
+      mergeEntityRow(rows, item, updated)
+      Notify.success('Entreprise mise à jour.')
+      await refreshRowsSafe()
       return updated
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      restoreEntitySnapshot(rows, item, snapshot)
+      error.value = toUiErrorMessage(errorValue)
+      Notify.error(error.value)
       throw errorValue
     } finally {
-      saving.value = false
+      loading.value = false
     }
   }
 
-  async function patch(id: string, payload: PatchCompanyRequest) {
-    saving.value = true
+  async function patch(id: Id, payload: PatchCompanyPayload) {
+    loading.value = true
     error.value = null
 
+    const snapshot = createEntitySnapshot(rows, item)
+    const current = rows.value.find((row) => row.id === id) ?? item.value
+    if (current) mergeEntityRow(rows, item, { ...current, ...payload })
+
     try {
-      const patched = await companiesService.patch(id, payload)
-      rows.value = rows.value.map((row) =>
-        row.id === patched.id ? patched : row,
-      )
+      const patched = await api.patch(id, payload)
+      mergeEntityRow(rows, item, patched)
+      Notify.success('Entreprise mise à jour.')
+      await refreshRowsSafe()
       return patched
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      restoreEntitySnapshot(rows, item, snapshot)
+      error.value = toUiErrorMessage(errorValue)
+      Notify.error(error.value)
       throw errorValue
     } finally {
-      saving.value = false
+      loading.value = false
     }
   }
 
-  async function remove(id: string) {
-    saving.value = true
+  async function remove(id: Id) {
+    loading.value = true
     error.value = null
 
+    const snapshot = createEntitySnapshot(rows, item)
+    rows.value = rows.value.filter((row) => row.id !== id)
+    if (item.value?.id === id) item.value = null
+
     try {
-      await companiesService.remove(id)
-      rows.value = rows.value.filter((row) => row.id !== id)
+      await api.delete(id)
+      Notify.success('Entreprise supprimée.')
+      await refreshRowsSafe()
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      restoreEntitySnapshot(rows, item, snapshot)
+      error.value = toUiErrorMessage(errorValue)
+      Notify.error(error.value)
       throw errorValue
     } finally {
-      saving.value = false
+      loading.value = false
     }
   }
+
+  function setPage(page: number) { pagination.value.page = page }
+  function setPerPage(perPage: number) { pagination.value.perPage = perPage; pagination.value.page = 1 }
+  function setSort(field: string, direction: 'asc' | 'desc') { sort.value = { field, direction } }
+  function setSearch(value: string) { search.value = value; pagination.value.page = 1 }
 
   return {
     rows,
+    item,
     loading,
-    saving,
     error,
-    fetchAll,
-    fetchById,
+    pagination,
+    sort,
+    search,
+    fetchRows,
+    fetchItem,
+    setPage,
+    setPerPage,
+    setSort,
+    setSearch,
     create,
     update,
     patch,

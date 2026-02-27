@@ -1,15 +1,16 @@
 import { useSprintsApi, type PatchSprintPayload, type UpdateSprintPayload } from '~/composables/api/useSprintsApi'
-import type { ApiListQuery, Id } from '~/composables/api/httpUiErrors'
-import type { CreateSprintPayload, CrmSprint } from '~/types/crm'
+import type { Id } from '~/composables/api/httpUiErrors'
+import type { CrmSprint, CreateSprintPayload } from '~/types/crm'
 import { Notify } from '~/stores/notification'
-
-function toErrorMessage(errorValue: unknown) {
-  if (errorValue && typeof errorValue === 'object' && 'message' in errorValue && typeof errorValue.message === 'string') {
-    return errorValue.message
-  }
-  if (errorValue instanceof Error) return errorValue.message
-  return 'Une erreur est survenue.'
-}
+import {
+  createEntityPagination,
+  createEntityQuery,
+  createEntitySnapshot,
+  mergeEntityRow,
+  restoreEntitySnapshot,
+  toUiErrorMessage,
+  type EntitySort,
+} from '~/stores/_entity'
 
 function normalizeRows(payload: CrmSprint[] | { data?: CrmSprint[]; items?: CrmSprint[]; meta?: { total?: number } }) {
   if (Array.isArray(payload)) return { data: payload, total: payload.length }
@@ -25,22 +26,10 @@ export const useSprintsStore = defineStore('sprints', () => {
   const loading = ref(false)
   const error = ref<string | null>(null)
 
-  const pagination = ref({ page: 1, perPage: 10, total: 0 })
-  const sort = ref<{ field: string; direction: 'asc' | 'desc' } | null>(null)
+  const pagination = createEntityPagination()
+  const sort = ref<EntitySort | null>(null)
   const search = ref('')
-
-  const query = computed<ApiListQuery>(() => ({
-    limit: pagination.value.perPage,
-    offset: (pagination.value.page - 1) * pagination.value.perPage,
-    ...(search.value ? { search: search.value } : {}),
-    ...(sort.value ? { order: { [sort.value.field]: sort.value.direction } } : {}),
-  }))
-
-  function mergeRow(next: CrmSprint) {
-    rows.value = rows.value.map((row) => (row.id === next.id ? next : row))
-    if (!rows.value.some((row) => row.id === next.id)) rows.value = [next, ...rows.value]
-    if (item.value?.id === next.id) item.value = next
-  }
+  const query = createEntityQuery(pagination, search, sort)
 
   async function refreshRowsSafe() {
     try {
@@ -61,7 +50,7 @@ export const useSprintsStore = defineStore('sprints', () => {
       pagination.value.total = normalized.total
       return rows.value
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       if (!options.silent) Notify.error(error.value)
       throw errorValue
     } finally {
@@ -76,10 +65,10 @@ export const useSprintsStore = defineStore('sprints', () => {
     try {
       const response = await api.get(id)
       item.value = response
-      mergeRow(response)
+      mergeEntityRow(rows, item, response)
       return response
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       Notify.error(error.value)
       throw errorValue
     } finally {
@@ -93,12 +82,12 @@ export const useSprintsStore = defineStore('sprints', () => {
 
     try {
       const created = await api.create(payload)
-      mergeRow(created)
+      mergeEntityRow(rows, item, created)
       Notify.success('Sprint créé.')
       await refreshRowsSafe()
       return created
     } catch (errorValue) {
-      error.value = toErrorMessage(errorValue)
+      error.value = toUiErrorMessage(errorValue)
       Notify.error(error.value)
       throw errorValue
     } finally {
@@ -110,21 +99,19 @@ export const useSprintsStore = defineStore('sprints', () => {
     loading.value = true
     error.value = null
 
-    const previousRows = [...rows.value]
-    const previousItem = item.value
+    const snapshot = createEntitySnapshot(rows, item)
     const current = rows.value.find((row) => row.id === id) ?? item.value
-    if (current) mergeRow({ ...current, ...payload })
+    if (current) mergeEntityRow(rows, item, { ...current, ...payload })
 
     try {
       const updated = await api.update(id, payload)
-      mergeRow(updated)
+      mergeEntityRow(rows, item, updated)
       Notify.success('Sprint mis à jour.')
       await refreshRowsSafe()
       return updated
     } catch (errorValue) {
-      rows.value = previousRows
-      item.value = previousItem
-      error.value = toErrorMessage(errorValue)
+      restoreEntitySnapshot(rows, item, snapshot)
+      error.value = toUiErrorMessage(errorValue)
       Notify.error(error.value)
       throw errorValue
     } finally {
@@ -136,21 +123,19 @@ export const useSprintsStore = defineStore('sprints', () => {
     loading.value = true
     error.value = null
 
-    const previousRows = [...rows.value]
-    const previousItem = item.value
+    const snapshot = createEntitySnapshot(rows, item)
     const current = rows.value.find((row) => row.id === id) ?? item.value
-    if (current) mergeRow({ ...current, ...payload })
+    if (current) mergeEntityRow(rows, item, { ...current, ...payload })
 
     try {
       const patched = await api.patch(id, payload)
-      mergeRow(patched)
+      mergeEntityRow(rows, item, patched)
       Notify.success('Sprint mis à jour.')
       await refreshRowsSafe()
       return patched
     } catch (errorValue) {
-      rows.value = previousRows
-      item.value = previousItem
-      error.value = toErrorMessage(errorValue)
+      restoreEntitySnapshot(rows, item, snapshot)
+      error.value = toUiErrorMessage(errorValue)
       Notify.error(error.value)
       throw errorValue
     } finally {
@@ -162,8 +147,7 @@ export const useSprintsStore = defineStore('sprints', () => {
     loading.value = true
     error.value = null
 
-    const previousRows = [...rows.value]
-    const previousItem = item.value
+    const snapshot = createEntitySnapshot(rows, item)
     rows.value = rows.value.filter((row) => row.id !== id)
     if (item.value?.id === id) item.value = null
 
@@ -172,9 +156,8 @@ export const useSprintsStore = defineStore('sprints', () => {
       Notify.success('Sprint supprimé.')
       await refreshRowsSafe()
     } catch (errorValue) {
-      rows.value = previousRows
-      item.value = previousItem
-      error.value = toErrorMessage(errorValue)
+      restoreEntitySnapshot(rows, item, snapshot)
+      error.value = toUiErrorMessage(errorValue)
       Notify.error(error.value)
       throw errorValue
     } finally {
