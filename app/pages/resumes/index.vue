@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import { Notify } from '~/stores/notification'
-import type { Resume } from '~/composables/useResumeApi'
-
 definePageMeta({
   title: 'Mes CV',
   icon: 'mdi-file-document-multiple-outline',
@@ -10,32 +7,18 @@ definePageMeta({
   middleware: ['auth'],
 })
 
-const { getMyResumes, deleteResume } = useResumeApi()
-
-const loading = ref(false)
+const resumeStore = useResumeStore()
+const loading = computed(() => resumeStore.loadingByAction.fetchResumeList || false)
 const deletingId = ref<string | null>(null)
-const rows = ref<Resume[]>([])
 
 async function loadResumes() {
-  loading.value = true
-  try {
-    const response = await getMyResumes({ limit: 50, order: 'updatedAt:desc' })
-    rows.value = response.data || []
-  } catch (errorValue) {
-    const message = errorValue instanceof Error ? errorValue.message : 'Chargement des CV impossible.'
-    Notify.error(`Chargement des CV impossible. ${message}`)
-  } finally {
-    loading.value = false
-  }
+  await resumeStore.fetchResumeList()
 }
 
 async function removeResume(id: string) {
   deletingId.value = id
   try {
-    await deleteResume(id)
-    await loadResumes()
-  } catch {
-    // Notifications already handled by useResumeApi.
+    await resumeStore.deleteResume(id)
   } finally {
     deletingId.value = null
   }
@@ -56,10 +39,10 @@ onMounted(loadResumes)
 
     <v-progress-linear v-if="loading" indeterminate class="mb-4" />
 
-    <v-alert v-if="!loading && !rows.length" type="info" variant="tonal">Aucun CV pour le moment.</v-alert>
+    <v-alert v-if="!loading && !resumeStore.resumeList.length" type="info" variant="tonal">Aucun CV pour le moment.</v-alert>
 
     <v-row>
-      <v-col v-for="resume in rows" :key="resume.id" cols="12" md="6" lg="4">
+      <v-col v-for="resume in resumeStore.resumeList" :key="resume.id" cols="12" md="6" lg="4">
         <v-card>
           <v-card-title>{{ resume.title || 'Sans titre' }}</v-card-title>
           <v-card-subtitle>{{ resume.headline || 'Aucune accroche' }}</v-card-subtitle>

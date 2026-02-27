@@ -9,10 +9,10 @@ definePageMeta({
   middleware: ['auth'],
 })
 
-const { createResume } = useResumeApi()
+const resumeStore = useResumeStore()
 const router = useRouter()
 
-const loading = ref(false)
+const loading = computed(() => resumeStore.loadingByAction.saveResume || false)
 const isResumeFormValid = ref(false)
 const resumeFormRef = ref()
 const form = ref<CreateResumePayload>({
@@ -30,22 +30,15 @@ async function submit() {
     return
   }
 
-  loading.value = true
-  try {
-    const resume = await createResume({
-      title: form.value.title.trim(),
-      headline: form.value.headline,
-      summary: form.value.summary,
-      location: form.value.location,
-      isPublic: Boolean(form.value.isPublic),
-    })
+  const resume = await resumeStore.saveResume({
+    title: form.value.title.trim(),
+    headline: form.value.headline,
+    summary: form.value.summary,
+    location: form.value.location,
+    isPublic: Boolean(form.value.isPublic),
+  })
 
-    await router.push(`/resumes/${resume.id}`)
-  } catch {
-    // Notifications already handled by useResumeApi.
-  } finally {
-    loading.value = false
-  }
+  await router.push(`/resumes/${resume.id}`)
 }
 </script>
 

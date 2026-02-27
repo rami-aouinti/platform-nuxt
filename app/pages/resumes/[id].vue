@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Notify } from '~/stores/notification'
 import type {
-  Resume,
   ResumeEducation,
   ResumeExperience,
   ResumeSkill,
@@ -20,90 +19,57 @@ definePageMeta({
 
 const route = useRoute()
 const router = useRouter()
+const resumeStore = useResumeStore()
+
 const resumeId = computed(() => {
   const params = route.params as Record<string, string | string[] | undefined>
   const id = params.id
   return Array.isArray(id) ? String(id[0] || '') : String(id || '')
 })
 
-const {
-  getResume,
-  updateResume,
-  patchResume,
-  deleteResume,
-  getResumeExperiences,
-  createResumeExperience,
-  updateResumeExperience,
-  patchResumeExperience,
-  deleteResumeExperience,
-  getResumeEducationList,
-  createResumeEducation,
-  updateResumeEducation,
-  patchResumeEducation,
-  deleteResumeEducation,
-  getResumeSkills,
-  createResumeSkill,
-  updateResumeSkill,
-  patchResumeSkill,
-  deleteResumeSkill,
-} = useResumeApi()
+const loading = computed(() => resumeStore.loadingByAction.fetchResumeAggregate || false)
+const busy = resumeStore.isBusy
 
-const loading = ref(false)
-const busy = ref(false)
 const resumeFormRef = ref()
 const experienceFormRef = ref()
 const educationFormRef = ref()
 const skillFormRef = ref()
+
 const isResumeFormValid = ref(false)
 const isExperienceFormValid = ref(false)
 const isEducationFormValid = ref(false)
 const isSkillFormValid = ref(false)
-const resume = ref<Resume | null>(null)
+
 const resumeForm = ref<UpdateResumePayload>({ title: '', headline: '', summary: '', location: '', isPublic: false })
-
-const experiences = ref<ResumeExperience[]>([])
 const experienceForm = ref<UpdateResumeExperiencePayload>({ resume: '', company: '', role: '', startDate: '' })
-const editingExperienceId = ref<string | null>(null)
-
-const educationList = ref<ResumeEducation[]>([])
 const educationForm = ref<UpdateResumeEducationPayload>({ resume: '', institution: '' })
-const editingEducationId = ref<string | null>(null)
-
-const skills = ref<ResumeSkill[]>([])
 const skillForm = ref<UpdateResumeSkillPayload>({ resume: '', name: '' })
+
+const editingExperienceId = ref<string | null>(null)
+const editingEducationId = ref<string | null>(null)
 const editingSkillId = ref<string | null>(null)
 
+const experiences = resumeStore.currentResumeExperiences
+const educationList = resumeStore.currentResumeEducations
+const skills = resumeStore.currentResumeSkills
+
 async function loadData() {
-  loading.value = true
-  try {
-    const [resumeResponse, experiencesResponse, educationResponse, skillsResponse] = await Promise.all([
-      getResume(resumeId.value),
-      getResumeExperiences({ where: { resume: resumeId.value }, limit: 100 }),
-      getResumeEducationList({ where: { resume: resumeId.value }, limit: 100 }),
-      getResumeSkills({ where: { resume: resumeId.value }, limit: 100 }),
-    ])
+  await resumeStore.fetchResumeAggregate(resumeId.value)
 
-    resume.value = resumeResponse
-    resumeForm.value = {
-      title: resumeResponse.title || '',
-      headline: resumeResponse.headline || '',
-      summary: resumeResponse.summary || '',
-      location: resumeResponse.location || '',
-      isPublic: Boolean(resumeResponse.isPublic),
-    }
-    experiences.value = experiencesResponse.data || []
-    educationList.value = educationResponse.data || []
-    skills.value = skillsResponse.data || []
+  const currentResume = resumeStore.currentResume
+  if (!currentResume) return
 
-    resetExperienceForm()
-    resetEducationForm()
-    resetSkillForm()
-  } catch (errorValue) {
-    const message = errorValue instanceof Error ? errorValue.message : 'Chargement du CV impossible.'
-    Notify.error(`Chargement du CV impossible. ${message}`)
-  } finally {
-    loading.value = false
+  resumeForm.value = {
+    title: currentResume.title || '',
+    headline: currentResume.headline || '',
+    summary: currentResume.summary || '',
+    location: currentResume.location || '',
+    isPublic: Boolean(currentResume.isPublic),
   }
+
+  resetExperienceForm()
+  resetEducationForm()
+  resetSkillForm()
 }
 
 function resetExperienceForm() {
@@ -132,43 +98,22 @@ async function saveResume() {
     return
   }
 
-  busy.value = true
-  try {
-    await updateResume(resumeId.value, resumeForm.value)
-    await loadData()
-  } catch {
-    // Notifications already handled by useResumeApi.
-  } finally {
-    busy.value = false
-  }
+  await resumeStore.updateResume(resumeId.value, resumeForm.value)
+  await loadData()
 }
 
 async function patchResumeData() {
-  busy.value = true
-  try {
-    await patchResume(resumeId.value, {
-      headline: resumeForm.value.headline,
-      summary: resumeForm.value.summary,
-      location: resumeForm.value.location,
-    })
-    await loadData()
-  } catch {
-    // Notifications already handled by useResumeApi.
-  } finally {
-    busy.value = false
-  }
+  await resumeStore.patchResume(resumeId.value, {
+    headline: resumeForm.value.headline,
+    summary: resumeForm.value.summary,
+    location: resumeForm.value.location,
+  })
+  await loadData()
 }
 
 async function removeResume() {
-  busy.value = true
-  try {
-    await deleteResume(resumeId.value)
-    await router.push('/resumes')
-  } catch {
-    // Notifications already handled by useResumeApi.
-  } finally {
-    busy.value = false
-  }
+  await resumeStore.deleteResume(resumeId.value)
+  await router.push('/resumes')
 }
 
 function editExperience(item: ResumeExperience) {
@@ -182,45 +127,24 @@ async function submitExperience() {
     return
   }
 
-  busy.value = true
-  try {
-    const payload = { ...experienceForm.value, resume: resumeId.value }
-    if (editingExperienceId.value) {
-      await updateResumeExperience(editingExperienceId.value, payload)
-    } else {
-      await createResumeExperience(payload as never)
-    }
-    await loadData()
-  } catch {
-    // Notifications already handled by useResumeApi.
-  } finally {
-    busy.value = false
+  const payload = { ...experienceForm.value, resume: resumeId.value }
+  if (editingExperienceId.value) {
+    await resumeStore.updateExperience(editingExperienceId.value, payload)
+  } else {
+    await resumeStore.createExperience(payload as never)
   }
+  await loadData()
 }
 
 async function patchSelectedExperience() {
   if (!editingExperienceId.value) return
-  busy.value = true
-  try {
-    await patchResumeExperience(editingExperienceId.value, experienceForm.value)
-    await loadData()
-  } catch {
-    // Notifications already handled by useResumeApi.
-  } finally {
-    busy.value = false
-  }
+  await resumeStore.patchExperience(editingExperienceId.value, experienceForm.value)
+  await loadData()
 }
 
 async function removeExperience(id: string) {
-  busy.value = true
-  try {
-    await deleteResumeExperience(id)
-    await loadData()
-  } catch {
-    // Notifications already handled by useResumeApi.
-  } finally {
-    busy.value = false
-  }
+  await resumeStore.deleteExperience(id, resumeId.value)
+  await loadData()
 }
 
 function editEducation(item: ResumeEducation) {
@@ -234,45 +158,24 @@ async function submitEducation() {
     return
   }
 
-  busy.value = true
-  try {
-    const payload = { ...educationForm.value, resume: resumeId.value }
-    if (editingEducationId.value) {
-      await updateResumeEducation(editingEducationId.value, payload)
-    } else {
-      await createResumeEducation(payload as never)
-    }
-    await loadData()
-  } catch {
-    // Notifications already handled by useResumeApi.
-  } finally {
-    busy.value = false
+  const payload = { ...educationForm.value, resume: resumeId.value }
+  if (editingEducationId.value) {
+    await resumeStore.updateEducation(editingEducationId.value, payload)
+  } else {
+    await resumeStore.createEducation(payload as never)
   }
+  await loadData()
 }
 
 async function patchSelectedEducation() {
   if (!editingEducationId.value) return
-  busy.value = true
-  try {
-    await patchResumeEducation(editingEducationId.value, educationForm.value)
-    await loadData()
-  } catch {
-    // Notifications already handled by useResumeApi.
-  } finally {
-    busy.value = false
-  }
+  await resumeStore.patchEducation(editingEducationId.value, educationForm.value)
+  await loadData()
 }
 
 async function removeEducation(id: string) {
-  busy.value = true
-  try {
-    await deleteResumeEducation(id)
-    await loadData()
-  } catch {
-    // Notifications already handled by useResumeApi.
-  } finally {
-    busy.value = false
-  }
+  await resumeStore.deleteEducation(id, resumeId.value)
+  await loadData()
 }
 
 function editSkill(item: ResumeSkill) {
@@ -286,45 +189,24 @@ async function submitSkill() {
     return
   }
 
-  busy.value = true
-  try {
-    const payload = { ...skillForm.value, resume: resumeId.value }
-    if (editingSkillId.value) {
-      await updateResumeSkill(editingSkillId.value, payload)
-    } else {
-      await createResumeSkill(payload as never)
-    }
-    await loadData()
-  } catch {
-    // Notifications already handled by useResumeApi.
-  } finally {
-    busy.value = false
+  const payload = { ...skillForm.value, resume: resumeId.value }
+  if (editingSkillId.value) {
+    await resumeStore.updateSkill(editingSkillId.value, payload)
+  } else {
+    await resumeStore.createSkill(payload as never)
   }
+  await loadData()
 }
 
 async function patchSelectedSkill() {
   if (!editingSkillId.value) return
-  busy.value = true
-  try {
-    await patchResumeSkill(editingSkillId.value, skillForm.value)
-    await loadData()
-  } catch {
-    // Notifications already handled by useResumeApi.
-  } finally {
-    busy.value = false
-  }
+  await resumeStore.patchSkill(editingSkillId.value, skillForm.value)
+  await loadData()
 }
 
 async function removeSkill(id: string) {
-  busy.value = true
-  try {
-    await deleteResumeSkill(id)
-    await loadData()
-  } catch {
-    // Notifications already handled by useResumeApi.
-  } finally {
-    busy.value = false
-  }
+  await resumeStore.deleteSkill(id, resumeId.value)
+  await loadData()
 }
 
 onMounted(loadData)
@@ -333,7 +215,7 @@ onMounted(loadData)
 <template>
   <v-container class="py-6">
     <div class="d-flex justify-space-between align-center mb-4 ga-2 flex-wrap">
-      <h1 class="text-h5">{{ resume?.title || 'CV' }}</h1>
+      <h1 class="text-h5">{{ resumeStore.currentResume?.title || 'CV' }}</h1>
       <div class="d-flex ga-2">
         <v-btn variant="text" to="/resumes">Retour</v-btn>
         <v-btn color="error" :loading="busy" :disabled="loading || busy" @click="removeResume">Supprimer le CV</v-btn>
@@ -355,7 +237,7 @@ onMounted(loadData)
         </v-expansion-panel-text>
       </v-expansion-panel>
 
-      <v-expansion-panel title="Expériences">
+      <v-expansion-panel :title="`Expériences (${resumeStore.experienceCount})`">
         <v-expansion-panel-text>
           <v-form ref="experienceFormRef" v-model="isExperienceFormValid">
             <ResumeExperienceForm v-model="experienceForm" :disabled="loading || busy" />
@@ -376,7 +258,7 @@ onMounted(loadData)
         </v-expansion-panel-text>
       </v-expansion-panel>
 
-      <v-expansion-panel title="Formations">
+      <v-expansion-panel :title="`Formations (${resumeStore.educationCount})`">
         <v-expansion-panel-text>
           <v-form ref="educationFormRef" v-model="isEducationFormValid">
             <ResumeEducationForm v-model="educationForm" :disabled="loading || busy" />
@@ -397,7 +279,7 @@ onMounted(loadData)
         </v-expansion-panel-text>
       </v-expansion-panel>
 
-      <v-expansion-panel title="Compétences">
+      <v-expansion-panel :title="`Compétences (${resumeStore.skillCount})`">
         <v-expansion-panel-text>
           <v-form ref="skillFormRef" v-model="isSkillFormValid">
             <ResumeSkillForm v-model="skillForm" :disabled="loading || busy" />
