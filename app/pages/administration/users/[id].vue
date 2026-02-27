@@ -4,6 +4,7 @@ import { Notify } from '~/stores/notification'
 import { isRoot } from '~/utils/permissions/admin'
 import { useAuthStore } from '~/stores/auth'
 import { toUiErrorMessage } from '~/utils/errors/toUiErrorMessage'
+import { useRelationField } from '~/composables/admin/useRelationField'
 
 definePageMeta({
   icon: 'mdi-account-details-outline',
@@ -39,26 +40,53 @@ const userId = computed(() => {
 
 const loading = ref(false)
 const busyAction = ref(false)
-const loadingGroupOptions = ref(false)
 const activeTab = ref('profile')
 
 const userProfile = ref<UserProfile | null>(null)
 const userRoles = ref<string[]>([])
-const userGroups = ref<UserGroup[]>([])
-const availableGroups = ref<UserGroup[]>([])
 const selectedGroupId = ref('')
+
+const userGroupsRelation = useRelationField<UserGroup>({
+  fieldName: 'userGroups',
+  fieldEndpoint: '/api/user_group',
+  parentEndpoint: () => `/api/user/${encodeURIComponent(userId.value)}`,
+  relationEndpoint: relationId => `/api/user/${encodeURIComponent(userId.value)}/group/${encodeURIComponent(relationId)}`,
+  optionsQuery: {
+    limit: 200,
+    offset: 0,
+  },
+  mapItem: (entry) => {
+    if (!entry || typeof entry !== 'object') {
+      return null
+    }
+
+    const row = entry as Record<string, unknown>
+    const id = String(row.id ?? '').trim()
+    if (!id) {
+      return null
+    }
+
+    return {
+      id,
+      name: String(row.name ?? row.id ?? '').trim(),
+    }
+  },
+  getId: item => item.id,
+  getLabel: item => item.name,
+})
+
+const userGroups = userGroupsRelation.relationItems
+const groupOptionsLoading = computed(() => userGroupsRelation.loadingOptions.value)
+
 
 const canManageGroups = computed(() => isRoot(roles.value))
 const canManageProfile = computed(() => isRoot(roles.value))
 
 const availableGroupOptions = computed(() => {
-  const attached = new Set(userGroups.value.map((group) => group.id))
-  return availableGroups.value
-    .filter((group) => !attached.has(group.id))
-    .map((group) => ({
-      title: group.name,
-      value: group.id,
-    }))
+  return userGroupsRelation.availableOptions.value.map(option => ({
+    title: option.label,
+    value: option.id,
+  }))
 })
 
 function normalizeStringList(payload: unknown): string[] {
@@ -96,30 +124,6 @@ function normalizeProfile(payload: unknown): UserProfile {
   }
 }
 
-function normalizeGroupList(payload: unknown): UserGroup[] {
-  const records = Array.isArray(payload)
-    ? payload
-    : payload && typeof payload === 'object' && Array.isArray((payload as { items?: unknown[] }).items)
-      ? (payload as { items: unknown[] }).items
-      : payload && typeof payload === 'object' && Array.isArray((payload as { data?: unknown[] }).data)
-        ? (payload as { data: unknown[] }).data
-        : []
-
-  return records
-    .map((entry) => {
-      if (!entry || typeof entry !== 'object') {
-        return null
-      }
-
-      const row = entry as Record<string, unknown>
-      return {
-        id: String(row.id ?? '').trim(),
-        name: String(row.name ?? row.id ?? '').trim(),
-      }
-    })
-    .filter((group): group is UserGroup => Boolean(group?.id))
-}
-
 async function saveProfile() {
   if (!userProfile.value || !canManageProfile.value) {
     return
@@ -147,26 +151,6 @@ async function saveProfile() {
   }
 }
 
-async function loadAvailableGroups() {
-  loadingGroupOptions.value = true
-
-  try {
-    const payload = await $fetch('/api/user_group', {
-      query: {
-        limit: 200,
-        offset: 0,
-      },
-    })
-
-    availableGroups.value = normalizeGroupList(payload)
-  } catch (error) {
-    Notify.error(toUiErrorMessage(error))
-    availableGroups.value = []
-  } finally {
-    loadingGroupOptions.value = false
-  }
-}
-
 async function loadUserData() {
   if (!userId.value) {
     return
@@ -183,7 +167,7 @@ async function loadUserData() {
 
     userProfile.value = normalizeProfile(profileResponse)
     userRoles.value = normalizeStringList(rolesResponse)
-    userGroups.value = normalizeGroupList(groupsResponse)
+    userGroups.value = userGroupsRelation.normalizeItems(groupsResponse)
   } catch (error) {
     Notify.error(toUiErrorMessage(error))
   } finally {
@@ -206,9 +190,7 @@ async function attachGroup() {
   busyAction.value = true
 
   try {
-    await $fetch(`/api/user/${encodeURIComponent(userId.value)}/group/${encodeURIComponent(groupId)}`, {
-      method: 'POST',
-    })
+    await userGroupsRelation.addRelation(groupId)
 
     Notify.success('Groupe attaché à l’utilisateur.')
     selectedGroupId.value = ''
@@ -229,9 +211,7 @@ async function detachGroup(groupId: string) {
   busyAction.value = true
 
   try {
-    await $fetch(`/api/user/${encodeURIComponent(userId.value)}/group/${encodeURIComponent(groupId)}`, {
-      method: 'DELETE',
-    })
+    await userGroupsRelation.removeRelation(groupId)
 
     Notify.success('Groupe retiré de l’utilisateur.')
     await loadUserData()
@@ -244,7 +224,7 @@ async function detachGroup(groupId: string) {
 
 onMounted(async () => {
   await authStore.ensureRolesLoaded()
-  await Promise.all([loadUserData(), loadAvailableGroups()])
+  await Promise.all([loadUserData(), userGroupsRelation.loadOptions()])
 })
 </script>
 
@@ -348,7 +328,7 @@ onMounted(async () => {
                   item-value="value"
                   hide-details
                   density="comfortable"
-                  :loading="loadingGroupOptions"
+                  :loading="groupOptionsLoading"
                   :disabled="!canManageGroups || busyAction"
                 />
               </v-col>

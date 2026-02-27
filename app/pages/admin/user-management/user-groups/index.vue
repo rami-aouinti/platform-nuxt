@@ -6,6 +6,7 @@ import { useAuthStore } from '~/stores/auth'
 import { canManageUsers, isRoot } from '~/utils/permissions/admin'
 import { useInternalEventTracking } from '~/composables/useInternalEventTracking'
 import { extractCollectionFromPayload } from '~/utils/admin/extractCollectionFromPayload'
+import { useRelationField } from '~/composables/admin/useRelationField'
 
 type GroupRecord = { id: string; name: string }
 type UserRecord = {
@@ -42,13 +43,46 @@ const createForm = reactive({
   name: '',
 })
 
-const detailUsers = ref<UserRecord[]>([])
 const detailLoading = ref(false)
 const detailActionLoading = ref(false)
 const selectedDetailGroup = ref<GroupRecord | null>(null)
 const selectedUserId = ref('')
-const availableUsers = ref<UserRecord[]>([])
-const loadingUserOptions = ref(false)
+
+const groupUsersRelation = useRelationField<UserRecord>({
+  fieldName: 'users',
+  fieldEndpoint: '/api/user',
+  parentEndpoint: '/api/user_group',
+  relationEndpoint: relationId => `/api/user_group/${encodeURIComponent(String(selectedDetailGroup.value?.id ?? ''))}/user/${encodeURIComponent(relationId)}`,
+  optionsQuery: {
+    limit: 300,
+    offset: 0,
+  },
+  mapItem: (entry) => {
+    if (!entry || typeof entry !== 'object') {
+      return null
+    }
+
+    const row = entry as Record<string, unknown>
+    const id = String(row.id ?? row.uuid ?? '').trim()
+
+    if (!id) {
+      return null
+    }
+
+    return {
+      id,
+      username: String(row.username ?? row.userName ?? '').trim(),
+      firstName: String(row.firstName ?? '').trim(),
+      lastName: String(row.lastName ?? '').trim(),
+      email: String(row.email ?? '').trim(),
+    }
+  },
+  getId: item => item.id,
+  getLabel: item => item.username || item.email || item.id,
+})
+
+const detailUsers = groupUsersRelation.relationItems
+const userOptionsLoading = computed(() => groupUsersRelation.loadingOptions.value)
 
 const columns: DataTableHeader[] = [
   { title: 'Nom', key: 'name' },
@@ -64,54 +98,20 @@ function normalize(payload: unknown): GroupRecord[] {
   })
 }
 
-function normalizeUsers(payload: unknown): UserRecord[] {
-  const records = extractCollectionFromPayload(payload)
-
-  return records
-    .map((entry, index) => {
-      const row = entry as Record<string, unknown>
-      return {
-        id: String(row.id ?? row.uuid ?? index).trim(),
-        username: String(row.username ?? row.userName ?? '').trim(),
-        firstName: String(row.firstName ?? '').trim(),
-        lastName: String(row.lastName ?? '').trim(),
-        email: String(row.email ?? '').trim(),
-      }
-    })
-    .filter((user) => Boolean(user.id))
-}
-
 const availableUserOptions = computed(() => {
-  const attachedIds = new Set(detailUsers.value.map((user) => user.id))
-
-  return availableUsers.value
-    .filter((user) => !attachedIds.has(user.id))
-    .map((user) => ({
-      title: user.username
-        ? `${user.username}${user.email ? ` (${user.email})` : ''}`
-        : user.id,
-      value: user.id,
-    }))
+  return groupUsersRelation.availableOptions.value.map(option => ({
+    title: option.label,
+    value: option.id,
+  }))
 })
 
 async function loadAvailableUsers() {
-  loadingUserOptions.value = true
-
   try {
-    const payload = await $fetch('/api/user', {
-      query: {
-        limit: 300,
-        offset: 0,
-      },
-    })
-    availableUsers.value = normalizeUsers(payload)
+    await groupUsersRelation.loadOptions()
   } catch (errorValue) {
     Notify.error(
       `Impossible de charger les utilisateurs : ${errorValue instanceof Error ? errorValue.message : 'Erreur API.'}`,
     )
-    availableUsers.value = []
-  } finally {
-    loadingUserOptions.value = false
   }
 }
 
@@ -124,7 +124,7 @@ async function loadGroupUsers(groupId: string) {
 
   try {
     const payload = await $fetch(`/api/user_group/${encodeURIComponent(groupId)}/users`)
-    detailUsers.value = normalizeUsers(payload)
+    detailUsers.value = groupUsersRelation.normalizeItems(payload)
   } catch (errorValue) {
     Notify.error(
       `Impossible de charger les membres du groupe : ${errorValue instanceof Error ? errorValue.message : 'Erreur API.'}`,
@@ -150,9 +150,7 @@ async function attachUser() {
   detailActionLoading.value = true
 
   try {
-    await $fetch(`/api/user_group/${encodeURIComponent(selectedDetailGroup.value.id)}/user/${encodeURIComponent(selectedUserId.value)}`, {
-      method: 'POST',
-    })
+    await groupUsersRelation.addRelation(selectedUserId.value)
     Notify.success('Utilisateur attaché avec succès.')
     selectedUserId.value = ''
     await loadGroupUsers(selectedDetailGroup.value.id)
@@ -223,9 +221,7 @@ async function detachUser(userId: string) {
   detailActionLoading.value = true
 
   try {
-    await $fetch(`/api/user_group/${encodeURIComponent(selectedDetailGroup.value.id)}/user/${encodeURIComponent(userId)}`, {
-      method: 'DELETE',
-    })
+    await groupUsersRelation.removeRelation(userId)
     Notify.success('Utilisateur retiré du groupe.')
     await loadGroupUsers(selectedDetailGroup.value.id)
   } catch (errorValue) {
@@ -395,7 +391,7 @@ onMounted(async () => {
                 item-value="value"
                 hide-details
                 density="comfortable"
-                :loading="loadingUserOptions"
+                :loading="userOptionsLoading"
                 :disabled="!canManageUsersInGroup || detailActionLoading"
               />
             </v-col>
