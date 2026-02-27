@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Notify } from '~/stores/notification'
 import { HttpRequestError } from '../../../services/http/client'
-import type { TaskItem } from '~/composables/api/useTasksApi'
-import {useTasksApi} from "~/composables/api/useTasksApi"
+import type { Task } from '~/types/task-manager'
+import { useTasksApi } from "~/composables/api/useTasksApi"
 
 definePageMeta({
   icon: 'mdi-format-list-checks',
@@ -15,7 +15,7 @@ const tasksApi = useTasksApi()
 
 const loading = ref(false)
 const error = ref<string | null>(null)
-const tasks = ref<TaskItem[]>([])
+const tasks = ref<Task[]>([])
 
 function toErrorMessage(errorValue: unknown) {
   if (errorValue instanceof HttpRequestError) return errorValue.message
@@ -23,26 +23,13 @@ function toErrorMessage(errorValue: unknown) {
   return 'Impossible de charger les tasks.'
 }
 
-function statusColor(status: TaskItem['status']) {
-  if (status === 'done') return 'success'
-  if (status === 'in_progress') return 'warning'
-  if (status === 'archived') return 'default'
-  return 'info'
-}
-
-function priorityColor(priority: TaskItem['priority']) {
-  if (priority === 'critical') return 'error'
-  if (priority === 'high') return 'warning'
-  if (priority === 'medium') return 'info'
-  return 'default'
-}
-
 async function loadTasks() {
   loading.value = true
   error.value = null
 
   try {
-    tasks.value = await tasksApi.list()
+    const response = await tasksApi.list()
+    tasks.value = response.data
   } catch (errorValue) {
     error.value = toErrorMessage(errorValue)
     Notify.error(error.value)
