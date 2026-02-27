@@ -28,6 +28,7 @@ export const adminResourceDescriptors = {
     },
   },
   roles: {
+    schemaEndpoint: '/api/role/schema',
     list: {
       endpoint: '/api/role',
       countEndpoint: '/api/role/count',
@@ -45,6 +46,7 @@ export const adminResourceDescriptors = {
     },
   },
   groups: {
+    schemaEndpoint: '/api/user_group/schema',
     list: {
       endpoint: '/api/user_group',
       countEndpoint: '/api/user_group/count',
@@ -64,6 +66,17 @@ export const adminResourceDescriptors = {
       canDelete: true,
       canShow: true,
       canPatch: false,
+    },
+  },
+  apiKeys: {
+    schemaEndpoint: '/api/api_key/schema',
+    list: '/api/admin/api-keys',
+    permissions: {
+      canCreate: true,
+      canEdit: true,
+      canDelete: true,
+      canShow: true,
+      canPatch: true,
     },
   },
 } satisfies Record<string, AdminResourceDescriptor>

@@ -5,8 +5,11 @@ import { Notify } from '~/stores/notification'
 import { useAuthStore } from '~/stores/auth'
 import { canManageUsers } from '~/utils/permissions/admin'
 import { extractCollectionFromPayload } from '~/utils/admin/extractCollectionFromPayload'
+import type { AdminResourceSchema } from '~/types/admin-schema'
+import { getAdminResourceDescriptor } from '~/services/admin/resource-descriptors'
+import { buildSchemaColumns, buildSchemaFieldConfigs, normalizeAdminSchema } from '~/utils/admin/schema'
 
-type RoleRecord = { id: string; name: string; description: string }
+type RoleRecord = { id: string; [key: string]: unknown }
 
 definePageMeta({
   icon: 'mdi-shield-account-outline',
@@ -21,6 +24,7 @@ definePageMeta({
 
 const authStore = useAuthStore()
 const { roles } = storeToRefs(authStore)
+const rolesDescriptor = getAdminResourceDescriptor('roles')
 const canShow = computed(() => canManageUsers(roles.value))
 const canMutate = computed(() => false)
 
@@ -31,20 +35,43 @@ const createForm = reactive({
   description: '',
 })
 
-const columns: DataTableHeader[] = [
+const fallbackColumns: DataTableHeader[] = [
   { title: 'Nom', key: 'name' },
   { title: 'Description', key: 'description' },
 ]
+
+const fallbackFields = [
+  { key: 'name', label: 'Nom' },
+  { key: 'description', label: 'Description' },
+]
+
+const roleSchema = ref<AdminResourceSchema | null>(null)
+
+const columns = computed<DataTableHeader[]>(() => buildSchemaColumns(roleSchema.value, fallbackColumns))
+const detailFields = computed(() => buildSchemaFieldConfigs(roleSchema.value?.editable, fallbackFields))
 
 function normalize(payload: unknown): RoleRecord[] {
   return extractCollectionFromPayload(payload).map((entry, index) => {
     const row = entry as Record<string, unknown>
     return {
+      ...row,
       id: String(row.id ?? row.uuid ?? index),
-      name: String(row.name ?? row.id ?? ''),
-      description: String(row.description ?? ''),
     }
   })
+}
+
+async function loadSchema() {
+  if (!rolesDescriptor.schemaEndpoint) {
+    roleSchema.value = null
+    return
+  }
+
+  try {
+    const payload = await $fetch(String(rolesDescriptor.schemaEndpoint))
+    roleSchema.value = normalizeAdminSchema(payload)
+  } catch {
+    roleSchema.value = null
+  }
 }
 
 const {
@@ -145,6 +172,7 @@ async function submitCreateRole() {
 
 onMounted(async () => {
   await authStore.ensureRolesLoaded()
+  await loadSchema()
   await loadRows()
 })
 </script>
@@ -162,14 +190,8 @@ onMounted(async () => {
       :sort-by="sortBy"
       :search="search"
       :filters="filters"
-      :detail-fields="[
-        { key: 'name', label: 'Nom' },
-        { key: 'description', label: 'Description' },
-      ]"
-      :editable-fields="[
-        { key: 'name', label: 'Nom' },
-        { key: 'description', label: 'Description' },
-      ]"
+      :detail-fields="detailFields"
+      :editable-fields="detailFields"
       :can-show="canShow"
       :can-create="false"
       :can-edit="false"

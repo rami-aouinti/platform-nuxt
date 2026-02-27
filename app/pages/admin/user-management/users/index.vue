@@ -6,10 +6,11 @@ import { useAuthStore } from '~/stores/auth'
 import { canManageUsers, isRoot } from '~/utils/permissions/admin'
 import { useInternalEventTracking } from '~/composables/useInternalEventTracking'
 import { extractCollectionFromPayload } from '~/utils/admin/extractCollectionFromPayload'
-import type { AdminResourceSchema, AdminSchemaField } from '~/types/admin-schema'
+import type { AdminResourceSchema } from '~/types/admin-schema'
 import type { AdminResourceEndpoint } from '~/types/admin-resource'
 import { useRelationField } from '~/composables/admin/useRelationField'
 import { getAdminResourceDescriptor } from '~/services/admin/resource-descriptors'
+import { buildSchemaColumns, buildSchemaFieldConfigs, normalizeAdminSchema } from '~/utils/admin/schema'
 
 type UserRecord = {
   id: string
@@ -119,75 +120,12 @@ function resolveResourceEndpoint(endpoint: AdminResourceEndpoint | undefined, id
   return endpoint
 }
 
-function toFieldLabel(fieldName: string) {
-  return fieldName
-    .replace(/([a-z\d])([A-Z])/g, '$1 $2')
-    .replace(/[_.-]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .replace(/^./, value => value.toUpperCase())
-}
-
-function normalizeSchemaField(entry: unknown): AdminSchemaField | null {
-  if (!entry || typeof entry !== 'object') {
-    return null
-  }
-
-  const row = entry as Record<string, unknown>
-  const name = String(row.name ?? '').trim()
-
-  if (!name) {
-    return null
-  }
-
-  return {
-    name,
-    type: String(row.type ?? '').trim() || undefined,
-    targetClass: String(row.targetClass ?? '').trim() || undefined,
-    endpoint: String(row.endpoint ?? '').trim() || undefined,
-  }
-}
-
-function normalizeSchema(payload: unknown): AdminResourceSchema | null {
-  if (!payload || typeof payload !== 'object') {
-    return null
-  }
-
-  const body = payload as { displayable?: unknown; editable?: unknown }
-  const displayable = Array.isArray(body.displayable)
-    ? body.displayable.map(normalizeSchemaField).filter((field): field is AdminSchemaField => Boolean(field))
-    : []
-  const editable = Array.isArray(body.editable)
-    ? body.editable.map(normalizeSchemaField).filter((field): field is AdminSchemaField => Boolean(field))
-    : []
-
-  if (displayable.length === 0 && editable.length === 0) {
-    return null
-  }
-
-  return { displayable, editable }
-}
-
 const columns = computed<DataTableHeader[]>(() => {
-  if (!userSchema.value?.displayable?.length) {
-    return fallbackColumns
-  }
-
-  return userSchema.value.displayable.map(field => ({
-    title: toFieldLabel(field.name),
-    key: field.name,
-  }))
+  return buildSchemaColumns(userSchema.value, fallbackColumns)
 })
 
 const detailFields = computed(() => {
-  if (!userSchema.value?.editable?.length) {
-    return fallbackDetailFields
-  }
-
-  return userSchema.value.editable.map(field => ({
-    key: field.name,
-    label: toFieldLabel(field.name),
-  }))
+  return buildSchemaFieldConfigs(userSchema.value?.editable, fallbackDetailFields)
 })
 
 const editableFields = computed(() => detailFields.value)
@@ -224,7 +162,7 @@ function normalize(payload: unknown): UserRecord[] {
 async function loadSchema() {
   try {
     const payload = await $fetch(String(usersDescriptor.schemaEndpoint ?? '/api/user/schema'))
-    userSchema.value = normalizeSchema(payload)
+    userSchema.value = normalizeAdminSchema(payload)
   } catch {
     userSchema.value = null
   }
@@ -371,7 +309,6 @@ const {
   saveEdit,
   deleteRow,
 } = useAdminResourcePage<UserRecord, Record<string, string>>({
-  resource: usersDescriptor,
   initialFilters: {},
   normalize,
   buildQuery,
