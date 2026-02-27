@@ -8,7 +8,13 @@ import { useInternalEventTracking } from '~/composables/useInternalEventTracking
 import { extractCollectionFromPayload } from '~/utils/admin/extractCollectionFromPayload'
 
 type GroupRecord = { id: string; name: string }
-type UserRecord = { id: string; username: string; email: string }
+type UserRecord = {
+  id: string
+  username: string
+  firstName: string
+  lastName: string
+  email: string
+}
 
 definePageMeta({
   icon: 'mdi-account-group-outline',
@@ -67,6 +73,8 @@ function normalizeUsers(payload: unknown): UserRecord[] {
       return {
         id: String(row.id ?? row.uuid ?? index).trim(),
         username: String(row.username ?? row.userName ?? '').trim(),
+        firstName: String(row.firstName ?? '').trim(),
+        lastName: String(row.lastName ?? '').trim(),
         email: String(row.email ?? '').trim(),
       }
     })
@@ -165,6 +173,20 @@ function createRow() {
 
   createForm.name = ''
   createOpen.value = true
+}
+
+function formatUserTitle(user: UserRecord): string {
+  const fullName = `${user.firstName} ${user.lastName}`.trim()
+
+  if (fullName && user.username) {
+    return `${fullName} (${user.username})`
+  }
+
+  if (fullName) {
+    return fullName
+  }
+
+  return user.username || user.id
 }
 
 async function submitCreateGroup() {
@@ -347,7 +369,7 @@ onMounted(async () => {
 
           <v-list v-else density="comfortable" lines="one" class="bg-transparent pa-0 mb-3">
             <v-list-item v-for="user in detailUsers" :key="user.id" class="px-0">
-              <v-list-item-title>{{ user.username || user.id }}</v-list-item-title>
+              <v-list-item-title>{{ formatUserTitle(user) }}</v-list-item-title>
               <v-list-item-subtitle>{{ user.email || user.id }}</v-list-item-subtitle>
               <template #prepend>
                 <v-btn
