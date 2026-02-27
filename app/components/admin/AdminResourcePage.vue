@@ -137,6 +137,17 @@ const fieldConfigByKey = computed(() => {
 })
 
 const rowPatchLoadingSet = computed(() => new Set(props.rowPatchLoadingKeys))
+const exportingExcel = ref(false)
+const exportingPdf = ref(false)
+
+const exportableColumns = computed(() =>
+  props.columns
+    .map((column) => ({
+      key: String(column.key),
+      title: String(column.title ?? column.key ?? ''),
+    }))
+    .filter((column) => column.key && column.key !== 'id' && column.key !== 'actions'),
+)
 
 function getFieldType(key: string) {
   return fieldConfigByKey.value[key]?.type ?? 'normal'
@@ -234,6 +245,106 @@ function setFilter(key: string, value: string) {
   })
 }
 
+function getExportFilename(extension: 'xlsx' | 'pdf') {
+  const timestamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')
+  return `admin-table-${timestamp}.${extension}`
+}
+
+function getExportRows() {
+  return props.rows.map((row) =>
+    exportableColumns.value.map((column) => {
+      const value = row[column.key]
+      if (value == null) {
+        return ''
+      }
+
+      if (typeof value === 'object') {
+        return JSON.stringify(value)
+      }
+
+      return String(value)
+    }),
+  )
+}
+
+async function exportToExcel() {
+  if (exportingExcel.value || !props.rows.length) {
+    return
+  }
+
+  try {
+    exportingExcel.value = true
+
+    const headers = exportableColumns.value.map((column) => column.title)
+    const rows = getExportRows()
+    const escapeCell = (value: string) => `"${value.replaceAll('"', '""')}"`
+    const csvContent = [headers, ...rows]
+      .map((line) => line.map((cell) => escapeCell(cell)).join(';'))
+      .join('\n')
+
+    const blob = new Blob([`\uFEFF${csvContent}`], {
+      type: 'application/vnd.ms-excel;charset=utf-8;',
+    })
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = getExportFilename('xlsx').replace('.xlsx', '.csv')
+    document.body.append(link)
+    link.click()
+    link.remove()
+    URL.revokeObjectURL(link.href)
+  }
+  finally {
+    exportingExcel.value = false
+  }
+}
+
+async function exportToPdf() {
+  if (exportingPdf.value || !props.rows.length || import.meta.server) {
+    return
+  }
+
+  try {
+    exportingPdf.value = true
+
+    const printWindow = window.open('', '_blank', 'noopener,noreferrer')
+    if (!printWindow) {
+      return
+    }
+
+    const headers = exportableColumns.value.map((column) => `<th>${column.title}</th>`).join('')
+    const body = getExportRows()
+      .map((row) => `<tr>${row.map((cell) => `<td>${cell}</td>`).join('')}</tr>`)
+      .join('')
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Export PDF</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 24px; }
+            table { width: 100%; border-collapse: collapse; font-size: 12px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background: #f5f5f5; }
+          </style>
+        </head>
+        <body>
+          <h2>Export table</h2>
+          <table>
+            <thead><tr>${headers}</tr></thead>
+            <tbody>${body}</tbody>
+          </table>
+        </body>
+      </html>
+    `)
+    printWindow.document.close()
+    printWindow.focus()
+    printWindow.print()
+  }
+  finally {
+    exportingPdf.value = false
+  }
+}
+
 function openDetails(row: AdminRow) {
   if (!props.canShow) {
     return
@@ -325,6 +436,28 @@ onMounted(() => {
           />
           <div class="admin-resource-controls__actions d-flex ga-2 justify-end">
             <v-btn
+              color="success"
+              variant="text"
+              prepend-icon="mdi-file-excel"
+              size="small"
+              :disabled="!rows.length"
+              :loading="exportingExcel"
+              @click="exportToExcel"
+            >
+              Excel
+            </v-btn>
+            <v-btn
+              color="error"
+              variant="text"
+              prepend-icon="mdi-file-pdf-box"
+              size="small"
+              :disabled="!rows.length"
+              :loading="exportingPdf"
+              @click="exportToPdf"
+            >
+              PDF
+            </v-btn>
+            <v-btn
               icon="mdi-refresh"
               color="primary"
               variant="text"
@@ -388,6 +521,28 @@ onMounted(() => {
             @update:model-value="setFilter(filter.key, String($event || ''))"
           />
           <div class="admin-resource-controls__actions d-flex ga-2 justify-end">
+            <v-btn
+              color="success"
+              variant="text"
+              prepend-icon="mdi-file-excel"
+              size="small"
+              :disabled="!rows.length"
+              :loading="exportingExcel"
+              @click="exportToExcel"
+            >
+              Excel
+            </v-btn>
+            <v-btn
+              color="error"
+              variant="text"
+              prepend-icon="mdi-file-pdf-box"
+              size="small"
+              :disabled="!rows.length"
+              :loading="exportingPdf"
+              @click="exportToPdf"
+            >
+              PDF
+            </v-btn>
             <v-btn
               icon="mdi-refresh"
               color="primary"
