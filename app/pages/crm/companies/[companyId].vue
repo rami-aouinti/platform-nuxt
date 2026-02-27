@@ -184,7 +184,7 @@ async function loadData() {
     const [companiesResult, projectsResult, sprintsResult, membersResult] = await Promise.all([
       crmApi.listCompanies(),
       crmApi.listCompanyProjects(companyId.value),
-      crmApi.listCompanySprints(companyId.value),
+      crmApi.listSprints(),
       crmApi.listCompanyMembers(companyId.value),
     ])
 

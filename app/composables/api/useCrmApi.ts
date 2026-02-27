@@ -173,10 +173,6 @@ export function useCrmApi() {
       $fetch<CrmProject[]>(`${companiesBase}/${companyId}/projects`, {
         method: 'GET',
       }),
-    listCompanySprints: (companyId: string) =>
-      $fetch<CrmSprint[]>(`${companiesBase}/${companyId}/sprints`, {
-        method: 'GET',
-      }),
     listCompanyMembers: (companyId: string) =>
       $fetch<CrmCompanyMember[]>(`${companiesBase}/${companyId}/members`, {
         method: 'GET',
