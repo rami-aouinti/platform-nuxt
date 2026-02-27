@@ -13,7 +13,7 @@ import { toUiErrorMessage } from '~/utils/errors/toUiErrorMessage'
 type ApiKeysService = typeof apiKeysV1Service | typeof apiKeysV2Service
 
 export const useApiKeysStore = defineStore('api-keys', () => {
-  const preferredVersion = ref<ApiVersion>('v2')
+  const preferredVersion = ref<ApiVersion>('v1')
 
   const rows = ref<ApiKey[]>([])
   const item = ref<ApiKey | null>(null)
@@ -26,7 +26,7 @@ export const useApiKeysStore = defineStore('api-keys', () => {
   const pagination = ref({ page: 1, perPage: 10, total: 0 })
   const search = ref('')
 
-  const activeVersion = ref<ApiVersion>('v2')
+  const activeVersion = ref<ApiVersion>('v1')
 
   const fallbackEnabled = computed(() => preferredVersion.value === 'v2')
 

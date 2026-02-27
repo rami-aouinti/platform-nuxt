@@ -316,6 +316,7 @@ onMounted(() => {
           :to="`${detailRouteBase}/${encodeURIComponent(String(item.id))}`"
         />
         <v-btn
+          v-if="canEdit"
           size="small"
           icon="mdi-pencil-outline"
           variant="text"
@@ -325,6 +326,7 @@ onMounted(() => {
           @click.stop="openEdit(item)"
         />
         <v-btn
+          v-if="canDelete"
           size="small"
           icon="mdi-delete-outline"
           variant="text"
@@ -346,7 +348,7 @@ onMounted(() => {
 
     <DialogConfirm ref="dialogDelete" />
 
-    <v-dialog v-model="detailDialogOpen" max-width="680">
+    <v-dialog v-model="detailDialogOpen" max-width="900">
       <v-card>
         <v-card-title>Détails</v-card-title>
         <v-card-text>
@@ -368,7 +370,7 @@ onMounted(() => {
       </v-card>
     </v-dialog>
 
-    <v-dialog v-model="editOpen" max-width="640">
+    <v-dialog v-model="editOpen" max-width="820">
       <v-card v-if="editableRow">
         <v-card-title>Éditer {{ resourceName }}</v-card-title>
         <v-card-text>

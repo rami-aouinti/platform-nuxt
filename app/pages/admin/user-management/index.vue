@@ -32,28 +32,28 @@ const { roles } = storeToRefs(authStore)
 const links: UserManagementLink[] = [
   {
     title: 'Users',
-    to: '/administration/users',
+    to: '/admin/user-management/users',
     icon: 'mdi-account-outline',
     description: 'Gérer les utilisateurs de la plateforme.',
     permission: 'manageUsers',
   },
   {
     title: 'Roles',
-    to: '/administration/roles',
+    to: '/admin/user-management/roles',
     icon: 'mdi-shield-account-outline',
     description: 'Configurer les rôles et permissions.',
     permission: 'admin',
   },
   {
     title: 'Groups',
-    to: '/administration/user-groups',
+    to: '/admin/user-management/user-groups',
     icon: 'mdi-account-group-outline',
     description: 'Organiser les utilisateurs en groupes.',
     permission: 'manageUsers',
   },
   {
     title: 'Api Keys',
-    to: '/administration/api-keys',
+    to: '/admin/user-management/api-keys',
     icon: 'mdi-key-variant',
     description: 'Administrer les clés API.',
     permission: 'manageApiKeys',
