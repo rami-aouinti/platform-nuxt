@@ -69,15 +69,23 @@ function normalize(payload: unknown): UserRecord[] {
 function buildQuery({
   page,
   pageSize,
+  sortBy,
   search,
 }: {
   page: number
   pageSize: number
+  sortBy: readonly { key: string; order?: 'asc' | 'desc' | boolean }[]
   search: string
 }) {
+  const activeSort = sortBy[0]
+  const order = activeSort && activeSort.order && activeSort.order !== false
+    ? `${activeSort.key}:${activeSort.order === 'desc' ? 'desc' : 'asc'}`
+    : undefined
+
   return {
     limit: pageSize,
     offset: Math.max(page - 1, 0) * pageSize,
+    order,
     search: search || undefined,
   }
 }
@@ -89,6 +97,7 @@ const {
   total,
   page,
   pageSize,
+  sortBy,
   search,
   filters,
   mutationLoading,
@@ -233,8 +242,6 @@ onMounted(async () => {
 <template>
   <div>
     <AdminResourcePage
-      title="Users"
-      description="Référence CRUD admin (liste/consultation/édition/suppression) pilotée par permissions."
       :columns="columns"
       :rows="rows"
       :loading="loading"
@@ -242,6 +249,7 @@ onMounted(async () => {
       :total="total"
       :page="page"
       :page-size="pageSize"
+      :sort-by="sortBy"
       :search="search"
       :filters="filters"
       :detail-fields="[
@@ -262,8 +270,10 @@ onMounted(async () => {
       :can-delete="canDelete"
       :mutation-loading="mutationLoading"
       resource-name="l'utilisateur"
+      detail-route-base="/administration/users"
       @update:page="page = $event"
       @update:page-size="pageSize = $event"
+      @update:sort-by="sortBy = $event"
       @update:search="search = $event"
       @update:filters="filters = $event"
       @create="createRow"
