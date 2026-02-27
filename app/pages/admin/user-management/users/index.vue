@@ -466,30 +466,27 @@ onMounted(async () => {
 
           <div class="text-subtitle-1 mt-4 mb-2">Rôles</div>
           <div v-if="detailRoles.length === 0" class="text-medium-emphasis mb-4">Aucun rôle.</div>
-          <v-list v-else density="comfortable" lines="one" class="bg-transparent pa-0 mb-4">
-            <v-list-item v-for="roleName in detailRoles" :key="roleName" class="px-0">
-              <v-list-item-title>{{ roleName }}</v-list-item-title>
-            </v-list-item>
-          </v-list>
+          <div v-else class="d-flex flex-wrap ga-2 mb-4">
+            <v-chip v-for="roleName in detailRoles" :key="roleName" size="small" variant="outlined">
+              {{ roleName }}
+            </v-chip>
+          </div>
 
           <div class="text-subtitle-1 mb-2">Groupes</div>
           <div v-if="detailGroups.length === 0" class="text-medium-emphasis mb-3">Aucun groupe.</div>
-          <v-list v-else density="comfortable" lines="one" class="bg-transparent pa-0 mb-3">
-            <v-list-item v-for="group in detailGroups" :key="group.id" class="px-0">
-              <v-list-item-title>{{ group.name }}</v-list-item-title>
-              <template #prepend>
-                <v-btn
-                  v-if="canManageGroups"
-                  size="x-small"
-                  variant="text"
-                  color="error"
-                  icon="mdi-close"
-                  :disabled="detailActionLoading"
-                  @click="detachGroup(group.id)"
-                />
-              </template>
-            </v-list-item>
-          </v-list>
+          <div v-else class="d-flex flex-wrap ga-2 mb-3">
+            <v-chip
+              v-for="group in detailGroups"
+              :key="group.id"
+              size="small"
+              variant="outlined"
+              :closable="canManageGroups"
+              :disabled="detailActionLoading"
+              @click:close="detachGroup(group.id)"
+            >
+              {{ group.name }}
+            </v-chip>
+          </div>
 
           <v-row dense>
             <v-col cols="12" md="8">
