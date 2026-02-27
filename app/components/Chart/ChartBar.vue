@@ -1,5 +1,17 @@
 <script setup lang="ts">
-const option: ECOption = {
+const props = withDefaults(defineProps<{
+  items?: Array<{ label: string; value: number }>
+  seriesName?: string
+}>(), {
+  items: () => [
+    { label: 'Mon', value: 79 },
+    { label: 'Tue', value: 52 },
+    { label: 'Wed', value: 200 },
+  ],
+  seriesName: 'value',
+})
+
+const option = computed<ECOption>(() => ({
   backgroundColor: 'transparent',
   tooltip: {
     trigger: 'axis',
@@ -17,7 +29,7 @@ const option: ECOption = {
   xAxis: [
     {
       type: 'category',
-      data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      data: props.items.map((item) => item.label),
       axisTick: {
         alignWithLabel: true,
       },
@@ -33,28 +45,13 @@ const option: ECOption = {
   ],
   series: [
     {
-      name: 'pageA',
+      name: props.seriesName,
       type: 'bar',
-      stack: 'vistors',
       barWidth: '60%',
-      data: [79, 52, 200, 334, 390, 330, 220],
-    },
-    {
-      name: 'pageB',
-      type: 'bar',
-      stack: 'vistors',
-      barWidth: '60%',
-      data: [80, 52, 200, 334, 390, 330, 220],
-    },
-    {
-      name: 'pageC',
-      type: 'bar',
-      stack: 'vistors',
-      barWidth: '60%',
-      data: [30, 52, 200, 334, 390, 330, 220],
+      data: props.items.map((item) => item.value),
     },
   ],
-}
+}))
 </script>
 
 <template>

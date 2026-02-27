@@ -1,5 +1,17 @@
 <script setup lang="ts">
-const option: ECOption = {
+const props = withDefaults(defineProps<{
+  items?: Array<{ label: string; value: number }>
+  seriesName?: string
+}>(), {
+  items: () => [
+    { label: 'Industries', value: 320 },
+    { label: 'Technology', value: 240 },
+    { label: 'Forex', value: 149 },
+  ],
+  seriesName: 'Distribution',
+})
+
+const option = computed<ECOption>(() => ({
   backgroundColor: 'transparent',
   tooltip: {
     trigger: 'item',
@@ -7,26 +19,20 @@ const option: ECOption = {
   legend: {
     left: 'center',
     bottom: '10',
-    data: ['Industries', 'Technology', 'Forex', 'Gold', 'Forecasts'],
+    data: props.items.map((item) => item.label),
   },
   series: [
     {
-      name: 'WEEKLY WRITE ARTICLES',
+      name: props.seriesName,
       type: 'pie',
       roseType: 'radius',
       radius: [15, 95],
       center: ['50%', '38%'],
-      data: [
-        { value: 320, name: 'Industries' },
-        { value: 240, name: 'Technology' },
-        { value: 149, name: 'Forex' },
-        { value: 100, name: 'Gold' },
-        { value: 59, name: 'Forecasts' },
-      ],
+      data: props.items.map((item) => ({ value: item.value, name: item.label })),
       animationEasing: 'cubicInOut',
     },
   ],
-}
+}))
 </script>
 
 <template>
