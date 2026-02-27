@@ -122,6 +122,12 @@ function createActivatorProps(
           to="/profile"
         />
         <v-list-item
+          v-if="isAuthenticated"
+          title="CRM"
+          prepend-icon="mdi-account-group-outline"
+          to="/crm"
+        />
+        <v-list-item
           v-if="isAuthenticated && !rolesLoading && hasAdminAccess"
           title="Administration"
           prepend-icon="mdi-shield-account-outline"

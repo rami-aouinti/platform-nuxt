@@ -127,27 +127,28 @@ onMounted(loadCompanies)
 
 <template>
   <v-container fluid>
-    <div class="d-flex align-center justify-space-between mb-4 flex-wrap ga-2">
-      <h1 class="text-h5">CRM · Companies</h1>
-      <div class="d-flex ga-2">
-        <v-btn
-          color="primary"
-          variant="tonal"
-          prepend-icon="mdi-refresh"
-          :loading="loading"
-          @click="loadCompanies"
-        >
-          Recharger
-        </v-btn>
-        <v-btn
-          color="primary"
-          prepend-icon="mdi-plus"
-          @click="createDialog = true"
-        >
-          Ajouter une company
-        </v-btn>
-      </div>
-    </div>
+    <client-only>
+      <teleport to="#app-bar">
+        <div class="d-flex ga-2 flex-wrap">
+          <v-btn
+            color="primary"
+            variant="tonal"
+            prepend-icon="mdi-refresh"
+            :loading="loading"
+            @click="loadCompanies"
+          >
+            Recharger
+          </v-btn>
+          <v-btn
+            color="primary"
+            prepend-icon="mdi-plus"
+            @click="createDialog = true"
+          >
+            Ajouter une company
+          </v-btn>
+        </div>
+      </teleport>
+    </client-only>
 
     <v-alert
       v-if="errorMessage"
@@ -173,15 +174,7 @@ onMounted(loadCompanies)
       </v-col>
     </v-row>
 
-    <v-alert
-      v-else-if="!hasCompanies"
-      type="info"
-      variant="tonal"
-      class="mb-4"
-      text="Aucune company visible pour le moment."
-    />
-
-    <v-row v-else>
+    <v-row v-if="hasCompanies && !loading">
       <v-col
         v-for="company in companies"
         :key="company.id"
