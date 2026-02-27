@@ -1,18 +1,19 @@
 <script setup lang="ts">
-import { ResumeEducationLevel, type UpdateResumeEducationPayload } from '~/composables/useResumeApi'
+import { ResumeEducationLevel } from '~/composables/useResumeApi'
+import type { ResumeEducationFormModel } from '~/types/resume'
 
 const props = defineProps<{
-  modelValue: UpdateResumeEducationPayload
+  modelValue: ResumeEducationFormModel
   disabled?: boolean
 }>()
 
 const emit = defineEmits<{
-  'update:modelValue': [value: UpdateResumeEducationPayload]
+  'update:modelValue': [value: ResumeEducationFormModel]
 }>()
 
 const form = computed({
   get: () => props.modelValue,
-  set: (value: UpdateResumeEducationPayload) => emit('update:modelValue', value),
+  set: (value: ResumeEducationFormModel) => emit('update:modelValue', value),
 })
 
 const levelItems = Object.values(ResumeEducationLevel)

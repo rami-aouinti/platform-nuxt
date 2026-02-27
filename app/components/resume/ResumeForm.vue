@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import type { UpdateResumePayload } from '~/composables/useResumeApi'
+import type { ResumeFormModel } from '~/types/resume'
 
 const props = defineProps<{
-  modelValue: UpdateResumePayload
+  modelValue: ResumeFormModel
   disabled?: boolean
 }>()
 
 const emit = defineEmits<{
-  'update:modelValue': [value: UpdateResumePayload]
+  'update:modelValue': [value: ResumeFormModel]
 }>()
 
 const form = computed({
   get: () => props.modelValue,
-  set: (value: UpdateResumePayload) => emit('update:modelValue', value),
+  set: (value: ResumeFormModel) => emit('update:modelValue', value),
 })
 
 const requiredRule = (label: string) => (value?: string | null) => {

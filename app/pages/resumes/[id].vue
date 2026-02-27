@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import { Notify } from '~/stores/notification'
+import type { ResumeEducation, ResumeExperience, ResumeSkill } from '~/composables/useResumeApi'
 import type {
-  ResumeEducation,
-  ResumeExperience,
-  ResumeSkill,
-  UpdateResumeEducationPayload,
-  UpdateResumeExperiencePayload,
-  UpdateResumePayload,
-  UpdateResumeSkillPayload,
-} from '~/composables/useResumeApi'
+  ResumeEducationFormModel,
+  ResumeExperienceFormModel,
+  ResumeFormModel,
+  ResumeSkillFormModel,
+} from '~/types/resume'
 
 definePageMeta({
   title: 'Détail CV',
@@ -40,10 +38,10 @@ const isExperienceFormValid = ref(false)
 const isEducationFormValid = ref(false)
 const isSkillFormValid = ref(false)
 
-const resumeForm = ref<UpdateResumePayload>({ title: '', headline: '', summary: '', location: '', isPublic: false })
-const experienceForm = ref<UpdateResumeExperiencePayload>({ resume: '', company: '', role: '', startDate: '' })
-const educationForm = ref<UpdateResumeEducationPayload>({ resume: '', institution: '' })
-const skillForm = ref<UpdateResumeSkillPayload>({ resume: '', name: '' })
+const resumeForm = ref<ResumeFormModel>(resumeStore.mapResumeApiToFormModel())
+const experienceForm = ref<ResumeExperienceFormModel>(resumeStore.mapResumeExperienceApiToFormModel(null, ''))
+const educationForm = ref<ResumeEducationFormModel>(resumeStore.mapResumeEducationApiToFormModel(null, ''))
+const skillForm = ref<ResumeSkillFormModel>(resumeStore.mapResumeSkillApiToFormModel(null, ''))
 
 const editingExperienceId = ref<string | null>(null)
 const editingEducationId = ref<string | null>(null)
@@ -59,13 +57,7 @@ async function loadData() {
   const currentResume = resumeStore.currentResume
   if (!currentResume) return
 
-  resumeForm.value = {
-    title: currentResume.title || '',
-    headline: currentResume.headline || '',
-    summary: currentResume.summary || '',
-    location: currentResume.location || '',
-    isPublic: Boolean(currentResume.isPublic),
-  }
+  resumeForm.value = resumeStore.mapResumeApiToFormModel(currentResume)
 
   resetExperienceForm()
   resetEducationForm()
@@ -74,17 +66,17 @@ async function loadData() {
 
 function resetExperienceForm() {
   editingExperienceId.value = null
-  experienceForm.value = { resume: resumeId.value, company: '', role: '', startDate: '' }
+  experienceForm.value = resumeStore.mapResumeExperienceApiToFormModel(null, resumeId.value)
 }
 
 function resetEducationForm() {
   editingEducationId.value = null
-  educationForm.value = { resume: resumeId.value, institution: '' }
+  educationForm.value = resumeStore.mapResumeEducationApiToFormModel(null, resumeId.value)
 }
 
 function resetSkillForm() {
   editingSkillId.value = null
-  skillForm.value = { resume: resumeId.value, name: '' }
+  skillForm.value = resumeStore.mapResumeSkillApiToFormModel(null, resumeId.value)
 }
 
 async function validateForm(formRef: { validate?: () => Promise<{ valid: boolean }> }) {
@@ -98,16 +90,13 @@ async function saveResume() {
     return
   }
 
-  await resumeStore.updateResume(resumeId.value, resumeForm.value)
+  await resumeStore.updateResumeFromForm(resumeId.value, resumeForm.value)
   await loadData()
 }
 
 async function patchResumeData() {
-  await resumeStore.patchResume(resumeId.value, {
-    headline: resumeForm.value.headline,
-    summary: resumeForm.value.summary,
-    location: resumeForm.value.location,
-  })
+  const previous = resumeStore.mapResumeApiToFormModel(resumeStore.currentResume)
+  await resumeStore.patchResumeFromForm(resumeId.value, resumeForm.value, previous)
   await loadData()
 }
 
@@ -118,7 +107,7 @@ async function removeResume() {
 
 function editExperience(item: ResumeExperience) {
   editingExperienceId.value = item.id
-  experienceForm.value = { ...item }
+  experienceForm.value = resumeStore.mapResumeExperienceApiToFormModel(item, resumeId.value)
 }
 
 async function submitExperience() {
@@ -129,16 +118,17 @@ async function submitExperience() {
 
   const payload = { ...experienceForm.value, resume: resumeId.value }
   if (editingExperienceId.value) {
-    await resumeStore.updateExperience(editingExperienceId.value, payload)
+    await resumeStore.updateExperienceFromForm(editingExperienceId.value, payload)
   } else {
-    await resumeStore.createExperience(payload as never)
+    await resumeStore.createExperienceFromForm(payload)
   }
   await loadData()
 }
 
 async function patchSelectedExperience() {
   if (!editingExperienceId.value) return
-  await resumeStore.patchExperience(editingExperienceId.value, experienceForm.value)
+  const previous = experiences.value.find((item: ResumeExperience) => item.id === editingExperienceId.value)
+  await resumeStore.patchExperienceFromForm(editingExperienceId.value, experienceForm.value, resumeStore.mapResumeExperienceApiToFormModel(previous, resumeId.value))
   await loadData()
 }
 
@@ -149,7 +139,7 @@ async function removeExperience(id: string) {
 
 function editEducation(item: ResumeEducation) {
   editingEducationId.value = item.id
-  educationForm.value = { ...item }
+  educationForm.value = resumeStore.mapResumeEducationApiToFormModel(item, resumeId.value)
 }
 
 async function submitEducation() {
@@ -160,16 +150,17 @@ async function submitEducation() {
 
   const payload = { ...educationForm.value, resume: resumeId.value }
   if (editingEducationId.value) {
-    await resumeStore.updateEducation(editingEducationId.value, payload)
+    await resumeStore.updateEducationFromForm(editingEducationId.value, payload)
   } else {
-    await resumeStore.createEducation(payload as never)
+    await resumeStore.createEducationFromForm(payload)
   }
   await loadData()
 }
 
 async function patchSelectedEducation() {
   if (!editingEducationId.value) return
-  await resumeStore.patchEducation(editingEducationId.value, educationForm.value)
+  const previous = educationList.value.find((item: ResumeEducation) => item.id === editingEducationId.value)
+  await resumeStore.patchEducationFromForm(editingEducationId.value, educationForm.value, resumeStore.mapResumeEducationApiToFormModel(previous, resumeId.value))
   await loadData()
 }
 
@@ -180,7 +171,7 @@ async function removeEducation(id: string) {
 
 function editSkill(item: ResumeSkill) {
   editingSkillId.value = item.id
-  skillForm.value = { ...item }
+  skillForm.value = resumeStore.mapResumeSkillApiToFormModel(item, resumeId.value)
 }
 
 async function submitSkill() {
@@ -191,16 +182,17 @@ async function submitSkill() {
 
   const payload = { ...skillForm.value, resume: resumeId.value }
   if (editingSkillId.value) {
-    await resumeStore.updateSkill(editingSkillId.value, payload)
+    await resumeStore.updateSkillFromForm(editingSkillId.value, payload)
   } else {
-    await resumeStore.createSkill(payload as never)
+    await resumeStore.createSkillFromForm(payload)
   }
   await loadData()
 }
 
 async function patchSelectedSkill() {
   if (!editingSkillId.value) return
-  await resumeStore.patchSkill(editingSkillId.value, skillForm.value)
+  const previous = skills.value.find((item: ResumeSkill) => item.id === editingSkillId.value)
+  await resumeStore.patchSkillFromForm(editingSkillId.value, skillForm.value, resumeStore.mapResumeSkillApiToFormModel(previous, resumeId.value))
   await loadData()
 }
 
