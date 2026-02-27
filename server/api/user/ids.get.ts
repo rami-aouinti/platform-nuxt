@@ -1,5 +1,6 @@
-import { proxyAuthApiGet } from '../../utils/auth-api-proxy'
+import { createProxyCollectionHandler } from '../../utils/proxy-handler-factory'
 
-export default defineEventHandler(async (event) => {
-  return await proxyAuthApiGet(event, '/api/v1/user/ids')
+export default createProxyCollectionHandler({
+  upstreamPath: '/api/v1/user/ids',
+  method: 'GET',
 })
