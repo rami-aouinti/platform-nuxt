@@ -1,18 +1,19 @@
 <script setup lang="ts">
-import { ResumeEmploymentType, type UpdateResumeExperiencePayload } from '~/composables/useResumeApi'
+import { ResumeEmploymentType } from '~/composables/useResumeApi'
+import type { ResumeExperienceFormModel } from '~/types/resume'
 
 const props = defineProps<{
-  modelValue: UpdateResumeExperiencePayload
+  modelValue: ResumeExperienceFormModel
   disabled?: boolean
 }>()
 
 const emit = defineEmits<{
-  'update:modelValue': [value: UpdateResumeExperiencePayload]
+  'update:modelValue': [value: ResumeExperienceFormModel]
 }>()
 
 const form = computed({
   get: () => props.modelValue,
-  set: (value: UpdateResumeExperiencePayload) => emit('update:modelValue', value),
+  set: (value: ResumeExperienceFormModel) => emit('update:modelValue', value),
 })
 
 const employmentTypeItems = Object.values(ResumeEmploymentType)

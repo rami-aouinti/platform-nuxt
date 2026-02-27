@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Notify } from '~/stores/notification'
-import type { CreateResumePayload } from '~/composables/useResumeApi'
+import type { ResumeFormModel } from '~/types/resume'
 
 definePageMeta({
   title: 'Nouveau CV',
@@ -15,7 +15,7 @@ const router = useRouter()
 const loading = computed(() => resumeStore.loadingByAction.saveResume || false)
 const isResumeFormValid = ref(false)
 const resumeFormRef = ref()
-const form = ref<CreateResumePayload>({
+const form = ref<ResumeFormModel>({
   title: '',
   headline: '',
   summary: '',
@@ -30,13 +30,7 @@ async function submit() {
     return
   }
 
-  const resume = await resumeStore.saveResume({
-    title: form.value.title.trim(),
-    headline: form.value.headline,
-    summary: form.value.summary,
-    location: form.value.location,
-    isPublic: Boolean(form.value.isPublic),
-  })
+  const resume = await resumeStore.saveResumeFromForm(form.value)
 
   await router.push(`/resumes/${resume.id}`)
 }

@@ -16,6 +16,30 @@ import type {
   UpdateResumePayload,
   UpdateResumeSkillPayload,
 } from '~/composables/useResumeApi'
+import {
+  mapResumeApiToFormModel,
+  mapResumeEducationApiToFormModel,
+  mapResumeEducationFormModelToCreatePayload,
+  mapResumeEducationFormModelToPatchPayload,
+  mapResumeEducationFormModelToUpdatePayload,
+  mapResumeExperienceApiToFormModel,
+  mapResumeExperienceFormModelToCreatePayload,
+  mapResumeExperienceFormModelToPatchPayload,
+  mapResumeExperienceFormModelToUpdatePayload,
+  mapResumeFormModelToCreatePayload,
+  mapResumeFormModelToPatchPayload,
+  mapResumeFormModelToUpdatePayload,
+  mapResumeSkillApiToFormModel,
+  mapResumeSkillFormModelToCreatePayload,
+  mapResumeSkillFormModelToPatchPayload,
+  mapResumeSkillFormModelToUpdatePayload,
+} from '~/domain/resume/mappers'
+import type {
+  ResumeEducationFormModel,
+  ResumeExperienceFormModel,
+  ResumeFormModel,
+  ResumeSkillFormModel,
+} from '~/types/resume'
 
 export const useResumeStore = defineStore('resume', () => {
   const api = useResumeApi()
@@ -89,6 +113,10 @@ export const useResumeStore = defineStore('resume', () => {
     })
   }
 
+  async function saveResumeFromForm(form: ResumeFormModel) {
+    return saveResume(mapResumeFormModelToCreatePayload(form))
+  }
+
   async function patchResume(resumeId: string, payload: PatchResumePayload) {
     return withAction('patchResume', async () => {
       const patched = await api.patchResume(resumeId, payload)
@@ -99,6 +127,10 @@ export const useResumeStore = defineStore('resume', () => {
     })
   }
 
+  async function patchResumeFromForm(resumeId: string, form: ResumeFormModel, previous?: ResumeFormModel) {
+    return patchResume(resumeId, mapResumeFormModelToPatchPayload(form, previous))
+  }
+
   async function updateResume(resumeId: string, payload: UpdateResumePayload) {
     return withAction('updateResume', async () => {
       const updated = await api.updateResume(resumeId, payload)
@@ -107,6 +139,10 @@ export const useResumeStore = defineStore('resume', () => {
       markDirty(`resume:${resumeId}`, false)
       return updated
     })
+  }
+
+  async function updateResumeFromForm(resumeId: string, form: ResumeFormModel) {
+    return updateResume(resumeId, mapResumeFormModelToUpdatePayload(form))
   }
 
   async function deleteResume(resumeId: string) {
@@ -138,6 +174,10 @@ export const useResumeStore = defineStore('resume', () => {
     })
   }
 
+  async function createExperienceFromForm(form: ResumeExperienceFormModel) {
+    return createExperience(mapResumeExperienceFormModelToCreatePayload(form))
+  }
+
   async function updateExperience(id: string, payload: UpdateResumeExperiencePayload) {
     return withAction('updateExperience', async () => {
       const updated = await api.updateResumeExperience(id, payload)
@@ -148,6 +188,10 @@ export const useResumeStore = defineStore('resume', () => {
     })
   }
 
+  async function updateExperienceFromForm(id: string, form: ResumeExperienceFormModel) {
+    return updateExperience(id, mapResumeExperienceFormModelToUpdatePayload(form))
+  }
+
   async function patchExperience(id: string, payload: PatchResumeExperiencePayload) {
     return withAction('patchExperience', async () => {
       const patched = await api.patchResumeExperience(id, payload)
@@ -156,6 +200,10 @@ export const useResumeStore = defineStore('resume', () => {
       markDirty(`experience:${key}`, false)
       return patched
     })
+  }
+
+  async function patchExperienceFromForm(id: string, form: ResumeExperienceFormModel, previous?: ResumeExperienceFormModel) {
+    return patchExperience(id, mapResumeExperienceFormModelToPatchPayload(form, previous))
   }
 
   async function deleteExperience(id: string, resumeId: string) {
@@ -176,6 +224,10 @@ export const useResumeStore = defineStore('resume', () => {
     })
   }
 
+  async function createEducationFromForm(form: ResumeEducationFormModel) {
+    return createEducation(mapResumeEducationFormModelToCreatePayload(form))
+  }
+
   async function updateEducation(id: string, payload: UpdateResumeEducationPayload) {
     return withAction('updateEducation', async () => {
       const updated = await api.updateResumeEducation(id, payload)
@@ -186,6 +238,10 @@ export const useResumeStore = defineStore('resume', () => {
     })
   }
 
+  async function updateEducationFromForm(id: string, form: ResumeEducationFormModel) {
+    return updateEducation(id, mapResumeEducationFormModelToUpdatePayload(form))
+  }
+
   async function patchEducation(id: string, payload: PatchResumeEducationPayload) {
     return withAction('patchEducation', async () => {
       const patched = await api.patchResumeEducation(id, payload)
@@ -194,6 +250,10 @@ export const useResumeStore = defineStore('resume', () => {
       markDirty(`education:${key}`, false)
       return patched
     })
+  }
+
+  async function patchEducationFromForm(id: string, form: ResumeEducationFormModel, previous?: ResumeEducationFormModel) {
+    return patchEducation(id, mapResumeEducationFormModelToPatchPayload(form, previous))
   }
 
   async function deleteEducation(id: string, resumeId: string) {
@@ -214,6 +274,10 @@ export const useResumeStore = defineStore('resume', () => {
     })
   }
 
+  async function createSkillFromForm(form: ResumeSkillFormModel) {
+    return createSkill(mapResumeSkillFormModelToCreatePayload(form))
+  }
+
   async function updateSkill(id: string, payload: UpdateResumeSkillPayload) {
     return withAction('updateSkill', async () => {
       const updated = await api.updateResumeSkill(id, payload)
@@ -224,6 +288,10 @@ export const useResumeStore = defineStore('resume', () => {
     })
   }
 
+  async function updateSkillFromForm(id: string, form: ResumeSkillFormModel) {
+    return updateSkill(id, mapResumeSkillFormModelToUpdatePayload(form))
+  }
+
   async function patchSkill(id: string, payload: PatchResumeSkillPayload) {
     return withAction('patchSkill', async () => {
       const patched = await api.patchResumeSkill(id, payload)
@@ -232,6 +300,10 @@ export const useResumeStore = defineStore('resume', () => {
       markDirty(`skill:${key}`, false)
       return patched
     })
+  }
+
+  async function patchSkillFromForm(id: string, form: ResumeSkillFormModel, previous?: ResumeSkillFormModel) {
+    return patchSkill(id, mapResumeSkillFormModelToPatchPayload(form, previous))
   }
 
   async function deleteSkill(id: string, resumeId: string) {
@@ -268,23 +340,39 @@ export const useResumeStore = defineStore('resume', () => {
     skillCount,
     isBusy,
     markDirty,
+    mapResumeApiToFormModel,
+    mapResumeExperienceApiToFormModel,
+    mapResumeEducationApiToFormModel,
+    mapResumeSkillApiToFormModel,
     fetchResumeList,
     fetchResumeAggregate,
     saveResume,
+    saveResumeFromForm,
     updateResume,
+    updateResumeFromForm,
     patchResume,
+    patchResumeFromForm,
     deleteResume,
     createExperience,
+    createExperienceFromForm,
     updateExperience,
+    updateExperienceFromForm,
     patchExperience,
+    patchExperienceFromForm,
     deleteExperience,
     createEducation,
+    createEducationFromForm,
     updateEducation,
+    updateEducationFromForm,
     patchEducation,
+    patchEducationFromForm,
     deleteEducation,
     createSkill,
+    createSkillFromForm,
     updateSkill,
+    updateSkillFromForm,
     patchSkill,
+    patchSkillFromForm,
     deleteSkill,
   }
 })
