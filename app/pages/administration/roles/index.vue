@@ -3,7 +3,7 @@ import type { DataTableHeader } from 'vuetify'
 import { storeToRefs } from 'pinia'
 import { Notify } from '~/stores/notification'
 import { useAuthStore } from '~/stores/auth'
-import { canManageUsers, isRoot } from '~/utils/permissions/admin'
+import { canManageUsers } from '~/utils/permissions/admin'
 import { extractCollectionFromPayload } from '~/utils/admin/extractCollectionFromPayload'
 
 type RoleRecord = { id: string; name: string; description: string }
@@ -22,7 +22,7 @@ definePageMeta({
 const authStore = useAuthStore()
 const { roles } = storeToRefs(authStore)
 const canShow = computed(() => canManageUsers(roles.value))
-const canMutate = computed(() => isRoot(roles.value))
+const canMutate = computed(() => canManageUsers(roles.value))
 
 const createOpen = ref(false)
 const creating = ref(false)
@@ -66,7 +66,7 @@ const {
   normalize,
   loadRows: async ({ page, pageSize, sortBy, search }) => {
     const activeSort = sortBy[0]
-    const order = activeSort && activeSort.order && activeSort.order !== false
+    const order = activeSort && activeSort.order
       ? `${activeSort.key}:${activeSort.order === 'desc' ? 'desc' : 'asc'}`
       : undefined
 
