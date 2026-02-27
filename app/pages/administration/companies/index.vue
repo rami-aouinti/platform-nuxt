@@ -18,9 +18,9 @@ definePageMeta({
 const columns: DataTableHeader[] = [
   { title: 'ID', key: 'id' },
   { title: 'Name', key: 'legalName' },
-  { title: 'Slug', key: 'slug' },
   { title: 'Status', key: 'status' },
-  { title: 'Address', key: 'mainAddress' },
+  { title: 'Address', key: 'mainAddressText' },
+  { title: 'Owner', key: 'ownerName' },
 ]
 
 
@@ -29,9 +29,8 @@ function createPayloadFromDraft(): CreateCompanyRequest {
 
   return {
     legalName: `Nouvelle société ${stamp.slice(-4)}`,
-    slug: `nouvelle-societe-${stamp}`,
     status: 'active',
-    mainAddress: 'À compléter',
+    mainAddress: [],
   }
 }
 
@@ -62,7 +61,16 @@ const {
       }),
     })
 
-    return { payload: response.data, total: response.meta?.totalItems ?? response.data.length }
+    return {
+      payload: response.data.map((item) => ({
+        ...item,
+        mainAddressText: Array.isArray(item.mainAddress) ? item.mainAddress.join(', ') : '',
+        ownerName: item.owner && typeof item.owner === 'object'
+          ? [item.owner.firstName, item.owner.lastName].filter(Boolean).join(' ').trim() || String(item.owner.username ?? item.owner.id ?? '')
+          : '',
+      })),
+      total: response.meta?.totalItems ?? response.data.length,
+    }
   },
 })
 
@@ -156,9 +164,8 @@ async function updateRow(row: Record<string, unknown>) {
   try {
     await companiesService.update(String(row.id ?? ''), {
       legalName: String(row.legalName ?? ''),
-      slug: String(row.slug ?? ''),
       status: normalizeCompanyStatus(row.status),
-      mainAddress: String(row.mainAddress ?? ''),
+      mainAddress: Array.isArray(row.mainAddress) ? row.mainAddress : [],
     })
 
     Notify.success('Société mise à jour.')
@@ -209,15 +216,13 @@ onMounted(loadRows)
     :detail-fields="[
       { key: 'id', label: 'ID' },
       { key: 'legalName', label: 'Legal name' },
-      { key: 'slug', label: 'Slug' },
       { key: 'status', label: 'Status' },
-      { key: 'mainAddress', label: 'Address' },
+      { key: 'mainAddressText', label: 'Address' },
+      { key: 'ownerName', label: 'Owner' },
     ]"
     :editable-fields="[
       { key: 'legalName', label: 'Legal name' },
-      { key: 'slug', label: 'Slug' },
       { key: 'status', label: 'Status' },
-      { key: 'mainAddress', label: 'Address' },
     ]"
     :can-show="true"
     :can-create="true"
