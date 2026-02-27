@@ -35,7 +35,7 @@ paths:
                     lastName: Doe
                     displayName: John Doe
                     roles:
-                      - id: 0f8fad5b-d9cb-469f-a165-70867728950e
+                      - id: ROLE_ADMIN
                         label: Administrator
                     groups:
                       - aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee
@@ -59,7 +59,7 @@ paths:
                     id: 550e8400-e29b-41d4-a716-446655440000
                     username: jdoe
                     roles:
-                      - id: 0f8fad5b-d9cb-469f-a165-70867728950e
+                      - id: ROLE_ADMIN
                         label: Administrator
                         description: Full access
         '401':
@@ -97,11 +97,17 @@ paths:
           content:
             application/json:
               schema:
-                type: integer
-                minimum: 0
+                type: object
+                required:
+                  - count
+                properties:
+                  count:
+                    type: integer
+                    minimum: 0
               examples:
                 default:
-                  value: 7
+                  value:
+                    count: 7
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -121,9 +127,9 @@ paths:
               examples:
                 default:
                   value:
-                    - 0f8fad5b-d9cb-469f-a165-70867728950e
-                    - 7c9e6679-7425-40de-944b-e07fc1f90ae7
-                    - 16fd2706-8baf-433b-82eb-8c7fada847da
+                    - ROLE_ROOT
+                    - ROLE_ADMIN
+                    - ROLE_USER
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -143,7 +149,7 @@ paths:
               examples:
                 default:
                   value:
-                    - id: 0f8fad5b-d9cb-469f-a165-70867728950e
+                    - id: ROLE_SUPPORT
                       label: Support Agent
                       description: Support operations
         '401':
@@ -158,9 +164,8 @@ paths:
           in: path
           required: true
           schema:
-            type: string
-            format: uuid
-            pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'
+            $ref: '#/components/schemas/RoleId'
+          example: ROLE_ADMIN
       responses:
         '200':
           description: Role details
@@ -171,9 +176,42 @@ paths:
               examples:
                 default:
                   value:
-                    id: 0f8fad5b-d9cb-469f-a165-70867728950e
+                    id: ROLE_ADMIN
                     label: Administrator
                     description: Full access to back-office features
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/v1/role/{role}/inherited:
+    get:
+      summary: List inherited role ids for a role
+      parameters:
+        - name: role
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/RoleId'
+          example: ROLE_ADMIN
+      responses:
+        '200':
+          description: Inherited role ids
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RoleId'
+              examples:
+                default:
+                  value:
+                    - ROLE_USER
+                    - ROLE_SUPPORT
         '400':
           $ref: '#/components/responses/ValidationError'
         '401':
@@ -608,8 +646,9 @@ components:
 
     RoleId:
       type: string
-      format: uuid
-      pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'
+      description: Business role identifier
+      pattern: '^ROLE_[A-Z0-9_]+$'
+      example: ROLE_ADMIN
 
     NotificationId:
       type: string
