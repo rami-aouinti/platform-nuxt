@@ -30,6 +30,12 @@ const canEdit = computed(() => isRoot(roles.value))
 const canDelete = computed(() => isRoot(roles.value))
 const canManageUsersInGroup = computed(() => isRoot(roles.value))
 
+const createOpen = ref(false)
+const creating = ref(false)
+const createForm = reactive({
+  name: '',
+})
+
 const detailUsers = ref<UserRecord[]>([])
 const detailLoading = ref(false)
 const detailActionLoading = ref(false)
@@ -148,6 +154,42 @@ async function attachUser() {
     )
   } finally {
     detailActionLoading.value = false
+  }
+}
+
+
+function createRow() {
+  if (!canEdit.value) {
+    return
+  }
+
+  createForm.name = ''
+  createOpen.value = true
+}
+
+async function submitCreateGroup() {
+  if (!createForm.name.trim()) {
+    Notify.error('Le nom du groupe est requis.')
+    return
+  }
+
+  creating.value = true
+
+  try {
+    await $fetch('/api/user_group', {
+      method: 'POST' as any,
+      body: {
+        name: createForm.name.trim(),
+      },
+    })
+
+    Notify.success('Groupe créé.')
+    createOpen.value = false
+    await loadRows()
+  } catch (errorValue) {
+    Notify.error(errorValue instanceof Error ? errorValue.message : 'Erreur API.')
+  } finally {
+    creating.value = false
   }
 }
 
@@ -279,7 +321,7 @@ onMounted(async () => {
       :detail-fields="[{ key: 'name', label: 'Nom' }]"
       :editable-fields="[{ key: 'name', label: 'Nom' }]"
       :can-show="canShow"
-      :can-create="false"
+      :can-create="canEdit"
       :can-edit="canEdit"
       :can-delete="canDelete"
       :mutation-loading="mutationLoading"
@@ -290,6 +332,7 @@ onMounted(async () => {
       @update:search="search = $event"
       @update:filters="filters = $event"
       @row-show="onRowShow"
+      @create="createRow"
       @save-edit="saveEdit"
       @row-delete="deleteRow"
       @refresh="loadRows"
@@ -349,5 +392,20 @@ onMounted(async () => {
         </div>
       </template>
     </AdminResourcePage>
+
+    <v-dialog v-model="createOpen" max-width="640">
+      <v-card>
+        <v-card-title>Créer un groupe</v-card-title>
+        <v-card-text>
+          <v-text-field v-model="createForm.name" label="Nom*" class="mb-2" />
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" :disabled="creating" @click="createOpen = false">Annuler</v-btn>
+          <v-btn color="primary" :loading="creating" :disabled="creating" @click="submitCreateGroup">Créer</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
   </div>
 </template>

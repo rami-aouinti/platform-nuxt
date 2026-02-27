@@ -253,7 +253,7 @@ onMounted(async () => {
     <v-card rounded="xl" elevation="6" class="pa-6">
       <div class="d-flex align-center justify-space-between flex-wrap ga-3 mb-4">
         <h1 class="text-h4 font-weight-bold">Administration · User {{ userId }}</h1>
-        <v-btn variant="text" prepend-icon="mdi-arrow-left" to="/administration/users">
+        <v-btn variant="text" prepend-icon="mdi-arrow-left" to="/admin/user-management/users">
           Retour à la liste
         </v-btn>
       </div>

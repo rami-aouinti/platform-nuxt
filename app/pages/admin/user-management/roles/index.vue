@@ -22,7 +22,7 @@ definePageMeta({
 const authStore = useAuthStore()
 const { roles } = storeToRefs(authStore)
 const canShow = computed(() => canManageUsers(roles.value))
-const canMutate = computed(() => canShow.value)
+const canMutate = computed(() => false)
 
 const createOpen = ref(false)
 const creating = ref(false)
@@ -171,9 +171,9 @@ onMounted(async () => {
         { key: 'description', label: 'Description' },
       ]"
       :can-show="canShow"
-      :can-create="canMutate"
-      :can-edit="canMutate"
-      :can-delete="canMutate"
+      :can-create="false"
+      :can-edit="false"
+      :can-delete="false"
       :mutation-loading="mutationLoading"
       resource-name="le rôle"
       @update:page="page = $event"
