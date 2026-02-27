@@ -179,3 +179,29 @@ function getRowProps(payload: { item: AdminRow }) {
     </v-data-table-server>
   </div>
 </template>
+
+<style scoped>
+:deep(.admin-table__datatable .v-data-table-footer) {
+  padding: 0.75rem 1rem;
+}
+
+:deep(.admin-table__datatable .v-data-table-footer__items-per-page) {
+  margin-inline-end: 0.5rem;
+}
+
+@media (max-width: 959px) {
+  :deep(.admin-table__datatable .v-data-table-footer) {
+    display: grid;
+    grid-template-columns: 1fr;
+    row-gap: 0.5rem;
+    justify-items: center;
+  }
+
+  :deep(.admin-table__datatable .v-data-table-footer__items-per-page),
+  :deep(.admin-table__datatable .v-data-table-footer__info),
+  :deep(.admin-table__datatable .v-data-table-footer__pagination) {
+    margin: 0;
+    justify-content: center;
+  }
+}
+</style>

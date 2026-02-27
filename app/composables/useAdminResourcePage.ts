@@ -41,6 +41,7 @@ export function useAdminResourcePage<TRow, TFilters extends AdminFilters>(
   const search = ref(options.initialSearch ?? '')
   const filters = ref<TFilters>({ ...options.initialFilters })
   const mutationLoading = ref(false)
+  const skipNextPaginationWatchLoad = ref(false)
 
   const normalize = options.normalize ?? ((payload: unknown) => extractCollectionFromPayload(payload) as TRow[])
 
@@ -107,6 +108,15 @@ export function useAdminResourcePage<TRow, TFilters extends AdminFilters>(
       } else {
         total.value = rows.value.length
       }
+
+      const normalizedPageSize = Math.max(pageSize.value, 1)
+      const totalPages = Math.max(Math.ceil(total.value / normalizedPageSize), 1)
+
+      if (page.value > totalPages) {
+        skipNextPaginationWatchLoad.value = true
+        page.value = totalPages
+        await loadRows()
+      }
     } catch (errorValue) {
       error.value = toError(errorValue)
     } finally {
@@ -141,10 +151,20 @@ export function useAdminResourcePage<TRow, TFilters extends AdminFilters>(
   }
 
   watch([page, pageSize], () => {
+    if (skipNextPaginationWatchLoad.value) {
+      skipNextPaginationWatchLoad.value = false
+      return
+    }
+
     void loadRows()
   })
 
   watchDebounced([search, filters], () => {
+    if (page.value !== 1) {
+      skipNextPaginationWatchLoad.value = true
+      page.value = 1
+    }
+
     void loadRows()
   }, { debounce: options.debounce ?? 300, maxWait: options.maxWait ?? 1000 })
 
