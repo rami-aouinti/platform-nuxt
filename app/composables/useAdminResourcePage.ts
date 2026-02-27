@@ -5,6 +5,7 @@ type AdminFilters = Record<string, string>
 type AdminQueryContext<TFilters extends AdminFilters> = {
   page: number
   pageSize: number
+  sortBy: readonly { key: string; order?: 'asc' | 'desc' | boolean }[]
   search: string
   filters: TFilters
 }
@@ -39,6 +40,7 @@ export function useAdminResourcePage<TRow, TFilters extends AdminFilters>(
   const page = ref(options.initialPage ?? 1)
   const pageSize = ref(options.initialPageSize ?? 10)
   const search = ref(options.initialSearch ?? '')
+  const sortBy = ref<readonly { key: string; order?: 'asc' | 'desc' | boolean }[]>([])
   const filters = ref<TFilters>({ ...options.initialFilters })
   const mutationLoading = ref(false)
   const skipNextPaginationWatchLoad = ref(false)
@@ -61,6 +63,7 @@ export function useAdminResourcePage<TRow, TFilters extends AdminFilters>(
     return {
       page: page.value,
       pageSize: pageSize.value,
+      sortBy: sortBy.value,
       search: search.value,
       filters: filters.value,
     }
@@ -159,6 +162,16 @@ export function useAdminResourcePage<TRow, TFilters extends AdminFilters>(
     void loadRows()
   })
 
+
+  watch(sortBy, () => {
+    if (page.value !== 1) {
+      skipNextPaginationWatchLoad.value = true
+      page.value = 1
+    }
+
+    void loadRows()
+  }, { deep: true })
+
   watchDebounced([search, filters], () => {
     if (page.value !== 1) {
       skipNextPaginationWatchLoad.value = true
@@ -175,6 +188,7 @@ export function useAdminResourcePage<TRow, TFilters extends AdminFilters>(
     total,
     page,
     pageSize,
+    sortBy,
     search,
     filters,
     mutationLoading,

@@ -2,7 +2,6 @@
 import type { DataTableHeader } from 'vuetify'
 
 import AdminCard from '~/components/admin/ui/AdminCard.vue'
-import AdminToolbar from '~/components/admin/ui/AdminToolbar.vue'
 
 type AdminRow = Record<string, unknown>
 
@@ -10,6 +9,7 @@ type FilterConfig = {
   key: string
   label: string
   icon?: string
+  items?: { title: string; value: string }[]
 }
 
 type FieldConfig = {
@@ -19,7 +19,7 @@ type FieldConfig = {
 
 const props = withDefaults(
   defineProps<{
-    title: string
+    title?: string
     description?: string
     columns: DataTableHeader[]
     rows: AdminRow[]
@@ -28,6 +28,7 @@ const props = withDefaults(
     total?: number
     page?: number
     pageSize?: number
+    sortBy?: readonly { key: string; order?: 'asc' | 'desc' | boolean }[]
     search?: string
     filters?: Record<string, string>
     filterConfigs?: FilterConfig[]
@@ -39,15 +40,18 @@ const props = withDefaults(
     canEdit?: boolean
     canDelete?: boolean
     resourceName?: string
+    detailRouteBase?: string
     mutationLoading?: boolean
   }>(),
   {
+    title: undefined,
     description: '',
     loading: false,
     error: null,
     total: 0,
     page: 1,
     pageSize: 10,
+    sortBy: () => [],
     search: '',
     filters: () => ({}),
     filterConfigs: () => [],
@@ -59,6 +63,7 @@ const props = withDefaults(
     canEdit: false,
     canDelete: false,
     resourceName: 'élément',
+    detailRouteBase: undefined,
     mutationLoading: false,
   },
 )
@@ -66,6 +71,7 @@ const props = withDefaults(
 const emit = defineEmits<{
   'update:page': [value: number]
   'update:pageSize': [value: number]
+  'update:sortBy': [value: readonly { key: string; order?: 'asc' | 'desc' | boolean }[]]
   'update:search': [value: string]
   'update:filters': [value: Record<string, string>]
   create: []
@@ -76,7 +82,7 @@ const emit = defineEmits<{
   refresh: []
 }>()
 
-const detailOpen = ref(false)
+const detailDialogOpen = ref(false)
 const editOpen = ref(false)
 const selectedRow = ref<AdminRow | null>(null)
 const editableRow = ref<AdminRow | null>(null)
@@ -95,6 +101,10 @@ const localSearch = computed({
 const canTeleportControls = computed(
   () => isMounted.value && mdAndUp.value && hasAppBarTarget.value,
 )
+
+const appBarGridStyle = computed(() => ({
+  gridTemplateColumns: `minmax(220px, 1.4fr) repeat(${props.filterConfigs.length}, minmax(150px, 1fr)) auto`,
+}))
 
 function updateAppBarTargetPresence() {
   if (import.meta.server) {
@@ -118,7 +128,7 @@ function openDetails(row: AdminRow) {
   }
 
   selectedRow.value = row
-  detailOpen.value = true
+  detailDialogOpen.value = true
   emit('row-show', row)
 }
 
@@ -173,11 +183,9 @@ onMounted(() => {
 
 <template>
   <AdminCard>
-    <AdminToolbar :title="title" :description="description" />
-
     <client-only>
       <teleport v-if="canTeleportControls" to="#app-bar">
-        <div class="admin-resource-controls app-bar-controls-grid">
+        <div class="admin-resource-controls app-bar-controls-grid" :style="appBarGridStyle">
           <v-text-field
             v-model="localSearch"
             label="Recherche"
@@ -187,12 +195,16 @@ onMounted(() => {
             variant="outlined"
             clearable
           />
-          <v-text-field
+          <component
+            :is="filter.items?.length ? 'v-select' : 'v-text-field'"
             v-for="filter in filterConfigs"
             :key="filter.key"
             :model-value="filters[filter.key] || ''"
             :label="filter.label"
             :prepend-inner-icon="filter.icon"
+            :items="filter.items"
+            item-title="title"
+            item-value="value"
             hide-details
             density="comfortable"
             variant="outlined"
@@ -201,20 +213,19 @@ onMounted(() => {
           />
           <div class="admin-resource-controls__actions d-flex ga-2 justify-end">
             <v-btn
+              icon="mdi-refresh"
               color="primary"
-              variant="tonal"
-              prepend-icon="mdi-refresh"
+              variant="text"
+              aria-label="Actualiser"
               @click="emit('refresh')"
-            >
-              Recharger
-            </v-btn>
+            />
             <v-btn
               v-if="canCreate"
               color="primary"
               prepend-icon="mdi-plus"
               @click="emit('create')"
             >
-              {{ createLabel }}
+              New
             </v-btn>
           </div>
         </div>
@@ -229,8 +240,10 @@ onMounted(() => {
       :total="total"
       :page="page"
       :page-size="pageSize"
+      :sort-by="sortBy"
       @update:page="emit('update:page', $event)"
       @update:page-size="emit('update:pageSize', $event)"
+      @sort-change="emit('update:sortBy', $event)"
       @row-click="openDetails"
     >
       <template #toolbar>
@@ -244,12 +257,16 @@ onMounted(() => {
             variant="outlined"
             clearable
           />
-          <v-text-field
+          <component
+            :is="filter.items?.length ? 'v-select' : 'v-text-field'"
             v-for="filter in filterConfigs"
             :key="filter.key"
             :model-value="filters[filter.key] || ''"
             :label="filter.label"
             :prepend-inner-icon="filter.icon"
+            :items="filter.items"
+            item-title="title"
+            item-value="value"
             hide-details
             density="comfortable"
             variant="outlined"
@@ -258,20 +275,19 @@ onMounted(() => {
           />
           <div class="admin-resource-controls__actions d-flex ga-2 justify-end">
             <v-btn
+              icon="mdi-refresh"
               color="primary"
-              variant="tonal"
-              prepend-icon="mdi-refresh"
+              variant="text"
+              aria-label="Actualiser"
               @click="emit('refresh')"
-            >
-              Recharger
-            </v-btn>
+            />
             <v-btn
               v-if="canCreate"
               color="primary"
               prepend-icon="mdi-plus"
               @click="emit('create')"
             >
-              {{ createLabel }}
+              New
             </v-btn>
           </div>
         </div>
@@ -285,6 +301,15 @@ onMounted(() => {
           variant="text"
           color="info"
           @click.stop="openDetails(item)"
+        />
+
+        <v-btn
+          v-if="detailRouteBase && item.id"
+          size="small"
+          icon="mdi-open-in-new"
+          variant="text"
+          color="secondary"
+          :to="`${detailRouteBase}/${encodeURIComponent(String(item.id))}`"
         />
         <v-btn
           size="small"
@@ -317,22 +342,25 @@ onMounted(() => {
 
     <DialogConfirm ref="dialogDelete" />
 
-    <v-navigation-drawer
-      v-model="detailOpen"
-      location="right"
-      temporary
-      width="420"
-    >
-      <v-toolbar title="Détail" color="primary" density="comfortable" />
-      <v-list v-if="selectedRow" lines="two">
-        <v-list-item
-          v-for="field in detailFields"
-          :key="field.key"
-          :title="field.label"
-          :subtitle="String(selectedRow[field.key] ?? '-')"
-        />
-      </v-list>
-    </v-navigation-drawer>
+    <v-dialog v-model="detailDialogOpen" max-width="680">
+      <v-card>
+        <v-card-title>Détails</v-card-title>
+        <v-card-text>
+          <v-list v-if="selectedRow" lines="two" density="comfortable">
+            <v-list-item
+              v-for="field in detailFields"
+              :key="field.key"
+              :title="field.label"
+              :subtitle="String(selectedRow[field.key] ?? '-')"
+            />
+          </v-list>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="detailDialogOpen = false">Fermer</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <v-dialog v-model="editOpen" max-width="640">
       <v-card v-if="editableRow">
@@ -379,9 +407,19 @@ onMounted(() => {
 }
 
 .app-bar-controls-grid {
-  width: 100%;
-  grid-template-columns: 2fr repeat(2, minmax(180px, 1fr)) auto;
+  width: min(980px, 100%);
+  margin-left: auto;
   align-items: center;
+}
+
+
+
+.app-bar-controls-grid :deep(.v-input) {
+  min-width: 220px;
+}
+
+.app-bar-controls-grid .admin-resource-controls__actions {
+  white-space: nowrap;
 }
 
 @media (min-width: 960px) {
