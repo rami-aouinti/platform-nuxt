@@ -128,6 +128,18 @@ function createActivatorProps(
           to="/crm"
         />
         <v-list-item
+          v-if="isAuthenticated"
+          title="Calendar"
+          prepend-icon="mdi-calendar-month-outline"
+          to="/calendar"
+        />
+        <v-list-item
+          v-if="isAuthenticated"
+          title="Quiz"
+          prepend-icon="mdi-help-circle-outline"
+          to="/quiz"
+        />
+        <v-list-item
           v-if="isAuthenticated && !rolesLoading && hasAdminAccess"
           title="Administration"
           prepend-icon="mdi-shield-account-outline"
