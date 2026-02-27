@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Notify } from '~/stores/notification'
 import { useCrmApi } from '~/composables/api/useCrmApi'
+import { useUsersStore } from '~/stores/users'
 import type {
   CrmTaskRequest,
   CrmTaskStatus,
@@ -9,6 +10,7 @@ import type {
 } from '~/composables/api/useCrmApi'
 
 const crmApi = useCrmApi()
+const usersStore = useUsersStore()
 const route = useRoute()
 
 definePageMeta({
@@ -82,10 +84,6 @@ function getUserLabel(user: CrmUser) {
   return user.username ?? user.email ?? String(user.id)
 }
 
-function normalizeUsers(payload: CrmUser[] | { data?: CrmUser[]; items?: CrmUser[] }) {
-  if (Array.isArray(payload)) return payload
-  return payload.items ?? payload.data ?? []
-}
 
 function userIdFromRef(value: CrmTaskRequest['requester'] | CrmTaskRequest['reviewer'], fallback?: string | null) {
   if (typeof value === 'string') return value
@@ -104,8 +102,8 @@ function requestCount(status: CrmTaskStatus) {
 async function loadUsers() {
   usersLoading.value = true
   try {
-    const response = await crmApi.listUsers()
-    users.value = normalizeUsers(response)
+    await usersStore.fetchRows({ silent: true })
+    users.value = [...usersStore.rows]
   } catch (error) {
     Notify.error(error instanceof Error ? error.message : 'Erreur chargement des utilisateurs.')
   } finally {

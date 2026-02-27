@@ -2,6 +2,7 @@
 import { Notify } from '~/stores/notification'
 import { useCrmApi } from '~/composables/api/useCrmApi'
 import { useAuthStore } from '~/stores/auth'
+import { useSprintsStore } from '~/stores/sprints'
 import type {
   CrmCompany,
   CrmProject,
@@ -25,6 +26,7 @@ type CrmProjectExtended = CrmProject & {
 const route = useRoute()
 const router = useRouter()
 const crmApi = useCrmApi()
+const sprintsStore = useSprintsStore()
 const authStore = useAuthStore()
 
 definePageMeta({
@@ -201,16 +203,16 @@ async function loadData() {
   loading.value = true
   errorMessage.value = ''
   try {
-    const [companiesResult, projectsResult, sprintsResult, membersResult] = await Promise.all([
+    const [companiesResult, projectsResult, membersResult] = await Promise.all([
       crmApi.listCompanies(),
       crmApi.listCompanyProjects(companyId.value),
-      crmApi.listSprints(),
+      sprintsStore.fetchRows({ silent: true }),
       crmApi.listCompanyMembers(companyId.value),
     ])
 
     const companyItems = normalizeItems<CrmCompany>(companiesResult)
     const projectItems = normalizeItems<CrmProjectExtended>(projectsResult)
-    const sprintItems = normalizeItems<CrmSprint>(sprintsResult)
+    const sprintItems = normalizeItems<CrmSprint>(sprintsStore.rows)
     const memberItems = normalizeItems<CrmCompanyMember>(membersResult)
 
     companies.value = companyItems
@@ -295,7 +297,7 @@ async function createSprint() {
 
   createSprintLoading.value = true
   try {
-    await crmApi.createSprint({
+    await sprintsStore.create({
       name: sprintForm.name.trim(),
       company: sprintForm.company,
       goal: sprintForm.goal?.trim() || undefined,
@@ -310,7 +312,6 @@ async function createSprint() {
     sprintForm.status = 'planned'
     resetSprintDates()
     createSprintDialog.value = false
-    Notify.success('Sprint créé.')
     await loadData()
   } catch (error) {
     Notify.error(getErrorMessage(error, 'Erreur de création du sprint.'))
