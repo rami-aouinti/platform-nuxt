@@ -3,7 +3,8 @@ import type { DataTableHeader } from 'vuetify'
 import { storeToRefs } from 'pinia'
 import { Notify } from '~/stores/notification'
 import { useAuthStore } from '~/stores/auth'
-import { isAdmin } from '~/utils/permissions/admin'
+import { canManageUsers } from '~/utils/permissions/admin'
+import { extractCollectionFromPayload } from '~/utils/admin/extractCollectionFromPayload'
 
 type RoleRecord = { id: string; name: string; description: string }
 
@@ -15,21 +16,12 @@ definePageMeta({
   requiresAdmin: true,
   layout: 'administration',
   middleware: ['auth', 'admin-access'],
+  adminPermission: 'manageUsers',
 })
 
 const authStore = useAuthStore()
 const { roles } = storeToRefs(authStore)
-
-const rows = ref<RoleRecord[]>([])
-const loading = ref(false)
-const error = ref<string | null>(null)
-const total = ref(0)
-const page = ref(1)
-const pageSize = ref(10)
-const search = ref('')
-const filters = ref<Record<string, string>>({})
-
-const canShow = computed(() => isAdmin(roles.value))
+const canShow = computed(() => canManageUsers(roles.value))
 
 const columns: DataTableHeader[] = [
   { title: 'ID', key: 'id' },
@@ -38,15 +30,7 @@ const columns: DataTableHeader[] = [
 ]
 
 function normalize(payload: unknown): RoleRecord[] {
-  const list = Array.isArray(payload)
-    ? payload
-    : payload && typeof payload === 'object' && Array.isArray((payload as { items?: unknown[] }).items)
-      ? (payload as { items: unknown[] }).items
-      : payload && typeof payload === 'object' && Array.isArray((payload as { data?: unknown[] }).data)
-        ? (payload as { data: unknown[] }).data
-        : []
-
-  return list.map((entry, index) => {
+  return extractCollectionFromPayload(payload).map((entry, index) => {
     const row = entry as Record<string, unknown>
     return {
       id: String(row.id ?? row.uuid ?? index),
@@ -56,31 +40,32 @@ function normalize(payload: unknown): RoleRecord[] {
   })
 }
 
-async function loadRows() {
-  loading.value = true
-  error.value = null
-
-  try {
-    const [listResponse, countResponse] = await Promise.all([
-      $fetch('/api/role', { query: { search: search.value || undefined, page: page.value, limit: pageSize.value } }),
+const {
+  rows,
+  loading,
+  error,
+  total,
+  page,
+  pageSize,
+  search,
+  filters,
+  loadRows,
+} = useAdminResourcePage<RoleRecord, Record<string, string>>({
+  initialFilters: {},
+  normalize,
+  loadRows: async ({ page, pageSize, search }) => {
+    const [payload, countPayload] = await Promise.all([
+      $fetch('/api/role', { query: { search: search || undefined, page, limit: pageSize } }),
       $fetch('/api/role/count'),
     ])
 
-    rows.value = normalize(listResponse)
-    total.value = typeof countResponse === 'number' ? countResponse : Number((countResponse as { count?: number })?.count ?? rows.value.length)
-  } catch (errorValue) {
-    error.value = errorValue instanceof Error ? errorValue.message : 'Erreur API.'
-  } finally {
-    loading.value = false
-  }
-}
+    return { payload, countPayload }
+  },
+})
 
 function createRow() {
   Notify.info('TODO: brancher la création de rôle.')
 }
-
-watch([page, pageSize], loadRows)
-watchDebounced(search, loadRows, { debounce: 300, maxWait: 1000 })
 
 onMounted(async () => {
   await authStore.ensureRolesLoaded()
@@ -119,6 +104,7 @@ onMounted(async () => {
     @update:page="page = $event"
     @update:page-size="pageSize = $event"
     @update:search="search = $event"
+    @update:filters="filters = $event"
     @create="createRow"
     @refresh="loadRows"
   />

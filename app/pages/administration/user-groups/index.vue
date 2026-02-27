@@ -5,6 +5,7 @@ import { Notify } from '~/stores/notification'
 import { useAuthStore } from '~/stores/auth'
 import { canManageUsers, isRoot } from '~/utils/permissions/admin'
 import { useInternalEventTracking } from '~/composables/useInternalEventTracking'
+import { extractCollectionFromPayload } from '~/utils/admin/extractCollectionFromPayload'
 
 type GroupRecord = { id: string; name: string; description: string }
 
@@ -21,17 +22,6 @@ definePageMeta({
 
 const authStore = useAuthStore()
 const { roles } = storeToRefs(authStore)
-
-const rows = ref<GroupRecord[]>([])
-const loading = ref(false)
-const error = ref<string | null>(null)
-const total = ref(0)
-const page = ref(1)
-const pageSize = ref(10)
-const search = ref('')
-const filters = ref<Record<string, string>>({})
-const mutationLoading = ref(false)
-
 const { track } = useInternalEventTracking()
 
 const canShow = computed(() => canManageUsers(roles.value))
@@ -46,15 +36,7 @@ const columns: DataTableHeader[] = [
 ]
 
 function normalize(payload: unknown): GroupRecord[] {
-  const list = Array.isArray(payload)
-    ? payload
-    : payload && typeof payload === 'object' && Array.isArray((payload as { items?: unknown[] }).items)
-      ? (payload as { items: unknown[] }).items
-      : payload && typeof payload === 'object' && Array.isArray((payload as { data?: unknown[] }).data)
-        ? (payload as { data: unknown[] }).data
-        : []
-
-  return list.map((entry, index) => {
+  return extractCollectionFromPayload(payload).map((entry, index) => {
     const row = entry as Record<string, unknown>
     return {
       id: String(row.id ?? row.uuid ?? index),
@@ -64,96 +46,72 @@ function normalize(payload: unknown): GroupRecord[] {
   })
 }
 
-
-function toError(errorValue: unknown) {
-  if (isError(errorValue) && typeof errorValue.statusMessage === 'string') {
-    return errorValue.statusMessage
-  }
-
-  if (errorValue instanceof Error) {
-    return errorValue.message
-  }
-
-  return 'Erreur API.'
-}
-
-async function loadRows() {
-  loading.value = true
-  error.value = null
-  try {
-    const [listResponse, countResponse] = await Promise.all([
-      $fetch('/api/user_group', { query: { page: page.value, limit: pageSize.value, search: search.value || undefined } }),
+const {
+  rows,
+  loading,
+  error,
+  total,
+  page,
+  pageSize,
+  search,
+  filters,
+  mutationLoading,
+  loadRows,
+  saveEdit,
+  deleteRow,
+} = useAdminResourcePage<GroupRecord, Record<string, string>>({
+  initialFilters: {},
+  normalize,
+  loadRows: async ({ page, pageSize, search }) => {
+    const [payload, countPayload] = await Promise.all([
+      $fetch('/api/user_group', { query: { page, limit: pageSize, search: search || undefined } }),
       $fetch('/api/user_group/count'),
     ])
 
-    rows.value = normalize(listResponse)
-    total.value = typeof countResponse === 'number' ? countResponse : Number((countResponse as { count?: number })?.count ?? rows.value.length)
-  } catch (errorValue) {
-    error.value = toError(errorValue)
-  } finally {
-    loading.value = false
-  }
-}
+    return { payload, countPayload }
+  },
+  saveEdit: async (row) => {
+    try {
+      await $fetch(`/api/user_group/${encodeURIComponent(String(row.id ?? ''))}` as any, {
+        method: 'PATCH' as any,
+        body: { name: row.name, description: row.description },
+      })
+      Notify.success('Action réussie : groupe mis à jour.')
+      track({
+        name: 'admin.user-groups.patch',
+        payload: {
+          id: String(row.id ?? ''),
+          name: String(row.name ?? ''),
+        },
+      })
+      await loadRows()
+    } catch (errorValue) {
+      Notify.error(`Action échouée : ${errorValue instanceof Error ? errorValue.message : 'Erreur API.'}`)
+    }
+  },
+  deleteRow: async (row) => {
+    try {
+      await $fetch(`/api/user_group/${encodeURIComponent(String(row.id ?? ''))}` as any, {
+        method: 'DELETE' as any,
+      })
+      Notify.success('Action réussie : groupe supprimé.')
+      track({
+        name: 'admin.user-groups.delete',
+        payload: {
+          id: String(row.id ?? ''),
+          name: String(row.name ?? ''),
+        },
+      })
+      await loadRows()
+    } catch (errorValue) {
+      Notify.error(`Action échouée : ${errorValue instanceof Error ? errorValue.message : 'Erreur API.'}`)
+    }
+  },
+})
 
 function createRow() {
   Notify.info('TODO: brancher la création de groupe utilisateur.')
 }
-
-async function saveEdit(row: Record<string, unknown>) {
-  if (mutationLoading.value) {
-    return
-  }
-
-  mutationLoading.value = true
-  try {
-    await $fetch(`/api/user_group/${encodeURIComponent(String(row.id ?? ''))}` as any, {
-    method: 'PATCH' as any,
-    body: { name: row.name, description: row.description },
-  })
-    Notify.success('Action réussie : groupe mis à jour.')
-    track({
-      name: 'admin.user-groups.patch',
-      payload: {
-        id: String(row.id ?? ''),
-        name: String(row.name ?? ''),
-      },
-    })
-    await loadRows()
-  } catch (errorValue) {
-    Notify.error(`Action échouée : ${toError(errorValue)}`)
-  } finally {
-    mutationLoading.value = false
-  }
-}
-
-async function deleteRow(row: Record<string, unknown>) {
-  if (mutationLoading.value) {
-    return
-  }
-
-  mutationLoading.value = true
-  try {
-    await $fetch(`/api/user_group/${encodeURIComponent(String(row.id ?? ''))}` as any, {
-    method: 'DELETE' as any,
-  })
-    Notify.success('Action réussie : groupe supprimé.')
-    track({
-      name: 'admin.user-groups.delete',
-      payload: {
-        id: String(row.id ?? ''),
-        name: String(row.name ?? ''),
-      },
-    })
-    await loadRows()
-  } catch (errorValue) {
-    Notify.error(`Action échouée : ${toError(errorValue)}`)
-  } finally {
-    mutationLoading.value = false
-  }
-}
-
-watch([page, pageSize], loadRows)
-watchDebounced(search, loadRows, { debounce: 300, maxWait: 1000 })
 
 onMounted(async () => {
   await authStore.ensureRolesLoaded()
@@ -193,6 +151,7 @@ onMounted(async () => {
     @update:page="page = $event"
     @update:page-size="pageSize = $event"
     @update:search="search = $event"
+    @update:filters="filters = $event"
     @create="createRow"
     @save-edit="saveEdit"
     @row-delete="deleteRow"
