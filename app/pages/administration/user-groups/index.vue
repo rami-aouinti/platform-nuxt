@@ -66,6 +66,7 @@ const {
     const [payload, countPayload] = await Promise.all([
       $fetch('/api/user_group', { query: { page, limit: pageSize, search: search || undefined } }),
       $fetch('/api/user_group/count'),
+      $fetch('/api/user_group/ids'),
     ])
 
     return { payload, countPayload }
@@ -109,8 +110,27 @@ const {
   },
 })
 
-function createRow() {
-  Notify.info('TODO: brancher la création de groupe utilisateur.')
+async function createRow() {
+  const suffix = Date.now().toString().slice(-6)
+
+  try {
+    await $fetch('/api/user_group', {
+      method: 'POST' as any,
+      body: {
+        name: `group_${suffix}`,
+        description: 'Groupe créé depuis l'administration',
+      },
+    })
+
+    Notify.success('Action réussie : groupe créé.')
+    track({
+      name: 'admin.user-groups.create',
+      payload: { name: `group_${suffix}` },
+    })
+    await loadRows()
+  } catch (errorValue) {
+    Notify.error(`Action échouée : ${errorValue instanceof Error ? errorValue.message : 'Erreur API.'}`)
+  }
 }
 
 onMounted(async () => {

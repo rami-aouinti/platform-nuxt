@@ -19,6 +19,8 @@ type UserProfile = {
   id: string
   username: string
   email: string
+  firstName: string
+  lastName: string
 }
 
 const route = useRoute()
@@ -38,6 +40,7 @@ const userGroups = ref<string[]>([])
 const newGroup = ref('')
 
 const canManageGroups = computed(() => isRoot(roles.value))
+const canManageProfile = computed(() => isRoot(roles.value))
 
 function normalizeStringList(payload: unknown): string[] {
   const records = Array.isArray(payload)
@@ -69,9 +72,38 @@ function normalizeProfile(payload: unknown): UserProfile {
     id: String(row.id ?? userId.value),
     username: String(row.username ?? row.userName ?? '-'),
     email: String(row.email ?? '-'),
+    firstName: String(row.firstName ?? ''),
+    lastName: String(row.lastName ?? ''),
   }
 }
 
+
+async function saveProfile() {
+  if (!userProfile.value || !canManageProfile.value) {
+    return
+  }
+
+  busyAction.value = true
+
+  try {
+    await $fetch(`/api/user/${encodeURIComponent(userId.value)}`, {
+      method: 'PUT',
+      body: {
+        username: userProfile.value.username.trim(),
+        email: userProfile.value.email.trim(),
+        firstName: userProfile.value.firstName.trim(),
+        lastName: userProfile.value.lastName.trim(),
+      },
+    })
+
+    Notify.success('Profil utilisateur mis à jour.')
+    await loadUserData()
+  } catch (error) {
+    Notify.error(toUiErrorMessage(error))
+  } finally {
+    busyAction.value = false
+  }
+}
 
 async function loadUserData() {
   if (!userId.value) {
@@ -174,11 +206,20 @@ onMounted(async () => {
 
       <v-window v-model="activeTab">
         <v-window-item value="profile">
-          <v-card variant="tonal" rounded="lg" class="pa-4">
-            <div><strong>ID:</strong> {{ userProfile?.id ?? userId }}</div>
-            <div><strong>Username:</strong> {{ userProfile?.username ?? '-' }}</div>
-            <div><strong>Email:</strong> {{ userProfile?.email ?? '-' }}</div>
+          <v-card v-if="userProfile" variant="tonal" rounded="lg" class="pa-4">
+            <v-text-field :model-value="userProfile?.id ?? userId" label="ID" disabled class="mb-2" />
+            <v-text-field v-model="userProfile.username" label="Username" :disabled="!canManageProfile || busyAction" class="mb-2" />
+            <v-text-field v-model="userProfile.email" label="Email" :disabled="!canManageProfile || busyAction" class="mb-2" />
+            <v-text-field v-model="userProfile.firstName" label="First name" :disabled="!canManageProfile || busyAction" class="mb-2" />
+            <v-text-field v-model="userProfile.lastName" label="Last name" :disabled="!canManageProfile || busyAction" />
+
+            <div class="d-flex justify-end mt-2">
+              <v-btn color="primary" :loading="busyAction" :disabled="!canManageProfile || !userProfile" @click="saveProfile">
+                Enregistrer
+              </v-btn>
+            </div>
           </v-card>
+          <v-alert v-else type="warning" variant="tonal">Utilisateur introuvable.</v-alert>
         </v-window-item>
 
         <v-window-item value="roles">
