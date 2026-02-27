@@ -201,20 +201,19 @@ onMounted(() => {
           />
           <div class="admin-resource-controls__actions d-flex ga-2 justify-end">
             <v-btn
+              icon="mdi-refresh"
               color="primary"
-              variant="tonal"
-              prepend-icon="mdi-refresh"
+              variant="text"
+              aria-label="Actualiser"
               @click="emit('refresh')"
-            >
-              Recharger
-            </v-btn>
+            />
             <v-btn
               v-if="canCreate"
               color="primary"
               prepend-icon="mdi-plus"
               @click="emit('create')"
             >
-              {{ createLabel }}
+              New
             </v-btn>
           </div>
         </div>
@@ -258,20 +257,19 @@ onMounted(() => {
           />
           <div class="admin-resource-controls__actions d-flex ga-2 justify-end">
             <v-btn
+              icon="mdi-refresh"
               color="primary"
-              variant="tonal"
-              prepend-icon="mdi-refresh"
+              variant="text"
+              aria-label="Actualiser"
               @click="emit('refresh')"
-            >
-              Recharger
-            </v-btn>
+            />
             <v-btn
               v-if="canCreate"
               color="primary"
               prepend-icon="mdi-plus"
               @click="emit('create')"
             >
-              {{ createLabel }}
+              New
             </v-btn>
           </div>
         </div>
