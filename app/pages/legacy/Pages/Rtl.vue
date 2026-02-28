@@ -511,9 +511,9 @@ definePageMeta({
 
 import { onBeforeMount, onBeforeUnmount, onMounted, ref } from "vue";
 import Chart from "chart.js/auto";
-import CategoriesCard from "./Widgets/CategoriesCard.vue";
-import CategoriesCardDashboard from "./Widgets/CategoriesCardDashboard.vue";
-import Calendar from "../Dashboard/Widgets/Calendar.vue";
+import CategoriesCard from "@/components/legacy/Pages/CategoriesCard.vue";
+import CategoriesCardDashboard from "@/components/legacy/Pages/CategoriesCardDashboard.vue";
+import Calendar from "@/components/legacy/Dashboard/Calendar.vue";
 const chartWidgets = ref("widgetsChart");
 const chartLine = ref("lineChart");
 const switch1 = ref(true);

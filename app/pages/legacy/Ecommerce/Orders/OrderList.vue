@@ -123,5 +123,5 @@ definePageMeta({
   middleware: ['auth']
 })
 
-import TableOrders from "./Widgets/TableOrders";
+import TableOrders from "@/components/legacy/Ecommerce/Orders/TableOrders.vue";
 </script>

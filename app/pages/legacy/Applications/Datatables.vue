@@ -20,6 +20,6 @@ definePageMeta({
   middleware: ['auth']
 })
 
-import DatatableSimple from "./Widgets/DatatableSimple.vue";
-import DatatableSearch from "./Widgets/DatatableSearch.vue";
+import DatatableSimple from "@/components/legacy/Applications/DatatableSimple.vue";
+import DatatableSearch from "@/components/legacy/Applications/DatatableSearch.vue";
 </script>

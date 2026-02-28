@@ -401,5 +401,5 @@ definePageMeta({
   middleware: ['auth']
 })
 
-import CardProfile from "../Components/Cards/CardProfile.vue";
+import CardProfile from "@/components/legacy/Components/Cards/CardProfile.vue";
 </script>

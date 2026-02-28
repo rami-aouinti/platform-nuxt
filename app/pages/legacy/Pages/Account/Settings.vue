@@ -121,13 +121,13 @@ definePageMeta({
 })
 
 import { ref } from "vue";
-import BasicInfo from "./Widgets/BasicInfo.vue";
-import ChangePassword from "./Widgets/ChangePassword.vue";
-import TwoFactor from "./Widgets/TwoFactor.vue";
-import Accounts from "./Widgets/Accounts.vue";
-import Notifications from "./Widgets/Notifications.vue";
-import Sessions from "./Widgets/Sessions.vue";
-import DeleteAccount from "./Widgets/DeleteAccount.vue";
+import BasicInfo from "@/components/legacy/Pages/Account/BasicInfo.vue";
+import ChangePassword from "@/components/legacy/Pages/Account/ChangePassword.vue";
+import TwoFactor from "@/components/legacy/Pages/Account/TwoFactor.vue";
+import Accounts from "@/components/legacy/Pages/Account/Accounts.vue";
+import Notifications from "@/components/legacy/Pages/Account/Notifications.vue";
+import Sessions from "@/components/legacy/Pages/Account/Sessions.vue";
+import DeleteAccount from "@/components/legacy/Pages/Account/DeleteAccount.vue";
 const switche = ref(true);
 const menu = ref([{
   icon: "person",

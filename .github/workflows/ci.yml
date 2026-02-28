@@ -76,6 +76,9 @@ jobs:
       - name: Legacy pages KPI
         run: pnpm run legacy:pages:kpi
 
+      - name: Check legacy pages route boundaries
+        run: pnpm run legacy:pages:routes:check
+
       - name: Check legacy imports
         run: pnpm run legacy:imports:check
 

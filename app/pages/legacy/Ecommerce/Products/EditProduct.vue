@@ -310,7 +310,7 @@ definePageMeta({
 })
 
 import { ref } from "vue";
-import HtmlEditor from "./Widgets/HtmlEditor.vue";
+import HtmlEditor from "@/components/legacy/Ecommerce/Products/HtmlEditor.vue";
 const categories = ref(["Clothing", "Electronics", "Furniture", "Others", "Real Estate"]);
 const colors = ref(["Black", "Red", "Blue", "Green", "Orange"]);
 const coins = ref(["USD", "BTC", "CNY", "EUR"]);

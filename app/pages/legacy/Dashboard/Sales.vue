@@ -320,9 +320,9 @@ definePageMeta({
 })
 
 import { ref } from "vue";
-import CardChartChannels from "./Widgets/CardChartChannels.vue";
-import CardChartRevenue from "./Widgets/CardChartRevenue.vue";
-import CardChartSalesAge from "./Widgets/CardChartSalesAge.vue";
+import CardChartChannels from "@/components/legacy/Dashboard/CardChartChannels.vue";
+import CardChartRevenue from "@/components/legacy/Dashboard/CardChartRevenue.vue";
+import CardChartSalesAge from "@/components/legacy/Dashboard/CardChartSalesAge.vue";
 const stats = ref([{
   text: "Sales",
   value: "$230,220",

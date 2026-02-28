@@ -216,7 +216,7 @@ definePageMeta({
 
 import { ref } from "vue";
 import Photoswipe from "vue-pswipe";
-import TableProducts from "./Widgets/TableProducts.vue";
+import TableProducts from "@/components/legacy/Ecommerce/Products/TableProducts.vue";
 Vue.use(Photoswipe);
 const materials = ref(["Wood", "Aluminium", "Leather"]);
 const colors = ref(["White", "Black", "Gray"]);

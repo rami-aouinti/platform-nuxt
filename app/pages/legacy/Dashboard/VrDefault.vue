@@ -42,8 +42,8 @@ definePageMeta({
   middleware: ['auth']
 })
 
-import SalesCountry from "./Widgets/SalesCountry.vue";
-import CardWebsiteViews from "./Widgets/CardWebsiteViews.vue";
-import CardDailySales from "./Widgets/CardDailySales.vue";
-import CardCompletedTasks from "./Widgets/CardCompletedTasks.vue";
+import SalesCountry from "@/components/legacy/Dashboard/SalesCountry.vue";
+import CardWebsiteViews from "@/components/legacy/Dashboard/CardWebsiteViews.vue";
+import CardDailySales from "@/components/legacy/Dashboard/CardDailySales.vue";
+import CardCompletedTasks from "@/components/legacy/Dashboard/CardCompletedTasks.vue";
 </script>

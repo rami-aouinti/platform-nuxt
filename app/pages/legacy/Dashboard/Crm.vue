@@ -368,8 +368,8 @@ definePageMeta({
 
 import { onMounted, ref } from "vue";
 import Chart from "chart.js/auto";
-import CategoriesCard from "./Widgets/CategoriesCard.vue";
-import Calendar from "./Widgets/Calendar.vue";
+import CategoriesCard from "@/components/legacy/Dashboard/CategoriesCard.vue";
+import Calendar from "@/components/legacy/Dashboard/Calendar.vue";
 const chartLine1 = ref("chart-line-1");
 const chartLine2 = ref("chart-line-2");
 const transactions = ref([{

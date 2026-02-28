@@ -187,7 +187,7 @@ definePageMeta({
 })
 
 import { ref } from "vue";
-import ReportsTable from "./Widgets/ReportsTable.vue";
+import ReportsTable from "@/components/legacy/Pages/Users/ReportsTable.vue";
 const cards = ref([{
   icon: "account_circle",
   text: "Users Active",

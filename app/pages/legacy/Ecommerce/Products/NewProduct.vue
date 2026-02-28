@@ -487,8 +487,8 @@ definePageMeta({
 })
 
 import { ref } from "vue";
-import HtmlEditor from "./Widgets/HtmlEditor.vue";
-import Dropzone from "./Widgets/Dropzone.vue";
+import HtmlEditor from "@/components/legacy/Ecommerce/Products/HtmlEditor.vue";
+import Dropzone from "@/components/legacy/Ecommerce/Products/Dropzone.vue";
 const e1 = ref(1);
 const categories = ref(["Clothing", "Electronics", "Furniture", "Others", "Real Estate"]);
 const sizes = ref(["Small", "Medium", "Large"]);

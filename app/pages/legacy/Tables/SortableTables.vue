@@ -19,7 +19,7 @@ definePageMeta({
   middleware: ['auth']
 })
 
-import SortableDark from "./Tables/SortableDark.vue";
-import SortableLight from "./Tables/SortableLight.vue";
-import SortableTranslucent from "./Tables/SortableTranslucent.vue";
+import SortableDark from "@/components/legacy/Tables/SortableDark.vue";
+import SortableLight from "@/components/legacy/Tables/SortableLight.vue";
+import SortableTranslucent from "@/components/legacy/Tables/SortableTranslucent.vue";
 </script>

@@ -61,14 +61,14 @@ definePageMeta({
   middleware: ['auth']
 })
 
-import LineChart from "./Widgets/LineChart.vue";
-import LineChartWithoutDots from "./Widgets/LineChartWithoutDots.vue";
-import BarChart from "./Widgets/BarChart.vue";
-import BarChartHorizontal from "./Widgets/BarChartHorizontal.vue";
-import MixedChart from "./Widgets/MixedChart.vue";
-import BubbleChart from "./Widgets/BubbleChart.vue";
-import DoughnutChart from "./Widgets/DoughnutChart.vue";
-import PieChart from "./Widgets/PieChart.vue";
-import RadarChart from "./Widgets/RadarChart.vue";
-import PolarChart from "./Widgets/PolarChart.vue";
+import LineChart from "@/components/legacy/Pages/LineChart.vue";
+import LineChartWithoutDots from "@/components/legacy/Pages/LineChartWithoutDots.vue";
+import BarChart from "@/components/legacy/Pages/BarChart.vue";
+import BarChartHorizontal from "@/components/legacy/Pages/BarChartHorizontal.vue";
+import MixedChart from "@/components/legacy/Pages/MixedChart.vue";
+import BubbleChart from "@/components/legacy/Pages/BubbleChart.vue";
+import DoughnutChart from "@/components/legacy/Pages/DoughnutChart.vue";
+import PieChart from "@/components/legacy/Pages/PieChart.vue";
+import RadarChart from "@/components/legacy/Pages/RadarChart.vue";
+import PolarChart from "@/components/legacy/Pages/PolarChart.vue";
 </script>

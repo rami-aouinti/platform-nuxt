@@ -194,7 +194,7 @@ definePageMeta({
 })
 
 import { onMounted, ref } from "vue";
-import CalendarWidget from "./Widgets/CalendarWidget.vue";
+import CalendarWidget from "@/components/legacy/Applications/CalendarWidget.vue";
 import Chart from "chart.js/auto";
 const lineChartId = ref("chart-line-1");
 const avatars = ref([{

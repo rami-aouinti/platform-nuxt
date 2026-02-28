@@ -17,5 +17,5 @@ definePageMeta({
   middleware: ['auth']
 })
 
-import PaginatedTable from "./Tables/PaginatedTable.vue";
+import PaginatedTable from "@/components/legacy/Tables/PaginatedTable.vue";
 </script>
