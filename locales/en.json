@@ -1,0 +1,11 @@
+{
+  "appbar": {
+    "login": "Login",
+    "profile": "Profile",
+    "crm": "CRM",
+    "calendar": "Calendar",
+    "quiz": "Quiz",
+    "administration": "Administration",
+    "logout": "Logout"
+  }
+}
