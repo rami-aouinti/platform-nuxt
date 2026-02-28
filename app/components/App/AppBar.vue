@@ -72,7 +72,7 @@ function createActivatorProps(
 <template>
   <v-app-bar flat>
     <v-app-bar-nav-icon @click="drawer = !drawer" />
-    <v-breadcrumbs :items="breadcrumbs" :class="{ 'app-bar__breadcrumbs--hidden': isAdministrationRoute }" />
+    <v-breadcrumbs :items="breadcrumbs"  />
     <v-spacer />
     <div id="app-bar" class="app-bar__portal" />
     <v-spacer />
