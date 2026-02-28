@@ -359,6 +359,13 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  title: 'Legacy · Crm',
+  layout: 'administration',
+  requiresAuth: true,
+  middleware: ['auth']
+})
+
 import { onMounted, ref } from "vue";
 import Chart from "chart.js/auto";
 import CategoriesCard from "./Widgets/CategoriesCard.vue";

@@ -35,6 +35,13 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  title: 'Legacy · Vr Default',
+  layout: 'administration',
+  requiresAuth: true,
+  middleware: ['auth']
+})
+
 import SalesCountry from "./Widgets/SalesCountry.vue";
 import CardWebsiteViews from "./Widgets/CardWebsiteViews.vue";
 import CardDailySales from "./Widgets/CardDailySales.vue";

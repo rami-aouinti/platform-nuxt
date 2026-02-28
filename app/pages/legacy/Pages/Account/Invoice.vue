@@ -250,6 +250,13 @@
   </v-container>
 </template>
 <script setup lang="ts">
+definePageMeta({
+  title: 'Legacy · Account Invoice',
+  layout: 'default',
+  requiresAuth: true,
+  middleware: ['auth']
+})
+
 import { ref } from "vue";
 const items = ref([{
   title: "Mentions",

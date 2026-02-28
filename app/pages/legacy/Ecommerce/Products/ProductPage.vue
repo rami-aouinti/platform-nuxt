@@ -207,6 +207,13 @@
   </div>
 </template>
 <script setup lang="ts">
+definePageMeta({
+  title: 'Legacy · Products Product Page',
+  layout: 'administration',
+  requiresAuth: true,
+  middleware: ['auth']
+})
+
 import { ref } from "vue";
 import Photoswipe from "vue-pswipe";
 import TableProducts from "./Widgets/TableProducts.vue";

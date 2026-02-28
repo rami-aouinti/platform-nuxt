@@ -12,6 +12,13 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  title: 'Legacy · Timeline',
+  layout: 'administration',
+  requiresAuth: true,
+  middleware: ['auth']
+})
+
 import { ref } from "vue";
 import LegacyPageWrapper from '../../../components/legacy-migration/layouts/LegacyPageWrapper.vue';
 import LegacyTimelineBlock from '../../../components/legacy-migration/composites/LegacyTimelineBlock.vue';

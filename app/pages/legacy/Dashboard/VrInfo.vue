@@ -424,5 +424,12 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  title: 'Legacy · Vr Info',
+  layout: 'administration',
+  requiresAuth: true,
+  middleware: ['auth']
+})
+
 
 </script>

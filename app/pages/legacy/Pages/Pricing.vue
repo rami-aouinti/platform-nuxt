@@ -164,6 +164,13 @@
   </v-row>
 </template>
 <script setup lang="ts">
+definePageMeta({
+  title: 'Legacy · Pricing',
+  layout: 'administration',
+  requiresAuth: true,
+  middleware: ['auth']
+})
+
 import { ref } from "vue";
 const tab = ref("");
 const plans = ref([{

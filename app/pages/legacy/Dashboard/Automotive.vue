@@ -518,6 +518,13 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  title: 'Legacy · Automotive',
+  layout: 'administration',
+  requiresAuth: true,
+  middleware: ['auth']
+})
+
 import { ref } from "vue";
 import { latLng } from "leaflet";
 import { LMap, LTileLayer } from "vue2-leaflet";

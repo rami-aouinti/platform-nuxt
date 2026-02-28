@@ -479,6 +479,13 @@
   </div>
 </template>
 <script setup lang="ts">
+definePageMeta({
+  title: 'Legacy · Products New Product',
+  layout: 'administration',
+  requiresAuth: true,
+  middleware: ['auth']
+})
+
 import { ref } from "vue";
 import HtmlEditor from "./Widgets/HtmlEditor.vue";
 import Dropzone from "./Widgets/Dropzone.vue";

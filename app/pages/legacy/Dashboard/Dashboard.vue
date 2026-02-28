@@ -290,6 +290,13 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  title: 'Legacy · Dashboard',
+  layout: 'administration',
+  requiresAuth: true,
+  middleware: ['auth']
+})
+
 import { ref } from "vue";
 import SalesCountry from "./Widgets/SalesCountry.vue";
 import CardWebsiteViews from "./Widgets/CardWebsiteViews.vue";

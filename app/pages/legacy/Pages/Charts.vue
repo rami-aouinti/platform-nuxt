@@ -54,6 +54,13 @@
   </div>
 </template>
 <script setup lang="ts">
+definePageMeta({
+  title: 'Legacy · Charts',
+  layout: 'administration',
+  requiresAuth: true,
+  middleware: ['auth']
+})
+
 import LineChart from "./Widgets/LineChart.vue";
 import LineChartWithoutDots from "./Widgets/LineChartWithoutDots.vue";
 import BarChart from "./Widgets/BarChart.vue";

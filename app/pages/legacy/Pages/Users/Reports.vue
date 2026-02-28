@@ -178,6 +178,14 @@
   </v-container>
 </template>
 <script setup lang="ts">
+definePageMeta({
+  title: 'Legacy · Users Reports',
+  layout: 'administration',
+  requiresAuth: true,
+  requiresAdmin: true,
+  middleware: ['auth', 'admin-access']
+})
+
 import { ref } from "vue";
 import ReportsTable from "./Widgets/ReportsTable.vue";
 const cards = ref([{

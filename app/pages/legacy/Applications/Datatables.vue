@@ -13,6 +13,13 @@
   </div>
 </template>
 <script setup lang="ts">
+definePageMeta({
+  title: 'Legacy · Datatables',
+  layout: 'administration',
+  requiresAuth: true,
+  middleware: ['auth']
+})
+
 import DatatableSimple from "./Widgets/DatatableSimple.vue";
 import DatatableSearch from "./Widgets/DatatableSearch.vue";
 </script>

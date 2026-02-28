@@ -436,6 +436,14 @@
   </v-container>
 </template>
 <script setup lang="ts">
+definePageMeta({
+  title: 'Legacy · Users New User',
+  layout: 'administration',
+  requiresAuth: true,
+  requiresAdmin: true,
+  middleware: ['auth', 'admin-access']
+})
+
 import { ref } from "vue";
 const e1 = ref(1);
 </script>

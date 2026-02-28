@@ -302,6 +302,13 @@
   </div>
 </template>
 <script setup lang="ts">
+definePageMeta({
+  title: 'Legacy · Products Edit Product',
+  layout: 'administration',
+  requiresAuth: true,
+  middleware: ['auth']
+})
+
 import { ref } from "vue";
 import HtmlEditor from "./Widgets/HtmlEditor.vue";
 const categories = ref(["Clothing", "Electronics", "Furniture", "Others", "Real Estate"]);

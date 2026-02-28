@@ -250,6 +250,13 @@
   </div>
 </template>
 <script setup lang="ts">
+definePageMeta({
+  title: 'Legacy · Alerts',
+  layout: 'administration',
+  requiresAuth: true,
+  middleware: ['auth']
+})
+
 import Vue from "vue";
 import VueSweetalert2 from "vue-sweetalert2";
 Vue.use(VueSweetalert2);
