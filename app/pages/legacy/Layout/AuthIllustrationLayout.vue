@@ -48,8 +48,8 @@
             >
               <Transition mode="out-in">
                 <!-- your content here -->
-                <router-view></router-view>
-              </Transition>
+                <NuxtPage />
+              </fade-transition>
             </v-col>
           </v-row>
         </v-container>

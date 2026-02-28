@@ -201,13 +201,13 @@
           </v-row>
           <Transition mode="out-in" v-if="$route.name != 'Project'">
             <!-- your content here -->
-            <router-view></router-view>
-          </Transition>
+            <NuxtPage />
+          </fade-transition>
         </v-card>
         <Transition mode="out-in" v-if="$route.name == 'Project'">
           <!-- your content here -->
-          <router-view></router-view>
-        </Transition>
+          <NuxtPage />
+        </fade-transition>
       </v-container>
 
       <content-footer v-if="!$route.meta.hideFooter"></content-footer>

@@ -58,7 +58,7 @@
       <Transition mode="out-in">
         <!-- your content here -->
         <v-container fluid class="pb-0 px-16">
-          <router-view></router-view>
+          <NuxtPage />
           <content-footer auth v-if="!$route.meta.hideFooter"></content-footer>
         </v-container>
       </Transition>

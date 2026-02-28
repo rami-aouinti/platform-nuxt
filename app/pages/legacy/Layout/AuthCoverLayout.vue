@@ -62,7 +62,7 @@
       <Transition mode="out-in">
         <!-- your content here -->
         <v-container class="mt-n16 pb-0">
-          <router-view></router-view>
+          <NuxtPage />
           <content-footer auth v-if="!$route.meta.hideFooter"></content-footer>
         </v-container>
       </Transition>

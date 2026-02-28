@@ -15,8 +15,8 @@
       <drawer :drawer="drawer" class="bg-white border-radius-xl"></drawer>
       <Transition mode="out-in">
         <!-- your content here -->
-        <router-view></router-view>
-      </Transition>
+        <NuxtPage />
+      </fade-transition>
     </v-main>
     <content-footer v-if="!$route.meta.hideFooter"></content-footer>
   </v-app>
