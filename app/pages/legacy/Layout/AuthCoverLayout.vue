@@ -2,15 +2,7 @@
   <v-app>
     <v-main class="auth-pages">
       <div
-        class="
-          header-auth
-          position-relative
-          ma-4
-          pb-16
-          pt-16
-          border-radius-xl
-          min-height-300
-        "
+        class="header-auth position-relative ma-4 pb-16 pt-16 border-radius-xl min-height-300"
         :style="`background-image:  url('https://images.unsplash.com/photo-1545569341-9eb8b30979d9?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80'); background-size: cover; background-position: center;`"
       >
         <span
@@ -32,25 +24,13 @@
                 {{ headerTitle() }}
               </h3>
               <h1
-                class="
-                  text-h1 text-white
-                  font-weight-bolder
-                  text-center
-                  mb-2
-                  mt-5
-                "
+                class="text-h1 text-white font-weight-bolder text-center mb-2 mt-5"
                 v-else
               >
                 {{ headerTitle() }}
               </h1>
               <p
-                class="
-                  text-white
-                  font-size-root
-                  text-center
-                  font-weight-thin
-                  mb-12
-                "
+                class="text-white font-size-root text-center font-weight-thin mb-12"
               >
                 {{ paragraphs }}
               </p>
@@ -60,7 +40,6 @@
       </div>
       <app-bar-auth background="transparent" has-bg> </app-bar-auth>
       <Transition mode="out-in">
-        <!-- your content here -->
         <v-container class="mt-n16 pb-0">
           <NuxtPage />
           <content-footer auth v-if="!$route.meta.hideFooter"></content-footer>
@@ -70,18 +49,18 @@
   </v-app>
 </template>
 <script setup lang="ts">
-import { ref } from "vue";
-import AppBarAuth from "@/components/AppBarAuth";
-import ContentFooter from "@/components/App/AppFooter.vue";
-const paragraphs = ref("");
-const tab = ref(null);
+import { ref } from 'vue'
+import AppBarAuth from '@/components/AppBarAuth'
+import ContentFooter from '@/components/App/AppFooter.vue'
+const paragraphs = ref('')
 function headerTitle() {
   switch ($route.name) {
-    case "SignUpBasic":
-      paragraphs.value = "Use these awesome forms to login or create new account in your project for free.";
-      return "Welcome!";
+    case 'SignUpBasic':
+      paragraphs.value =
+        'Use these awesome forms to login or create new account in your project for free.'
+      return 'Welcome!'
     default:
-      break;
+      break
   }
 }
 </script>

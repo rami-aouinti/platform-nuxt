@@ -11,7 +11,6 @@
             <app-bar-auth background="transparent" has-bg linkColor="white">
             </app-bar-auth>
             <Transition mode="out-in">
-              <!-- your content here -->
               <v-container class="pb-0 position-relative">
                 <NuxtPage />
                 <content-footer
@@ -27,18 +26,18 @@
   </v-app>
 </template>
 <script setup lang="ts">
-import { ref } from "vue";
-import AppBarAuth from "@/components/AppBarAuth";
-import ContentFooter from "@/components/App/AppFooter.vue";
-const paragraphs = ref("");
-const tab = ref(null);
+import { ref } from 'vue'
+import AppBarAuth from '@/components/AppBarAuth'
+import ContentFooter from '@/components/App/AppFooter.vue'
+const paragraphs = ref('')
 function headerTitle() {
   switch ($route.name) {
-    case "SignUpBasic":
-      paragraphs.value = "Use these awesome forms to login or create new account in your project for free.";
-      return "Welcome!";
+    case 'SignUpBasic':
+      paragraphs.value =
+        'Use these awesome forms to login or create new account in your project for free.'
+      return 'Welcome!'
     default:
-      break;
+      break
   }
 }
 </script>
