@@ -243,7 +243,8 @@
     </v-dialog>
   </div>
 </template>
-<script>
+<script setup lang="ts">
+import { ref } from "vue";
 import FullCalendar from "@fullcalendar/vue3";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -251,186 +252,149 @@ import interactionPlugin from "@fullcalendar/interaction";
 const today = new Date();
 const y = today.getFullYear();
 const m = today.getMonth();
-
-export default {
-  name: "calendar",
-  components: {
-    FullCalendar,
-  },
-  data() {
-    let monthText = m + 1 > 10 ? m + 1 : `0${m + 1}`;
-    let yearAndMonth = `${y}-${monthText}`;
-    return {
-      calendarOptions: {
-        plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
-        initialView: "dayGridMonth",
-        contentHeight: "auto",
-        headerToolbar: false,
-        selectable: true,
-        selectMirror: true,
-        dateClick: this.onDateClick,
-        eventClick: this.onEventClick,
-        editable: true,
-        events: [
-          {
-            title: "Call with Dave",
-            start: `${yearAndMonth}-18`,
-            end: `${yearAndMonth}-18`,
-            className: "bg-red",
-            allDay: true,
-          },
-          {
-            title: "Lunch meeting",
-            start: `${yearAndMonth}-21`,
-            end: `${yearAndMonth}-22`,
-            className: "bg-orange",
-            allDay: true,
-          },
-          {
-            title: "All day conference",
-            start: `${yearAndMonth}-29`,
-            end: `${yearAndMonth}-29`,
-            className: "bg-green",
-            allDay: true,
-          },
-          {
-            title: "Meeting with Mary",
-            start: `${yearAndMonth}-01`,
-            end: `${yearAndMonth}-01`,
-            className: "bg-blue",
-            allDay: true,
-          },
-          {
-            title: "Winter Hackaton",
-            start: `${yearAndMonth}-03`,
-            end: `${yearAndMonth}-03`,
-            className: "bg-red",
-            allDay: true,
-          },
-          {
-            title: "Digital event",
-            start: `${yearAndMonth}-07`,
-            end: `${yearAndMonth}-09`,
-            className: "bg-orange",
-            allDay: true,
-          },
-          {
-            title: "Marketing event",
-            start: `${yearAndMonth}-10`,
-            end: `${yearAndMonth}-10`,
-            className: "bg-purple",
-            allDay: true,
-          },
-          {
-            title: "Dinner with Family",
-            start: `${yearAndMonth}-19`,
-            end: `${yearAndMonth}-19`,
-            className: "bg-red",
-            allDay: true,
-          },
-          {
-            title: "Black Friday",
-            start: `${yearAndMonth}-23`,
-            end: `${yearAndMonth}-23`,
-            className: "bg-blue",
-            allDay: true,
-          },
-          {
-            title: "Cyber Week",
-            start: `${yearAndMonth}-02`,
-            end: `${yearAndMonth}-02`,
-            className: "bg-yellow",
-            allDay: true,
-          },
-        ],
-      },
-      defaultView: "",
-      showAddModal: false,
-      showEditModal: false,
-      model: {
-        title: "",
-        className: "bg-default",
-        description:
-          "Nullam id dolor id nibh ultricies vehicula ut id elit. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.",
-        start: "",
-        end: "",
-      },
-      eventColors: [
-        "bg-info",
-        "bg-orange",
-        "bg-red",
-        "bg-green",
-        "bg-default",
-        "bg-blue",
-        "bg-purple",
-        "bg-yellow",
-      ],
+const calendarOptions = ref({
+  plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
+  initialView: "dayGridMonth",
+  contentHeight: "auto",
+  headerToolbar: false,
+  selectable: true,
+  selectMirror: true,
+  dateClick: this.onDateClick,
+  eventClick: this.onEventClick,
+  editable: true,
+  events: [{
+    title: "Call with Dave",
+    start: `${yearAndMonth}-18`,
+    end: `${yearAndMonth}-18`,
+    className: "bg-red",
+    allDay: true
+  }, {
+    title: "Lunch meeting",
+    start: `${yearAndMonth}-21`,
+    end: `${yearAndMonth}-22`,
+    className: "bg-orange",
+    allDay: true
+  }, {
+    title: "All day conference",
+    start: `${yearAndMonth}-29`,
+    end: `${yearAndMonth}-29`,
+    className: "bg-green",
+    allDay: true
+  }, {
+    title: "Meeting with Mary",
+    start: `${yearAndMonth}-01`,
+    end: `${yearAndMonth}-01`,
+    className: "bg-blue",
+    allDay: true
+  }, {
+    title: "Winter Hackaton",
+    start: `${yearAndMonth}-03`,
+    end: `${yearAndMonth}-03`,
+    className: "bg-red",
+    allDay: true
+  }, {
+    title: "Digital event",
+    start: `${yearAndMonth}-07`,
+    end: `${yearAndMonth}-09`,
+    className: "bg-orange",
+    allDay: true
+  }, {
+    title: "Marketing event",
+    start: `${yearAndMonth}-10`,
+    end: `${yearAndMonth}-10`,
+    className: "bg-purple",
+    allDay: true
+  }, {
+    title: "Dinner with Family",
+    start: `${yearAndMonth}-19`,
+    end: `${yearAndMonth}-19`,
+    className: "bg-red",
+    allDay: true
+  }, {
+    title: "Black Friday",
+    start: `${yearAndMonth}-23`,
+    end: `${yearAndMonth}-23`,
+    className: "bg-blue",
+    allDay: true
+  }, {
+    title: "Cyber Week",
+    start: `${yearAndMonth}-02`,
+    end: `${yearAndMonth}-02`,
+    className: "bg-yellow",
+    allDay: true
+  }]
+});
+const defaultView = ref("");
+const showAddModal = ref(false);
+const showEditModal = ref(false);
+const model = ref({
+  title: "",
+  className: "bg-default",
+  description: "Nullam id dolor id nibh ultricies vehicula ut id elit. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.",
+  start: "",
+  end: ""
+});
+const eventColors = ref(["bg-info", "bg-orange", "bg-red", "bg-green", "bg-default", "bg-blue", "bg-purple", "bg-yellow"]);
+function calendarApi() {
+  return $refs.fullCalendar.getApi();
+}
+function changeView(viewType) {
+  defaultView.value = viewType;
+  calendarApi().changeView(viewType);
+}
+function next() {
+  calendarApi().next();
+}
+function prev() {
+  calendarApi().prev();
+}
+function onDateClick({
+  date
+}) {
+  showAddModal.value = true;
+  model.value.start = date;
+  model.value.end = date;
+}
+function onEventClick({
+  event
+}) {
+  model.value = {
+    title: event.title,
+    className: event.classNames ? event.classNames.join(" ") : "",
+    start: event.start,
+    end: event.end,
+    description: "Nullam id dolor id nibh ultricies vehicula ut id elit. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus."
+  };
+  showEditModal.value = true;
+}
+function saveEvent() {
+  if (model.value.title) {
+    let event = {
+      ...model.value,
+      allDay: true
     };
-  },
-  methods: {
-    calendarApi() {
-      return this.$refs.fullCalendar.getApi();
-    },
-    changeView(viewType) {
-      this.defaultView = viewType;
-      this.calendarApi().changeView(viewType);
-    },
-    next() {
-      this.calendarApi().next();
-    },
-    prev() {
-      this.calendarApi().prev();
-    },
-    onDateClick({ date }) {
-      this.showAddModal = true;
-      this.model.start = date;
-      this.model.end = date;
-    },
-    onEventClick({ event }) {
-      this.model = {
-        title: event.title,
-        className: event.classNames ? event.classNames.join(" ") : "",
-        start: event.start,
-        end: event.end,
-        description:
-          "Nullam id dolor id nibh ultricies vehicula ut id elit. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.",
-      };
-      this.showEditModal = true;
-    },
-    saveEvent() {
-      if (this.model.title) {
-        let event = {
-          ...this.model,
-          allDay: true,
-        };
-        this.calendarOptions.events.push(JSON.parse(JSON.stringify(event)));
-        this.model = {
-          title: "",
-          eventColor: "bg-danger",
-          start: "",
-          end: "",
-        };
-      }
-      this.showAddModal = false;
-    },
-    editEvent() {
-      let index = this.calendarOptions.events.findIndex(
-        (e) => e.title === this.model.title
-      );
-      if (index !== 1) {
-        this.calendarOptions.events.splice(index, 1, this.model);
-      }
-      this.showEditModal = false;
-    },
-    deleteEvent() {
-      let index = this.calendarOptions.events.findIndex(
-        (e) => e.title === this.model.title
-      );
-      if (index !== -1) {
-        this.calendarOptions.events.splice(index, 1);
-      }
-      this.showEditModal = false;
-    },
-  },
-};
+    calendarOptions.value.events.push(JSON.parse(JSON.stringify(event)));
+    model.value = {
+      title: "",
+      eventColor: "bg-danger",
+      start: "",
+      end: ""
+    };
+  }
+  showAddModal.value = false;
+}
+function editEvent() {
+  let index = calendarOptions.value.events.findIndex(e => e.title === model.value.title);
+  if (index !== 1) {
+    calendarOptions.value.events.splice(index, 1, model.value);
+  }
+  showEditModal.value = false;
+}
+function deleteEvent() {
+  let index = calendarOptions.value.events.findIndex(e => e.title === model.value.title);
+  if (index !== -1) {
+    calendarOptions.value.events.splice(index, 1);
+  }
+  showEditModal.value = false;
+}
 </script>

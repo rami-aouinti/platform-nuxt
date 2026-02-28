@@ -358,215 +358,189 @@
   </div>
 </template>
 
-<script>
+<script setup lang="ts">
+import { onMounted, ref } from "vue";
 import Chart from "chart.js/auto";
 import CategoriesCard from "./Widgets/CategoriesCard.vue";
 import Calendar from "./Widgets/Calendar.vue";
+const chartLine1 = ref("chart-line-1");
+const chartLine2 = ref("chart-line-2");
+const transactions = ref([{
+  icon: "expand_more",
+  color: "#ea0606",
+  title: "Netflix",
+  date: "27 March 2020, at 12:30 PM",
+  value: "- $ 2,500",
+  gradient: "text-danger"
+}, {
+  icon: "expand_less",
+  color: "#82d616",
+  title: "Apple",
+  date: "23 March 2020, at 04:30 AM",
+  value: "+ $ 2,000",
+  gradient: "text-success"
+}, {
+  icon: "expand_less",
+  color: "#82d616",
+  title: "Partner #22213",
+  date: "19 March 2020, at 02:50 AM",
+  value: "+ $ 1,400",
+  gradient: "text-success"
+}]);
+const revenues = ref([{
+  icon: "expand_less",
+  color: "#82d616",
+  title: "via PayPal",
+  date: "07 June 2021, at 09:00 AM",
+  value: "+ $ 4,999",
+  gradient: "text-success"
+}, {
+  icon: "expand_less",
+  color: "#82d616",
+  title: "Partner #90211",
+  date: "07 June 2021, at 05:50 AM",
+  value: "+ $ 700",
+  gradient: "text-success"
+}, {
+  icon: "expand_more",
+  color: "#ea0606",
+  title: "Services",
+  date: "07 June 2021, at 07:10 PM",
+  value: "- $ 1,800",
+  gradient: "text-danger"
+}]);
+onMounted(() => {
+  var chart1 = document.getElementById(chartLine1.value).getContext("2d");
+  var chart2 = document.getElementById(chartLine2.value).getContext("2d");
+  var gradientStroke1 = chart1.createLinearGradient(0, 230, 0, 50);
+  gradientStroke1.addColorStop(1, "rgba(203,12,159,0.02)");
+  gradientStroke1.addColorStop(0.2, "rgba(72,72,176,0.0)");
+  gradientStroke1.addColorStop(0, "rgba(203,12,159,0)"); //purple colors
 
-export default {
-  name: "Crm",
-  components: {
-    CategoriesCard,
-    Calendar,
-  },
-  data: function () {
-    return {
-      chartLine1: "chart-line-1",
-      chartLine2: "chart-line-2",
-      transactions: [
-        {
-          icon: "expand_more",
-          color: "#ea0606",
-          title: "Netflix",
-          date: "27 March 2020, at 12:30 PM",
-          value: "- $ 2,500",
-          gradient: "text-danger",
-        },
-        {
-          icon: "expand_less",
-          color: "#82d616",
-          title: "Apple",
-          date: "23 March 2020, at 04:30 AM",
-          value: "+ $ 2,000",
-          gradient: "text-success",
-        },
-        {
-          icon: "expand_less",
-          color: "#82d616",
-          title: "Partner #22213",
-          date: "19 March 2020, at 02:50 AM",
-          value: "+ $ 1,400",
-          gradient: "text-success",
-        },
-      ],
-      revenues: [
-        {
-          icon: "expand_less",
-          color: "#82d616",
-          title: "via PayPal",
-          date: "07 June 2021, at 09:00 AM",
-          value: "+ $ 4,999",
-          gradient: "text-success",
-        },
-        {
-          icon: "expand_less",
-          color: "#82d616",
-          title: "Partner #90211",
-          date: "07 June 2021, at 05:50 AM",
-          value: "+ $ 700",
-          gradient: "text-success",
-        },
-        {
-          icon: "expand_more",
-          color: "#ea0606",
-          title: "Services",
-          date: "07 June 2021, at 07:10 PM",
-          value: "- $ 1,800",
-          gradient: "text-danger",
-        },
-      ],
-    };
-  },
-  mounted() {
-    var chart1 = document.getElementById(this.chartLine1).getContext("2d");
-    var chart2 = document.getElementById(this.chartLine2).getContext("2d");
-
-    var gradientStroke1 = chart1.createLinearGradient(0, 230, 0, 50);
-
-    gradientStroke1.addColorStop(1, "rgba(203,12,159,0.02)");
-    gradientStroke1.addColorStop(0.2, "rgba(72,72,176,0.0)");
-    gradientStroke1.addColorStop(0, "rgba(203,12,159,0)"); //purple colors
-
-    new Chart(chart1, {
-      type: "line",
-      data: {
-        labels: ["A", "M", "J", "J", "A", "S", "O", "N", "D"],
-        datasets: [
-          {
-            label: "Visitors",
-            tension: 0.5,
-            borderColor: "#fff",
-            borderWidth: 2,
-            backgroundColor: "transparent",
-            data: [50, 45, 60, 60, 80, 65, 90, 80, 100],
-            maxBarThickness: 6,
-            fill: true,
-          },
-        ],
+  new Chart(chart1, {
+    type: "line",
+    data: {
+      labels: ["A", "M", "J", "J", "A", "S", "O", "N", "D"],
+      datasets: [{
+        label: "Visitors",
+        tension: 0.5,
+        borderColor: "#fff",
+        borderWidth: 2,
+        backgroundColor: "transparent",
+        data: [50, 45, 60, 60, 80, 65, 90, 80, 100],
+        maxBarThickness: 6,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        }
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
+      interaction: {
+        intersect: false,
+        mode: "index"
+      },
+      scales: {
+        y: {
+          grid: {
+            drawBorder: false,
             display: false,
+            drawOnChartArea: true,
+            drawTicks: false,
+            borderDash: [5, 5]
           },
+          ticks: {
+            display: true,
+            padding: 10,
+            color: "#f8f9fa"
+          }
         },
-        interaction: {
-          intersect: false,
-          mode: "index",
-        },
-        scales: {
-          y: {
-            grid: {
-              drawBorder: false,
-              display: false,
-              drawOnChartArea: true,
-              drawTicks: false,
-              borderDash: [5, 5],
-            },
-            ticks: {
-              display: true,
-              padding: 10,
-              color: "#f8f9fa",
-            },
+        x: {
+          grid: {
+            drawBorder: false,
+            display: true,
+            drawOnChartArea: true,
+            drawTicks: false,
+            borderDash: [5, 5],
+            color: "rgba(255, 255, 255, .2)"
           },
-          x: {
-            grid: {
-              drawBorder: false,
-              display: true,
-              drawOnChartArea: true,
-              drawTicks: false,
-              borderDash: [5, 5],
-              color: "rgba(255, 255, 255, .2)",
-            },
-            ticks: {
-              display: true,
-              padding: 10,
-              color: "#f8f9fa",
-            },
-          },
-        },
+          ticks: {
+            display: true,
+            padding: 10,
+            color: "#f8f9fa"
+          }
+        }
+      }
+    }
+  });
+  new Chart(chart2, {
+    type: "line",
+    data: {
+      labels: ["A", "M", "J", "J", "A", "S", "O", "N", "D"],
+      datasets: [{
+        label: "Income",
+        tension: 0.5,
+        pointRadius: 0,
+        borderColor: "#fff",
+        borderWidth: 2,
+        backgroundColor: "transparent",
+        data: [60, 80, 75, 90, 67, 100, 90, 110, 120],
+        maxBarThickness: 6,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        }
       },
-    });
-
-    new Chart(chart2, {
-      type: "line",
-      data: {
-        labels: ["A", "M", "J", "J", "A", "S", "O", "N", "D"],
-        datasets: [
-          {
-            label: "Income",
-            tension: 0.5,
-            pointRadius: 0,
-            borderColor: "#fff",
-            borderWidth: 2,
-            backgroundColor: "transparent",
-            data: [60, 80, 75, 90, 67, 100, 90, 110, 120],
-            maxBarThickness: 6,
-            fill: true,
-          },
-        ],
+      interaction: {
+        intersect: false,
+        mode: "index"
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
+      scales: {
+        y: {
+          grid: {
+            drawBorder: false,
             display: false,
+            drawOnChartArea: true,
+            drawTicks: false,
+            borderDash: [5, 5],
+            color: "rgba(255, 255, 255, .2)"
           },
-        },
-        interaction: {
-          intersect: false,
-          mode: "index",
-        },
-        scales: {
-          y: {
-            grid: {
-              drawBorder: false,
-              display: false,
-              drawOnChartArea: true,
-              drawTicks: false,
-              borderDash: [5, 5],
-              color: "rgba(255, 255, 255, .2)",
+          ticks: {
+            callback: function (value) {
+              return "$" + value;
             },
-            ticks: {
-              callback: function (value) {
-                return "$" + value;
-              },
-              display: true,
-              padding: 10,
-              color: "#f8f9fa",
-            },
+            display: true,
+            padding: 10,
+            color: "#f8f9fa"
+          }
+        },
+        x: {
+          grid: {
+            drawBorder: false,
+            display: true,
+            drawOnChartArea: true,
+            drawTicks: false,
+            borderDash: [5, 5],
+            color: "rgba(255, 255, 255, .2)"
           },
-          x: {
-            grid: {
-              drawBorder: false,
-              display: true,
-              drawOnChartArea: true,
-              drawTicks: false,
-              borderDash: [5, 5],
-              color: "rgba(255, 255, 255, .2)",
-            },
-            ticks: {
-              display: true,
-              padding: 10,
-              color: "#f8f9fa",
-            },
-          },
-        },
-      },
-    });
-  },
-};
+          ticks: {
+            display: true,
+            padding: 10,
+            color: "#f8f9fa"
+          }
+        }
+      }
+    }
+  });
+});
 </script>

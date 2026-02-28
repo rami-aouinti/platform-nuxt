@@ -468,22 +468,9 @@
     </v-container>
   </div>
 </template>
-<script>
-export default {
-  name: "Wizard",
-  data() {
-    return {
-      e1: 1,
-      toggle_exclusive: 2,
-      country: [
-        "Albania",
-        "Algeria",
-        "Andorra",
-        "Angola",
-        "Argentina",
-        "Brasil",
-      ],
-    };
-  },
-};
+<script setup lang="ts">
+import { ref } from "vue";
+const e1 = ref(1);
+const toggle_exclusive = ref(2);
+const country = ref(["Albania", "Algeria", "Andorra", "Angola", "Argentina", "Brasil"]);
 </script>

@@ -663,163 +663,116 @@
     </v-card>
   </v-container>
 </template>
-<script>
-export default {
-  name: "Teams",
-  data: function () {
-    return {
-      stories: [
-        {
-          image: require("@/assets/img/team-1.jpg"),
-          user: "Abbie W",
-        },
-        {
-          image: require("@/assets/img/team-2.jpg"),
-          user: "Boris U",
-        },
-        {
-          image: require("@/assets/img/team-3.jpg"),
-          user: "Kay R",
-        },
-        {
-          image: require("@/assets/img/team-4.jpg"),
-          user: "Tom M",
-        },
-        {
-          image: require("@/assets/img/team-5.jpg"),
-          user: "Nicole N",
-        },
-        {
-          image: require("@/assets/img/marie.jpg"),
-          user: "Marie P",
-        },
-        {
-          image: require("@/assets/img/bruce-mars.jpg"),
-          user: "Bruce M",
-        },
-        {
-          image: require("@/assets/img/ivana-squares.jpg"),
-          user: "Sandra A",
-        },
-        {
-          image: require("@/assets/img/kal-visuals-square.jpg"),
-          user: "Katty L",
-        },
-        {
-          image: require("@/assets/img/ivana-square.jpg"),
-          user: "Emma O",
-        },
-        {
-          image: require("@/assets/img/team-9.jpeg"),
-          user: "Tao G",
-        },
-      ],
-      cards: [
-        {
-          title: "Digital Marketing",
-          description:
-            "A group of people who collectively are responsible for all of the work necessary to produce working, validated assets.",
-          industry: "Martketing Team",
-          rating: "partial",
-          avatars: [
-            {
-              image: require("@/assets/img/team-1.jpg"),
-              name: "Elena Morison",
-            },
-            {
-              image: require("@/assets/img/team-2.jpg"),
-              name: "Ryan Milly",
-            },
-            {
-              image: require("@/assets/img/team-3.jpg"),
-              name: "Nick Daniel",
-            },
-            {
-              image: require("@/assets/img/team-4.jpg"),
-              name: "Peterson",
-            },
-          ],
-        },
-        {
-          title: "Design",
-          description:
-            "Because it's about motivating the doers. Because I’m here to follow my dreams and inspire other people to follow their dreams, too.",
-          industry: "Design Team",
-          rating: "full",
-          avatars: [
-            {
-              image: require("@/assets/img/team-4.jpg"),
-              name: "Peterson",
-            },
-            {
-              image: require("@/assets/img/team-3.jpg"),
-              name: "Nick Daniel",
-            },
-            {
-              image: require("@/assets/img/team-1.jpg"),
-              name: "Elena Morison",
-            },
-            {
-              image: require("@/assets/img/team-2.jpg"),
-              name: "Ryan Milly",
-            },
-          ],
-        },
-      ],
-      brands: [
-        {
-          img: require("@/assets/img/small-logos/logo-slack.svg"),
-          title: "Slack Meet",
-          hour: "11:00 AM",
-          id: "902-128-281",
-          description: "You have an upcoming meet for Marketing Planning",
-          avatars: [
-            {
-              image: require("@/assets/img/team-1.jpg"),
-              name: "Elena Morison",
-            },
-            {
-              image: require("@/assets/img/team-2.jpg"),
-              name: "Ryan Milly",
-            },
-            {
-              image: require("@/assets/img/team-3.jpg"),
-              name: "Nick Daniel",
-            },
-            {
-              image: require("@/assets/img/team-4.jpg"),
-              name: "Peterson",
-            },
-          ],
-        },
-        {
-          img: require("@/assets/img/small-logos/logo-invision.svg"),
-          title: "Invision",
-          hour: "4:50 PM",
-          id: "111-968-981",
-          description:
-            "You have an upcoming video call for Soft Design at 5:00 PM.",
-          avatars: [
-            {
-              image: require("@/assets/img/team-3.jpg"),
-              name: "Nick Daniel",
-            },
-            {
-              image: require("@/assets/img/team-1.jpg"),
-              name: "Elena Morison",
-            },
-            {
-              image: require("@/assets/img/team-2.jpg"),
-              name: "Ryan Milly",
-            },
-            {
-              image: require("@/assets/img/team-4.jpg"),
-              name: "Peterson",
-            },
-          ],
-        },
-      ],
-    };
-  },
-};
+<script setup lang="ts">
+import { ref } from "vue";
+const stories = ref([{
+  image: require("@/assets/img/team-1.jpg"),
+  user: "Abbie W"
+}, {
+  image: require("@/assets/img/team-2.jpg"),
+  user: "Boris U"
+}, {
+  image: require("@/assets/img/team-3.jpg"),
+  user: "Kay R"
+}, {
+  image: require("@/assets/img/team-4.jpg"),
+  user: "Tom M"
+}, {
+  image: require("@/assets/img/team-5.jpg"),
+  user: "Nicole N"
+}, {
+  image: require("@/assets/img/marie.jpg"),
+  user: "Marie P"
+}, {
+  image: require("@/assets/img/bruce-mars.jpg"),
+  user: "Bruce M"
+}, {
+  image: require("@/assets/img/ivana-squares.jpg"),
+  user: "Sandra A"
+}, {
+  image: require("@/assets/img/kal-visuals-square.jpg"),
+  user: "Katty L"
+}, {
+  image: require("@/assets/img/ivana-square.jpg"),
+  user: "Emma O"
+}, {
+  image: require("@/assets/img/team-9.jpeg"),
+  user: "Tao G"
+}]);
+const cards = ref([{
+  title: "Digital Marketing",
+  description: "A group of people who collectively are responsible for all of the work necessary to produce working, validated assets.",
+  industry: "Martketing Team",
+  rating: "partial",
+  avatars: [{
+    image: require("@/assets/img/team-1.jpg"),
+    name: "Elena Morison"
+  }, {
+    image: require("@/assets/img/team-2.jpg"),
+    name: "Ryan Milly"
+  }, {
+    image: require("@/assets/img/team-3.jpg"),
+    name: "Nick Daniel"
+  }, {
+    image: require("@/assets/img/team-4.jpg"),
+    name: "Peterson"
+  }]
+}, {
+  title: "Design",
+  description: "Because it's about motivating the doers. Because I’m here to follow my dreams and inspire other people to follow their dreams, too.",
+  industry: "Design Team",
+  rating: "full",
+  avatars: [{
+    image: require("@/assets/img/team-4.jpg"),
+    name: "Peterson"
+  }, {
+    image: require("@/assets/img/team-3.jpg"),
+    name: "Nick Daniel"
+  }, {
+    image: require("@/assets/img/team-1.jpg"),
+    name: "Elena Morison"
+  }, {
+    image: require("@/assets/img/team-2.jpg"),
+    name: "Ryan Milly"
+  }]
+}]);
+const brands = ref([{
+  img: require("@/assets/img/small-logos/logo-slack.svg"),
+  title: "Slack Meet",
+  hour: "11:00 AM",
+  id: "902-128-281",
+  description: "You have an upcoming meet for Marketing Planning",
+  avatars: [{
+    image: require("@/assets/img/team-1.jpg"),
+    name: "Elena Morison"
+  }, {
+    image: require("@/assets/img/team-2.jpg"),
+    name: "Ryan Milly"
+  }, {
+    image: require("@/assets/img/team-3.jpg"),
+    name: "Nick Daniel"
+  }, {
+    image: require("@/assets/img/team-4.jpg"),
+    name: "Peterson"
+  }]
+}, {
+  img: require("@/assets/img/small-logos/logo-invision.svg"),
+  title: "Invision",
+  hour: "4:50 PM",
+  id: "111-968-981",
+  description: "You have an upcoming video call for Soft Design at 5:00 PM.",
+  avatars: [{
+    image: require("@/assets/img/team-3.jpg"),
+    name: "Nick Daniel"
+  }, {
+    image: require("@/assets/img/team-1.jpg"),
+    name: "Elena Morison"
+  }, {
+    image: require("@/assets/img/team-2.jpg"),
+    name: "Ryan Milly"
+  }, {
+    image: require("@/assets/img/team-4.jpg"),
+    name: "Peterson"
+  }]
+}]);
 </script>

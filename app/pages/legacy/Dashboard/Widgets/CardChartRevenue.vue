@@ -48,110 +48,100 @@
     </div>
   </v-card>
 </template>
-<script>
+<script setup lang="ts">
+import { onMounted, ref } from "vue";
 import Chart from "chart.js/auto";
-
-export default {
-  name: "card-revenue",
-  data: function () {
-    return {
-      revenueChartID: "revenueChart",
-    };
-  },
-  mounted() {
-    new Chart(document.getElementById(this.revenueChartID).getContext("2d"), {
-      type: "line",
-      data: {
-        labels: ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-        datasets: [
-          {
-            label: "Facebook Ads",
-            tension: 0,
-            pointRadius: 5,
-            pointBackgroundColor: "#e91e63",
-            pointBorderColor: "transparent",
-            borderColor: "#e91e63",
-            borderWidth: 4,
-            backgroundColor: "transparent",
-            fill: true,
-            data: [50, 100, 200, 190, 400, 350, 500, 450, 700],
-            maxBarThickness: 6,
-          },
-          {
-            label: "Google Ads",
-            tension: 0,
-            pointRadius: 5,
-            pointBackgroundColor: "#3A416F",
-            pointBorderColor: "transparent",
-            borderColor: "#3A416F",
-            borderWidth: 4,
-            backgroundColor: "transparent",
-            fill: true,
-            data: [10, 30, 40, 120, 150, 220, 280, 250, 280],
-            maxBarThickness: 6,
-          },
-        ],
+const revenueChartID = ref("revenueChart");
+onMounted(() => {
+  new Chart(document.getElementById(revenueChartID.value).getContext("2d"), {
+    type: "line",
+    data: {
+      labels: ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+      datasets: [{
+        label: "Facebook Ads",
+        tension: 0,
+        pointRadius: 5,
+        pointBackgroundColor: "#e91e63",
+        pointBorderColor: "transparent",
+        borderColor: "#e91e63",
+        borderWidth: 4,
+        backgroundColor: "transparent",
+        fill: true,
+        data: [50, 100, 200, 190, 400, 350, 500, 450, 700],
+        maxBarThickness: 6
+      }, {
+        label: "Google Ads",
+        tension: 0,
+        pointRadius: 5,
+        pointBackgroundColor: "#3A416F",
+        pointBorderColor: "transparent",
+        borderColor: "#3A416F",
+        borderWidth: 4,
+        backgroundColor: "transparent",
+        fill: true,
+        data: [10, 30, 40, 120, 150, 220, 280, 250, 280],
+        maxBarThickness: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        }
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: false,
-          },
-        },
-        interaction: {
-          intersect: false,
-          mode: "index",
-        },
-        scales: {
-          y: {
-            grid: {
-              drawBorder: false,
-              display: true,
-              drawOnChartArea: true,
-              drawTicks: false,
-              borderDash: [5, 5],
-              color: "#c1c4ce5c",
-            },
-            ticks: {
-              display: true,
-              padding: 10,
-              color: "#9ca2b7",
-              font: {
-                size: 14,
-                weight: 300,
-                family: "Roboto",
-                style: "normal",
-                lineHeight: 2,
-              },
-            },
-          },
-          x: {
-            grid: {
-              drawBorder: false,
-              display: true,
-              drawOnChartArea: true,
-              drawTicks: true,
-              borderDash: [5, 5],
-              color: "#c1c4ce5c",
-            },
-            ticks: {
-              display: true,
-              color: "#9ca2b7",
-              padding: 10,
-              font: {
-                size: 14,
-                weight: 300,
-                family: "Roboto",
-                style: "normal",
-                lineHeight: 2,
-              },
-            },
-          },
-        },
+      interaction: {
+        intersect: false,
+        mode: "index"
       },
-    });
-  },
-};
+      scales: {
+        y: {
+          grid: {
+            drawBorder: false,
+            display: true,
+            drawOnChartArea: true,
+            drawTicks: false,
+            borderDash: [5, 5],
+            color: "#c1c4ce5c"
+          },
+          ticks: {
+            display: true,
+            padding: 10,
+            color: "#9ca2b7",
+            font: {
+              size: 14,
+              weight: 300,
+              family: "Roboto",
+              style: "normal",
+              lineHeight: 2
+            }
+          }
+        },
+        x: {
+          grid: {
+            drawBorder: false,
+            display: true,
+            drawOnChartArea: true,
+            drawTicks: true,
+            borderDash: [5, 5],
+            color: "#c1c4ce5c"
+          },
+          ticks: {
+            display: true,
+            color: "#9ca2b7",
+            padding: 10,
+            font: {
+              size: 14,
+              weight: 300,
+              family: "Roboto",
+              style: "normal",
+              lineHeight: 2
+            }
+          }
+        }
+      }
+    }
+  });
+});
 </script>

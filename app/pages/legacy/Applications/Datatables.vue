@@ -12,15 +12,7 @@
     </v-container>
   </div>
 </template>
-<script>
+<script setup lang="ts">
 import DatatableSimple from "./Widgets/DatatableSimple.vue";
 import DatatableSearch from "./Widgets/DatatableSearch.vue";
-
-export default {
-  name: "datatables",
-  components: {
-    DatatableSimple,
-    DatatableSearch,
-  },
-};
 </script>

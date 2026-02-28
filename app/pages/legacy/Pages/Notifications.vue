@@ -32,57 +32,62 @@
   </legacy-page-wrapper>
 </template>
 
-<script>
-import LegacyPageWrapper from '../../../components/legacy-migration/layouts/LegacyPageWrapper.vue'
-import LegacyNotificationsPanel from '../../../components/legacy-migration/notifications/LegacyNotificationsPanel.vue'
-
-export default {
-  name: 'Notifcations',
-  components: {
-    LegacyPageWrapper,
-    LegacyNotificationsPanel,
-  },
-  data() {
-    return {
-      snackbar: {
-        color: null,
-        visible: false,
-      },
-      snackbars: [
-        { color: '#2dce89', class: 'success', name: 'Success' },
-        { color: '#11cdef', class: 'info', name: 'Info' },
-        { color: '#fb6340', class: 'warning', name: 'Warning' },
-        { color: '#f5365c', class: 'danger', name: 'Danger' },
-      ],
-      alerts: [
-        { type: 'primary' },
-        { type: 'secondary' },
-        { type: 'success' },
-        { type: 'danger' },
-        { type: 'warning' },
-        { type: 'info' },
-        { type: 'light' },
-        { type: 'dark' },
-      ],
-    }
-  },
-  methods: {
-    onSnackbarVisible(visible) {
-      this.snackbar.visible = visible
-    },
-    SnackbarShow(type) {
-      if (!type) return
-      const colorsByType = {
-        Info: '#1A73E8',
-        Success: '#4CAF50',
-        Warning: '#fb8c00',
-        Danger: '#F44335',
-      }
-      this.snackbar = {
-        color: colorsByType[type],
-        visible: Boolean(colorsByType[type]),
-      }
-    },
-  },
+<script setup lang="ts">
+import { ref } from "vue";
+import LegacyPageWrapper from '../../../components/legacy-migration/layouts/LegacyPageWrapper.vue';
+import LegacyNotificationsPanel from '../../../components/legacy-migration/notifications/LegacyNotificationsPanel.vue';
+const snackbar = ref({
+  color: null,
+  visible: false
+});
+const snackbars = ref([{
+  color: '#2dce89',
+  class: 'success',
+  name: 'Success'
+}, {
+  color: '#11cdef',
+  class: 'info',
+  name: 'Info'
+}, {
+  color: '#fb6340',
+  class: 'warning',
+  name: 'Warning'
+}, {
+  color: '#f5365c',
+  class: 'danger',
+  name: 'Danger'
+}]);
+const alerts = ref([{
+  type: 'primary'
+}, {
+  type: 'secondary'
+}, {
+  type: 'success'
+}, {
+  type: 'danger'
+}, {
+  type: 'warning'
+}, {
+  type: 'info'
+}, {
+  type: 'light'
+}, {
+  type: 'dark'
+}]);
+function onSnackbarVisible(visible) {
+  snackbar.value.visible = visible;
+}
+function SnackbarShow(type) {
+  if (!type) return;
+  const colorsByType = {
+    Info: '#1A73E8',
+    Success: '#4CAF50',
+    Warning: '#fb8c00',
+    Danger: '#F44335'
+  };
+  snackbar.value = {
+    color: colorsByType[type],
+    visible: Boolean(colorsByType[type])
+  };
 }
 </script>

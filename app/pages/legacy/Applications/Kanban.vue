@@ -117,230 +117,172 @@
     </v-container>
   </div>
 </template>
-<script>
-import Vue from "vue";
+<script setup lang="ts">
+import { ref } from "vue";
 import vueKanban from "vue-kanban";
 import "vue-kanban/src/assets/kanban.scss";
-
 Vue.use(vueKanban);
-
-export default {
-  name: "Kanban",
-  data: function () {
-    return {
-      avatars: [
-        {
-          image: require("@/assets/img/team-1.jpg"),
-          name: "Elena Morison",
-        },
-        {
-          image: require("@/assets/img/team-2.jpg"),
-          name: "Ryan Milly",
-        },
-        {
-          image: require("@/assets/img/team-3.jpg"),
-          name: "Nick Daniel",
-        },
-        {
-          image: require("@/assets/img/team-4.jpg"),
-          name: "Peterson",
-        },
-        {
-          image: require("@/assets/img/team-5.jpg"),
-          name: "Milla",
-        },
-      ],
-      stages: ["Backlog", "In progress", "In review", "Done"],
-      blocks: [
-        {
-          id: 1,
-          status: "Backlog",
-          title: "Write here your task",
-        },
-        {
-          id: 2,
-          status: "Backlog",
-          title: 'Drag me to "In Progress" section',
-        },
-        {
-          id: 3,
-          image: require("@/assets/img/office-dark.jpg"),
-          status: "Backlog",
-          title:
-            "Website Design: New cards for blog section and profile details",
-          badge: "Pending",
-          badgeColor: "primary",
-          files: "3",
-          avatars: [
-            {
-              image: require("@/assets/img/team-1.jpg"),
-              name: "Elena Morison",
-            },
-            {
-              image: require("@/assets/img/team-2.jpg"),
-              name: "Ryan Milly",
-            },
-            {
-              image: require("@/assets/img/team-3.jpg"),
-              name: "Nick Daniel",
-            },
-          ],
-        },
-        {
-          id: 4,
-          status: "In progress",
-          title: "Fix Firefox errors",
-          badge: "Errors",
-          badgeColor: "warning",
-          files: "11",
-          avatars: [
-            {
-              image: require("@/assets/img/team-2.jpg"),
-              name: "Ryan Milly",
-            },
-            {
-              image: require("@/assets/img/team-3.jpg"),
-              name: "Nick Daniel",
-            },
-          ],
-        },
-        {
-          id: 5,
-          status: "In progress",
-          title: "Fix Firefox errors",
-          badge: "Updates",
-          badgeColor: "info",
-          files: "3",
-          avatars: [
-            {
-              image: require("@/assets/img/team-4.jpg"),
-              name: "Ryan Milly",
-            },
-            {
-              image: require("@/assets/img/team-1.jpg"),
-              name: "Nick Daniel",
-            },
-          ],
-        },
-        {
-          id: 6,
-          image: require("@/assets/img/meeting.jpg"),
-          status: "In progress",
-          title: "Vue 3 Updates",
-          badge: "Updates",
-          badgeColor: "info",
-          files: "9",
-          avatars: [
-            {
-              image: require("@/assets/img/team-1.jpg"),
-              name: "Elena Morison",
-            },
-            {
-              image: require("@/assets/img/team-2.jpg"),
-              name: "Ryan Milly",
-            },
-            {
-              image: require("@/assets/img/team-4.jpg"),
-              name: "Nick Daniel",
-            },
-          ],
-        },
-        {
-          id: 7,
-          status: "In review",
-          title: "Responsive changes",
-          badge: "In testing",
-          badgeColor: "warning",
-          files: "11",
-          avatars: [
-            {
-              image: require("@/assets/img/team-2.jpg"),
-              name: "Ryan Milly",
-            },
-            {
-              image: require("@/assets/img/team-4.jpg"),
-              name: "Nick Daniel",
-            },
-          ],
-        },
-        {
-          id: 8,
-          status: "In review",
-          title: "Change images dimension",
-          badge: "In review",
-          badgeColor: "success",
-          avatars: [
-            {
-              image: require("@/assets/img/team-2.jpg"),
-              name: "Ryan Milly",
-            },
-            {
-              image: require("@/assets/img/team-4.jpg"),
-              name: "Nick Daniel",
-            },
-          ],
-        },
-        {
-          id: 9,
-          status: "In review",
-          title: "Update links",
-          badge: "In review",
-          badgeColor: "info",
-          files: "6",
-          avatars: [
-            {
-              image: require("@/assets/img/team-1.jpg"),
-              name: "Ryan Milly",
-            },
-            {
-              image: require("@/assets/img/team-3.jpg"),
-              name: "Nick Daniel",
-            },
-          ],
-        },
-        {
-          id: 10,
-          image: require("@/assets/img/home-decor-1.jpg"),
-          status: "Done",
-          title: "Redesign for the home page",
-          badge: "Done",
-          badgeColor: "success",
-          files: "8",
-          avatars: [
-            {
-              image: require("@/assets/img/team-1.jpg"),
-              name: "Elena Morison",
-            },
-            {
-              image: require("@/assets/img/team-2.jpg"),
-              name: "Ryan Milly",
-            },
-            {
-              image: require("@/assets/img/team-4.jpg"),
-              name: "Nick Daniel",
-            },
-          ],
-        },
-        {
-          id: 11,
-          status: "Done",
-          title: "Schedule winter campaign",
-          badge: "Done",
-          badgeColor: "success",
-          files: "2",
-          avatars: [
-            {
-              image: require("@/assets/img/team-1.jpg"),
-              name: "Ryan Milly",
-            },
-            {
-              image: require("@/assets/img/team-4.jpg"),
-              name: "Nick Daniel",
-            },
-          ],
-        },
-      ],
-    };
-  },
-};
+const avatars = ref([{
+  image: require("@/assets/img/team-1.jpg"),
+  name: "Elena Morison"
+}, {
+  image: require("@/assets/img/team-2.jpg"),
+  name: "Ryan Milly"
+}, {
+  image: require("@/assets/img/team-3.jpg"),
+  name: "Nick Daniel"
+}, {
+  image: require("@/assets/img/team-4.jpg"),
+  name: "Peterson"
+}, {
+  image: require("@/assets/img/team-5.jpg"),
+  name: "Milla"
+}]);
+const stages = ref(["Backlog", "In progress", "In review", "Done"]);
+const blocks = ref([{
+  id: 1,
+  status: "Backlog",
+  title: "Write here your task"
+}, {
+  id: 2,
+  status: "Backlog",
+  title: 'Drag me to "In Progress" section'
+}, {
+  id: 3,
+  image: require("@/assets/img/office-dark.jpg"),
+  status: "Backlog",
+  title: "Website Design: New cards for blog section and profile details",
+  badge: "Pending",
+  badgeColor: "primary",
+  files: "3",
+  avatars: [{
+    image: require("@/assets/img/team-1.jpg"),
+    name: "Elena Morison"
+  }, {
+    image: require("@/assets/img/team-2.jpg"),
+    name: "Ryan Milly"
+  }, {
+    image: require("@/assets/img/team-3.jpg"),
+    name: "Nick Daniel"
+  }]
+}, {
+  id: 4,
+  status: "In progress",
+  title: "Fix Firefox errors",
+  badge: "Errors",
+  badgeColor: "warning",
+  files: "11",
+  avatars: [{
+    image: require("@/assets/img/team-2.jpg"),
+    name: "Ryan Milly"
+  }, {
+    image: require("@/assets/img/team-3.jpg"),
+    name: "Nick Daniel"
+  }]
+}, {
+  id: 5,
+  status: "In progress",
+  title: "Fix Firefox errors",
+  badge: "Updates",
+  badgeColor: "info",
+  files: "3",
+  avatars: [{
+    image: require("@/assets/img/team-4.jpg"),
+    name: "Ryan Milly"
+  }, {
+    image: require("@/assets/img/team-1.jpg"),
+    name: "Nick Daniel"
+  }]
+}, {
+  id: 6,
+  image: require("@/assets/img/meeting.jpg"),
+  status: "In progress",
+  title: "Vue 3 Updates",
+  badge: "Updates",
+  badgeColor: "info",
+  files: "9",
+  avatars: [{
+    image: require("@/assets/img/team-1.jpg"),
+    name: "Elena Morison"
+  }, {
+    image: require("@/assets/img/team-2.jpg"),
+    name: "Ryan Milly"
+  }, {
+    image: require("@/assets/img/team-4.jpg"),
+    name: "Nick Daniel"
+  }]
+}, {
+  id: 7,
+  status: "In review",
+  title: "Responsive changes",
+  badge: "In testing",
+  badgeColor: "warning",
+  files: "11",
+  avatars: [{
+    image: require("@/assets/img/team-2.jpg"),
+    name: "Ryan Milly"
+  }, {
+    image: require("@/assets/img/team-4.jpg"),
+    name: "Nick Daniel"
+  }]
+}, {
+  id: 8,
+  status: "In review",
+  title: "Change images dimension",
+  badge: "In review",
+  badgeColor: "success",
+  avatars: [{
+    image: require("@/assets/img/team-2.jpg"),
+    name: "Ryan Milly"
+  }, {
+    image: require("@/assets/img/team-4.jpg"),
+    name: "Nick Daniel"
+  }]
+}, {
+  id: 9,
+  status: "In review",
+  title: "Update links",
+  badge: "In review",
+  badgeColor: "info",
+  files: "6",
+  avatars: [{
+    image: require("@/assets/img/team-1.jpg"),
+    name: "Ryan Milly"
+  }, {
+    image: require("@/assets/img/team-3.jpg"),
+    name: "Nick Daniel"
+  }]
+}, {
+  id: 10,
+  image: require("@/assets/img/home-decor-1.jpg"),
+  status: "Done",
+  title: "Redesign for the home page",
+  badge: "Done",
+  badgeColor: "success",
+  files: "8",
+  avatars: [{
+    image: require("@/assets/img/team-1.jpg"),
+    name: "Elena Morison"
+  }, {
+    image: require("@/assets/img/team-2.jpg"),
+    name: "Ryan Milly"
+  }, {
+    image: require("@/assets/img/team-4.jpg"),
+    name: "Nick Daniel"
+  }]
+}, {
+  id: 11,
+  status: "Done",
+  title: "Schedule winter campaign",
+  badge: "Done",
+  badgeColor: "success",
+  files: "2",
+  avatars: [{
+    image: require("@/assets/img/team-1.jpg"),
+    name: "Ryan Milly"
+  }, {
+    image: require("@/assets/img/team-4.jpg"),
+    name: "Nick Daniel"
+  }]
+}]);
 </script>

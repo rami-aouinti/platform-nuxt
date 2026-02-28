@@ -167,72 +167,48 @@
     </v-card>
   </div>
 </template>
-<script>
+<script setup lang="ts">
+import { computed, ref, watch } from "vue";
 import orders from "./Orders";
-
-export default {
-  name: "table-orders",
-  data() {
-    return {
-      page: 1,
-      pageCount: 0,
-      itemsPerPage: 10,
-      orders,
-      search: "",
-      headers: [
-        {
-          text: "Id",
-          align: "start",
-          sortable: false,
-          value: "id",
-          class: "text-secondary font-weight-bolder opacity-7 border-bottom",
-        },
-        {
-          text: "Date",
-          value: "date",
-          class: "text-secondary font-weight-bolder opacity-7",
-        },
-        {
-          text: "Status",
-          value: "status",
-          class: "text-secondary font-weight-bolder opacity-7",
-        },
-        {
-          text: "Customer",
-          value: "customer",
-          class: "text-secondary font-weight-bolder opacity-7",
-        },
-        {
-          text: "Product",
-          value: "product",
-          class: "text-secondary font-weight-bolder opacity-7",
-        },
-        {
-          text: "Revenue",
-          value: "revenue",
-          class: "text-secondary font-weight-bolder opacity-7",
-        },
-      ],
-    };
-  },
-  watch: {
-    dialog(val) {
-      val || this.close();
-    },
-    dialogDelete(val) {
-      val || this.closeDelete();
-    },
-  },
-
-  computed: {
-    formTitle() {
-      return this.editedIndex === -1 ? "New Item" : "Edit Item";
-    },
-    pages() {
-      return this.pagination.rowsPerPage
-        ? Math.ceil(this.items.length / this.pagination.rowsPerPage)
-        : 0;
-    },
-  },
-};
+const page = ref(1);
+const pageCount = ref(0);
+const itemsPerPage = ref(10);
+const orders = ref(ordersData);
+const search = ref("");
+const headers = ref([{
+  text: "Id",
+  align: "start",
+  sortable: false,
+  value: "id",
+  class: "text-secondary font-weight-bolder opacity-7 border-bottom"
+}, {
+  text: "Date",
+  value: "date",
+  class: "text-secondary font-weight-bolder opacity-7"
+}, {
+  text: "Status",
+  value: "status",
+  class: "text-secondary font-weight-bolder opacity-7"
+}, {
+  text: "Customer",
+  value: "customer",
+  class: "text-secondary font-weight-bolder opacity-7"
+}, {
+  text: "Product",
+  value: "product",
+  class: "text-secondary font-weight-bolder opacity-7"
+}, {
+  text: "Revenue",
+  value: "revenue",
+  class: "text-secondary font-weight-bolder opacity-7"
+}]);
+watch(dialog, val => {
+  val || close();
+});
+watch(dialogDelete, val => {
+  val || closeDelete();
+});
+const formTitle = computed(() => {
+  return editedIndex === -1 ? "New Item" : "Edit Item";
+});
 </script>

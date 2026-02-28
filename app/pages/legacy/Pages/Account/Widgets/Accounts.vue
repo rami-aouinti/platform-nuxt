@@ -170,16 +170,10 @@
     </div>
   </v-card>
 </template>
-<script>
-export default {
-  name: "accounts",
-  data() {
-    return {
-      switch1: true,
-      switch2: true,
-      switch3: true,
-      switch4: false,
-    };
-  },
-};
+<script setup lang="ts">
+import { ref } from "vue";
+const switch1 = ref(true);
+const switch2 = ref(true);
+const switch3 = ref(true);
+const switch4 = ref(false);
 </script>

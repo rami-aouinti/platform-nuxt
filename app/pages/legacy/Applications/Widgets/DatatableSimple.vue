@@ -327,128 +327,97 @@
     </v-card>
   </div>
 </template>
-<script>
-import users from "./Users";
-
-export default {
-  name: "paginated-tables",
-  data() {
-    return {
-      page: 1,
-      pageCount: 0,
-      itemsPerPage: 10,
-      dialog: false,
-      dialogDelete: false,
-      users,
-      search: "",
-      editedIndex: -1,
-      editedItem: {
-        name: "",
-        email: "",
-        age: "",
-        salary: "",
-      },
-      defaultItem: {
-        name: "",
-        email: "",
-        age: "",
-        salary: "",
-      },
-      headers: [
-        {
-          text: "Name",
-          align: "start",
-          cellClass: "border-bottom",
-          sortable: false,
-          value: "name",
-          class:
-            "text-secondary font-weight-bolder opacity-7 border-bottom ps-6",
-        },
-        {
-          text: "Email",
-          value: "email",
-          class: "text-secondary font-weight-bolder opacity-7",
-        },
-        {
-          text: "Age",
-          value: "age",
-          class: "text-secondary font-weight-bolder opacity-7",
-        },
-        {
-          text: "Salary",
-          value: "salary",
-          class: "text-secondary font-weight-bolder opacity-7",
-        },
-        {
-          text: "Actions",
-          value: "actions",
-          sortable: false,
-          class: "text-secondary font-weight-bolder opacity-7",
-        },
-      ],
-    };
-  },
-  methods: {
-    editItem(item) {
-      this.editedIndex = this.users.indexOf(item);
-      this.editedItem = Object.assign({}, item);
-      this.dialog = true;
-    },
-
-    deleteItem(item) {
-      this.editedIndex = this.users.indexOf(item);
-      this.editedItem = Object.assign({}, item);
-      this.dialogDelete = true;
-    },
-
-    deleteItemConfirm() {
-      this.users.splice(this.editedIndex, 1);
-      this.closeDelete();
-    },
-
-    close() {
-      this.dialog = false;
-      this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
-        this.editedIndex = -1;
-      });
-    },
-
-    closeDelete() {
-      this.dialogDelete = false;
-      this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
-        this.editedIndex = -1;
-      });
-    },
-
-    save() {
-      if (this.editedIndex > -1) {
-        Object.assign(this.users[this.editedIndex], this.editedItem);
-      } else {
-        this.users.push(this.editedItem);
-      }
-      this.close();
-    },
-  },
-  watch: {
-    dialog(val) {
-      val || this.close();
-    },
-    dialogDelete(val) {
-      val || this.closeDelete();
-    },
-  },
-
-  computed: {
-    formTitle() {
-      return this.editedIndex === -1 ? "New Item" : "Edit Item";
-    },
-    pages() {
-      return this.pagination.rowsPerPage
-        ? Math.ceil(this.items.length / this.pagination.rowsPerPage)
-        : 0;
-    },
-  },
-};
+<script setup lang="ts">
+import { computed, nextTick, ref, watch } from "vue";
+import usersData from "./Users";
+const page = ref(1);
+const pageCount = ref(0);
+const itemsPerPage = ref(10);
+const dialog = ref(false);
+const dialogDelete = ref(false);
+const users = ref(usersData);
+const search = ref("");
+const editedIndex = ref(-1);
+const editedItem = ref({
+  name: "",
+  email: "",
+  age: "",
+  salary: ""
+});
+const defaultItem = ref({
+  name: "",
+  email: "",
+  age: "",
+  salary: ""
+});
+const headers = ref([{
+  text: "Name",
+  align: "start",
+  cellClass: "border-bottom",
+  sortable: false,
+  value: "name",
+  class: "text-secondary font-weight-bolder opacity-7 border-bottom ps-6"
+}, {
+  text: "Email",
+  value: "email",
+  class: "text-secondary font-weight-bolder opacity-7"
+}, {
+  text: "Age",
+  value: "age",
+  class: "text-secondary font-weight-bolder opacity-7"
+}, {
+  text: "Salary",
+  value: "salary",
+  class: "text-secondary font-weight-bolder opacity-7"
+}, {
+  text: "Actions",
+  value: "actions",
+  sortable: false,
+  class: "text-secondary font-weight-bolder opacity-7"
+}]);
+function editItem(item: Record<string, unknown>) {
+  editedIndex.value = users.value.indexOf(item);
+  editedItem.value = Object.assign({}, item);
+  dialog.value = true;
+}
+function deleteItem(item: Record<string, unknown>) {
+  editedIndex.value = users.value.indexOf(item);
+  editedItem.value = Object.assign({}, item);
+  dialogDelete.value = true;
+}
+function deleteItemConfirm() {
+  users.value.splice(editedIndex.value, 1);
+  closeDelete();
+}
+function close() {
+  dialog.value = false;
+  nextTick(() => {
+    editedItem.value = Object.assign({}, defaultItem.value);
+    editedIndex.value = -1;
+  });
+}
+function closeDelete() {
+  dialogDelete.value = false;
+  nextTick(() => {
+    editedItem.value = Object.assign({}, defaultItem.value);
+    editedIndex.value = -1;
+  });
+}
+function save() {
+  if (editedIndex.value > -1) {
+    Object.assign(users.value[editedIndex.value], editedItem.value);
+  } else {
+    users.value.push(editedItem.value);
+  }
+  close();
+}
+watch(dialog, val => {
+  val || close();
+});
+watch(dialogDelete, val => {
+  val || closeDelete();
+});
+const formTitle = computed(() => {
+  return editedIndex.value === -1 ? "New Item" : "Edit Item";
+});
 </script>

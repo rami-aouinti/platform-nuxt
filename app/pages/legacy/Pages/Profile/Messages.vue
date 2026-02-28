@@ -381,83 +381,59 @@
     </v-row>
   </v-container>
 </template>
-<script>
-export default {
-  name: "Teams",
-  data: function () {
-    return {
-      messages: [
-        {
-          image: require("@/assets/img/team-2.jpg"),
-          name: "Charlie Watson",
-          message: "Typing...",
-        },
-        {
-          image: require("@/assets/img/team-1.jpg"),
-          name: "Jana Doe",
-          time: "1 hour ago",
-          message: "Computer users and program...",
-        },
-        {
-          image: require("@/assets/img/team-3.jpg"),
-          name: "Mila Skylar",
-          time: "24 min ago",
-          message: "You can subscribe to receive wee...",
-        },
-        {
-          image: require("@/assets/img/team-5.jpg"),
-          name: "Sofia Scarlett",
-          time: "7 hours ago",
-          message: "It’s an effective resource rega...",
-        },
-        {
-          image: require("@/assets/img/team-4.jpg"),
-          name: "Tom Klein",
-          time: "1 day ago",
-          message: "Be sure to check it out if your dev...",
-        },
-      ],
-      chats: [
-        {
-          type: "received",
-          message:
-            "Yeah! Responsive Design is geared towards those trying to build web apps",
-          time: "4:31pm",
-        },
-        {
-          type: "sent",
-          message: "Excellent, I want it now !",
-          time: "4:42pm",
-        },
-        {
-          type: "received",
-          message: "You can easily get it; The content here is all free",
-          time: "4:42pm",
-        },
-        {
-          type: "sent",
-          message:
-            "Awesome, blog is important source material for anyone who creates apps? Beacause these blogs offer a lot of information about website development.",
-          time: "4:42pm",
-        },
-        {
-          type: "received",
-          image:
-            "https://images.unsplash.com/photo-1547949003-9792a18a2601?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80",
-          time: "4:42pm",
-        },
-        {
-          type: "sent",
-          message:
-            "At the end of the day … the native dev apps is where users are",
-          time: "4:42pm",
-        },
-        {
-          type: "received",
-          message: "Charlie is Typing...",
-        },
-      ],
-    };
-  },
-};
+<script setup lang="ts">
+import { ref } from "vue";
+const messages = ref([{
+  image: require("@/assets/img/team-2.jpg"),
+  name: "Charlie Watson",
+  message: "Typing..."
+}, {
+  image: require("@/assets/img/team-1.jpg"),
+  name: "Jana Doe",
+  time: "1 hour ago",
+  message: "Computer users and program..."
+}, {
+  image: require("@/assets/img/team-3.jpg"),
+  name: "Mila Skylar",
+  time: "24 min ago",
+  message: "You can subscribe to receive wee..."
+}, {
+  image: require("@/assets/img/team-5.jpg"),
+  name: "Sofia Scarlett",
+  time: "7 hours ago",
+  message: "It’s an effective resource rega..."
+}, {
+  image: require("@/assets/img/team-4.jpg"),
+  name: "Tom Klein",
+  time: "1 day ago",
+  message: "Be sure to check it out if your dev..."
+}]);
+const chats = ref([{
+  type: "received",
+  message: "Yeah! Responsive Design is geared towards those trying to build web apps",
+  time: "4:31pm"
+}, {
+  type: "sent",
+  message: "Excellent, I want it now !",
+  time: "4:42pm"
+}, {
+  type: "received",
+  message: "You can easily get it; The content here is all free",
+  time: "4:42pm"
+}, {
+  type: "sent",
+  message: "Awesome, blog is important source material for anyone who creates apps? Beacause these blogs offer a lot of information about website development.",
+  time: "4:42pm"
+}, {
+  type: "received",
+  image: "https://images.unsplash.com/photo-1547949003-9792a18a2601?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80",
+  time: "4:42pm"
+}, {
+  type: "sent",
+  message: "At the end of the day … the native dev apps is where users are",
+  time: "4:42pm"
+}, {
+  type: "received",
+  message: "Charlie is Typing..."
+}]);
 </script>

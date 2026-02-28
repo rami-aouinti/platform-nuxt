@@ -119,69 +119,53 @@
     </v-container>
   </div>
 </template>
-<script>
-export default {
-  name: "timeline",
-  data() {
-    return {
-      timeline: [
-        {
-          title: "$2400, Design changes",
-          date: "22 DEC 7:20 PM",
-          icon: "notifications",
-          btn: "default",
-        },
-        {
-          title: "New order #1832412",
-          date: "21 DEC 11 PM",
-          icon: "code",
-          btn: "primary",
-        },
-        {
-          title: "Server payments for April",
-          date: "21 DEC 9:34 PM",
-          icon: "shopping_cart",
-          btn: "success",
-        },
-        {
-          title: "New card added for order #4395133",
-          date: "20 DEC 2:20 AM",
-          icon: "credit_card",
-          btn: "info",
-        },
-        {
-          title: "Unlock packages for development",
-          date: "18 DEC 4:54 AM",
-          icon: "vpn_key",
-          btn: "default",
-        },
-        {
-          title: "New message unread",
-          date: "16 DEC",
-          iconColor: "#f80031",
-          icon: "inventory_2",
-          btn: "primary",
-        },
-        {
-          title: "Notifications unread",
-          date: "15 DEC",
-          icon: "done",
-          btn: "success",
-        },
-        {
-          title: "New request",
-          date: "14 DEC",
-          icon: "mail",
-          btn: "info",
-        },
-        {
-          title: "Controller issues",
-          date: "13 DEC",
-          icon: "sports_esports",
-          btn: "default",
-        },
-      ],
-    };
-  },
-};
+<script setup lang="ts">
+import { ref } from "vue";
+const timeline = ref([{
+  title: "$2400, Design changes",
+  date: "22 DEC 7:20 PM",
+  icon: "notifications",
+  btn: "default"
+}, {
+  title: "New order #1832412",
+  date: "21 DEC 11 PM",
+  icon: "code",
+  btn: "primary"
+}, {
+  title: "Server payments for April",
+  date: "21 DEC 9:34 PM",
+  icon: "shopping_cart",
+  btn: "success"
+}, {
+  title: "New card added for order #4395133",
+  date: "20 DEC 2:20 AM",
+  icon: "credit_card",
+  btn: "info"
+}, {
+  title: "Unlock packages for development",
+  date: "18 DEC 4:54 AM",
+  icon: "vpn_key",
+  btn: "default"
+}, {
+  title: "New message unread",
+  date: "16 DEC",
+  iconColor: "#f80031",
+  icon: "inventory_2",
+  btn: "primary"
+}, {
+  title: "Notifications unread",
+  date: "15 DEC",
+  icon: "done",
+  btn: "success"
+}, {
+  title: "New request",
+  date: "14 DEC",
+  icon: "mail",
+  btn: "info"
+}, {
+  title: "Controller issues",
+  date: "13 DEC",
+  icon: "sports_esports",
+  btn: "default"
+}]);
 </script>

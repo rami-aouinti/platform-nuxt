@@ -97,8 +97,6 @@
     </v-container>
   </div>
 </template>
-<script>
-export default {
-  name: "getting-started",
-};
+<script setup lang="ts">
+
 </script>

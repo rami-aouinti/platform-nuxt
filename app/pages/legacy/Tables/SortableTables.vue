@@ -11,16 +11,8 @@
     </v-container>
   </div>
 </template>
-<script>
+<script setup lang="ts">
 import SortableDark from "./Tables/SortableDark.vue";
 import SortableLight from "./Tables/SortableLight.vue";
 import SortableTranslucent from "./Tables/SortableTranslucent.vue";
-export default {
-  name: "sortable-tables",
-  components: {
-    SortableLight,
-    SortableTranslucent,
-    SortableDark,
-  },
-};
 </script>

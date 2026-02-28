@@ -65,46 +65,29 @@
     </v-main>
   </v-app>
 </template>
-<script>
+<script setup lang="ts">
+import { ref } from "vue";
 import AppBarAuth from "@/components/AppBarAuth";
 import { FadeTransition } from "vue2-transitions";
 import ContentFooter from "@/components/App/AppFooter.vue";
-
-export default {
-  name: "page-layout",
-  components: {
-    AppBarAuth,
-    FadeTransition,
-    ContentFooter,
-  },
-  data() {
-    return {
-      paragraphs: "",
-      tab: null,
-    };
-  },
-  methods: {
-    headerTitle() {
-      switch (this.$route.name) {
-        case "Pricing":
-          this.paragraphs =
-            "You have Free Unlimited Updates and Premium Support on each package.";
-          return "Pick the best plan for you";
-        case "SignUpBasic":
-          this.paragraphs =
-            "Use these awesome forms to login or create new account in your project for free.";
-          return "Welcome!";
-        case "Register":
-          this.paragraphs =
-            "Use these awesome forms to login or create new account in your project for free.";
-          return "Create an account";
-        case "Lock":
-          this.paragraphs = "Better to be safe than sorry.";
-          return "Lock screen";
-        default:
-          break;
-      }
-    },
-  },
-};
+const paragraphs = ref("");
+const tab = ref(null);
+function headerTitle() {
+  switch ($route.name) {
+    case "Pricing":
+      paragraphs.value = "You have Free Unlimited Updates and Premium Support on each package.";
+      return "Pick the best plan for you";
+    case "SignUpBasic":
+      paragraphs.value = "Use these awesome forms to login or create new account in your project for free.";
+      return "Welcome!";
+    case "Register":
+      paragraphs.value = "Use these awesome forms to login or create new account in your project for free.";
+      return "Create an account";
+    case "Lock":
+      paragraphs.value = "Better to be safe than sorry.";
+      return "Lock screen";
+    default:
+      break;
+  }
+}
 </script>

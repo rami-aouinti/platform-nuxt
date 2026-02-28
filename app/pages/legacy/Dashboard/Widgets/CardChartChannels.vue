@@ -105,75 +105,66 @@
     </div>
   </v-card>
 </template>
-<script>
+<script setup lang="ts">
+import { onMounted, ref } from "vue";
 import Chart from "chart.js/auto";
-
-export default {
-  name: "card-channels",
-  data: function () {
-    return {
-      channelsChartID: "channelsChart",
-    };
-  },
-  mounted() {
-    new Chart(document.getElementById(this.channelsChartID).getContext("2d"), {
-      type: "pie",
-      data: {
-        labels: ["Facebook", "Direct", "Organic", "Referral"],
-        datasets: [
-          {
-            label: "Projects",
-            weight: 9,
-            cutout: 0,
-            tension: 0.9,
-            pointRadius: 2,
-            borderWidth: 1,
-            backgroundColor: ["#17c1e8", "#e91e63", "#3A416F", "#a8b8d8"],
-            data: [15, 20, 12, 60],
-            fill: false,
-          },
-        ],
+const channelsChartID = ref("channelsChart");
+onMounted(() => {
+  new Chart(document.getElementById(channelsChartID.value).getContext("2d"), {
+    type: "pie",
+    data: {
+      labels: ["Facebook", "Direct", "Organic", "Referral"],
+      datasets: [{
+        label: "Projects",
+        weight: 9,
+        cutout: 0,
+        tension: 0.9,
+        pointRadius: 2,
+        borderWidth: 1,
+        backgroundColor: ["#17c1e8", "#e91e63", "#3A416F", "#a8b8d8"],
+        data: [15, 20, 12, 60],
+        fill: false
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        }
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
+      interaction: {
+        intersect: false,
+        mode: "index"
+      },
+      scales: {
+        y: {
+          grid: {
+            drawBorder: false,
             display: false,
+            drawOnChartArea: false,
+            drawTicks: false,
+            color: "#c1c4ce5c"
           },
+          ticks: {
+            display: false
+          }
         },
-        interaction: {
-          intersect: false,
-          mode: "index",
-        },
-        scales: {
-          y: {
-            grid: {
-              drawBorder: false,
-              display: false,
-              drawOnChartArea: false,
-              drawTicks: false,
-              color: "#c1c4ce5c",
-            },
-            ticks: {
-              display: false,
-            },
+        x: {
+          grid: {
+            drawBorder: false,
+            display: false,
+            drawOnChartArea: false,
+            drawTicks: false,
+            color: "#c1c4ce5c"
           },
-          x: {
-            grid: {
-              drawBorder: false,
-              display: false,
-              drawOnChartArea: false,
-              drawTicks: false,
-              color: "#c1c4ce5c",
-            },
-            ticks: {
-              display: false,
-            },
-          },
-        },
-      },
-    });
-  },
-};
+          ticks: {
+            display: false
+          }
+        }
+      }
+    }
+  });
+});
 </script>

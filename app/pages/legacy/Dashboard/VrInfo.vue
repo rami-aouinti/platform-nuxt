@@ -423,8 +423,6 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: "Vr-info",
-};
+<script setup lang="ts">
+
 </script>

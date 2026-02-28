@@ -61,18 +61,8 @@
     </v-main>
   </v-app>
 </template>
-<script>
+<script setup lang="ts">
+import { ref } from "vue";
 import AppBarBlurAuth from "@/components/AppBarBlurAuth";
 import { FadeTransition } from "vue2-transitions";
-
-export default {
-  name: "page-layout",
-  components: {
-    AppBarBlurAuth,
-    FadeTransition,
-  },
-  data() {
-    return {};
-  },
-};
 </script>

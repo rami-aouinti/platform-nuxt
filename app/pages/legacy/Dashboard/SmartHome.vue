@@ -1189,176 +1189,156 @@
     </v-container>
   </div>
 </template>
-<script>
+<script setup lang="ts">
+import { onMounted, ref } from "vue";
 import Chart from "chart.js/auto";
 import RoundSlider from "vue-round-slider";
+const tab = ref(null);
+const chartConsumption = ref("chart-consumption");
+const chartWeather = ref("chart-weather");
+const switche = ref(false);
+const switch1 = ref(true);
+const switch2 = ref(true);
+const switch3 = ref(false);
+const switch4 = ref(false);
+const switch5 = ref(true);
+const sliderValue = ref("");
+onMounted(() => {
+  if (!process.client) return;
 
-export default {
-  name: "smart-home",
-  components: {
-    RoundSlider,
-  },
-  data() {
-    return {
-      tab: null,
-      chartConsumption: "chart-consumption",
-      chartWeather: "chart-weather",
-      switche: false,
-      switch1: true,
-      switch2: true,
-      switch3: false,
-      switch4: false,
-      switch5: true,
-      sliderValue: "",
-    };
-  },
-  mounted() {
-    if (!process.client) return;
-
-    // Chart consumption
-    new Chart(document.getElementById(this.chartConsumption).getContext("2d"), {
-      type: "doughnut",
-      data: {
-        labels: ["Living Room", "Kitchen", "Attic", "Garage", "Basement"],
-        datasets: [
-          {
-            label: "Consumption",
-            weight: 9,
-            cutout: 90,
-            tension: 0.9,
-            pointRadius: 2,
-            borderWidth: 2,
-            backgroundColor: [
-              "#FF0080",
-              "#9E9E9E",
-              "#03A9F4",
-              "#4CAF50",
-              "#ff667c",
-            ],
-            data: [15, 20, 13, 32, 20],
-            fill: false,
-          },
-        ],
+  // Chart consumption
+  new Chart(document.getElementById(chartConsumption.value).getContext("2d"), {
+    type: "doughnut",
+    data: {
+      labels: ["Living Room", "Kitchen", "Attic", "Garage", "Basement"],
+      datasets: [{
+        label: "Consumption",
+        weight: 9,
+        cutout: 90,
+        tension: 0.9,
+        pointRadius: 2,
+        borderWidth: 2,
+        backgroundColor: ["#FF0080", "#9E9E9E", "#03A9F4", "#4CAF50", "#ff667c"],
+        data: [15, 20, 13, 32, 20],
+        fill: false
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        }
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
+      interaction: {
+        intersect: false,
+        mode: "index"
+      },
+      scales: {
+        y: {
+          grid: {
+            drawBorder: false,
             display: false,
+            drawOnChartArea: false,
+            drawTicks: false
           },
+          ticks: {
+            display: false
+          }
         },
-        interaction: {
-          intersect: false,
-          mode: "index",
-        },
-        scales: {
-          y: {
-            grid: {
-              drawBorder: false,
-              display: false,
-              drawOnChartArea: false,
-              drawTicks: false,
-            },
-            ticks: {
-              display: false,
-            },
-          },
-          x: {
-            grid: {
-              drawBorder: false,
-              display: false,
-              drawOnChartArea: false,
-              drawTicks: false,
-            },
-            ticks: {
-              display: false,
-            },
-          },
-        },
-      },
-    });
-
-    // Chart Weather
-    new Chart(document.getElementById(this.chartWeather).getContext("2d"), {
-      type: "bar",
-      data: {
-        labels: ["M", "T", "W", "T", "F", "S", "S"],
-        datasets: [
-          {
-            label: "Watts",
-            tension: 0.4,
-            borderWidth: 0,
-            borderRadius: 4,
-            borderSkipped: false,
-            backgroundColor: "#3A416F",
-            data: [26, 29, 28, 32, 29, 28, 30],
-            maxBarThickness: 6,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
+        x: {
+          grid: {
+            drawBorder: false,
             display: false,
+            drawOnChartArea: false,
+            drawTicks: false
           },
-        },
-        interaction: {
-          intersect: false,
-          mode: "index",
-        },
-        scales: {
-          y: {
-            grid: {
-              drawBorder: false,
-              display: true,
-              drawOnChartArea: true,
-              drawTicks: false,
-              borderDash: [5, 5],
-              color: "#c1c4ce5c",
-            },
-            ticks: {
-              suggestedMin: 0,
-              suggestedMax: 500,
-              beginAtZero: true,
-              padding: 10,
-              color: "#9ca2b7",
-              font: {
-                size: 14,
-                weight: 300,
-                family: "Roboto",
-                style: "normal",
-                lineHeight: 2,
-              },
-            },
-          },
-          x: {
-            grid: {
-              drawBorder: false,
-              display: true,
-              drawOnChartArea: true,
-              drawTicks: false,
-              borderDash: [5, 5],
-              color: "#c1c4ce5c",
-            },
-            ticks: {
-              display: true,
-              color: "#9ca2b7",
-              padding: 10,
-              font: {
-                size: 14,
-                weight: 300,
-                family: "Roboto",
-                style: "normal",
-                lineHeight: 2,
-              },
-            },
-          },
-        },
+          ticks: {
+            display: false
+          }
+        }
+      }
+    }
+  });
+
+  // Chart Weather
+  new Chart(document.getElementById(chartWeather.value).getContext("2d"), {
+    type: "bar",
+    data: {
+      labels: ["M", "T", "W", "T", "F", "S", "S"],
+      datasets: [{
+        label: "Watts",
+        tension: 0.4,
+        borderWidth: 0,
+        borderRadius: 4,
+        borderSkipped: false,
+        backgroundColor: "#3A416F",
+        data: [26, 29, 28, 32, 29, 28, 30],
+        maxBarThickness: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        }
       },
-    });
-  },
-};
+      interaction: {
+        intersect: false,
+        mode: "index"
+      },
+      scales: {
+        y: {
+          grid: {
+            drawBorder: false,
+            display: true,
+            drawOnChartArea: true,
+            drawTicks: false,
+            borderDash: [5, 5],
+            color: "#c1c4ce5c"
+          },
+          ticks: {
+            suggestedMin: 0,
+            suggestedMax: 500,
+            beginAtZero: true,
+            padding: 10,
+            color: "#9ca2b7",
+            font: {
+              size: 14,
+              weight: 300,
+              family: "Roboto",
+              style: "normal",
+              lineHeight: 2
+            }
+          }
+        },
+        x: {
+          grid: {
+            drawBorder: false,
+            display: true,
+            drawOnChartArea: true,
+            drawTicks: false,
+            borderDash: [5, 5],
+            color: "#c1c4ce5c"
+          },
+          ticks: {
+            display: true,
+            color: "#9ca2b7",
+            padding: 10,
+            font: {
+              size: 14,
+              weight: 300,
+              family: "Roboto",
+              style: "normal",
+              lineHeight: 2
+            }
+          }
+        }
+      }
+    }
+  });
+});
 </script>

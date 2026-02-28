@@ -46,8 +46,6 @@
     </v-row>
   </v-card>
 </template>
-<script>
-export default {
-  name: "delete-account",
-};
+<script setup lang="ts">
+
 </script>

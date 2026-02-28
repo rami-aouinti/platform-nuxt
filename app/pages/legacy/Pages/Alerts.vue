@@ -249,177 +249,159 @@
     </v-container>
   </div>
 </template>
-<script>
+<script setup lang="ts">
 import Vue from "vue";
 import VueSweetalert2 from "vue-sweetalert2";
-
 Vue.use(VueSweetalert2);
-
-export default {
-  name: "Alerts",
-  methods: {
-    showBasicAlert() {
-      this.$swal("Any fool can use a computer");
+function showBasicAlert() {
+  $swal("Any fool can use a computer");
+}
+function showSuccessAlert() {
+  $swal("Good job!", "You clicked the button!", "success");
+}
+function showCustomHtmlAlert() {
+  $swal({
+    title: "<strong>HTML <u>example</u></strong>",
+    icon: "info",
+    html: "You can use <b>bold text</b>, " + '<a href="//sweetalert2.github.io" class="text-dark text-decoration-none">links</a> ' + "and other HTML tags",
+    showCloseButton: true,
+    showCancelButton: true,
+    customClass: {
+      confirmButton: "bg-gradient-success px-4 py-4 border-radius-md",
+      cancelButton: "bg-gradient-danger px-4 py-4 border-radius-md"
     },
-    showSuccessAlert() {
-      this.$swal("Good job!", "You clicked the button!", "success");
+    confirmButtonText: '<i class="fa fa-thumbs-up"></i> Great!',
+    confirmButtonAriaLabel: "Thumbs up, great!",
+    cancelButtonText: '<i class="fa fa-thumbs-down"></i>',
+    cancelButtonAriaLabel: "Thumbs down"
+  });
+}
+function showGithubAlert() {
+  $swal({
+    title: "Submit your Github username",
+    input: "text",
+    inputAttributes: {
+      autocapitalize: "off"
     },
-    showCustomHtmlAlert() {
-      this.$swal({
-        title: "<strong>HTML <u>example</u></strong>",
-        icon: "info",
-        html:
-          "You can use <b>bold text</b>, " +
-          '<a href="//sweetalert2.github.io" class="text-dark text-decoration-none">links</a> ' +
-          "and other HTML tags",
-        showCloseButton: true,
-        showCancelButton: true,
-        customClass: {
-          confirmButton: "bg-gradient-success px-4 py-4 border-radius-md",
-          cancelButton: "bg-gradient-danger px-4 py-4 border-radius-md",
-        },
-        confirmButtonText: '<i class="fa fa-thumbs-up"></i> Great!',
-        confirmButtonAriaLabel: "Thumbs up, great!",
-        cancelButtonText: '<i class="fa fa-thumbs-down"></i>',
-        cancelButtonAriaLabel: "Thumbs down",
-      });
+    showCancelButton: true,
+    confirmButtonText: "Look up",
+    showLoaderOnConfirm: true,
+    customClass: {
+      confirmButton: "btn bg-gradient-success",
+      cancelButton: "btn bg-gradient-danger"
     },
-    showGithubAlert() {
-      this.$swal({
-        title: "Submit your Github username",
-        input: "text",
-        inputAttributes: {
-          autocapitalize: "off",
-        },
-        showCancelButton: true,
-        confirmButtonText: "Look up",
-        showLoaderOnConfirm: true,
-        customClass: {
-          confirmButton: "btn bg-gradient-success",
-          cancelButton: "btn bg-gradient-danger",
-        },
-        preConfirm: (login) => {
-          return fetch(`//api.github.com/users/${login}`)
-            .then((response) => {
-              if (!response.ok) {
-                throw new Error(response.statusText);
-              }
-              return response.json();
-            })
-            .catch((error) => {
-              this.$swal.showValidationMessage(`Request failed: ${error}`);
-            });
-        },
-        allowOutsideClick: () => !this.$swal.isLoading(),
-      }).then((result) => {
-        if (result.isConfirmed) {
-          this.$swal({
-            title: `${result.value.login}'s avatar`,
-            imageUrl: result.value.avatar_url,
-          });
+    preConfirm: login => {
+      return fetch(`//api.github.com/users/${login}`).then(response => {
+        if (!response.ok) {
+          throw new Error(response.statusText);
         }
+        return response.json();
+      }).catch(error => {
+        $swal.showValidationMessage(`Request failed: ${error}`);
       });
     },
-    showTitleTextAlert() {
-      this.$swal({
-        title: "Sweet!",
-        text: "Modal with a custom image.",
-        imageUrl: "https://unsplash.it/400/200",
-        imageWidth: 400,
-        imageAlt: "Custom image",
-        customClass: {
-          confirmButton: "btn bg-gradient-success",
-          cancelButton: "btn bg-gradient-danger",
-        },
+    allowOutsideClick: () => !$swal.isLoading()
+  }).then(result => {
+    if (result.isConfirmed) {
+      $swal({
+        title: `${result.value.login}'s avatar`,
+        imageUrl: result.value.avatar_url
       });
-    },
-    showAutocloseAlert() {
-      let timerInterval;
-      this.$swal({
-        title: "Auto close alert!",
-        html: "I will close in <b></b> milliseconds.",
-        timer: 2000,
-        timerProgressBar: true,
-        didOpen: () => {
-          this.$swal.showLoading();
-          timerInterval = setInterval(() => {
-            const content = this.$swal.getHtmlContainer();
-            if (content) {
-              const b = content.querySelector("b");
-              if (b) {
-                b.textContent = this.$swal.getTimerLeft();
-              }
-            }
-          }, 100);
-        },
-        willClose: () => {
-          clearInterval(timerInterval);
-        },
-      }).then((result) => {
-        /* Read more about handling dismissals below */
-        console.log(result);
-      });
-    },
-    showWarningAlert() {
-      this.$swal({
-        title: "Are you sure?",
-        text: "You won't be able to revert this!",
-        type: "warning",
-        showCancelButton: true,
-        customClass: {
-          confirmButton: "btn bg-gradient-success",
-          cancelButton: "btn bg-gradient-danger",
-        },
-        confirmButtonText: "Yes, delete it!",
-        cancelButtonText: "No, cancel!",
-        reverseButtons: true,
-      }).then((result) => {
-        if (result.value) {
-          this.$swal.fire("Deleted!", "Your file has been deleted.", "success");
-        } else if (
-          /* Read more about handling dismissals below */
-          result.dismiss === this.$swal.DismissReason.cancel
-        ) {
-          this.$swal.fire(
-            "Cancelled",
-            "Your imaginary file is safe :)",
-            "error"
-          );
+    }
+  });
+}
+function showTitleTextAlert() {
+  $swal({
+    title: "Sweet!",
+    text: "Modal with a custom image.",
+    imageUrl: "https://unsplash.it/400/200",
+    imageWidth: 400,
+    imageAlt: "Custom image",
+    customClass: {
+      confirmButton: "btn bg-gradient-success",
+      cancelButton: "btn bg-gradient-danger"
+    }
+  });
+}
+function showAutocloseAlert() {
+  let timerInterval;
+  $swal({
+    title: "Auto close alert!",
+    html: "I will close in <b></b> milliseconds.",
+    timer: 2000,
+    timerProgressBar: true,
+    didOpen: () => {
+      $swal.showLoading();
+      timerInterval = setInterval(() => {
+        const content = $swal.getHtmlContainer();
+        if (content) {
+          const b = content.querySelector("b");
+          if (b) {
+            b.textContent = $swal.getTimerLeft();
+          }
         }
-      });
+      }, 100);
     },
-    showCancelAlert() {
-      this.$swal({
-        title: "Are you sure?",
-        text: "You won't be able to revert this!",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Yes, delete it!",
-        customClass: {
-          confirmButton: "btn bg-gradient-success",
-          cancelButton: "btn bg-gradient-danger",
-        },
-      }).then((result) => {
-        if (result.isConfirmed) {
-          this.$swal.fire("Deleted!", "Your file has been deleted.", "success");
-        }
-      });
+    willClose: () => {
+      clearInterval(timerInterval);
+    }
+  }).then(result => {
+    /* Read more about handling dismissals below */
+    console.log(result);
+  });
+}
+function showWarningAlert() {
+  $swal({
+    title: "Are you sure?",
+    text: "You won't be able to revert this!",
+    type: "warning",
+    showCancelButton: true,
+    customClass: {
+      confirmButton: "btn bg-gradient-success",
+      cancelButton: "btn bg-gradient-danger"
     },
-    showRtlAlert() {
-      this.$swal({
-        title: "هل تريد الاستمرار؟",
-        icon: "question",
-        iconHtml: "؟",
-        confirmButtonText: "نعم",
-        cancelButtonText: "لا",
-        showCancelButton: true,
-        showCloseButton: true,
-        customClass: {
-          confirmButton: "btn bg-gradient-success",
-          cancelButton: "btn bg-gradient-danger",
-        },
-      });
-    },
-  },
-};
+    confirmButtonText: "Yes, delete it!",
+    cancelButtonText: "No, cancel!",
+    reverseButtons: true
+  }).then(result => {
+    if (result.value) {
+      $swal.fire("Deleted!", "Your file has been deleted.", "success");
+    } else if (/* Read more about handling dismissals below */
+    result.dismiss === $swal.DismissReason.cancel) {
+      $swal.fire("Cancelled", "Your imaginary file is safe :)", "error");
+    }
+  });
+}
+function showCancelAlert() {
+  $swal({
+    title: "Are you sure?",
+    text: "You won't be able to revert this!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Yes, delete it!",
+    customClass: {
+      confirmButton: "btn bg-gradient-success",
+      cancelButton: "btn bg-gradient-danger"
+    }
+  }).then(result => {
+    if (result.isConfirmed) {
+      $swal.fire("Deleted!", "Your file has been deleted.", "success");
+    }
+  });
+}
+function showRtlAlert() {
+  $swal({
+    title: "هل تريد الاستمرار؟",
+    icon: "question",
+    iconHtml: "؟",
+    confirmButtonText: "نعم",
+    cancelButtonText: "لا",
+    showCancelButton: true,
+    showCloseButton: true,
+    customClass: {
+      confirmButton: "btn bg-gradient-success",
+      cancelButton: "btn bg-gradient-danger"
+    }
+  });
+}
 </script>

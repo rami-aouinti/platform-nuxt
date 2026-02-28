@@ -163,164 +163,115 @@
     </v-col>
   </v-row>
 </template>
-<script>
-export default {
-  name: "pricing",
-  data() {
-    return {
-      tab: "",
-      plans: [
-        {
-          title: "Starter",
-          price: "59",
-          buttonColor: "default",
-          buttonText: "Join",
-          features: [
-            {
-              title: "2 team members",
-              icon: "done",
-            },
-            {
-              title: "20GB Cloud storage",
-              icon: "done",
-            },
-            {
-              title: "Integration help",
-              icon: "done",
-            },
-            {
-              title: "Sketch Files",
-              icon: "remove",
-            },
-            {
-              title: "API Access",
-              icon: "remove",
-            },
-            {
-              title: "Complete documentation",
-              icon: "remove",
-            },
-          ],
-        },
-        {
-          title: "Premium",
-          price: "89",
-          buttonColor: "primary",
-          buttonText: "Try Premium",
-          features: [
-            {
-              title: "10 team members",
-              icon: "done",
-            },
-            {
-              title: "40GB Cloud storage",
-              icon: "done",
-            },
-            {
-              title: "Integration help",
-              icon: "done",
-            },
-            {
-              title: "Sketch Files",
-              icon: "done",
-            },
-            {
-              title: "API Access",
-              icon: "remove",
-            },
-            {
-              title: "Complete documentation",
-              icon: "remove",
-            },
-          ],
-        },
-        {
-          title: "Enterprise",
-          price: "99",
-          buttonColor: "default",
-          buttonText: "Join",
-          features: [
-            {
-              title: "Unlimited team members",
-              icon: "done",
-            },
-            {
-              title: "100GB Cloud storage",
-              icon: "done",
-            },
-            {
-              title: "Integration help",
-              icon: "done",
-            },
-            {
-              title: "Sketch Files",
-              icon: "done",
-            },
-            {
-              title: "API Access",
-              icon: "done",
-            },
-            {
-              title: "Complete documentation",
-              icon: "done",
-            },
-          ],
-        },
-      ],
-      brands: [
-        {
-          name: "coinbase",
-          image: require("@/assets/img/logos/gray-logos/logo-coinbase.svg"),
-        },
-        {
-          name: "nasa",
-          image: require("@/assets/img/logos/gray-logos/logo-nasa.svg"),
-        },
-        {
-          name: "netflix",
-          image: require("@/assets/img/logos/gray-logos/logo-netflix.svg"),
-        },
-        {
-          name: "pinterest",
-          image: require("@/assets/img/logos/gray-logos/logo-pinterest.svg"),
-        },
-        {
-          name: "spotify",
-          image: require("@/assets/img/logos/gray-logos/logo-spotify.svg"),
-        },
-        {
-          name: "vodafone",
-          image: require("@/assets/img/logos/gray-logos/logo-vodafone.svg"),
-        },
-      ],
-      panels: [
-        {
-          title: "How do I order?",
-          description:
-            "We’re not always in the position that we want to be at. We’re constantly growing. We’re constantly making mistakes. We’re constantly trying to express ourselves and actualize our dreams. If you have the opportunity to play this game of life you need to appreciate every moment. A lot of people don’t appreciate the moment until it’s passed.",
-        },
-        {
-          title: "How can i make the payment?",
-          description:
-            "It really matters and then like it really doesn’t matter. What matters is the people who are sparked by it. And the people who are like offended by it, it doesn’t matter. Because it's about motivating the doers. Because I’m here to follow my dreams and inspire other people to follow their dreams, too. We’re not always in the position that we want to be at. We’re constantly growing. We’re constantly making mistakes. We’re constantly trying to express ourselves and actualize our dreams. If you have the opportunity to play this game of life you need to appreciate every moment. A lot of people don’t appreciate the moment until it’s passed.",
-        },
-        {
-          title: "How much time does it take to receive the order?",
-          description:
-            "The time is now for it to be okay to be great. People in this world shun people for being great. For being a bright color. For standing out. But the time is now to be okay to be the greatest you. Would you believe in what you believe in, if you were the only one who believed it? If everything I did failed - which it doesn't, it actually succeeds - just the fact that I'm willing to fail is an inspiration. People are so scared to lose that they don't even try. Like, one thing people can't say is that I'm not trying, and I'm not trying my hardest, and I'm not trying to do the best way I know how.",
-        },
-        {
-          title: "Can I resell the products?",
-          description:
-            "I always felt like I could do anything. That’s the main thing people are controlled by! Thoughts- their perception of themselves! They're slowed down by their perception of themselves. If you're taught you can’t do anything, you won’t do anything. I was taught I could do everything. If everything I did failed - which it doesn't, it actually succeeds - just the fact that I'm willing to fail is an inspiration. People are so scared to lose that they don't even try. Like, one thing people can't say is that I'm not trying, and I'm not trying my hardest, and I'm not trying to do the best way I know how.",
-        },
-        {
-          title: "Where do I find the shipping details?",
-          description:
-            "There’s nothing I really wanted to do in life that I wasn’t able to get good at. That’s my skill. I’m not really specifically talented at anything except for the ability to learn. That’s what I do. That’s what I’m here for. Don’t be afraid to be wrong because you can’t learn anything from a compliment. I always felt like I could do anything. That’s the main thing people are controlled by! Thoughts- their perception of themselves! They're slowed down by their perception of themselves. If you're taught you can’t do anything, you won’t do anything. I was taught I could do everything.",
-        },
-      ],
-    };
-  },
-};
+<script setup lang="ts">
+import { ref } from "vue";
+const tab = ref("");
+const plans = ref([{
+  title: "Starter",
+  price: "59",
+  buttonColor: "default",
+  buttonText: "Join",
+  features: [{
+    title: "2 team members",
+    icon: "done"
+  }, {
+    title: "20GB Cloud storage",
+    icon: "done"
+  }, {
+    title: "Integration help",
+    icon: "done"
+  }, {
+    title: "Sketch Files",
+    icon: "remove"
+  }, {
+    title: "API Access",
+    icon: "remove"
+  }, {
+    title: "Complete documentation",
+    icon: "remove"
+  }]
+}, {
+  title: "Premium",
+  price: "89",
+  buttonColor: "primary",
+  buttonText: "Try Premium",
+  features: [{
+    title: "10 team members",
+    icon: "done"
+  }, {
+    title: "40GB Cloud storage",
+    icon: "done"
+  }, {
+    title: "Integration help",
+    icon: "done"
+  }, {
+    title: "Sketch Files",
+    icon: "done"
+  }, {
+    title: "API Access",
+    icon: "remove"
+  }, {
+    title: "Complete documentation",
+    icon: "remove"
+  }]
+}, {
+  title: "Enterprise",
+  price: "99",
+  buttonColor: "default",
+  buttonText: "Join",
+  features: [{
+    title: "Unlimited team members",
+    icon: "done"
+  }, {
+    title: "100GB Cloud storage",
+    icon: "done"
+  }, {
+    title: "Integration help",
+    icon: "done"
+  }, {
+    title: "Sketch Files",
+    icon: "done"
+  }, {
+    title: "API Access",
+    icon: "done"
+  }, {
+    title: "Complete documentation",
+    icon: "done"
+  }]
+}]);
+const brands = ref([{
+  name: "coinbase",
+  image: require("@/assets/img/logos/gray-logos/logo-coinbase.svg")
+}, {
+  name: "nasa",
+  image: require("@/assets/img/logos/gray-logos/logo-nasa.svg")
+}, {
+  name: "netflix",
+  image: require("@/assets/img/logos/gray-logos/logo-netflix.svg")
+}, {
+  name: "pinterest",
+  image: require("@/assets/img/logos/gray-logos/logo-pinterest.svg")
+}, {
+  name: "spotify",
+  image: require("@/assets/img/logos/gray-logos/logo-spotify.svg")
+}, {
+  name: "vodafone",
+  image: require("@/assets/img/logos/gray-logos/logo-vodafone.svg")
+}]);
+const panels = ref([{
+  title: "How do I order?",
+  description: "We’re not always in the position that we want to be at. We’re constantly growing. We’re constantly making mistakes. We’re constantly trying to express ourselves and actualize our dreams. If you have the opportunity to play this game of life you need to appreciate every moment. A lot of people don’t appreciate the moment until it’s passed."
+}, {
+  title: "How can i make the payment?",
+  description: "It really matters and then like it really doesn’t matter. What matters is the people who are sparked by it. And the people who are like offended by it, it doesn’t matter. Because it's about motivating the doers. Because I’m here to follow my dreams and inspire other people to follow their dreams, too. We’re not always in the position that we want to be at. We’re constantly growing. We’re constantly making mistakes. We’re constantly trying to express ourselves and actualize our dreams. If you have the opportunity to play this game of life you need to appreciate every moment. A lot of people don’t appreciate the moment until it’s passed."
+}, {
+  title: "How much time does it take to receive the order?",
+  description: "The time is now for it to be okay to be great. People in this world shun people for being great. For being a bright color. For standing out. But the time is now to be okay to be the greatest you. Would you believe in what you believe in, if you were the only one who believed it? If everything I did failed - which it doesn't, it actually succeeds - just the fact that I'm willing to fail is an inspiration. People are so scared to lose that they don't even try. Like, one thing people can't say is that I'm not trying, and I'm not trying my hardest, and I'm not trying to do the best way I know how."
+}, {
+  title: "Can I resell the products?",
+  description: "I always felt like I could do anything. That’s the main thing people are controlled by! Thoughts- their perception of themselves! They're slowed down by their perception of themselves. If you're taught you can’t do anything, you won’t do anything. I was taught I could do everything. If everything I did failed - which it doesn't, it actually succeeds - just the fact that I'm willing to fail is an inspiration. People are so scared to lose that they don't even try. Like, one thing people can't say is that I'm not trying, and I'm not trying my hardest, and I'm not trying to do the best way I know how."
+}, {
+  title: "Where do I find the shipping details?",
+  description: "There’s nothing I really wanted to do in life that I wasn’t able to get good at. That’s my skill. I’m not really specifically talented at anything except for the ability to learn. That’s what I do. That’s what I’m here for. Don’t be afraid to be wrong because you can’t learn anything from a compliment. I always felt like I could do anything. That’s the main thing people are controlled by! Thoughts- their perception of themselves! They're slowed down by their perception of themselves. If you're taught you can’t do anything, you won’t do anything. I was taught I could do everything."
+}]);
 </script>

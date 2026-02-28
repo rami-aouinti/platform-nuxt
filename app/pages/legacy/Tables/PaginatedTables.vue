@@ -9,12 +9,6 @@
     </v-container>
   </div>
 </template>
-<script>
+<script setup lang="ts">
 import PaginatedTable from "./Tables/PaginatedTable.vue";
-export default {
-  name: "sortable-tables",
-  components: {
-    PaginatedTable,
-  },
-};
 </script>

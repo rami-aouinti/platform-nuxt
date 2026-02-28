@@ -115,13 +115,6 @@
     </v-container>
   </div>
 </template>
-<script>
+<script setup lang="ts">
 import TableOrders from "./Widgets/TableOrders";
-
-export default {
-  name: "Orders-List",
-  components: {
-    TableOrders,
-  },
-};
 </script>

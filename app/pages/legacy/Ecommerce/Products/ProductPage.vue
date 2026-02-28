@@ -206,24 +206,12 @@
     </v-container>
   </div>
 </template>
-<script>
-import Vue from "vue";
+<script setup lang="ts">
+import { ref } from "vue";
 import Photoswipe from "vue-pswipe";
-Vue.use(Photoswipe);
-
 import TableProducts from "./Widgets/TableProducts.vue";
-
-export default {
-  name: "Product-Page",
-  components: {
-    TableProducts,
-  },
-  data() {
-    return {
-      materials: ["Wood", "Aluminium", "Leather"],
-      colors: ["White", "Black", "Gray"],
-      numbers: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
-    };
-  },
-};
+Vue.use(Photoswipe);
+const materials = ref(["Wood", "Aluminium", "Leather"]);
+const colors = ref(["White", "Black", "Gray"]);
+const numbers = ref(["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]);
 </script>

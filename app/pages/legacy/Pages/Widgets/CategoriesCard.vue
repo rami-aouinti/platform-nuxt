@@ -47,29 +47,19 @@
     </div>
   </v-card>
 </template>
-<script>
-export default {
-  name: "categories-card",
-  data: function () {
-    return {
-      categories: [
-        {
-          icon: "savings",
-          title: "أسبوع الإنترنت",
-          description: "01 يونيو 2021, ي 12:30 PM",
-        },
-        {
-          icon: "notifications_active",
-          title: "لقاء مع ماري",
-          description: "24 مايو 2021, ي 10:00 PM",
-        },
-        {
-          icon: "task",
-          title: "تخطيط المهمة",
-          description: "25 مايو 2021, ي 10:00 PM",
-        },
-      ],
-    };
-  },
-};
+<script setup lang="ts">
+import { ref } from "vue";
+const categories = ref([{
+  icon: "savings",
+  title: "أسبوع الإنترنت",
+  description: "01 يونيو 2021, ي 12:30 PM"
+}, {
+  icon: "notifications_active",
+  title: "لقاء مع ماري",
+  description: "24 مايو 2021, ي 10:00 PM"
+}, {
+  icon: "task",
+  title: "تخطيط المهمة",
+  description: "25 مايو 2021, ي 10:00 PM"
+}]);
 </script>

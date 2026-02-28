@@ -38,38 +38,27 @@
     </v-card-text>
   </v-card>
 </template>
-<script>
-export default {
-  name: "members-card",
-  data() {
-    return {
-      members: [
-        {
-          avatar: require("@/assets/img/team-1.jpg"),
-          title: "John Michael",
-          status: "Online",
-          color: "text-success",
-        },
-        {
-          avatar: require("@/assets/img/team-2.jpg"),
-          title: "Alex Smith",
-          status: "In a Meeting",
-          color: "text-warning",
-        },
-        {
-          avatar: require("@/assets/img/team-3.jpg"),
-          title: "Samantha Ivy",
-          status: "Offline",
-          color: "text-danger",
-        },
-        {
-          avatar: require("@/assets/img/team-4.jpg"),
-          title: "Ali Connors",
-          status: "Online",
-          color: "text-success",
-        },
-      ],
-    };
-  },
-};
+<script setup lang="ts">
+import { ref } from "vue";
+const members = ref([{
+  avatar: require("@/assets/img/team-1.jpg"),
+  title: "John Michael",
+  status: "Online",
+  color: "text-success"
+}, {
+  avatar: require("@/assets/img/team-2.jpg"),
+  title: "Alex Smith",
+  status: "In a Meeting",
+  color: "text-warning"
+}, {
+  avatar: require("@/assets/img/team-3.jpg"),
+  title: "Samantha Ivy",
+  status: "Offline",
+  color: "text-danger"
+}, {
+  avatar: require("@/assets/img/team-4.jpg"),
+  title: "Ali Connors",
+  status: "Online",
+  color: "text-success"
+}]);
 </script>

@@ -435,12 +435,7 @@
     </v-row>
   </v-container>
 </template>
-<script>
-export default {
-  data() {
-    return {
-      e1: 1,
-    };
-  },
-};
+<script setup lang="ts">
+import { ref } from "vue";
+const e1 = ref(1);
 </script>

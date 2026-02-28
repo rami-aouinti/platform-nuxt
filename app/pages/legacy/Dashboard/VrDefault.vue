@@ -34,19 +34,9 @@
   </div>
 </template>
 
-<script>
+<script setup lang="ts">
 import SalesCountry from "./Widgets/SalesCountry.vue";
 import CardWebsiteViews from "./Widgets/CardWebsiteViews.vue";
 import CardDailySales from "./Widgets/CardDailySales.vue";
 import CardCompletedTasks from "./Widgets/CardCompletedTasks.vue";
-
-export default {
-  name: "Vr-default",
-  components: {
-    SalesCountry,
-    CardWebsiteViews,
-    CardDailySales,
-    CardCompletedTasks,
-  },
-};
 </script>

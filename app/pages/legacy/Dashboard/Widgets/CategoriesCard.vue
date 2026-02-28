@@ -65,29 +65,19 @@
     </div>
   </v-card>
 </template>
-<script>
-export default {
-  name: "categories-card",
-  data: function () {
-    return {
-      categories: [
-        {
-          icon: "launch",
-          title: "Devices",
-          description: "250 in stock, 346+ sold",
-        },
-        {
-          icon: "book_online",
-          title: "Tickets",
-          description: "123 closed, 15 open",
-        },
-        {
-          icon: "priority_high",
-          title: "Error logs",
-          description: "1 is active, 40 closed",
-        },
-      ],
-    };
-  },
-};
+<script setup lang="ts">
+import { ref } from "vue";
+const categories = ref([{
+  icon: "launch",
+  title: "Devices",
+  description: "250 in stock, 346+ sold"
+}, {
+  icon: "book_online",
+  title: "Tickets",
+  description: "123 closed, 15 open"
+}, {
+  icon: "priority_high",
+  title: "Error logs",
+  description: "1 is active, 40 closed"
+}]);
 </script>

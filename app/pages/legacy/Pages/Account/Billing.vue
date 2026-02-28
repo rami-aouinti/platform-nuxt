@@ -493,111 +493,87 @@
     </v-row>
   </v-container>
 </template>
-<script>
-export default {
-  name: "Billing",
-  data: function () {
-    return {
-      invoices: [
-        {
-          date: "March, 01, 2020",
-          id: "#MS-415646",
-          value: "$180",
-        },
-        {
-          date: "February, 10, 2021",
-          id: "#RV-126749",
-          value: "$250",
-        },
-        {
-          date: "April, 05, 2020",
-          id: "#FB-212562",
-          value: "$560",
-        },
-        {
-          date: "June, 25, 2019",
-          id: "#QW-103578",
-          value: "$120",
-        },
-        {
-          date: "March, 01, 2019",
-          id: "#AR-803481",
-          value: "$300",
-        },
-      ],
-      billings: [
-        {
-          name: "Oliver Liam",
-          company: "Viking Burrito",
-          email: "oliver@burrito.com",
-          vat: "FRB1235476",
-        },
-        {
-          name: "Lucas Harper",
-          company: "Stone Tech Zone",
-          email: "lucas@stone-tech.com",
-          vat: "FRB1235476",
-        },
-        {
-          name: "Fiber Notion",
-          company: "Stone Tech Zone",
-          email: "ethan@fiber.com",
-          vat: "FRB1235476",
-        },
-      ],
-      transactions1: [
-        {
-          icon: "expand_more",
-          color: "#ea0606",
-          title: "Netflix",
-          date: "27 March 2020, at 12:30 PM",
-          value: "- $ 2,500",
-          gradient: "text-danger",
-        },
-        {
-          icon: "expand_less",
-          color: "#82d616",
-          title: "Apple",
-          date: "23 March 2020, at 04:30 AM",
-          value: "+ $ 2,000",
-          gradient: "text-success",
-        },
-      ],
-      transactions2: [
-        {
-          icon: "expand_more",
-          color: "#82d616",
-          title: "Stripe",
-          date: "26 March 2020, at 13:45 PM",
-          value: "+ $ 750",
-          gradient: "text-success",
-        },
-        {
-          icon: "expand_more",
-          color: "#82d616",
-          title: "HubSpot",
-          date: "26 March 2020, at 12:30 PM",
-          value: "+ $ 1,000",
-          gradient: "text-success",
-        },
-        {
-          icon: "expand_more",
-          color: "#82d616",
-          title: "Creative Tim",
-          date: "26 March 2020, at 08:30 AM",
-          value: "+ $ 2,500",
-          gradient: "text-success",
-        },
-        {
-          icon: "priority_high",
-          color: "#344767",
-          title: "Webflow",
-          date: "26 March 2020, at 05:00 AM",
-          value: "Pending",
-          gradient: "text-default",
-        },
-      ],
-    };
-  },
-};
+<script setup lang="ts">
+import { ref } from "vue";
+const invoices = ref([{
+  date: "March, 01, 2020",
+  id: "#MS-415646",
+  value: "$180"
+}, {
+  date: "February, 10, 2021",
+  id: "#RV-126749",
+  value: "$250"
+}, {
+  date: "April, 05, 2020",
+  id: "#FB-212562",
+  value: "$560"
+}, {
+  date: "June, 25, 2019",
+  id: "#QW-103578",
+  value: "$120"
+}, {
+  date: "March, 01, 2019",
+  id: "#AR-803481",
+  value: "$300"
+}]);
+const billings = ref([{
+  name: "Oliver Liam",
+  company: "Viking Burrito",
+  email: "oliver@burrito.com",
+  vat: "FRB1235476"
+}, {
+  name: "Lucas Harper",
+  company: "Stone Tech Zone",
+  email: "lucas@stone-tech.com",
+  vat: "FRB1235476"
+}, {
+  name: "Fiber Notion",
+  company: "Stone Tech Zone",
+  email: "ethan@fiber.com",
+  vat: "FRB1235476"
+}]);
+const transactions1 = ref([{
+  icon: "expand_more",
+  color: "#ea0606",
+  title: "Netflix",
+  date: "27 March 2020, at 12:30 PM",
+  value: "- $ 2,500",
+  gradient: "text-danger"
+}, {
+  icon: "expand_less",
+  color: "#82d616",
+  title: "Apple",
+  date: "23 March 2020, at 04:30 AM",
+  value: "+ $ 2,000",
+  gradient: "text-success"
+}]);
+const transactions2 = ref([{
+  icon: "expand_more",
+  color: "#82d616",
+  title: "Stripe",
+  date: "26 March 2020, at 13:45 PM",
+  value: "+ $ 750",
+  gradient: "text-success"
+}, {
+  icon: "expand_more",
+  color: "#82d616",
+  title: "HubSpot",
+  date: "26 March 2020, at 12:30 PM",
+  value: "+ $ 1,000",
+  gradient: "text-success"
+}, {
+  icon: "expand_more",
+  color: "#82d616",
+  title: "Creative Tim",
+  date: "26 March 2020, at 08:30 AM",
+  value: "+ $ 2,500",
+  gradient: "text-success"
+}, {
+  icon: "priority_high",
+  color: "#344767",
+  title: "Webflow",
+  date: "26 March 2020, at 05:00 AM",
+  value: "Pending",
+  gradient: "text-default"
+}]);
 </script>

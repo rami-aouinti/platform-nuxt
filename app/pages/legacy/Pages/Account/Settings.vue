@@ -113,7 +113,8 @@
     </v-row>
   </v-container>
 </template>
-<script>
+<script setup lang="ts">
+import { ref } from "vue";
 import BasicInfo from "./Widgets/BasicInfo.vue";
 import ChangePassword from "./Widgets/ChangePassword.vue";
 import TwoFactor from "./Widgets/TwoFactor.vue";
@@ -121,56 +122,30 @@ import Accounts from "./Widgets/Accounts.vue";
 import Notifications from "./Widgets/Notifications.vue";
 import Sessions from "./Widgets/Sessions.vue";
 import DeleteAccount from "./Widgets/DeleteAccount.vue";
-
-export default {
-  name: "Settings",
-  components: {
-    BasicInfo,
-    ChangePassword,
-    TwoFactor,
-    Accounts,
-    Notifications,
-    Sessions,
-    DeleteAccount,
-  },
-  data() {
-    return {
-      switche: true,
-      menu: [
-        {
-          icon: "person",
-          text: "Profile",
-        },
-        {
-          icon: "receipt_long",
-          text: "Basic Info",
-        },
-        {
-          icon: "lock",
-          text: "Change Password",
-        },
-        {
-          icon: "security",
-          text: "2FA",
-        },
-        {
-          icon: "badge",
-          text: "Accounts",
-        },
-        {
-          icon: "campaign",
-          text: "Notifications",
-        },
-        {
-          icon: "settings_applications",
-          text: "Sessions",
-        },
-        {
-          icon: "delete",
-          text: "Delete Account",
-        },
-      ],
-    };
-  },
-};
+const switche = ref(true);
+const menu = ref([{
+  icon: "person",
+  text: "Profile"
+}, {
+  icon: "receipt_long",
+  text: "Basic Info"
+}, {
+  icon: "lock",
+  text: "Change Password"
+}, {
+  icon: "security",
+  text: "2FA"
+}, {
+  icon: "badge",
+  text: "Accounts"
+}, {
+  icon: "campaign",
+  text: "Notifications"
+}, {
+  icon: "settings_applications",
+  text: "Sessions"
+}, {
+  icon: "delete",
+  text: "Delete Account"
+}]);
 </script>

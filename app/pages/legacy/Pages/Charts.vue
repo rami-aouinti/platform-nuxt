@@ -53,7 +53,7 @@
     </v-container>
   </div>
 </template>
-<script>
+<script setup lang="ts">
 import LineChart from "./Widgets/LineChart.vue";
 import LineChartWithoutDots from "./Widgets/LineChartWithoutDots.vue";
 import BarChart from "./Widgets/BarChart.vue";
@@ -64,20 +64,4 @@ import DoughnutChart from "./Widgets/DoughnutChart.vue";
 import PieChart from "./Widgets/PieChart.vue";
 import RadarChart from "./Widgets/RadarChart.vue";
 import PolarChart from "./Widgets/PolarChart.vue";
-
-export default {
-  name: "Charts",
-  components: {
-    LineChart,
-    LineChartWithoutDots,
-    BarChart,
-    BarChartHorizontal,
-    MixedChart,
-    BubbleChart,
-    DoughnutChart,
-    PieChart,
-    RadarChart,
-    PolarChart,
-  },
-};
 </script>

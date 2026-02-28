@@ -41,110 +41,97 @@
     </div>
   </v-card>
 </template>
-<script>
+<script setup lang="ts">
+import { onMounted, ref } from "vue";
 import Chart from "chart.js/auto";
-
-export default {
-  name: "line-chart-without-dots",
-  data: function () {
-    return {
-      lineChartWithoutDotsId: "line-chart-without-dots",
-    };
-  },
-  mounted() {
-    var ctx = document
-      .getElementById(this.lineChartWithoutDotsId)
-      .getContext("2d");
-
-    new Chart(ctx, {
-      type: "line",
-      data: {
-        labels: ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-        datasets: [
-          {
-            label: "Mobile apps",
-            tension: 0.4,
-            pointRadius: 0,
-            borderColor: "#e91e63",
-            borderWidth: 3,
-            backgroundColor: "transparent",
-            fill: true,
-            data: [50, 40, 300, 220, 500, 250, 400, 230, 500],
-            maxBarThickness: 6,
-          },
-          {
-            label: "Websites",
-            tension: 0.4,
-            pointRadius: 0,
-            borderColor: "#3A416F",
-            borderWidth: 3,
-            backgroundColor: "transparent",
-            fill: true,
-            data: [30, 90, 40, 140, 290, 290, 340, 230, 400],
-            maxBarThickness: 6,
-          },
-        ],
+const lineChartWithoutDotsId = ref("line-chart-without-dots");
+onMounted(() => {
+  var ctx = document.getElementById(lineChartWithoutDotsId.value).getContext("2d");
+  new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+      datasets: [{
+        label: "Mobile apps",
+        tension: 0.4,
+        pointRadius: 0,
+        borderColor: "#e91e63",
+        borderWidth: 3,
+        backgroundColor: "transparent",
+        fill: true,
+        data: [50, 40, 300, 220, 500, 250, 400, 230, 500],
+        maxBarThickness: 6
+      }, {
+        label: "Websites",
+        tension: 0.4,
+        pointRadius: 0,
+        borderColor: "#3A416F",
+        borderWidth: 3,
+        backgroundColor: "transparent",
+        fill: true,
+        data: [30, 90, 40, 140, 290, 290, 340, 230, 400],
+        maxBarThickness: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        }
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
+      interaction: {
+        intersect: false,
+        mode: "index"
+      },
+      scales: {
+        y: {
+          grid: {
+            drawBorder: false,
+            display: true,
+            drawOnChartArea: true,
+            drawTicks: false,
+            borderDash: [5, 5],
+            color: "#c1c4ce5c"
+          },
+          ticks: {
+            display: true,
+            padding: 10,
+            color: "#b2b9bf",
+            font: {
+              size: 14,
+              weight: 300,
+              family: "Roboto",
+              style: "normal",
+              lineHeight: 2
+            }
+          }
+        },
+        x: {
+          grid: {
+            drawBorder: false,
             display: false,
+            drawOnChartArea: false,
+            drawTicks: false,
+            borderDash: [5, 5],
+            color: "#c1c4ce5c"
           },
-        },
-        interaction: {
-          intersect: false,
-          mode: "index",
-        },
-        scales: {
-          y: {
-            grid: {
-              drawBorder: false,
-              display: true,
-              drawOnChartArea: true,
-              drawTicks: false,
-              borderDash: [5, 5],
-              color: "#c1c4ce5c",
-            },
-            ticks: {
-              display: true,
-              padding: 10,
-              color: "#b2b9bf",
-              font: {
-                size: 14,
-                weight: 300,
-                family: "Roboto",
-                style: "normal",
-                lineHeight: 2,
-              },
-            },
-          },
-          x: {
-            grid: {
-              drawBorder: false,
-              display: false,
-              drawOnChartArea: false,
-              drawTicks: false,
-              borderDash: [5, 5],
-              color: "#c1c4ce5c",
-            },
-            ticks: {
-              display: true,
-              color: "#b2b9bf",
-              padding: 10,
-              font: {
-                size: 14,
-                weight: 300,
-                family: "Roboto",
-                style: "normal",
-                lineHeight: 2,
-              },
-            },
-          },
-        },
-      },
-    });
-  },
-};
+          ticks: {
+            display: true,
+            color: "#b2b9bf",
+            padding: 10,
+            font: {
+              size: 14,
+              weight: 300,
+              family: "Roboto",
+              style: "normal",
+              lineHeight: 2
+            }
+          }
+        }
+      }
+    }
+  });
+});
 </script>

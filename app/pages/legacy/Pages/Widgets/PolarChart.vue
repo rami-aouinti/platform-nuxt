@@ -25,43 +25,28 @@
     </div>
   </v-card>
 </template>
-<script>
+<script setup lang="ts">
+import { onMounted, ref } from "vue";
 import Chart from "chart.js/auto";
-
-export default {
-  name: "polar-chart",
-  data: function () {
-    return {
-      polarChartId: "polar-chart",
-    };
-  },
-  mounted() {
-    new Chart(document.getElementById(this.polarChartId).getContext("2d"), {
-      type: "polarArea",
-      data: {
-        labels: ["Red", "Green", "Yellow", "Grey", "Blue"],
-        datasets: [
-          {
-            label: "My First Dataset",
-            data: [11, 16, 7, 3, 14],
-            backgroundColor: [
-              "#03A9F4",
-              "#e91e63",
-              "#3A416F",
-              "#a8b8d8",
-              "#4CAF50",
-            ],
-          },
-        ],
-      },
-      options: {
-        plugins: {
-          legend: {
-            display: false,
-          },
-        },
-      },
-    });
-  },
-};
+const polarChartId = ref("polar-chart");
+onMounted(() => {
+  new Chart(document.getElementById(polarChartId.value).getContext("2d"), {
+    type: "polarArea",
+    data: {
+      labels: ["Red", "Green", "Yellow", "Grey", "Blue"],
+      datasets: [{
+        label: "My First Dataset",
+        data: [11, 16, 7, 3, 14],
+        backgroundColor: ["#03A9F4", "#e91e63", "#3A416F", "#a8b8d8", "#4CAF50"]
+      }]
+    },
+    options: {
+      plugins: {
+        legend: {
+          display: false
+        }
+      }
+    }
+  });
+});
 </script>

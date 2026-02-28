@@ -478,30 +478,14 @@
     </v-container>
   </div>
 </template>
-<script>
+<script setup lang="ts">
+import { ref } from "vue";
 import HtmlEditor from "./Widgets/HtmlEditor.vue";
 import Dropzone from "./Widgets/Dropzone.vue";
-
-export default {
-  components: {
-    HtmlEditor,
-    Dropzone,
-  },
-  data() {
-    return {
-      e1: 1,
-      categories: [
-        "Clothing",
-        "Electronics",
-        "Furniture",
-        "Others",
-        "Real Estate",
-      ],
-      sizes: ["Small", "Medium", "Large"],
-      fileSingle: [],
-      coins: ["USD", "BTC", "CNY", "EUR"],
-      tags: ["Black Friday", "Sale", "Out of stock", "In stock"],
-    };
-  },
-};
+const e1 = ref(1);
+const categories = ref(["Clothing", "Electronics", "Furniture", "Others", "Real Estate"]);
+const sizes = ref(["Small", "Medium", "Large"]);
+const fileSingle = ref([]);
+const coins = ref(["USD", "BTC", "CNY", "EUR"]);
+const tags = ref(["Black Friday", "Sale", "Out of stock", "In stock"]);
 </script>

@@ -127,74 +127,61 @@
     </v-card-text>
   </v-card>
 </template>
-<script>
-export default {
-  name: "light-table-transparent",
-  data() {
-    return {
-      users: [
-        {
-          id: 43431,
-          name: "John Michael",
-          avatar: require("@/assets/img/team-2.jpg"),
-          function: "Manager",
-          review: "positive",
-          reviewColor: "info",
-          email: "john@user.com",
-          employed: "23/04/18",
-        },
-        {
-          id: 93021,
-          name: "Alexa Liras",
-          avatar: require("@/assets/img/team-3.jpg"),
-          function: "Programator",
-          review: "positive",
-          reviewColor: "info",
-          email: "alexa@user.com",
-          employed: "11/01/19",
-        },
-        {
-          id: 10392,
-          name: "Laurent Perrier",
-          avatar: require("@/assets/img/team-4.jpg"),
-          function: "Executive",
-          review: "netural",
-          reviewColor: "default",
-          email: "laurent@user.com",
-          employed: "19/09/17",
-        },
-        {
-          id: 34002,
-          name: "Michael Levi",
-          avatar: require("@/assets/img/team-4.jpg"),
-          function: "Backend developer",
-          review: "positive",
-          reviewColor: "info",
-          email: "michael@user.com",
-          employed: "24/12/08",
-        },
-        {
-          id: 91879,
-          name: "Richard Gran",
-          avatar: require("@/assets/img/team-2.jpg"),
-          function: "Manager",
-          review: "negative",
-          reviewColor: "danger",
-          email: "richard@user.com",
-          employed: "04/10/21",
-        },
-        {
-          id: 23042,
-          name: "Miriam Eric",
-          avatar: require("@/assets/img/team-4.jpg"),
-          function: "Programator",
-          review: "positive",
-          reviewColor: "info",
-          email: "miriam@user.com",
-          employed: "14/09/20",
-        },
-      ],
-    };
-  },
-};
+<script setup lang="ts">
+import { ref } from "vue";
+const users = ref([{
+  id: 43431,
+  name: "John Michael",
+  avatar: require("@/assets/img/team-2.jpg"),
+  function: "Manager",
+  review: "positive",
+  reviewColor: "info",
+  email: "john@user.com",
+  employed: "23/04/18"
+}, {
+  id: 93021,
+  name: "Alexa Liras",
+  avatar: require("@/assets/img/team-3.jpg"),
+  function: "Programator",
+  review: "positive",
+  reviewColor: "info",
+  email: "alexa@user.com",
+  employed: "11/01/19"
+}, {
+  id: 10392,
+  name: "Laurent Perrier",
+  avatar: require("@/assets/img/team-4.jpg"),
+  function: "Executive",
+  review: "netural",
+  reviewColor: "default",
+  email: "laurent@user.com",
+  employed: "19/09/17"
+}, {
+  id: 34002,
+  name: "Michael Levi",
+  avatar: require("@/assets/img/team-4.jpg"),
+  function: "Backend developer",
+  review: "positive",
+  reviewColor: "info",
+  email: "michael@user.com",
+  employed: "24/12/08"
+}, {
+  id: 91879,
+  name: "Richard Gran",
+  avatar: require("@/assets/img/team-2.jpg"),
+  function: "Manager",
+  review: "negative",
+  reviewColor: "danger",
+  email: "richard@user.com",
+  employed: "04/10/21"
+}, {
+  id: 23042,
+  name: "Miriam Eric",
+  avatar: require("@/assets/img/team-4.jpg"),
+  function: "Programator",
+  review: "positive",
+  reviewColor: "info",
+  email: "miriam@user.com",
+  employed: "14/09/20"
+}]);
 </script>
