@@ -30,7 +30,7 @@ const visibleChildren = computed(() =>
     .sort((a, b) => (a.meta?.drawerIndex ?? 99) - (b.meta?.drawerIndex ?? 98)),
 )
 const visibleChildrenNum = computed(() => visibleChildren.value?.length || 0)
-const isItem = computed(() => !item.children || visibleChildrenNum.value <= 1)
+const isItem = computed(() => !item.children || visibleChildrenNum.value === 0)
 const title = toRef(() => item.meta?.title)
 const icon = toRef(() => item.meta?.icon)
 // @ts-expect-error unknown type miss match
