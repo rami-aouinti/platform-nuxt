@@ -1,5 +1,6 @@
 <template>
   <div class="administration-layout">
+    <AppDrawer />
     <AppBar />
     <v-main class="administration-layout-main">
       <v-container fluid class="pa-4">
