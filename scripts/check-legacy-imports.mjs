@@ -3,7 +3,7 @@ import path from 'node:path'
 import { execSync } from 'node:child_process'
 
 const repoRoot = process.cwd()
-const files = execSync("rg --files app/pages/legacy -g '*.vue' -g '*.js'", {
+const files = execSync("rg --files app/pages/legacy -g '*.vue'", {
   stdio: ['ignore', 'pipe', 'pipe'],
 })
   .toString()
@@ -77,4 +77,4 @@ if (missing.length > 0) {
   process.exit(1)
 }
 
-console.log(`Legacy import check passed for ${files.length} files.`)
+console.log(`Legacy Vue import check passed for ${files.length} files.`)

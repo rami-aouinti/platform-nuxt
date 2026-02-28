@@ -76,5 +76,8 @@ jobs:
       - name: Legacy pages KPI
         run: pnpm run legacy:pages:kpi
 
+      - name: Check legacy imports
+        run: pnpm run legacy:imports:check
+
       - name: Check legacy migration status
         run: pnpm run legacy:migration:check
