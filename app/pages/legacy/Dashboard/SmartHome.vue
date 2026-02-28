@@ -9,7 +9,7 @@
                 <v-window-item key="1" value="tab-1">
                   <div
                     class="height-400 border-radius-lg"
-                    :style="`background-image: url(${new URL('../../assets/img/bg-smart-home-1.jpg', import.meta.url).href}); background-size: cover;`"
+                    :style="`background-image: url(${bgSmartHomeImageOneUrl}); background-size: cover;`"
                   >
                     <div class="position-absolute d-flex top-0 w-100">
                       <p class="text-white px-4 py-4 mb-0">17.05.2021 4:34PM</p>
@@ -39,7 +39,7 @@
                 <v-window-item key="2" value="tab-2">
                   <div
                     class="height-400 border-radius-lg"
-                    :style="`background-image: url(${new URL('../../assets/img/bg-smart-home-2.jpg', import.meta.url).href}); background-size: cover;`"
+                    :style="`background-image: url(${bgSmartHomeImageTwoUrl}); background-size: cover;`"
                   >
                     <div class="position-absolute d-flex top-0 w-100">
                       <p class="text-white px-4 py-4 mb-0">17.05.2021 4:35PM</p>
@@ -69,7 +69,7 @@
                 <v-window-item key="3" value="tab-3">
                   <div
                     class="height-400 border-radius-lg"
-                    :style="`background-image: url(${new URL('../../assets/img/home-decor-3.jpg', import.meta.url).href}); background-size: cover;`"
+                    :style="`background-image: url(${homeDecorImageThreeUrl}); background-size: cover;`"
                   >
                     <div class="position-absolute d-flex top-0 w-100">
                       <p class="text-white px-4 py-4 mb-0">17.05.2021 4:57PM</p>
@@ -1199,6 +1199,9 @@ definePageMeta({
 import { onMounted, ref } from "vue";
 import Chart from "chart.js/auto";
 import RoundSlider from "vue-round-slider";
+const bgSmartHomeImageOneUrl = new URL('../../assets/img/bg-smart-home-1.jpg', import.meta.url).href;
+const bgSmartHomeImageTwoUrl = new URL('../../assets/img/bg-smart-home-2.jpg', import.meta.url).href;
+const homeDecorImageThreeUrl = new URL('../../assets/img/home-decor-3.jpg', import.meta.url).href;
 const tab = ref(null);
 const chartConsumption = ref("chart-consumption");
 const chartWeather = ref("chart-weather");

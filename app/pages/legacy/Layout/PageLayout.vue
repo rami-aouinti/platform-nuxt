@@ -5,7 +5,7 @@
         class="header-auth position-relative ma-4 pb-30 pt-30 border-radius-xl min-vh-50"
         :style="
           this.$route.name == 'Pricing'
-            ? `background-image: url(${new URL('../../assets/img/bg-pricing.jpg', import.meta.url).href}); background-size: cover; background-position: 50%;`
+            ? `background-image: url(${bgPricingImageUrl}); background-size: cover; background-position: 50%;`
             : ''
         "
       >
@@ -48,6 +48,7 @@
 import { ref } from 'vue'
 import AppBarAuth from '@/components/AppBarAuth'
 import ContentFooter from '@/components/App/AppFooter.vue'
+const bgPricingImageUrl = new URL('../../assets/img/bg-pricing.jpg', import.meta.url).href
 const paragraphs = ref('')
 function headerTitle() {
   switch ($route.name) {
