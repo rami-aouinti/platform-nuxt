@@ -152,7 +152,7 @@
                     mt-n8
                     shadow-dark
                   "
-                  :style="`background-image: url(${new URL('../../assets/img/ivancik.jpg', import.meta.url).href}); background-size: cover;`"
+                  :style="`background-image: url(${ivancikImageUrl}); background-size: cover;`"
                 >
                   <span class="mask bg-gradient-default opacity-8"></span>
                   <div class="px-4 py-4 position-relative z-index-1 h-100">
@@ -370,6 +370,7 @@ import { onMounted, ref } from "vue";
 import Chart from "chart.js/auto";
 import CategoriesCard from "./Widgets/CategoriesCard.vue";
 import Calendar from "./Widgets/Calendar.vue";
+const ivancikImageUrl = new URL('../../assets/img/ivancik.jpg', import.meta.url).href;
 const chartLine1 = ref("chart-line-1");
 const chartLine2 = ref("chart-line-2");
 const transactions = ref([{
