@@ -14,18 +14,17 @@
     >
       <drawer :drawer="drawer" class="bg-white border-radius-xl"></drawer>
       <Transition mode="out-in">
-        <!-- your content here -->
         <NuxtPage />
-      </fade-transition>
+      </Transition>
     </v-main>
     <content-footer v-if="!$route.meta.hideFooter"></content-footer>
   </v-app>
 </template>
 <script setup lang="ts">
-import { ref } from "vue";
-import Drawer from "@/components/App/AppDrawer.vue";
-import AppBar from "@/components/App/AppBar.vue";
-import ContentFooter from "@/components/App/AppFooter.vue";
-const drawer = ref(null);
+import { ref } from 'vue'
+import Drawer from '@/components/App/AppDrawer.vue'
+import AppBar from '@/components/App/AppBar.vue'
+import ContentFooter from '@/components/App/AppFooter.vue'
+const drawer = ref(null)
 </script>
 <style lang="scss"></style>

@@ -16,14 +16,7 @@
       ></app-bar-profile>
       <v-container fluid>
         <div
-          class="
-            min-height-300
-            border-radius-xl
-            overflow-hidden
-            position-relative
-            mt-6
-            mx-3
-          "
+          class="min-height-300 border-radius-xl overflow-hidden position-relative mt-6 mx-3"
           :style="`background-image: url('https://images.unsplash.com/photo-1531512073830-ba890ca4eba2?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80'); background-position: 50%; background-size: cover;`"
         >
           <span class="mask bg-gradient-primary opacity-6"></span>
@@ -64,7 +57,6 @@
               class="my-sm-auto ms-sm-auto me-sm-0 mx-auto mt-3"
             >
               <v-tabs background-color="transparent" align-tabs="end">
-
                 <v-tab :ripple="false" value="tab-1">
                   <svg
                     class="text-dark me-1"
@@ -200,14 +192,12 @@
             </v-col>
           </v-row>
           <Transition mode="out-in" v-if="$route.name != 'Project'">
-            <!-- your content here -->
             <NuxtPage />
-          </fade-transition>
+          </Transition>
         </v-card>
         <Transition mode="out-in" v-if="$route.name == 'Project'">
-          <!-- your content here -->
           <NuxtPage />
-        </fade-transition>
+        </Transition>
       </v-container>
 
       <content-footer v-if="!$route.meta.hideFooter"></content-footer>
@@ -215,11 +205,11 @@
   </v-app>
 </template>
 <script setup lang="ts">
-import { ref } from "vue";
-import Drawer from "@/components/App/AppDrawer.vue";
-import AppBarProfile from "@/components/AppBarProfile.vue";
-import AppBarProfileWhite from "@/components/AppBarProfileWhite.vue";
-import ContentFooter from "@/components/App/AppFooter.vue";
-const drawer = ref(null);
+import { ref } from 'vue'
+import Drawer from '@/components/App/AppDrawer.vue'
+import AppBarProfile from '@/components/AppBarProfile.vue'
+import AppBarProfileWhite from '@/components/AppBarProfileWhite.vue'
+import ContentFooter from '@/components/App/AppFooter.vue'
+const drawer = ref(null)
 </script>
 <style lang="scss"></style>

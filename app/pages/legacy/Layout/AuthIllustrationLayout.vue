@@ -13,31 +13,10 @@
           <v-row>
             <v-col
               cols="6"
-              class="
-                d-lg-flex d-none
-                h-100
-                my-auto
-                pe-0
-                pa-0
-                position-absolute
-                top-0
-                start-0
-                text-center
-                justify-center
-                flex-column
-              "
+              class="d-lg-flex d-none h-100 my-auto pe-0 pa-0 position-absolute top-0 start-0 text-center justify-center flex-column"
             >
               <div
-                class="
-                  position-relative
-                  h-100
-                  ma-5
-                  px-7
-                  border-radius-lg
-                  d-flex
-                  flex-column
-                  justify-content-center
-                "
+                class="position-relative h-100 ma-5 px-7 border-radius-lg d-flex flex-column justify-content-center"
                 :style="`background-image: url(${imageIllustrationSignup}); background-size: cover;`"
               ></div>
             </v-col>
@@ -47,9 +26,8 @@
               class="d-flex flex-column ms-auto me-auto ms-lg-auto me-lg-5 py-0"
             >
               <Transition mode="out-in">
-                <!-- your content here -->
                 <NuxtPage />
-              </fade-transition>
+              </Transition>
             </v-col>
           </v-row>
         </v-container>
@@ -58,5 +36,5 @@
   </v-app>
 </template>
 <script setup lang="ts">
-import AppBarBlurAuth from "@/components/AppBarBlurAuth";
+import AppBarBlurAuth from '@/components/AppBarBlurAuth'
 </script>

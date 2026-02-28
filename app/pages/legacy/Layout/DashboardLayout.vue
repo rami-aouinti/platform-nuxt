@@ -36,9 +36,8 @@
         :toggle-active="drawer"
       ></app-bar>
       <Transition mode="out-in">
-        <!-- your content here -->
         <NuxtPage />
-      </fade-transition>
+      </Transition>
       <content-footer v-if="!$route.meta.hideFooter"></content-footer>
       <v-btn
         :ripple="false"
@@ -47,14 +46,7 @@
         color="#fff"
         width="52px"
         height="52px"
-        class="
-          fixed-plugin-button
-          position-fixed
-          btn-light
-          bg-white
-          text-dark
-          z-index-9999
-        "
+        class="fixed-plugin-button position-fixed btn-light bg-white text-dark z-index-9999"
         @click="showSettingsDrawer = true"
       >
         <v-icon size="20">fa fa-cog py-2</v-icon>
@@ -72,34 +64,34 @@
   </v-app>
 </template>
 <script setup lang="ts">
-import { ref } from "vue";
-import Drawer from "@/components/App/AppDrawer.vue";
-import AppBar from "@/components/App/AppBar.vue";
-import ContentFooter from "@/components/App/AppFooter.vue";
-import SettingsDrawer from "@/components/App/AppSettings.vue";
-const drawer = ref(null);
-const showSettingsDrawer = ref(false);
-const sidebarColor = ref("success");
-const sidebarTheme = ref("dark");
-const navbarFixed = ref(false);
+import { ref } from 'vue'
+import Drawer from '@/components/App/AppDrawer.vue'
+import AppBar from '@/components/App/AppBar.vue'
+import ContentFooter from '@/components/App/AppFooter.vue'
+import SettingsDrawer from '@/components/App/AppSettings.vue'
+const drawer = ref(null)
+const showSettingsDrawer = ref(false)
+const sidebarColor = ref('success')
+const sidebarTheme = ref('dark')
+const navbarFixed = ref(false)
 function toggleSettingsDrawer(value: boolean) {
-  showSettingsDrawer.value = value;
+  showSettingsDrawer.value = value
 }
 function updateSidebarColor(value: string) {
-  sidebarColor.value = value;
+  sidebarColor.value = value
 }
 function updateSidebarTheme(value: string) {
-  let siblings = event.target.closest("button").parentElement.children;
+  let siblings = event.target.closest('button').parentElement.children
   for (var i = 0; i < siblings.length; i++) {
-    siblings[i].classList.remove("bg-gradient-default");
-    siblings[i].classList.add("btn-outline-default");
+    siblings[i].classList.remove('bg-gradient-default')
+    siblings[i].classList.add('btn-outline-default')
   }
-  event.target.closest("button").classList.add("bg-gradient-default");
-  event.target.closest("button").classList.remove("btn-outline-default");
-  sidebarTheme.value = value;
+  event.target.closest('button').classList.add('bg-gradient-default')
+  event.target.closest('button').classList.remove('btn-outline-default')
+  sidebarTheme.value = value
 }
 function toggleNavbarPosition(value: boolean) {
-  navbarFixed.value = value;
+  navbarFixed.value = value
 }
 </script>
 <style lang="scss"></style>
