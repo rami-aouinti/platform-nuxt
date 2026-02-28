@@ -16,7 +16,7 @@
       <Transition mode="out-in">
         <!-- your content here -->
         <NuxtPage />
-      </fade-transition>
+      </Transition>
     </v-main>
     <content-footer v-if="!$route.meta.hideFooter"></content-footer>
   </v-app>
