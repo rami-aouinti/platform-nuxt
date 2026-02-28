@@ -29,7 +29,7 @@
 <script>
 import AppBarAuth from "@/components/AppBarAuth";
 import { FadeTransition } from "vue2-transitions";
-import ContentFooter from "@/components/Footer.vue";
+import ContentFooter from "@/components/App/AppFooter.vue";
 
 export default {
   name: "page-layout",
