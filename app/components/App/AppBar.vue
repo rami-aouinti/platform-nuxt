@@ -7,6 +7,16 @@ import type { HTMLAttributes } from 'vue'
 const theme = useTheme()
 const drawer = useState('drawer')
 const route = useRoute()
+withDefaults(
+  defineProps<{
+    showDrawerToggle?: boolean
+    showBrandLink?: boolean
+  }>(),
+  {
+    showDrawerToggle: true,
+    showBrandLink: false,
+  },
+)
 const { t, locale, locales, setLocale } = useI18n()
 const breadcrumbs = computed(() => {
   return route!.matched
@@ -102,7 +112,18 @@ function createActivatorProps(
 
 <template>
   <v-app-bar flat>
-    <v-app-bar-nav-icon @click="drawer = !drawer" />
+    <v-app-bar-nav-icon v-if="showDrawerToggle" @click="drawer = !drawer" />
+    <NuxtLink v-if="showBrandLink" to="/" class="app-bar__brand">
+      <v-icon
+        icon="custom:vitify-nuxt"
+        size="x-large"
+        color="primary"
+        class="app-bar__brand-icon"
+      />
+      <span class="text-h6 font-weight-bold text-high-emphasis">
+        Bro<span class="text-primary">World</span>
+      </span>
+    </NuxtLink>
     <v-breadcrumbs :items="breadcrumbs" />
     <v-spacer />
     <div id="app-bar" class="app-bar__portal" />
@@ -232,6 +253,18 @@ function createActivatorProps(
 
 .app-bar__right-actions {
   flex-shrink: 0;
+}
+
+.app-bar__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.app-bar__brand-icon {
+  margin-right: -2px;
 }
 
 .app-bar__language-flag {

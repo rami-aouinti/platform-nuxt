@@ -1,7 +1,6 @@
 <template>
   <div class="default-layout">
-    <AppDrawer />
-    <AppBar />
+    <AppBar :show-drawer-toggle="false" show-brand-link />
     <v-main class="default-layout-main">
       <slot />
     </v-main>
