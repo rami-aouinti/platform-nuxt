@@ -1,4 +1,16 @@
-const orders = [
+export interface OrderRow {
+  id: string;
+  checkbox: boolean;
+  date: string;
+  status: string;
+  statusIcon: string;
+  customer: string;
+  customerImg?: string;
+  product: string;
+  revenue: string;
+}
+
+export const orders: OrderRow[] = [
   {
     id: "#10421",
     checkbox: false,
@@ -6,7 +18,7 @@ const orders = [
     status: "Paid",
     statusIcon: "fas fa-check",
     customer: "Orlando Imieto",
-    customerImg: require("@/assets/img/team-2.jpg"),
+    customerImg: require("@/assets/img/team-2.jpg") as string,
     product: "Nike Sport V2",
     revenue: "$140,20",
   },
@@ -17,7 +29,7 @@ const orders = [
     status: "Paid",
     statusIcon: "fas fa-check",
     customer: "Alice Murinho",
-    customerImg: require("@/assets/img/team-1.jpg"),
+    customerImg: require("@/assets/img/team-1.jpg") as string,
     product: "Valvet T-shirt2",
     revenue: "$42,00",
   },
@@ -38,7 +50,7 @@ const orders = [
     status: "Paid",
     statusIcon: "fas fa-check",
     customer: "Andrew Nichel",
-    customerImg: require("@/assets/img/team-3.jpg"),
+    customerImg: require("@/assets/img/team-3.jpg") as string,
     product: "Bracelet Onu-Lino",
     revenue: "$19,40",
   },
@@ -49,7 +61,7 @@ const orders = [
     status: "Canceled",
     statusIcon: "fas fa-times",
     customer: "Sebastian Koga",
-    customerImg: require("@/assets/img/team-4.jpg"),
+    customerImg: require("@/assets/img/team-4.jpg") as string,
     product: "Phone Case Pink",
     revenue: "$44,90",
   },
@@ -90,7 +102,7 @@ const orders = [
     status: "Paid",
     statusIcon: "fas fa-check",
     customer: "Rugna Ilpio",
-    customerImg: require("@/assets/img/team-5.jpg"),
+    customerImg: require("@/assets/img/team-5.jpg") as string,
     product: "Bracelet Warret",
     revenue: "$15,00",
   },
@@ -101,7 +113,7 @@ const orders = [
     status: "Refunded",
     statusIcon: "fas fa-undo",
     customer: "Anna Landa",
-    customerImg: require("@/assets/img/ivana-squares.jpg"),
+    customerImg: require("@/assets/img/ivana-squares.jpg") as string,
     product: "Watter Bottle India",
     revenue: "$25,00",
   },
