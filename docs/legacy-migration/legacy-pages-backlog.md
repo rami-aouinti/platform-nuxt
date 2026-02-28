@@ -8,6 +8,9 @@ Generated from `app/pages/legacy/**/*.vue`.
 - Normaliser les chemins de destination en kebab-case.
 - Mettre à jour la colonne `migration_status` (`not started`, `in progress`, `done`) et `migration_flag` (`pending`, `migrated`).
 - `migration_ticket` couvre la migration technique, `ux_validation_ticket` couvre la validation UX post-migration.
+- Renseigner la [checklist de parité](./parity-checklist.md) (navigation, formulaires, tableaux, i18n, responsive, permissions) pour chaque page migrée.
+- Ajouter/mettre à jour les tests ciblés par domaine dans `test/nuxt` et `test/e2e` avant de marquer une route comme validée.
+- Activer la redirection de la route legacy uniquement après validation UX dans `app/utils/legacy-migration/validatedRedirects.ts`.
 
 ## Redirections HTTP
 
