@@ -2,6 +2,7 @@ import type { StoredAuthState } from '~/types/auth'
 
 export const AUTH_TOKEN_STORAGE_KEY = 'auth_token'
 export const AUTH_TOKEN_COOKIE_KEY = 'auth_token'
+export const AUTH_PRIMARY_ROLE_STORAGE_KEY = 'auth_primary_role'
 export const AUTH_STATE_STORAGE_KEY = 'auth_state'
 export const AUTH_STATE_MAX_AGE_MS = 5 * 60 * 1000
 
@@ -84,4 +85,25 @@ export function readPersistedToken() {
   }
 
   return sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)
+}
+
+export function persistPrimaryRole(role: string | null) {
+  if (!canUseSessionStorage()) {
+    return
+  }
+
+  if (role) {
+    sessionStorage.setItem(AUTH_PRIMARY_ROLE_STORAGE_KEY, role)
+    return
+  }
+
+  sessionStorage.removeItem(AUTH_PRIMARY_ROLE_STORAGE_KEY)
+}
+
+export function readPersistedPrimaryRole() {
+  if (!canUseSessionStorage()) {
+    return null
+  }
+
+  return sessionStorage.getItem(AUTH_PRIMARY_ROLE_STORAGE_KEY)
 }

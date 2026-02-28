@@ -34,7 +34,6 @@ async function login() {
 
   try {
     await authStore.login(form.username, form.password)
-    await authStore.fetchProfileData()
     form.password = ''
     await navigateTo('/homepage')
   } catch (error) {
