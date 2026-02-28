@@ -52,7 +52,7 @@
                 mode="out-in"
               >
                 <!-- your content here -->
-                <router-view></router-view>
+                <NuxtPage />
               </fade-transition>
             </v-col>
           </v-row>

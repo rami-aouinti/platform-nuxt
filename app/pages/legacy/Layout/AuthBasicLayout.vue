@@ -13,7 +13,7 @@
             <fade-transition :duration="200" origin="center top" mode="out-in">
               <!-- your content here -->
               <v-container class="pb-0 position-relative">
-                <router-view></router-view>
+                <NuxtPage />
                 <content-footer
                   auth
                   v-if="!$route.meta.hideFooter"

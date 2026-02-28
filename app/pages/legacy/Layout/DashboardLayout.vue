@@ -37,7 +37,7 @@
       ></app-bar>
       <fade-transition :duration="200" origin="center top" mode="out-in">
         <!-- your content here -->
-        <router-view></router-view>
+        <NuxtPage />
       </fade-transition>
       <content-footer v-if="!$route.meta.hideFooter"></content-footer>
       <v-btn

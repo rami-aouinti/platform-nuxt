@@ -206,7 +206,7 @@
             v-if="$route.name != 'Project'"
           >
             <!-- your content here -->
-            <router-view></router-view>
+            <NuxtPage />
           </fade-transition>
         </v-card>
         <fade-transition
@@ -216,7 +216,7 @@
           v-if="$route.name == 'Project'"
         >
           <!-- your content here -->
-          <router-view></router-view>
+          <NuxtPage />
         </fade-transition>
       </v-container>
 
