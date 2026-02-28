@@ -30,9 +30,9 @@ const { isAuthenticated, profile, hasAdminAccess, rolesLoading } =
   storeToRefs(authStore)
 
 const localeFlags: Record<string, string> = {
-  en: '🇬🇧',
-  de: '🇩🇪',
-  fr: '🇫🇷',
+  en: '/flags/en.svg',
+  de: '/flags/de.svg',
+  fr: '/flags/fr.svg',
 }
 
 const languageOptions = computed(() =>
@@ -41,21 +41,21 @@ const languageOptions = computed(() =>
       return {
         code: entry,
         name: entry.toUpperCase(),
-        flag: localeFlags[entry] ?? '🌐',
+        flag: localeFlags[entry] ?? '/flags/en.svg',
       }
     }
 
     return {
       code: entry.code,
       name: entry.name ?? entry.code.toUpperCase(),
-      flag: localeFlags[entry.code] ?? '🌐',
+      flag: localeFlags[entry.code] ?? '/flags/en.svg',
     }
   }),
 )
 
 const currentLanguageFlag = computed(() => {
   const selected = languageOptions.value.find((item) => item.code === locale.value)
-  return selected?.flag ?? '🌐'
+  return selected?.flag ?? '/flags/en.svg'
 })
 
 const userDisplayName = computed(() => {
@@ -115,7 +115,11 @@ function createActivatorProps(
             aria-label="Language"
             v-bind="props"
           >
-            {{ currentLanguageFlag }}
+            <img
+              :src="currentLanguageFlag"
+              alt=""
+              class="app-bar__language-flag"
+            >
             <v-icon size="18" icon="mdi-chevron-down" class="ml-1" />
           </v-btn>
         </template>
@@ -128,7 +132,9 @@ function createActivatorProps(
             :aria-label="language.name"
             @click="setLocale(language.code)"
           >
-            <v-list-item-title>{{ language.flag }}</v-list-item-title>
+            <v-list-item-title>
+              <img :src="language.flag" alt="" class="app-bar__language-flag">
+            </v-list-item-title>
           </v-list-item>
         </v-list>
       </v-menu>
@@ -222,5 +228,13 @@ function createActivatorProps(
 
 .app-bar__right-actions {
   flex-shrink: 0;
+}
+
+.app-bar__language-flag {
+  width: 22px;
+  height: 15px;
+  object-fit: cover;
+  border-radius: 2px;
+  display: block;
 }
 </style>
