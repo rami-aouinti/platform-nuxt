@@ -59,3 +59,19 @@ jobs:
         run: pnpm playwright-core install chromium
       - name: Run tests
         run: pnpm run test
+
+  legacy-migration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20.x
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install
+
+      - name: Check legacy migration status
+        run: pnpm run legacy:migration:check

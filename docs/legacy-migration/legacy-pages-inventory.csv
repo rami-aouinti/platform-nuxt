@@ -1,0 +1,91 @@
+legacy_file,legacy_route,domain,ui_dependencies,migration_status,target_nuxt4_route,migration_ticket,ux_validation_ticket,migration_flag
+app/pages/legacy/About.vue,/legacy/About,About,none,not started,/about,MIG-0001,UX-0001,pending
+app/pages/legacy/Applications/Calendar.vue,/legacy/Applications/Calendar,Applications,none,not started,/applications/calendar,MIG-0002,UX-0002,pending
+app/pages/legacy/Applications/Datatables.vue,/legacy/Applications/Datatables,Applications,none,not started,/applications/datatables,MIG-0003,UX-0003,pending
+app/pages/legacy/Applications/Kanban.vue,/legacy/Applications/Kanban,Applications,none,not started,/applications/kanban,MIG-0004,UX-0004,pending
+app/pages/legacy/Applications/Widgets/CalendarWidget.vue,/legacy/Applications/Widgets/CalendarWidget,Applications,@fullcalendar/daygrid; @fullcalendar/interaction; @fullcalendar/timegrid; @fullcalendar/vue,not started,/applications/widgets/calendar-widget,MIG-0005,UX-0005,pending
+app/pages/legacy/Applications/Widgets/DatatableSearch.vue,/legacy/Applications/Widgets/DatatableSearch,Applications,none,not started,/applications/widgets/datatable-search,MIG-0006,UX-0006,pending
+app/pages/legacy/Applications/Widgets/DatatableSimple.vue,/legacy/Applications/Widgets/DatatableSimple,Applications,none,not started,/applications/widgets/datatable-simple,MIG-0007,UX-0007,pending
+app/pages/legacy/Applications/Wizard.vue,/legacy/Applications/Wizard,Applications,none,not started,/applications/wizard,MIG-0008,UX-0008,pending
+app/pages/legacy/Components/Notifications.vue,/legacy/Components/Notifications,Components,none,not started,/components/notifications,MIG-0009,UX-0009,pending
+app/pages/legacy/Dashboard/Automotive.vue,/legacy/Dashboard/Automotive,Dashboard,none,not started,/dashboard/automotive,MIG-0010,UX-0010,pending
+app/pages/legacy/Dashboard/Calendar.vue,/legacy/Dashboard/Calendar,Dashboard,@fullcalendar/daygrid; @fullcalendar/interaction; @fullcalendar/timegrid; @fullcalendar/vue,not started,/dashboard/calendar,MIG-0011,UX-0011,pending
+app/pages/legacy/Dashboard/Crm.vue,/legacy/Dashboard/Crm,Dashboard,none,not started,/dashboard/crm,MIG-0012,UX-0012,pending
+app/pages/legacy/Dashboard/Dashboard.vue,/legacy/Dashboard/Dashboard,Dashboard,none,not started,/dashboard/dashboard,MIG-0013,UX-0013,pending
+app/pages/legacy/Dashboard/Discover.vue,/legacy/Dashboard/Discover,Dashboard,none,not started,/dashboard/discover,MIG-0014,UX-0014,pending
+app/pages/legacy/Dashboard/GettingStarted.vue,/legacy/Dashboard/GettingStarted,Dashboard,none,not started,/dashboard/getting-started,MIG-0015,UX-0015,pending
+app/pages/legacy/Dashboard/Sales.vue,/legacy/Dashboard/Sales,Dashboard,none,not started,/dashboard/sales,MIG-0016,UX-0016,pending
+app/pages/legacy/Dashboard/SmartHome.vue,/legacy/Dashboard/SmartHome,Dashboard,none,not started,/dashboard/smart-home,MIG-0017,UX-0017,pending
+app/pages/legacy/Dashboard/VrDefault.vue,/legacy/Dashboard/VrDefault,Dashboard,none,not started,/dashboard/vr-default,MIG-0018,UX-0018,pending
+app/pages/legacy/Dashboard/VrInfo.vue,/legacy/Dashboard/VrInfo,Dashboard,none,not started,/dashboard/vr-info,MIG-0019,UX-0019,pending
+app/pages/legacy/Dashboard/Widgets/Calendar.vue,/legacy/Dashboard/Widgets/Calendar,Dashboard,@fullcalendar/daygrid; @fullcalendar/interaction; @fullcalendar/timegrid; @fullcalendar/vue,not started,/dashboard/widgets/calendar,MIG-0020,UX-0020,pending
+app/pages/legacy/Dashboard/Widgets/CardChartChannels.vue,/legacy/Dashboard/Widgets/CardChartChannels,Dashboard,none,not started,/dashboard/widgets/card-chart-channels,MIG-0021,UX-0021,pending
+app/pages/legacy/Dashboard/Widgets/CardChartRevenue.vue,/legacy/Dashboard/Widgets/CardChartRevenue,Dashboard,none,not started,/dashboard/widgets/card-chart-revenue,MIG-0022,UX-0022,pending
+app/pages/legacy/Dashboard/Widgets/CardChartSalesAge.vue,/legacy/Dashboard/Widgets/CardChartSalesAge,Dashboard,none,not started,/dashboard/widgets/card-chart-sales-age,MIG-0023,UX-0023,pending
+app/pages/legacy/Dashboard/Widgets/CardCompletedTasks.vue,/legacy/Dashboard/Widgets/CardCompletedTasks,Dashboard,none,not started,/dashboard/widgets/card-completed-tasks,MIG-0024,UX-0024,pending
+app/pages/legacy/Dashboard/Widgets/CardDailySales.vue,/legacy/Dashboard/Widgets/CardDailySales,Dashboard,none,not started,/dashboard/widgets/card-daily-sales,MIG-0025,UX-0025,pending
+app/pages/legacy/Dashboard/Widgets/CardWebsiteViews.vue,/legacy/Dashboard/Widgets/CardWebsiteViews,Dashboard,none,not started,/dashboard/widgets/card-website-views,MIG-0026,UX-0026,pending
+app/pages/legacy/Dashboard/Widgets/CategoriesCard.vue,/legacy/Dashboard/Widgets/CategoriesCard,Dashboard,none,not started,/dashboard/widgets/categories-card,MIG-0027,UX-0027,pending
+app/pages/legacy/Dashboard/Widgets/MembersCard.vue,/legacy/Dashboard/Widgets/MembersCard,Dashboard,none,not started,/dashboard/widgets/members-card,MIG-0028,UX-0028,pending
+app/pages/legacy/Dashboard/Widgets/MembersCardSearch.vue,/legacy/Dashboard/Widgets/MembersCardSearch,Dashboard,none,not started,/dashboard/widgets/members-card-search,MIG-0029,UX-0029,pending
+app/pages/legacy/Dashboard/Widgets/SalesCountry.vue,/legacy/Dashboard/Widgets/SalesCountry,Dashboard,none,not started,/dashboard/widgets/sales-country,MIG-0030,UX-0030,pending
+app/pages/legacy/Dashboard/Widgets/VectorMapCard.vue,/legacy/Dashboard/Widgets/VectorMapCard,Dashboard,@/components/WorldMap/WorldMap.vue,not started,/dashboard/widgets/vector-map-card,MIG-0031,UX-0031,pending
+app/pages/legacy/Ecommerce/Orders/OrderDetails.vue,/legacy/Ecommerce/Orders/OrderDetails,Ecommerce,none,not started,/ecommerce/orders/order-details,MIG-0032,UX-0032,pending
+app/pages/legacy/Ecommerce/Orders/OrderList.vue,/legacy/Ecommerce/Orders/OrderList,Ecommerce,none,not started,/ecommerce/orders/order-list,MIG-0033,UX-0033,pending
+app/pages/legacy/Ecommerce/Orders/Widgets/TableOrders.vue,/legacy/Ecommerce/Orders/Widgets/TableOrders,Ecommerce,none,not started,/ecommerce/orders/widgets/table-orders,MIG-0034,UX-0034,pending
+app/pages/legacy/Ecommerce/Products/EditProduct.vue,/legacy/Ecommerce/Products/EditProduct,Ecommerce,none,not started,/ecommerce/products/edit-product,MIG-0035,UX-0035,pending
+app/pages/legacy/Ecommerce/Products/NewProduct.vue,/legacy/Ecommerce/Products/NewProduct,Ecommerce,none,not started,/ecommerce/products/new-product,MIG-0036,UX-0036,pending
+app/pages/legacy/Ecommerce/Products/ProductPage.vue,/legacy/Ecommerce/Products/ProductPage,Ecommerce,none,not started,/ecommerce/products/product-page,MIG-0037,UX-0037,pending
+app/pages/legacy/Ecommerce/Products/Widgets/Dropzone.vue,/legacy/Ecommerce/Products/Widgets/Dropzone,Ecommerce,none,not started,/ecommerce/products/widgets/dropzone,MIG-0038,UX-0038,pending
+app/pages/legacy/Ecommerce/Products/Widgets/HtmlEditor.vue,/legacy/Ecommerce/Products/Widgets/HtmlEditor,Ecommerce,none,not started,/ecommerce/products/widgets/html-editor,MIG-0039,UX-0039,pending
+app/pages/legacy/Ecommerce/Products/Widgets/TableProducts.vue,/legacy/Ecommerce/Products/Widgets/TableProducts,Ecommerce,none,not started,/ecommerce/products/widgets/table-products,MIG-0040,UX-0040,pending
+app/pages/legacy/Layout/AuthBasicLayout.vue,/legacy/Layout/AuthBasicLayout,Layout,@/components/AppBarAuth; @/components/Footer.vue,not started,/layout/auth-basic-layout,MIG-0041,UX-0041,pending
+app/pages/legacy/Layout/AuthCoverLayout.vue,/legacy/Layout/AuthCoverLayout,Layout,@/components/AppBarAuth; @/components/Footer.vue,not started,/layout/auth-cover-layout,MIG-0042,UX-0042,pending
+app/pages/legacy/Layout/AuthIllustrationLayout.vue,/legacy/Layout/AuthIllustrationLayout,Layout,@/components/AppBarBlurAuth,not started,/layout/auth-illustration-layout,MIG-0043,UX-0043,pending
+app/pages/legacy/Layout/DashboardLayout.vue,/legacy/Layout/DashboardLayout,Layout,@/components/AppBar.vue; @/components/Drawer.vue; @/components/Footer.vue; @/components/Widgets/SettingsDrawer.vue,not started,/layout/dashboard-layout,MIG-0044,UX-0044,pending
+app/pages/legacy/Layout/DashboardLayoutVr.vue,/legacy/Layout/DashboardLayoutVr,Layout,@/components/AppBar.vue; @/components/Drawer.vue; @/components/Footer.vue,not started,/layout/dashboard-layout-vr,MIG-0045,UX-0045,pending
+app/pages/legacy/Layout/PageLayout.vue,/legacy/Layout/PageLayout,Layout,@/components/AppBarAuth; @/components/Footer.vue,not started,/layout/page-layout,MIG-0046,UX-0046,pending
+app/pages/legacy/Layout/ProfileLayout.vue,/legacy/Layout/ProfileLayout,Layout,@/components/AppBarProfile.vue; @/components/AppBarProfileWhite.vue; @/components/Drawer.vue; @/components/Footer.vue,not started,/layout/profile-layout,MIG-0047,UX-0047,pending
+app/pages/legacy/Pages/Account/Billing.vue,/legacy/Pages/Account/Billing,Pages,none,not started,/pages/account/billing,MIG-0048,UX-0048,pending
+app/pages/legacy/Pages/Account/Invoice.vue,/legacy/Pages/Account/Invoice,Pages,none,not started,/pages/account/invoice,MIG-0049,UX-0049,pending
+app/pages/legacy/Pages/Account/Settings.vue,/legacy/Pages/Account/Settings,Pages,none,not started,/pages/account/settings,MIG-0050,UX-0050,pending
+app/pages/legacy/Pages/Account/Widgets/Accounts.vue,/legacy/Pages/Account/Widgets/Accounts,Pages,none,not started,/pages/account/widgets/accounts,MIG-0051,UX-0051,pending
+app/pages/legacy/Pages/Account/Widgets/BasicInfo.vue,/legacy/Pages/Account/Widgets/BasicInfo,Pages,none,not started,/pages/account/widgets/basic-info,MIG-0052,UX-0052,pending
+app/pages/legacy/Pages/Account/Widgets/ChangePassword.vue,/legacy/Pages/Account/Widgets/ChangePassword,Pages,none,not started,/pages/account/widgets/change-password,MIG-0053,UX-0053,pending
+app/pages/legacy/Pages/Account/Widgets/DeleteAccount.vue,/legacy/Pages/Account/Widgets/DeleteAccount,Pages,none,not started,/pages/account/widgets/delete-account,MIG-0054,UX-0054,pending
+app/pages/legacy/Pages/Account/Widgets/Notifications.vue,/legacy/Pages/Account/Widgets/Notifications,Pages,none,not started,/pages/account/widgets/notifications,MIG-0055,UX-0055,pending
+app/pages/legacy/Pages/Account/Widgets/Sessions.vue,/legacy/Pages/Account/Widgets/Sessions,Pages,none,not started,/pages/account/widgets/sessions,MIG-0056,UX-0056,pending
+app/pages/legacy/Pages/Account/Widgets/TwoFactor.vue,/legacy/Pages/Account/Widgets/TwoFactor,Pages,none,not started,/pages/account/widgets/two-factor,MIG-0057,UX-0057,pending
+app/pages/legacy/Pages/Alerts.vue,/legacy/Pages/Alerts,Pages,none,not started,/pages/alerts,MIG-0058,UX-0058,pending
+app/pages/legacy/Pages/Authentication/SignUp/Basic.vue,/legacy/Pages/Authentication/SignUp/Basic,Pages,none,not started,/pages/authentication/sign-up/basic,MIG-0059,UX-0059,pending
+app/pages/legacy/Pages/Authentication/SignUp/Cover.vue,/legacy/Pages/Authentication/SignUp/Cover,Pages,none,not started,/pages/authentication/sign-up/cover,MIG-0060,UX-0060,pending
+app/pages/legacy/Pages/Authentication/SignUp/Illustration.vue,/legacy/Pages/Authentication/SignUp/Illustration,Pages,none,not started,/pages/authentication/sign-up/illustration,MIG-0061,UX-0061,pending
+app/pages/legacy/Pages/Charts.vue,/legacy/Pages/Charts,Pages,none,not started,/pages/charts,MIG-0062,UX-0062,pending
+app/pages/legacy/Pages/Notifications.vue,/legacy/Pages/Notifications,Pages,none,not started,/pages/notifications,MIG-0063,UX-0063,pending
+app/pages/legacy/Pages/Pricing.vue,/legacy/Pages/Pricing,Pages,none,not started,/pages/pricing,MIG-0064,UX-0064,pending
+app/pages/legacy/Pages/Profile.vue,/legacy/Pages/Profile,Pages,none,not started,/pages/profile,MIG-0065,UX-0065,pending
+app/pages/legacy/Pages/Profile/Messages.vue,/legacy/Pages/Profile/Messages,Pages,none,not started,/pages/profile/messages,MIG-0066,UX-0066,pending
+app/pages/legacy/Pages/Profile/ProfileOverview.vue,/legacy/Pages/Profile/ProfileOverview,Pages,none,not started,/pages/profile/profile-overview,MIG-0067,UX-0067,pending
+app/pages/legacy/Pages/Profile/Projects.vue,/legacy/Pages/Profile/Projects,Pages,none,not started,/pages/profile/projects,MIG-0068,UX-0068,pending
+app/pages/legacy/Pages/Projects/Timeline.vue,/legacy/Pages/Projects/Timeline,Pages,none,not started,/pages/projects/timeline,MIG-0069,UX-0069,pending
+app/pages/legacy/Pages/Rtl.vue,/legacy/Pages/Rtl,Pages,none,not started,/pages/rtl,MIG-0070,UX-0070,pending
+app/pages/legacy/Pages/Timeline.vue,/legacy/Pages/Timeline,Pages,none,not started,/pages/timeline,MIG-0071,UX-0071,pending
+app/pages/legacy/Pages/Users/NewUser.vue,/legacy/Pages/Users/NewUser,Pages,none,not started,/pages/users/new-user,MIG-0072,UX-0072,pending
+app/pages/legacy/Pages/Users/Reports.vue,/legacy/Pages/Users/Reports,Pages,none,not started,/pages/users/reports,MIG-0073,UX-0073,pending
+app/pages/legacy/Pages/Users/Widgets/ReportsTable.vue,/legacy/Pages/Users/Widgets/ReportsTable,Pages,none,not started,/pages/users/widgets/reports-table,MIG-0074,UX-0074,pending
+app/pages/legacy/Pages/Widgets/BarChart.vue,/legacy/Pages/Widgets/BarChart,Pages,none,not started,/pages/widgets/bar-chart,MIG-0075,UX-0075,pending
+app/pages/legacy/Pages/Widgets/BarChartHorizontal.vue,/legacy/Pages/Widgets/BarChartHorizontal,Pages,none,not started,/pages/widgets/bar-chart-horizontal,MIG-0076,UX-0076,pending
+app/pages/legacy/Pages/Widgets/BubbleChart.vue,/legacy/Pages/Widgets/BubbleChart,Pages,none,not started,/pages/widgets/bubble-chart,MIG-0077,UX-0077,pending
+app/pages/legacy/Pages/Widgets/CategoriesCard.vue,/legacy/Pages/Widgets/CategoriesCard,Pages,none,not started,/pages/widgets/categories-card,MIG-0078,UX-0078,pending
+app/pages/legacy/Pages/Widgets/CategoriesCardDashboard.vue,/legacy/Pages/Widgets/CategoriesCardDashboard,Pages,none,not started,/pages/widgets/categories-card-dashboard,MIG-0079,UX-0079,pending
+app/pages/legacy/Pages/Widgets/DoughnutChart.vue,/legacy/Pages/Widgets/DoughnutChart,Pages,none,not started,/pages/widgets/doughnut-chart,MIG-0080,UX-0080,pending
+app/pages/legacy/Pages/Widgets/LineChart.vue,/legacy/Pages/Widgets/LineChart,Pages,none,not started,/pages/widgets/line-chart,MIG-0081,UX-0081,pending
+app/pages/legacy/Pages/Widgets/LineChartWithoutDots.vue,/legacy/Pages/Widgets/LineChartWithoutDots,Pages,none,not started,/pages/widgets/line-chart-without-dots,MIG-0082,UX-0082,pending
+app/pages/legacy/Pages/Widgets/MixedChart.vue,/legacy/Pages/Widgets/MixedChart,Pages,none,not started,/pages/widgets/mixed-chart,MIG-0083,UX-0083,pending
+app/pages/legacy/Pages/Widgets/PieChart.vue,/legacy/Pages/Widgets/PieChart,Pages,none,not started,/pages/widgets/pie-chart,MIG-0084,UX-0084,pending
+app/pages/legacy/Pages/Widgets/PolarChart.vue,/legacy/Pages/Widgets/PolarChart,Pages,none,not started,/pages/widgets/polar-chart,MIG-0085,UX-0085,pending
+app/pages/legacy/Pages/Widgets/RadarChart.vue,/legacy/Pages/Widgets/RadarChart,Pages,none,not started,/pages/widgets/radar-chart,MIG-0086,UX-0086,pending
+app/pages/legacy/Tables/PaginatedTables.vue,/legacy/Tables/PaginatedTables,Tables,none,not started,/tables/paginated-tables,MIG-0087,UX-0087,pending
+app/pages/legacy/Tables/RegularTables.vue,/legacy/Tables/RegularTables,Tables,none,not started,/tables/regular-tables,MIG-0088,UX-0088,pending
+app/pages/legacy/Tables/SortableTables.vue,/legacy/Tables/SortableTables,Tables,none,not started,/tables/sortable-tables,MIG-0089,UX-0089,pending
+app/pages/legacy/Tables/Tables/PaginatedTable.vue,/legacy/Tables/Tables/PaginatedTable,Tables,none,not started,/tables/tables/paginated-table,MIG-0090,UX-0090,pending
