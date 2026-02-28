@@ -108,36 +108,6 @@ function createActivatorProps(
     <div id="app-bar" class="app-bar__portal" />
     <v-spacer />
     <div class="app-bar__right-actions d-flex align-center">
-      <v-menu location="bottom end">
-        <template #activator="{ props }">
-          <UiButton
-            variant="text"
-            class="mr-2"
-            aria-label="Language"
-            v-bind="props"
-          >
-            <img
-              :src="currentLanguageFlag"
-              alt=""
-              class="app-bar__language-flag"
-            />
-          </UiButton>
-        </template>
-
-        <v-list density="compact">
-          <v-list-item
-            v-for="language in languageOptions"
-            :key="language.code"
-            :active="language.code === locale"
-            :aria-label="language.name"
-            @click="setLocale(language.code)"
-          >
-            <v-list-item-title>
-              <img :src="language.flag" alt="" class="app-bar__language-flag" />
-            </v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-menu>
       <v-switch
         v-model="isDark"
         color=""
@@ -219,6 +189,36 @@ function createActivatorProps(
             prepend-icon="mdi-logout"
             @click="logout"
           />
+        </v-list>
+      </v-menu>
+      <v-menu location="bottom end">
+        <template #activator="{ props }">
+          <UiButton
+            variant="text"
+            class="mr-2"
+            aria-label="Language"
+            v-bind="props"
+          >
+            <img
+              :src="currentLanguageFlag"
+              alt=""
+              class="app-bar__language-flag"
+            />
+          </UiButton>
+        </template>
+
+        <v-list density="compact">
+          <v-list-item
+            v-for="language in languageOptions"
+            :key="language.code"
+            :active="language.code === locale"
+            :aria-label="language.name"
+            @click="setLocale(language.code)"
+          >
+            <v-list-item-title>
+              <img :src="language.flag" alt="" class="app-bar__language-flag" />
+            </v-list-item-title>
+          </v-list-item>
         </v-list>
       </v-menu>
     </div>
