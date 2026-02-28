@@ -152,7 +152,7 @@
                     mt-n8
                     shadow-dark
                   "
-                  :style="`background-image: url(${require('../../assets/img/ivancik.jpg')}); background-size: cover;`"
+                  :style="`background-image: url(${new URL('../../assets/img/ivancik.jpg', import.meta.url).href}); background-size: cover;`"
                 >
                   <span class="mask bg-gradient-default opacity-8"></span>
                   <div class="px-4 py-4 position-relative z-index-1 h-100">

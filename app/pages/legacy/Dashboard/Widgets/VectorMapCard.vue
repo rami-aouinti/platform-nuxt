@@ -86,6 +86,9 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import WorldMap from "@/components/WorldMap/WorldMap.vue";
+import imageUs from "@/assets/img/icons/flags/US.png";
+import imageDe from "@/assets/img/icons/flags/DE.png";
+import imageGb from "@/assets/img/icons/flags/GB.png";
 const mapData = ref({
   AUS: 760,
   BRA: 900,
@@ -119,17 +122,17 @@ const points = ref([{
   centered: "ROU"
 }]);
 const real = ref([{
-  flag: require("@/assets/img/icons/flags/US.png"),
+  flag: imageUs,
   country: "United States",
   visits: "2500",
   bounce: "30%"
 }, {
-  flag: require("@/assets/img/icons/flags/DE.png"),
+  flag: imageDe,
   country: "Germany",
   visits: "2500",
   bounce: "30%"
 }, {
-  flag: require("@/assets/img/icons/flags/GB.png"),
+  flag: imageGb,
   country: "Great Britain",
   visits: "2500",
   bounce: "30%"

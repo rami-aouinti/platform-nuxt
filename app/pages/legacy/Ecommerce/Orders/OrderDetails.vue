@@ -50,7 +50,7 @@
                       height="110px"
                     >
                       <v-img
-                        :src="require('@/assets/img/products/product-12.jpg')"
+                        :src="imageProduct12"
                       >
                       </v-img>
                     </v-avatar>
@@ -286,6 +286,7 @@ definePageMeta({
 })
 
 import { ref } from "vue";
+import imageProduct12 from "@/assets/img/products/product-12.jpg";
 const timeline = ref([{
   title: "Order received",
   date: "22 DEC 7:20 PM",

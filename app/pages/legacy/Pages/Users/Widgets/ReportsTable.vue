@@ -129,10 +129,13 @@
 </template>
 <script setup lang="ts">
 import { ref } from "vue";
+import imageTeam2 from "@/assets/img/team-2.jpg";
+import imageTeam3 from "@/assets/img/team-3.jpg";
+import imageTeam4 from "@/assets/img/team-4.jpg";
 const users = ref([{
   id: 43431,
   name: "John Michael",
-  avatar: require("@/assets/img/team-2.jpg"),
+  avatar: imageTeam2,
   function: "Manager",
   review: "positive",
   reviewColor: "info",
@@ -141,7 +144,7 @@ const users = ref([{
 }, {
   id: 93021,
   name: "Alexa Liras",
-  avatar: require("@/assets/img/team-3.jpg"),
+  avatar: imageTeam3,
   function: "Programator",
   review: "positive",
   reviewColor: "info",
@@ -150,7 +153,7 @@ const users = ref([{
 }, {
   id: 10392,
   name: "Laurent Perrier",
-  avatar: require("@/assets/img/team-4.jpg"),
+  avatar: imageTeam4,
   function: "Executive",
   review: "netural",
   reviewColor: "default",
@@ -159,7 +162,7 @@ const users = ref([{
 }, {
   id: 34002,
   name: "Michael Levi",
-  avatar: require("@/assets/img/team-4.jpg"),
+  avatar: imageTeam4,
   function: "Backend developer",
   review: "positive",
   reviewColor: "info",
@@ -168,7 +171,7 @@ const users = ref([{
 }, {
   id: 91879,
   name: "Richard Gran",
-  avatar: require("@/assets/img/team-2.jpg"),
+  avatar: imageTeam2,
   function: "Manager",
   review: "negative",
   reviewColor: "danger",
@@ -177,7 +180,7 @@ const users = ref([{
 }, {
   id: 23042,
   name: "Miriam Eric",
-  avatar: require("@/assets/img/team-4.jpg"),
+  avatar: imageTeam4,
   function: "Programator",
   review: "positive",
   reviewColor: "info",

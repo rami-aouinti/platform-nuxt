@@ -13,7 +13,7 @@
         "
         :style="
           this.$route.name == 'Pricing'
-            ? `background-image: url(${require('../../assets/img/bg-pricing.jpg')}); background-size: cover; background-position: 50%;`
+            ? `background-image: url(${new URL('../../assets/img/bg-pricing.jpg', import.meta.url).href}); background-size: cover; background-position: 50%;`
             : ''
         "
       >
