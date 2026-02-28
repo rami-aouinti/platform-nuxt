@@ -1,7 +1,7 @@
 import type { IconProps } from 'vuetify'
 import { Icon } from '#components'
 import { useStorage } from '@vueuse/core'
-import { vuetifyMdiAliases } from '~/app/utils/vuetifyMdiAliases'
+import { vuetifyMdiAliases } from '../utils/vuetifyMdiAliases'
 
 export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.hook('vuetify:configuration', ({ vuetifyOptions }) => {
