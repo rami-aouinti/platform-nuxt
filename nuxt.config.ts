@@ -1,4 +1,4 @@
-import { aliases } from 'vuetify/iconsets/mdi'
+import { vuetifyMdiAliases } from './app/utils/vuetifyMdiAliases'
 import { defineNuxtConfig } from 'nuxt/config'
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
@@ -31,7 +31,7 @@ export default defineNuxtConfig({
   pinia: {
     storesDirs: ['./app/stores/**'],
   },
-  css: ['~/assets/styles/index.css', "~/assets/styles/material-dashboard.scss",],
+  css: ['~/assets/styles/index.css', '~/assets/styles/material-dashboard.scss'],
   experimental: { typedPages: true },
   typescript: {
     shim: false,
@@ -54,7 +54,7 @@ export default defineNuxtConfig({
   },
   icon: {
     clientBundle: {
-      icons: Object.values(aliases).map((v) =>
+      icons: Object.values(vuetifyMdiAliases).map((v) =>
         (v as string).replace(/^mdi-/, 'mdi:'),
       ),
       scan: true,
