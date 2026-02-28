@@ -60,7 +60,7 @@ function randomString() {
   for (let i = 0; i < 5; i++) text += possible.charAt(Math.floor(Math.random() * possible.length));
   return text;
 }
-onMounted(() => {
+onMounted(async () => {
   let Quill = await import("quill");
   Quill = Quill.default || Quill;
   editorId.value = randomString();
