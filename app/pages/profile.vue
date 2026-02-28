@@ -19,7 +19,11 @@ const identityFields = [
   { label: 'ID', key: 'id', icon: 'mdi-identifier' },
   { label: 'Username', key: 'username', icon: 'mdi-account-outline' },
   { label: 'Email', key: 'email', icon: 'mdi-email-outline' },
-  { label: 'First name', key: 'firstName', icon: 'mdi-card-account-details-outline' },
+  {
+    label: 'First name',
+    key: 'firstName',
+    icon: 'mdi-card-account-details-outline',
+  },
   { label: 'Last name', key: 'lastName', icon: 'mdi-badge-account-outline' },
   { label: 'Language', key: 'language', icon: 'mdi-translate' },
   { label: 'Locale', key: 'locale', icon: 'mdi-map-marker-radius-outline' },
@@ -108,26 +112,43 @@ onMounted(loadProfileDataIfNeeded)
     <v-row class="mb-6">
       <v-col cols="12">
         <v-sheet class="hero-card pa-6 pa-md-8" rounded="xl">
-          <div class="d-flex flex-column flex-sm-row ga-4 align-sm-center justify-space-between">
+          <div
+            class="d-flex flex-column flex-sm-row ga-4 align-sm-center justify-space-between"
+          >
             <div class="d-flex ga-4 align-center">
-              <v-avatar size="72" color="primary" class="text-h5 font-weight-bold">
+              <UiAvatar
+                size="xl"
+                color="primary"
+                class="text-h5 font-weight-bold"
+              >
                 {{ avatarInitials }}
-              </v-avatar>
+              </UiAvatar>
 
               <div>
-                <p class="text-overline text-medium-emphasis mb-1">Mon espace</p>
+                <p class="text-overline text-medium-emphasis mb-1">
+                  Mon espace
+                </p>
                 <h1 class="text-h4 font-weight-bold mb-1">{{ displayName }}</h1>
                 <p class="text-body-2 text-medium-emphasis mb-0">
-                  Consultez vos informations, vos rôles et vos groupes en un coup d'œil.
+                  Consultez vos informations, vos rôles et vos groupes en un
+                  coup d'œil.
                 </p>
               </div>
             </div>
 
             <div class="d-flex ga-3 flex-wrap">
-              <v-chip color="primary" variant="elevated" prepend-icon="mdi-shield-account-outline">
+              <v-chip
+                color="primary"
+                variant="elevated"
+                prepend-icon="mdi-shield-account-outline"
+              >
                 {{ roles.length }} rôle{{ roles.length > 1 ? 's' : '' }}
               </v-chip>
-              <v-chip color="secondary" variant="elevated" prepend-icon="mdi-account-group-outline">
+              <v-chip
+                color="secondary"
+                variant="elevated"
+                prepend-icon="mdi-account-group-outline"
+              >
                 {{ groups.length }} groupe{{ groups.length > 1 ? 's' : '' }}
               </v-chip>
             </div>
@@ -165,42 +186,54 @@ onMounted(loadProfileDataIfNeeded)
 
     <v-row v-else class="ga-0">
       <v-col cols="12" md="5" class="pr-md-3 mb-4 mb-md-0">
-        <v-card rounded="xl" elevation="2" class="h-100">
+        <UiCard rounded="xl" elevation="0" shadow="md" class="h-100">
           <v-card-item>
             <v-card-title class="d-flex align-center ga-2">
               <v-icon icon="mdi-card-account-details-outline" color="primary" />
               Identité
             </v-card-title>
-            <v-card-subtitle>Informations personnelles de votre compte</v-card-subtitle>
+            <v-card-subtitle
+              >Informations personnelles de votre compte</v-card-subtitle
+            >
           </v-card-item>
 
           <v-divider />
 
           <v-list class="py-0" lines="two">
-            <v-list-item v-for="field in identityFields" :key="field.key" min-height="64">
+            <v-list-item
+              v-for="field in identityFields"
+              :key="field.key"
+              min-height="64"
+            >
               <template #prepend>
-                <v-avatar size="34" color="surface-variant">
+                <UiAvatar size="sm" color="surface-variant">
                   <v-icon :icon="field.icon" size="18" />
-                </v-avatar>
+                </UiAvatar>
               </template>
 
-              <v-list-item-title class="font-weight-medium">{{ field.label }}</v-list-item-title>
-              <v-list-item-subtitle>{{ formatProfileValue(field.key) }}</v-list-item-subtitle>
+              <v-list-item-title class="font-weight-medium">{{
+                field.label
+              }}</v-list-item-title>
+              <v-list-item-subtitle>{{
+                formatProfileValue(field.key)
+              }}</v-list-item-subtitle>
             </v-list-item>
           </v-list>
-        </v-card>
+        </UiCard>
       </v-col>
 
       <v-col cols="12" md="7" class="pl-md-3">
         <v-row>
           <v-col cols="12" class="pb-4">
-            <v-card rounded="xl" elevation="2">
+            <UiCard rounded="xl" elevation="0" shadow="md">
               <v-card-item>
                 <v-card-title class="d-flex align-center ga-2">
                   <v-icon icon="mdi-shield-account-outline" color="primary" />
                   Roles
                 </v-card-title>
-                <v-card-subtitle>Autorisations attribuées à votre profil</v-card-subtitle>
+                <v-card-subtitle
+                  >Autorisations attribuées à votre profil</v-card-subtitle
+                >
               </v-card-item>
 
               <v-divider />
@@ -219,30 +252,38 @@ onMounted(loadProfileDataIfNeeded)
                 </div>
                 <p v-else class="text-medium-emphasis mb-0">Aucun rôle.</p>
               </v-card-text>
-            </v-card>
+            </UiCard>
           </v-col>
 
           <v-col cols="12">
-            <v-card rounded="xl" elevation="2">
+            <UiCard rounded="xl" elevation="0" shadow="md">
               <v-card-item>
                 <v-card-title class="d-flex align-center ga-2">
                   <v-icon icon="mdi-account-group-outline" color="secondary" />
                   Groups
                 </v-card-title>
-                <v-card-subtitle>Groupes et niveau d'accès associés</v-card-subtitle>
+                <v-card-subtitle
+                  >Groupes et niveau d'accès associés</v-card-subtitle
+                >
               </v-card-item>
 
               <v-divider />
 
               <v-list v-if="groups.length > 0" class="py-0">
-                <v-list-item v-for="group in groups" :key="`${group.id}-${group.name}`" min-height="64">
+                <v-list-item
+                  v-for="group in groups"
+                  :key="`${group.id}-${group.name}`"
+                  min-height="64"
+                >
                   <template #prepend>
-                    <v-avatar size="34" color="secondary" variant="tonal">
+                    <UiAvatar size="sm" color="secondary" variant="tonal">
                       <v-icon icon="mdi-account-group" size="18" />
-                    </v-avatar>
+                    </UiAvatar>
                   </template>
 
-                  <v-list-item-title class="font-weight-medium">{{ group.name }}</v-list-item-title>
+                  <v-list-item-title class="font-weight-medium">{{
+                    group.name
+                  }}</v-list-item-title>
                   <v-list-item-subtitle class="text-medium-emphasis">
                     Rôle du groupe: {{ formatGroupRole(group) }}
                   </v-list-item-subtitle>
@@ -251,7 +292,7 @@ onMounted(loadProfileDataIfNeeded)
               <v-card-text v-else>
                 <p class="text-medium-emphasis mb-0">Aucun groupe.</p>
               </v-card-text>
-            </v-card>
+            </UiCard>
           </v-col>
         </v-row>
       </v-col>
@@ -262,14 +303,26 @@ onMounted(loadProfileDataIfNeeded)
 <style scoped>
 .profile-page {
   background:
-    radial-gradient(circle at top right, rgb(var(--v-theme-primary), 0.09), transparent 35%),
-    radial-gradient(circle at 10% 10%, rgb(var(--v-theme-secondary), 0.06), transparent 30%);
+    radial-gradient(
+      circle at top right,
+      rgb(var(--v-theme-primary), 0.09),
+      transparent 35%
+    ),
+    radial-gradient(
+      circle at 10% 10%,
+      rgb(var(--v-theme-secondary), 0.06),
+      transparent 30%
+    );
   min-height: calc(100dvh - 120px);
 }
 
 .hero-card {
   border: 1px solid rgb(var(--v-theme-primary), 0.15);
-  background: linear-gradient(140deg, rgb(var(--v-theme-surface)) 0%, rgb(var(--v-theme-primary), 0.08) 140%);
+  background: linear-gradient(
+    140deg,
+    rgb(var(--v-theme-surface)) 0%,
+    rgb(var(--v-theme-primary), 0.08) 140%
+  );
 }
 
 .state-card {

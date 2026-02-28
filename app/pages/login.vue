@@ -54,12 +54,12 @@ function logout() {
 
 <template>
   <v-container fluid class="login-page d-flex align-center justify-center pa-6">
-    <v-card class="login-card" elevation="18" rounded="xl">
+    <UiCard class="login-card" elevation="0" rounded="xl" shadow="xl">
       <v-card-text class="pa-8 pa-md-10">
         <div class="text-center mb-8">
-          <v-avatar size="68" class="mx-auto mb-4 gradient-avatar">
+          <UiAvatar size="xl" class="mx-auto mb-4 gradient-avatar">
             <v-icon icon="mdi-lock-check-outline" size="34" color="white" />
-          </v-avatar>
+          </UiAvatar>
           <h1 class="text-h4 font-weight-bold mb-2">Connexion sécurisée</h1>
           <p class="text-medium-emphasis">
             Authentifiez-vous pour accéder à votre espace.
@@ -110,31 +110,31 @@ function logout() {
             Connecté avec succès.
           </v-alert>
 
-          <v-btn
+          <UiButton
             type="submit"
             block
             color="primary"
-            size="large"
+            size="lg"
             class="text-none font-weight-bold mb-3"
             :loading="loading"
             :disabled="!hasCredentials || isAuthenticated"
           >
             Login
-          </v-btn>
+          </UiButton>
 
-          <v-btn
+          <UiButton
             block
             variant="outlined"
-            size="large"
+            size="lg"
             class="text-none"
             :disabled="!isAuthenticated"
             @click="logout"
           >
             Logout
-          </v-btn>
+          </UiButton>
         </v-form>
       </v-card-text>
-    </v-card>
+    </UiCard>
   </v-container>
 </template>
 

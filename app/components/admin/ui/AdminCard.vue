@@ -14,7 +14,7 @@ withDefaults(
 </script>
 
 <template>
-  <v-card class="admin-card" :elevation="elevation" rounded="xl">
+  <UiCard class="admin-card" :elevation="elevation" rounded="xl" shadow="sm">
     <v-card-item v-if="title || subtitle" class="admin-card__header">
       <v-card-title v-if="title" class="admin-heading">{{
         title
@@ -36,5 +36,5 @@ withDefaults(
     <v-card-actions v-if="$slots.actions" class="admin-card__actions">
       <slot name="actions" />
     </v-card-actions>
-  </v-card>
+  </UiCard>
 </template>
