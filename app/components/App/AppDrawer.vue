@@ -49,7 +49,16 @@ const routes = computed(() =>
         (route.meta?.adminPermission as AdminPermission | undefined) ?? 'admin'
       return hasAdminPermission(authStore.roles, permission)
     })
-    .sort((a, b) => (a.meta?.drawerIndex ?? 99) - (b.meta?.drawerIndex ?? 98)),
+    .sort((a, b) => {
+      const aIndex = a.meta?.drawerIndex ?? 99
+      const bIndex = b.meta?.drawerIndex ?? 99
+
+      if (aIndex !== bIndex) {
+        return aIndex - bIndex
+      }
+
+      return a.path.localeCompare(b.path)
+    }),
 )
 
 drawerState.value = lgAndUp.value && width.value !== 1280
