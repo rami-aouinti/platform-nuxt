@@ -38,7 +38,7 @@
                   flex-column
                   justify-content-center
                 "
-                :style="`background-image: url(${require('@/assets/img/illustrations/illustration-signup.jpg')}); background-size: cover;`"
+                :style="`background-image: url(${imageIllustrationSignup}); background-size: cover;`"
               ></div>
             </v-col>
             <v-col
@@ -46,11 +46,7 @@
               md="7"
               class="d-flex flex-column ms-auto me-auto ms-lg-auto me-lg-5 py-0"
             >
-              <fade-transition
-                :duration="200"
-                origin="center top"
-                mode="out-in"
-              >
+              <Transition mode="out-in">
                 <!-- your content here -->
                 <NuxtPage />
               </fade-transition>
@@ -62,7 +58,5 @@
   </v-app>
 </template>
 <script setup lang="ts">
-import { ref } from "vue";
 import AppBarBlurAuth from "@/components/AppBarBlurAuth";
-import { FadeTransition } from "vue2-transitions";
 </script>

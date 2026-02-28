@@ -671,38 +671,51 @@ definePageMeta({
 })
 
 import { ref } from "vue";
+import imageTeam1 from "@/assets/img/team-1.jpg";
+import imageTeam2 from "@/assets/img/team-2.jpg";
+import imageTeam3 from "@/assets/img/team-3.jpg";
+import imageTeam4 from "@/assets/img/team-4.jpg";
+import imageTeam5 from "@/assets/img/team-5.jpg";
+import imageMarie from "@/assets/img/marie.jpg";
+import imageBruceMars from "@/assets/img/bruce-mars.jpg";
+import imageIvanaSquares from "@/assets/img/ivana-squares.jpg";
+import imageKalVisualsSquare from "@/assets/img/kal-visuals-square.jpg";
+import imageIvanaSquare from "@/assets/img/ivana-square.jpg";
+import imageTeam9 from "@/assets/img/team-9.jpeg";
+import imageLogoSlack from "@/assets/img/small-logos/logo-slack.svg";
+import imageLogoInvision from "@/assets/img/small-logos/logo-invision.svg";
 const stories = ref([{
-  image: require("@/assets/img/team-1.jpg"),
+  image: imageTeam1,
   user: "Abbie W"
 }, {
-  image: require("@/assets/img/team-2.jpg"),
+  image: imageTeam2,
   user: "Boris U"
 }, {
-  image: require("@/assets/img/team-3.jpg"),
+  image: imageTeam3,
   user: "Kay R"
 }, {
-  image: require("@/assets/img/team-4.jpg"),
+  image: imageTeam4,
   user: "Tom M"
 }, {
-  image: require("@/assets/img/team-5.jpg"),
+  image: imageTeam5,
   user: "Nicole N"
 }, {
-  image: require("@/assets/img/marie.jpg"),
+  image: imageMarie,
   user: "Marie P"
 }, {
-  image: require("@/assets/img/bruce-mars.jpg"),
+  image: imageBruceMars,
   user: "Bruce M"
 }, {
-  image: require("@/assets/img/ivana-squares.jpg"),
+  image: imageIvanaSquares,
   user: "Sandra A"
 }, {
-  image: require("@/assets/img/kal-visuals-square.jpg"),
+  image: imageKalVisualsSquare,
   user: "Katty L"
 }, {
-  image: require("@/assets/img/ivana-square.jpg"),
+  image: imageIvanaSquare,
   user: "Emma O"
 }, {
-  image: require("@/assets/img/team-9.jpeg"),
+  image: imageTeam9,
   user: "Tao G"
 }]);
 const cards = ref([{
@@ -711,16 +724,16 @@ const cards = ref([{
   industry: "Martketing Team",
   rating: "partial",
   avatars: [{
-    image: require("@/assets/img/team-1.jpg"),
+    image: imageTeam1,
     name: "Elena Morison"
   }, {
-    image: require("@/assets/img/team-2.jpg"),
+    image: imageTeam2,
     name: "Ryan Milly"
   }, {
-    image: require("@/assets/img/team-3.jpg"),
+    image: imageTeam3,
     name: "Nick Daniel"
   }, {
-    image: require("@/assets/img/team-4.jpg"),
+    image: imageTeam4,
     name: "Peterson"
   }]
 }, {
@@ -729,55 +742,55 @@ const cards = ref([{
   industry: "Design Team",
   rating: "full",
   avatars: [{
-    image: require("@/assets/img/team-4.jpg"),
+    image: imageTeam4,
     name: "Peterson"
   }, {
-    image: require("@/assets/img/team-3.jpg"),
+    image: imageTeam3,
     name: "Nick Daniel"
   }, {
-    image: require("@/assets/img/team-1.jpg"),
+    image: imageTeam1,
     name: "Elena Morison"
   }, {
-    image: require("@/assets/img/team-2.jpg"),
+    image: imageTeam2,
     name: "Ryan Milly"
   }]
 }]);
 const brands = ref([{
-  img: require("@/assets/img/small-logos/logo-slack.svg"),
+  img: imageLogoSlack,
   title: "Slack Meet",
   hour: "11:00 AM",
   id: "902-128-281",
   description: "You have an upcoming meet for Marketing Planning",
   avatars: [{
-    image: require("@/assets/img/team-1.jpg"),
+    image: imageTeam1,
     name: "Elena Morison"
   }, {
-    image: require("@/assets/img/team-2.jpg"),
+    image: imageTeam2,
     name: "Ryan Milly"
   }, {
-    image: require("@/assets/img/team-3.jpg"),
+    image: imageTeam3,
     name: "Nick Daniel"
   }, {
-    image: require("@/assets/img/team-4.jpg"),
+    image: imageTeam4,
     name: "Peterson"
   }]
 }, {
-  img: require("@/assets/img/small-logos/logo-invision.svg"),
+  img: imageLogoInvision,
   title: "Invision",
   hour: "4:50 PM",
   id: "111-968-981",
   description: "You have an upcoming video call for Soft Design at 5:00 PM.",
   avatars: [{
-    image: require("@/assets/img/team-3.jpg"),
+    image: imageTeam3,
     name: "Nick Daniel"
   }, {
-    image: require("@/assets/img/team-1.jpg"),
+    image: imageTeam1,
     name: "Elena Morison"
   }, {
-    image: require("@/assets/img/team-2.jpg"),
+    image: imageTeam2,
     name: "Ryan Milly"
   }, {
-    image: require("@/assets/img/team-4.jpg"),
+    image: imageTeam4,
     name: "Peterson"
   }]
 }]);

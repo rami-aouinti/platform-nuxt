@@ -196,21 +196,26 @@ definePageMeta({
 import { onMounted, ref } from "vue";
 import CalendarWidget from "./Widgets/CalendarWidget.vue";
 import Chart from "chart.js/auto";
+import imageTeam1 from "@/assets/img/team-1.jpg";
+import imageTeam2 from "@/assets/img/team-2.jpg";
+import imageTeam3 from "@/assets/img/team-3.jpg";
+import imageTeam4 from "@/assets/img/team-4.jpg";
+import imageTeam5 from "@/assets/img/team-5.jpg";
 const lineChartId = ref("chart-line-1");
 const avatars = ref([{
-  image: require("@/assets/img/team-1.jpg"),
+  image: imageTeam1,
   name: "Elena Morison"
 }, {
-  image: require("@/assets/img/team-2.jpg"),
+  image: imageTeam2,
   name: "Ryan Milly"
 }, {
-  image: require("@/assets/img/team-3.jpg"),
+  image: imageTeam3,
   name: "Nick Daniel"
 }, {
-  image: require("@/assets/img/team-4.jpg"),
+  image: imageTeam4,
   name: "Peterson"
 }, {
-  image: require("@/assets/img/team-5.jpg"),
+  image: imageTeam5,
   name: "Milla"
 }]);
 const events = ref([{

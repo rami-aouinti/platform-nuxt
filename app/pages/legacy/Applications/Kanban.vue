@@ -128,21 +128,29 @@ definePageMeta({
 import { ref } from "vue";
 import vueKanban from "vue-kanban";
 import "vue-kanban/src/assets/kanban.scss";
+import imageTeam1 from "@/assets/img/team-1.jpg";
+import imageTeam2 from "@/assets/img/team-2.jpg";
+import imageTeam3 from "@/assets/img/team-3.jpg";
+import imageTeam4 from "@/assets/img/team-4.jpg";
+import imageTeam5 from "@/assets/img/team-5.jpg";
+import imageOfficeDark from "@/assets/img/office-dark.jpg";
+import imageMeeting from "@/assets/img/meeting.jpg";
+import imageHomeDecor1 from "@/assets/img/home-decor-1.jpg";
 Vue.use(vueKanban);
 const avatars = ref([{
-  image: require("@/assets/img/team-1.jpg"),
+  image: imageTeam1,
   name: "Elena Morison"
 }, {
-  image: require("@/assets/img/team-2.jpg"),
+  image: imageTeam2,
   name: "Ryan Milly"
 }, {
-  image: require("@/assets/img/team-3.jpg"),
+  image: imageTeam3,
   name: "Nick Daniel"
 }, {
-  image: require("@/assets/img/team-4.jpg"),
+  image: imageTeam4,
   name: "Peterson"
 }, {
-  image: require("@/assets/img/team-5.jpg"),
+  image: imageTeam5,
   name: "Milla"
 }]);
 const stages = ref(["Backlog", "In progress", "In review", "Done"]);
@@ -156,20 +164,20 @@ const blocks = ref([{
   title: 'Drag me to "In Progress" section'
 }, {
   id: 3,
-  image: require("@/assets/img/office-dark.jpg"),
+  image: imageOfficeDark,
   status: "Backlog",
   title: "Website Design: New cards for blog section and profile details",
   badge: "Pending",
   badgeColor: "primary",
   files: "3",
   avatars: [{
-    image: require("@/assets/img/team-1.jpg"),
+    image: imageTeam1,
     name: "Elena Morison"
   }, {
-    image: require("@/assets/img/team-2.jpg"),
+    image: imageTeam2,
     name: "Ryan Milly"
   }, {
-    image: require("@/assets/img/team-3.jpg"),
+    image: imageTeam3,
     name: "Nick Daniel"
   }]
 }, {
@@ -180,10 +188,10 @@ const blocks = ref([{
   badgeColor: "warning",
   files: "11",
   avatars: [{
-    image: require("@/assets/img/team-2.jpg"),
+    image: imageTeam2,
     name: "Ryan Milly"
   }, {
-    image: require("@/assets/img/team-3.jpg"),
+    image: imageTeam3,
     name: "Nick Daniel"
   }]
 }, {
@@ -194,28 +202,28 @@ const blocks = ref([{
   badgeColor: "info",
   files: "3",
   avatars: [{
-    image: require("@/assets/img/team-4.jpg"),
+    image: imageTeam4,
     name: "Ryan Milly"
   }, {
-    image: require("@/assets/img/team-1.jpg"),
+    image: imageTeam1,
     name: "Nick Daniel"
   }]
 }, {
   id: 6,
-  image: require("@/assets/img/meeting.jpg"),
+  image: imageMeeting,
   status: "In progress",
   title: "Vue 3 Updates",
   badge: "Updates",
   badgeColor: "info",
   files: "9",
   avatars: [{
-    image: require("@/assets/img/team-1.jpg"),
+    image: imageTeam1,
     name: "Elena Morison"
   }, {
-    image: require("@/assets/img/team-2.jpg"),
+    image: imageTeam2,
     name: "Ryan Milly"
   }, {
-    image: require("@/assets/img/team-4.jpg"),
+    image: imageTeam4,
     name: "Nick Daniel"
   }]
 }, {
@@ -226,10 +234,10 @@ const blocks = ref([{
   badgeColor: "warning",
   files: "11",
   avatars: [{
-    image: require("@/assets/img/team-2.jpg"),
+    image: imageTeam2,
     name: "Ryan Milly"
   }, {
-    image: require("@/assets/img/team-4.jpg"),
+    image: imageTeam4,
     name: "Nick Daniel"
   }]
 }, {
@@ -239,10 +247,10 @@ const blocks = ref([{
   badge: "In review",
   badgeColor: "success",
   avatars: [{
-    image: require("@/assets/img/team-2.jpg"),
+    image: imageTeam2,
     name: "Ryan Milly"
   }, {
-    image: require("@/assets/img/team-4.jpg"),
+    image: imageTeam4,
     name: "Nick Daniel"
   }]
 }, {
@@ -253,28 +261,28 @@ const blocks = ref([{
   badgeColor: "info",
   files: "6",
   avatars: [{
-    image: require("@/assets/img/team-1.jpg"),
+    image: imageTeam1,
     name: "Ryan Milly"
   }, {
-    image: require("@/assets/img/team-3.jpg"),
+    image: imageTeam3,
     name: "Nick Daniel"
   }]
 }, {
   id: 10,
-  image: require("@/assets/img/home-decor-1.jpg"),
+  image: imageHomeDecor1,
   status: "Done",
   title: "Redesign for the home page",
   badge: "Done",
   badgeColor: "success",
   files: "8",
   avatars: [{
-    image: require("@/assets/img/team-1.jpg"),
+    image: imageTeam1,
     name: "Elena Morison"
   }, {
-    image: require("@/assets/img/team-2.jpg"),
+    image: imageTeam2,
     name: "Ryan Milly"
   }, {
-    image: require("@/assets/img/team-4.jpg"),
+    image: imageTeam4,
     name: "Nick Daniel"
   }]
 }, {
@@ -285,10 +293,10 @@ const blocks = ref([{
   badgeColor: "success",
   files: "2",
   avatars: [{
-    image: require("@/assets/img/team-1.jpg"),
+    image: imageTeam1,
     name: "Ryan Milly"
   }, {
-    image: require("@/assets/img/team-4.jpg"),
+    image: imageTeam4,
     name: "Nick Daniel"
   }]
 }]);

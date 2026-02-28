@@ -53,25 +53,30 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import Chart from "chart.js/auto";
+import imageLogoDevto from "@/assets/img/small-logos/logo-devto.svg";
+import imageLogoCreativeTim from "@/assets/img/small-logos/logo-creative-tim.svg";
+import imageLogoBootstrap from "@/assets/img/small-logos/logo-bootstrap.svg";
+import imageLogoGithub from "@/assets/img/small-logos/logo-github.svg";
+import imageLogoGoogleWebdev from "@/assets/img/small-logos/logo-google-webdev.svg";
 const doughnutChartId = ref("doughnut-chart");
 const affiliates = ref([{
-  image: require("@/assets/img/small-logos/logo-devto.svg"),
+  image: imageLogoDevto,
   text: "DevTo",
   percent: 25
 }, {
-  image: require("@/assets/img/small-logos/logo-creative-tim.svg"),
+  image: imageLogoCreativeTim,
   text: "Creative Tim",
   percent: 13
 }, {
-  image: require("@/assets/img/small-logos/logo-bootstrap.svg"),
+  image: imageLogoBootstrap,
   text: "Boostrap",
   percent: 12
 }, {
-  image: require("@/assets/img/small-logos/logo-github.svg"),
+  image: imageLogoGithub,
   text: "GitHub",
   percent: 37
 }, {
-  image: require("@/assets/img/small-logos/logo-google-webdev.svg"),
+  image: imageLogoGoogleWebdev,
   text: "Google Webdev",
   percent: 13
 }]);

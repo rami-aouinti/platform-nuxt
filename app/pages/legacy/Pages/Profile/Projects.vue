@@ -150,99 +150,110 @@ definePageMeta({
 })
 
 import { ref } from "vue";
+import imageLogoSlack from "@/assets/img/small-logos/logo-slack.svg";
+import imageTeam1 from "@/assets/img/team-1.jpg";
+import imageTeam2 from "@/assets/img/team-2.jpg";
+import imageTeam3 from "@/assets/img/team-3.jpg";
+import imageTeam4 from "@/assets/img/team-4.jpg";
+import imageLogoSpotify from "@/assets/img/small-logos/logo-spotify.svg";
+import imageLogoXd from "@/assets/img/small-logos/logo-xd.svg";
+import imageTeam5 from "@/assets/img/team-5.jpg";
+import imageLogoAsana from "@/assets/img/small-logos/logo-asana.svg";
+import imageLogoInvision from "@/assets/img/small-logos/logo-invision.svg";
+import imageLogoAtlassian from "@/assets/img/small-logos/logo-atlassian.svg";
 const cards = ref([{
-  image: require("@/assets/img/small-logos/logo-slack.svg"),
+  image: imageLogoSlack,
   title: "Slack Bot",
   description: "If everything I did failed - which it doesn't, I think that it actually succeeds.",
   participants: "5",
   date: "02.03.22",
   avatars: [{
-    image: require("@/assets/img/team-1.jpg")
+    image: imageTeam1
   }, {
-    image: require("@/assets/img/team-2.jpg")
+    image: imageTeam2
   }, {
-    image: require("@/assets/img/team-3.jpg")
+    image: imageTeam3
   }, {
-    image: require("@/assets/img/team-4.jpg")
+    image: imageTeam4
   }, {
-    image: require("@/assets/img/team-3.jpg")
+    image: imageTeam3
   }]
 }, {
-  image: require("@/assets/img/small-logos/logo-spotify.svg"),
+  image: imageLogoSpotify,
   title: "Premium support",
   description: "Pink is obviously a better color. Everyone’s born confident, and everything’s taken away from you.",
   participants: "3",
   date: "22.11.21",
   avatars: [{
-    image: require("@/assets/img/team-4.jpg")
+    image: imageTeam4
   }, {
-    image: require("@/assets/img/team-3.jpg")
+    image: imageTeam3
   }, {
-    image: require("@/assets/img/team-2.jpg")
+    image: imageTeam2
   }]
 }, {
-  image: require("@/assets/img/small-logos/logo-xd.svg"),
+  image: imageLogoXd,
   title: "Design tools",
   description: "Constantly growing. We’re constantly making mistakes from which we learn and improve.",
   participants: "4",
   date: "06.03.20",
   avatars: [{
-    image: require("@/assets/img/team-4.jpg")
+    image: imageTeam4
   }, {
-    image: require("@/assets/img/team-3.jpg")
+    image: imageTeam3
   }, {
-    image: require("@/assets/img/team-5.jpg")
+    image: imageTeam5
   }, {
-    image: require("@/assets/img/team-2.jpg")
+    image: imageTeam2
   }]
 }, {
-  image: require("@/assets/img/small-logos/logo-asana.svg"),
+  image: imageLogoAsana,
   title: "Looking great",
   description: "You have the opportunity to play this game of life you need to appreciate every moment.",
   participants: "6",
   date: "14.03.24",
   avatars: [{
-    image: require("@/assets/img/team-5.jpg")
+    image: imageTeam5
   }, {
-    image: require("@/assets/img/team-4.jpg")
+    image: imageTeam4
   }, {
-    image: require("@/assets/img/team-2.jpg")
+    image: imageTeam2
   }, {
-    image: require("@/assets/img/team-3.jpg")
+    image: imageTeam3
   }, {
-    image: require("@/assets/img/team-5.jpg")
+    image: imageTeam5
   }, {
-    image: require("@/assets/img/team-2.jpg")
+    image: imageTeam2
   }]
 }, {
-  image: require("@/assets/img/small-logos/logo-invision.svg"),
+  image: imageLogoInvision,
   title: "Developer first",
   description: "For standing out. But the time is now to be okay to be the greatest you.",
   participants: "4",
   date: "16.01.22",
   avatars: [{
-    image: require("@/assets/img/team-5.jpg")
+    image: imageTeam5
   }, {
-    image: require("@/assets/img/team-4.jpg")
+    image: imageTeam4
   }, {
-    image: require("@/assets/img/team-5.jpg")
+    image: imageTeam5
   }, {
-    image: require("@/assets/img/team-2.jpg")
+    image: imageTeam2
   }]
 }, {
-  image: require("@/assets/img/small-logos/logo-atlassian.svg"),
+  image: imageLogoAtlassian,
   title: "Product Development",
   description: "We strive to embrace and drive change in our industry. We are happy to work at such a project.",
   participants: "4",
   date: "24.01.22",
   avatars: [{
-    image: require("@/assets/img/team-5.jpg")
+    image: imageTeam5
   }, {
-    image: require("@/assets/img/team-2.jpg")
+    image: imageTeam2
   }, {
-    image: require("@/assets/img/team-5.jpg")
+    image: imageTeam5
   }, {
-    image: require("@/assets/img/team-4.jpg")
+    image: imageTeam4
   }]
 }]);
 </script>

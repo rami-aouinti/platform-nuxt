@@ -56,23 +56,27 @@
 </template>
 <script setup lang="ts">
 import { ref } from "vue";
+import imageTeam1 from "@/assets/img/team-1.jpg";
+import imageTeam2 from "@/assets/img/team-2.jpg";
+import imageTeam3 from "@/assets/img/team-3.jpg";
+import imageTeam4 from "@/assets/img/team-4.jpg";
 const members = ref([{
-  avatar: require("@/assets/img/team-1.jpg"),
+  avatar: imageTeam1,
   title: "John Michael",
   status: "Online",
   color: "text-success"
 }, {
-  avatar: require("@/assets/img/team-2.jpg"),
+  avatar: imageTeam2,
   title: "Alex Smith",
   status: "In a Meeting",
   color: "text-warning"
 }, {
-  avatar: require("@/assets/img/team-3.jpg"),
+  avatar: imageTeam3,
   title: "Samantha Ivy",
   status: "Offline",
   color: "text-danger"
 }, {
-  avatar: require("@/assets/img/team-4.jpg"),
+  avatar: imageTeam4,
   title: "Ali Connors",
   status: "Online",
   color: "text-success"

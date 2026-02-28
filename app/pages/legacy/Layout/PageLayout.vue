@@ -13,7 +13,7 @@
         "
         :style="
           this.$route.name == 'Pricing'
-            ? `background-image: url(${require('../../assets/img/bg-pricing.jpg')}); background-size: cover; background-position: 50%;`
+            ? `background-image: url(${new URL('../../assets/img/bg-pricing.jpg', import.meta.url).href}); background-size: cover; background-position: 50%;`
             : ''
         "
       >
@@ -55,20 +55,19 @@
       </div>
       <app-bar-auth background="transparent" has-bg linkColor="white">
       </app-bar-auth>
-      <fade-transition :duration="200" origin="center top" mode="out-in">
+      <Transition mode="out-in">
         <!-- your content here -->
         <v-container fluid class="pb-0 px-16">
           <NuxtPage />
           <content-footer auth v-if="!$route.meta.hideFooter"></content-footer>
         </v-container>
-      </fade-transition>
+      </Transition>
     </v-main>
   </v-app>
 </template>
 <script setup lang="ts">
 import { ref } from "vue";
 import AppBarAuth from "@/components/AppBarAuth";
-import { FadeTransition } from "vue2-transitions";
 import ContentFooter from "@/components/App/AppFooter.vue";
 const paragraphs = ref("");
 const tab = ref(null);
