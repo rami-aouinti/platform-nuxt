@@ -12,7 +12,9 @@
     "test": "vitest",
     "lint": "eslint . --fix",
     "format": "prettier . --write",
-    "lint:admin-imports": "node scripts/check-admin-legacy-imports.mjs"
+    "lint:admin-imports": "node scripts/check-admin-legacy-imports.mjs",
+    "legacy:migration:inventory": "node scripts/generate-legacy-migration-inventory.mjs",
+    "legacy:migration:check": "node scripts/check-legacy-migration-status.mjs"
   },
   "devDependencies": {
     "@iconify-json/mdi": "^1.2.3",
