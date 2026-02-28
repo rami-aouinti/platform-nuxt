@@ -75,6 +75,7 @@ function createActivatorProps(
     <v-breadcrumbs :items="breadcrumbs" :class="{ 'app-bar__breadcrumbs--hidden': isAdministrationRoute }" />
     <v-spacer />
     <div id="app-bar" class="app-bar__portal" />
+    <v-spacer />
     <div class="app-bar__right-actions d-flex align-center">
       <v-switch
         v-model="isDark"

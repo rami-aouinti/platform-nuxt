@@ -409,15 +409,7 @@ onMounted(() => {
     <client-only>
       <teleport v-if="canTeleportControls" to="#app-bar">
         <div class="admin-resource-controls app-bar-controls-grid" :style="appBarGridStyle">
-          <v-text-field
-            v-model="localSearch"
-            placeholder="Recherche"
-            prepend-inner-icon="mdi-magnify"
-            hide-details
-            density="compact"
-            variant="outlined"
-            clearable
-          />
+
           <component
             :is="filter.items?.length ? 'v-select' : 'v-text-field'"
             v-for="filter in filterConfigs"
@@ -434,7 +426,16 @@ onMounted(() => {
             clearable
             @update:model-value="setFilter(filter.key, String($event || ''))"
           />
-          <div class="admin-resource-controls__actions d-flex ga-2 justify-end">
+          <div class="admin-resource-controls__actions d-flex ga-2 d-flex align-center">
+            <v-text-field
+              v-model="localSearch"
+              placeholder="Recherche"
+              prepend-inner-icon="mdi-magnify"
+              hide-details
+              density="compact"
+              variant="outlined"
+              clearable
+            />
             <v-btn
               color="success"
               variant="text"
