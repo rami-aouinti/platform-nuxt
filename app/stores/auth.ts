@@ -2,8 +2,10 @@ import type { AuthGroup, AuthProfile, AuthRole } from '~/types/auth'
 import {
   clearPersistedAuthState,
   persistAuthState,
+  persistPrimaryRole,
   persistToken,
   readCachedAuthState,
+  readPersistedPrimaryRole,
   readPersistedToken,
 } from '~/utils/auth/state-cache'
 import { canAccessAdmin } from '~/utils/permissions/admin'
@@ -13,12 +15,18 @@ export const useAuthStore = defineStore('auth', () => {
   const profile = ref<AuthProfile | null>(null)
   const groups = ref<AuthGroup[]>([])
   const roles = ref<AuthRole[]>([])
+  const primaryRole = ref<AuthRole | null>(null)
   const rolesLoading = ref(false)
   const rolesError = ref<string | null>(null)
   const profileRequest = ref<Promise<void> | null>(null)
 
   const isAuthenticated = computed(() => Boolean(token.value))
   const hasAdminAccess = computed(() => canAccessAdmin(roles.value))
+
+  function syncPrimaryRole() {
+    primaryRole.value = roles.value.length > 0 ? roles.value[0] : null
+    persistPrimaryRole(primaryRole.value)
+  }
 
   function persistCurrentAuthState() {
     if (!token.value) {
@@ -45,6 +53,7 @@ export const useAuthStore = defineStore('auth', () => {
     profile.value = cachedState.profile
     groups.value = cachedState.groups
     roles.value = cachedState.roles
+    syncPrimaryRole()
 
     return true
   }
@@ -78,6 +87,8 @@ export const useAuthStore = defineStore('auth', () => {
     if (!token.value) {
       throw new Error('Token absent de la réponse API.')
     }
+
+    await fetchProfileData()
   }
 
   async function fetchProfileData() {
@@ -105,6 +116,7 @@ export const useAuthStore = defineStore('auth', () => {
         profile.value = profileResponse
         groups.value = groupsResponse
         roles.value = rolesResponse
+        syncPrimaryRole()
         persistCurrentAuthState()
       } catch (error) {
         rolesError.value = 'Impossible de charger les rôles utilisateur.'
@@ -121,6 +133,7 @@ export const useAuthStore = defineStore('auth', () => {
   async function ensureRolesLoaded(force = false) {
     if (!isAuthenticated.value) {
       roles.value = []
+      syncPrimaryRole()
       return roles.value
     }
 
@@ -136,6 +149,7 @@ export const useAuthStore = defineStore('auth', () => {
         headers: authHeaders(),
       })
       roles.value = rolesResponse
+      syncPrimaryRole()
       persistCurrentAuthState()
       return roles.value
     } catch (error) {
@@ -151,6 +165,8 @@ export const useAuthStore = defineStore('auth', () => {
     profile.value = null
     groups.value = []
     roles.value = []
+    primaryRole.value = null
+    persistPrimaryRole(null)
     rolesError.value = null
     rolesLoading.value = false
     profileRequest.value = null
@@ -171,6 +187,15 @@ export const useAuthStore = defineStore('auth', () => {
 
     setToken(storedToken)
 
+    const storedPrimaryRole = readPersistedPrimaryRole()
+    if (storedPrimaryRole) {
+      primaryRole.value = storedPrimaryRole
+
+      if (roles.value.length === 0) {
+        roles.value = [storedPrimaryRole]
+      }
+    }
+
     if (hydrateAuthStateFromCache()) {
       return
     }
@@ -187,6 +212,7 @@ export const useAuthStore = defineStore('auth', () => {
     profile,
     groups,
     roles,
+    primaryRole,
     rolesLoading,
     rolesError,
     isAuthenticated,
