@@ -1,3 +1,10 @@
+import imageTeam2 from "@/assets/img/team-2.jpg";
+import imageTeam1 from "@/assets/img/team-1.jpg";
+import imageTeam3 from "@/assets/img/team-3.jpg";
+import imageTeam4 from "@/assets/img/team-4.jpg";
+import imageTeam5 from "@/assets/img/team-5.jpg";
+import imageIvanaSquares from "@/assets/img/ivana-squares.jpg";
+
 export interface OrderRow {
   id: string;
   checkbox: boolean;
@@ -18,7 +25,7 @@ export const orders: OrderRow[] = [
     status: "Paid",
     statusIcon: "fas fa-check",
     customer: "Orlando Imieto",
-    customerImg: require("@/assets/img/team-2.jpg") as string,
+    customerImg: imageTeam2,
     product: "Nike Sport V2",
     revenue: "$140,20",
   },
@@ -29,7 +36,7 @@ export const orders: OrderRow[] = [
     status: "Paid",
     statusIcon: "fas fa-check",
     customer: "Alice Murinho",
-    customerImg: require("@/assets/img/team-1.jpg") as string,
+    customerImg: imageTeam1,
     product: "Valvet T-shirt2",
     revenue: "$42,00",
   },
@@ -50,7 +57,7 @@ export const orders: OrderRow[] = [
     status: "Paid",
     statusIcon: "fas fa-check",
     customer: "Andrew Nichel",
-    customerImg: require("@/assets/img/team-3.jpg") as string,
+    customerImg: imageTeam3,
     product: "Bracelet Onu-Lino",
     revenue: "$19,40",
   },
@@ -61,7 +68,7 @@ export const orders: OrderRow[] = [
     status: "Canceled",
     statusIcon: "fas fa-times",
     customer: "Sebastian Koga",
-    customerImg: require("@/assets/img/team-4.jpg") as string,
+    customerImg: imageTeam4,
     product: "Phone Case Pink",
     revenue: "$44,90",
   },
@@ -102,7 +109,7 @@ export const orders: OrderRow[] = [
     status: "Paid",
     statusIcon: "fas fa-check",
     customer: "Rugna Ilpio",
-    customerImg: require("@/assets/img/team-5.jpg") as string,
+    customerImg: imageTeam5,
     product: "Bracelet Warret",
     revenue: "$15,00",
   },
@@ -113,7 +120,7 @@ export const orders: OrderRow[] = [
     status: "Refunded",
     statusIcon: "fas fa-undo",
     customer: "Anna Landa",
-    customerImg: require("@/assets/img/ivana-squares.jpg") as string,
+    customerImg: imageIvanaSquares,
     product: "Watter Bottle India",
     revenue: "$25,00",
   },
