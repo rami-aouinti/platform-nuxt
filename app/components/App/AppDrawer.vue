@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth'
-import { hasAdminPermission, type AdminPermission } from '~/utils/permissions/admin'
+import {
+  hasAdminPermission,
+  type AdminPermission,
+} from '~/utils/permissions/admin'
 
 const router = useRouter()
 const authStore = useAuthStore()
-const { isAuthenticated, rolesLoading } = storeToRefs(authStore)
+const { isAuthenticated, rolesLoading, initialized } = storeToRefs(authStore)
 const drawerState = useState('drawer', () => true)
 
 const { mobile, lgAndUp, width } = useDisplay()
@@ -38,14 +41,24 @@ const routes = computed(() =>
         return true
       }
 
-      if (rolesLoading.value) {
+      if (!initialized.value || rolesLoading.value) {
         return false
       }
 
-      const permission = (route.meta?.adminPermission as AdminPermission | undefined) ?? 'admin'
+      const permission =
+        (route.meta?.adminPermission as AdminPermission | undefined) ?? 'admin'
       return hasAdminPermission(authStore.roles, permission)
     })
-    .sort((a, b) => (a.meta?.drawerIndex ?? 99) - (b.meta?.drawerIndex ?? 98)),
+    .sort((a, b) => {
+      const aIndex = a.meta?.drawerIndex ?? 99
+      const bIndex = b.meta?.drawerIndex ?? 99
+
+      if (aIndex !== bIndex) {
+        return aIndex - bIndex
+      }
+
+      return a.path.localeCompare(b.path)
+    }),
 )
 
 drawerState.value = lgAndUp.value && width.value !== 1280
