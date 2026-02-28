@@ -57,7 +57,7 @@ const isActive = computed(() => {
     </template>
     <AppDrawerItem
       v-for="child in visibleChildren"
-      :key="child.name"
+      :key="child.path"
       :item="child"
     />
   </v-list-group>
