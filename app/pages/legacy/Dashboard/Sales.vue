@@ -323,6 +323,11 @@ import { ref } from "vue";
 import CardChartChannels from "./Widgets/CardChartChannels.vue";
 import CardChartRevenue from "./Widgets/CardChartRevenue.vue";
 import CardChartSalesAge from "./Widgets/CardChartSalesAge.vue";
+import imageUs from "@/assets/img/icons/flags/US.png";
+import imageDe from "@/assets/img/icons/flags/DE.png";
+import imageGb from "@/assets/img/icons/flags/GB.png";
+import imageBr from "@/assets/img/icons/flags/BR.png";
+import imageAu from "@/assets/img/icons/flags/AU.png";
 const stats = ref([{
   text: "Sales",
   value: "$230,220",
@@ -337,27 +342,27 @@ const stats = ref([{
   growth: "+$213"
 }]);
 const countries = ref([{
-  avatar: require("@/assets/img/icons/flags/US.png"),
+  avatar: imageUs,
   country: "United States",
   sales: "2.500",
   bounce: "29.9%"
 }, {
-  avatar: require("@/assets/img/icons/flags/DE.png"),
+  avatar: imageDe,
   country: "Germany",
   sales: "3.900",
   bounce: "40.22%"
 }, {
-  avatar: require("@/assets/img/icons/flags/GB.png"),
+  avatar: imageGb,
   country: "Great Britain",
   sales: "1.400",
   bounce: "23.44%"
 }, {
-  avatar: require("@/assets/img/icons/flags/BR.png"),
+  avatar: imageBr,
   country: "Brasil",
   sales: "562",
   bounce: "32.14%"
 }, {
-  avatar: require("@/assets/img/icons/flags/AU.png"),
+  avatar: imageAu,
   country: "Australia",
   sales: "400",
   bounce: "56.83%"

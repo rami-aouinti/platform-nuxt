@@ -133,26 +133,30 @@ import jsVectorMap from "jsvectormap";
 import "jsvectormap/dist/maps/world.js";
 import "jsvectormap/dist/maps/world-merc";
 import "jsvectormap/dist/css/jsvectormap.min.css";
+import imageUs from "@/assets/img/icons/flags/US.png";
+import imageDe from "@/assets/img/icons/flags/DE.png";
+import imageGb from "@/assets/img/icons/flags/GB.png";
+import imageBr from "@/assets/img/icons/flags/BR.png";
 const countries = ref([{
-  avatar: require("@/assets/img/icons/flags/US.png"),
+  avatar: imageUs,
   country: "United States",
   sales: "2.500",
   value: "$230,900",
   bounce: "29.9%"
 }, {
-  avatar: require("@/assets/img/icons/flags/DE.png"),
+  avatar: imageDe,
   country: "Germany",
   sales: "3.900",
   value: "$440,000",
   bounce: "40.22%"
 }, {
-  avatar: require("@/assets/img/icons/flags/GB.png"),
+  avatar: imageGb,
   country: "Great Britain",
   sales: "1.400",
   value: "$190,700",
   bounce: "23.44%"
 }, {
-  avatar: require("@/assets/img/icons/flags/BR.png"),
+  avatar: imageBr,
   country: "Brasil",
   sales: "562",
   value: "$143,960",

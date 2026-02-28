@@ -38,7 +38,7 @@
                   flex-column
                   justify-content-center
                 "
-                :style="`background-image: url(${require('@/assets/img/illustrations/illustration-signup.jpg')}); background-size: cover;`"
+                :style="`background-image: url(${imageIllustrationSignup}); background-size: cover;`"
               ></div>
             </v-col>
             <v-col
