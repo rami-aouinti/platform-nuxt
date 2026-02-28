@@ -63,7 +63,6 @@
 
 - [BroWorld repository](https://github.com/rami-aouinti/platform-nuxt)
 
-
 ## Pre-packed
 
 ### Nuxt Modules
@@ -142,3 +141,42 @@ pnpm run dev
 ## License
 
 [MIT License](./LICENSE)
+
+## UI Wrappers (`app/components/ui`)
+
+Des composants wrappers sont disponibles pour homogénéiser l'usage de Vuetify:
+
+- `UiButton` (wrap `v-btn`)
+- `UiCard` (wrap `v-card`)
+- `UiAvatar` (wrap `v-avatar`)
+
+### Props communes
+
+- `size`: `xs | sm | md | lg | xl` (mappé vers les tailles Vuetify selon le composant)
+- `rounded`: `boolean | sm | md | lg | xl | pill`
+- `elevation`: `number`
+- `color`: `string`
+- `shadow`: `none | sm | md | lg | xl` (mappé en classes CSS)
+
+### Props spécifiques
+
+- `UiButton`: `variant`, `disabled`, `loading`, `icon`, `to`, `href`
+- `UiCard`: `variant`, `border`
+- `UiAvatar`: `icon`, `image`
+
+### Exemples
+
+```vue
+<UiButton color="primary" size="lg" rounded="pill" shadow="md" variant="flat">
+  Enregistrer
+</UiButton>
+
+<UiCard color="surface" rounded="xl" elevation="2" shadow="lg" border>
+  <template #default>Contenu de la carte</template>
+</UiCard>
+
+<UiAvatar size="lg" color="primary" icon="mdi-account" shadow="sm" />
+<UiAvatar size="40" image="https://i.pravatar.cc/80" rounded="sm" />
+```
+
+Les slots et attributs supplémentaires sont passés au composant Vuetify via `$attrs` et slot forwarding.
