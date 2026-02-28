@@ -72,12 +72,11 @@
 
                   <v-list-item-content class="text-left">
                     <v-list-item-title
-                      v-text="item.title"
                       class="ps-0 font-weight-light ms-4"
                       :class="i == 1 ? 'text-white' : 'text-muted'"
                     >
-                      ></v-list-item-title
-                    >
+                      {{ item.title }}
+                    </v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>
               </v-list>

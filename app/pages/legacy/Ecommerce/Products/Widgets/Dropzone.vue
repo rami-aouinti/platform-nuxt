@@ -61,7 +61,7 @@ import { onMounted, ref } from "vue";
 const currentFile = ref(null);
 const files = ref([]);
 const showList = ref(false);
-function initDropzone() {
+async function initDropzone() {
   let Dropzone = await import("dropzone");
   Dropzone = Dropzone.default || Dropzone;
   Dropzone.autoDiscover = false;

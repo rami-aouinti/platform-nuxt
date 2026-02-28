@@ -169,7 +169,7 @@
 </template>
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import orders from "./Orders.ts";
+import ordersData from "./Orders.ts";
 const page = ref(1);
 const pageCount = ref(0);
 const itemsPerPage = ref(10);
