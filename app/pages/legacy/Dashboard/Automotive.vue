@@ -272,7 +272,7 @@
                         text-white
                       "
                     >
-                      <template slot="prepend-inner">
+                      <template #prepend-inner>
                         <v-icon
                           color="#fff"
                           class="mt-n1 text-lg material-icons-round"

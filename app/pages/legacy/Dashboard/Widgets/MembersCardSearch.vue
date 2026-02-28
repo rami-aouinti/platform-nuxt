@@ -14,7 +14,7 @@
         height="43"
         placeholder="Search"
       >
-        <template slot="prepend-inner">
+        <template #prepend-inner>
           <v-icon color="#adb5bd" size=".875rem">fas fa-search</v-icon>
         </template>
       </v-text-field>

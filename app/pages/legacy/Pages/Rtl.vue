@@ -561,6 +561,8 @@ export default {
     };
   },
   mounted() {
+    if (!process.client) return;
+
     // Chart widgets
     new Chart(document.getElementById(this.chartWidgets).getContext("2d"), {
       type: "line",
@@ -702,7 +704,7 @@ export default {
   created() {
     this.$vuetify.rtl = true;
   },
-  beforeDestroy() {
+  beforeUnmount() {
     this.$vuetify.rtl = false;
   },
 };
