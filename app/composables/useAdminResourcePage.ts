@@ -66,7 +66,7 @@ export function useAdminResourcePage<TRow, TFilters extends AdminFilters>(
   const error = ref<string | null>(null)
   const total = ref(0)
   const page = ref(options.initialPage ?? 1)
-  const pageSize = ref(options.initialPageSize ?? 10)
+  const pageSize = ref(options.initialPageSize ?? 5)
   const search = ref(options.initialSearch ?? '')
   const sortBy = ref<readonly { key: string; order?: 'asc' | 'desc' | boolean }[]>([])
   const filters = ref<TFilters>({ ...options.initialFilters })

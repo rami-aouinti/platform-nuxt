@@ -62,7 +62,7 @@ const props = withDefaults(
     error: null,
     total: 0,
     page: 1,
-    pageSize: 10,
+    pageSize: 5,
     sortBy: () => [],
     search: '',
     filters: () => ({}),

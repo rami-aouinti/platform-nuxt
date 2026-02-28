@@ -25,7 +25,7 @@ const props = withDefaults(
     loading: false,
     total: 0,
     page: 1,
-    pageSize: 10,
+    pageSize: 5,
     sortBy: () => [],
     selectable: false,
     error: null,
@@ -132,7 +132,7 @@ function getRowProps(payload: { item: AdminRow }) {
       :page="page"
       :items-per-page="pageSize"
       :sort-by="sortBy"
-      :items-per-page-options="[10, 20, 50]"
+      :items-per-page-options="[5, 10, 20, 50]"
       :row-props="getRowProps"
       hover
       class="admin-table__datatable"
