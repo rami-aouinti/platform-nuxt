@@ -101,14 +101,13 @@
               <h6 class="text-h6 my-auto text-typo font-weight-bold me-5">
                 Cameras
               </h6>
-              <v-tabs v-model="tab" right class="overflow-hidden">
-                <v-tabs-slider></v-tabs-slider>
+              <v-tabs v-model="tab" align-tabs="end" class="overflow-hidden">
+                
+                <v-tab value="tab-1"> Kitchen </v-tab>
 
-                <v-tab href="#tab-1"> Kitchen </v-tab>
+                <v-tab value="tab-2"> Living </v-tab>
 
-                <v-tab href="#tab-2"> Living </v-tab>
-
-                <v-tab href="#tab-3"> Attic </v-tab>
+                <v-tab value="tab-3"> Attic </v-tab>
               </v-tabs>
             </div>
           </v-card>

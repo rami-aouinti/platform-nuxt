@@ -13,11 +13,10 @@
   >
     <v-col cols="12" class="mx-auto text-center mb-6">
       <v-tabs v-model="tab" hide-slider class="border-radius-lg mt-8">
-        <v-tabs-slider></v-tabs-slider>
+        
+        <v-tab :ripple="false" class="ms-auto" value="tab-1"> Monthly </v-tab>
 
-        <v-tab :ripple="false" class="ms-auto" href="#tab-1"> Monthly </v-tab>
-
-        <v-tab :ripple="false" class="me-auto" href="#tab-2"> Annual </v-tab>
+        <v-tab :ripple="false" class="me-auto" value="tab-2"> Annual </v-tab>
       </v-tabs>
     </v-col>
     <v-container>

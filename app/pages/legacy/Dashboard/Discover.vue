@@ -36,10 +36,9 @@
           </div>
         </v-col>
         <v-col lg="4" md="6" class="my-sm-auto ms-sm-auto me-sm-0 mx-auto mt-3">
-          <v-tabs background-color="transparent" right>
-            <v-tabs-slider></v-tabs-slider>
+          <v-tabs background-color="transparent" align-tabs="end">
 
-            <v-tab :ripple="false" href="#tab-1">
+            <v-tab :ripple="false" value="tab-1">
               <svg
                 class="text-dark me-1"
                 width="16px"
@@ -84,7 +83,7 @@
               <span class="ms-1">App</span>
             </v-tab>
 
-            <v-tab :ripple="false" href="#tab-2">
+            <v-tab :ripple="false" value="tab-2">
               <svg
                 class="text-dark me-1"
                 width="16px"
@@ -125,7 +124,7 @@
               <span class="ms-1">Messages</span>
             </v-tab>
 
-            <v-tab :ripple="false" href="#tab-3">
+            <v-tab :ripple="false" value="tab-3">
               <svg
                 class="text-dark me-1"
                 width="16px"
