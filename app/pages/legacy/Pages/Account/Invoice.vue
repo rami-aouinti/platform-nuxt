@@ -3,21 +3,20 @@
     <v-row>
       <v-col lg="4" sm="8">
         <v-tabs background-color="transparent" class="text-left">
-          <v-tabs-slider></v-tabs-slider>
-
-          <v-tab :ripple="false" href="#tab-1">
+          
+          <v-tab :ripple="false" value="tab-1">
             <span class="ms-1">Messages</span>
           </v-tab>
 
-          <v-tab :ripple="false" href="#tab-2">
+          <v-tab :ripple="false" value="tab-2">
             <span class="ms-1">Social</span>
           </v-tab>
 
-          <v-tab :ripple="false" href="#tab-3">
+          <v-tab :ripple="false" value="tab-3">
             <span class="ms-1">items</span>
           </v-tab>
 
-          <v-tab :ripple="false" href="#tab-4">
+          <v-tab :ripple="false" value="tab-4">
             <span class="ms-1">Backup</span>
           </v-tab>
         </v-tabs>
