@@ -13,7 +13,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import LegacyTable from '../../../../components/legacy-migration/composites/LegacyTable.vue';
-import usersData from './Users';
+import usersData from './Users.ts';
 const headers = ref([{
   text: 'Name',
   value: 'name'
