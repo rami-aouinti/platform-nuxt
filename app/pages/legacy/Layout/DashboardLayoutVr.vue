@@ -43,9 +43,9 @@ function initScrollbar(className) {
 
 // import DashboardNavbar from './DashboardNavbar.vue';
 import { FadeTransition } from "vue2-transitions";
-import Drawer from "@/components/Drawer.vue";
-import AppBar from "@/components/AppBar.vue";
-import ContentFooter from "@/components/Footer.vue";
+import Drawer from "@/components/App/AppDrawer.vue";
+import AppBar from "@/components/App/AppBar.vue";
+import ContentFooter from "@/components/App/AppFooter.vue";
 
 export default {
   components: {

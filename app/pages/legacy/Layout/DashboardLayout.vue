@@ -92,10 +92,10 @@ function initScrollbar(className) {
 }
 
 import { FadeTransition } from "vue2-transitions";
-import Drawer from "@/components/Drawer.vue";
-import AppBar from "@/components/AppBar.vue";
-import ContentFooter from "@/components/Footer.vue";
-import SettingsDrawer from "@/components/Widgets/SettingsDrawer.vue";
+import Drawer from "@/components/App/AppDrawer.vue";
+import AppBar from "@/components/App/AppBar.vue";
+import ContentFooter from "@/components/App/AppFooter.vue";
+import SettingsDrawer from "@/components/App/AppSettings.vue";
 
 export default {
   components: {
