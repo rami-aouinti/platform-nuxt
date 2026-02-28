@@ -35,7 +35,9 @@ export function persistAuthState(authState: StoredAuthState | null) {
   sessionStorage.setItem(AUTH_STATE_STORAGE_KEY, JSON.stringify(authState))
 }
 
-export function readCachedAuthState(activeToken: string | null): StoredAuthState | null {
+export function readCachedAuthState(
+  activeToken: string | null,
+): StoredAuthState | null {
   if (!canUseSessionStorage() || !activeToken) {
     return null
   }
@@ -57,8 +59,7 @@ export function readCachedAuthState(activeToken: string | null): StoredAuthState
     }
 
     return parsed
-  }
-  catch {
+  } catch {
     clearPersistedAuthState()
     return null
   }
@@ -79,12 +80,26 @@ export function persistToken(token: string | null) {
   document.cookie = `${AUTH_TOKEN_COOKIE_KEY}=; Path=/; Max-Age=0; SameSite=Lax`
 }
 
-export function readPersistedToken() {
-  if (!canUseSessionStorage()) {
+function readPersistedTokenFromCookie(): string | null {
+  const tokenCookie = useCookie<string | null>(AUTH_TOKEN_COOKIE_KEY)
+
+  if (!tokenCookie.value) {
     return null
   }
 
-  return sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)
+  return decodeURIComponent(tokenCookie.value ?? '') || null
+}
+
+export function readPersistedToken(): string | null {
+  if (canUseSessionStorage()) {
+    const sessionToken = sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)
+
+    if (sessionToken) {
+      return sessionToken
+    }
+  }
+
+  return readPersistedTokenFromCookie()
 }
 
 export function persistPrimaryRole(role: string | null) {
