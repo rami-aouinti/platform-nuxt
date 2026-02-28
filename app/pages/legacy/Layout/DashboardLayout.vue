@@ -35,10 +35,10 @@
         @drawer-toggle="drawer = $event"
         :toggle-active="drawer"
       ></app-bar>
-      <fade-transition :duration="200" origin="center top" mode="out-in">
+      <Transition mode="out-in">
         <!-- your content here -->
         <router-view></router-view>
-      </fade-transition>
+      </Transition>
       <content-footer v-if="!$route.meta.hideFooter"></content-footer>
       <v-btn
         :ripple="false"
@@ -72,39 +72,16 @@
   </v-app>
 </template>
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
-// /* eslint-disable no-new */
-import PerfectScrollbar from "perfect-scrollbar";
-import "perfect-scrollbar/css/perfect-scrollbar.css";
-import { FadeTransition } from "vue2-transitions";
+import { ref } from "vue";
 import Drawer from "@/components/App/AppDrawer.vue";
 import AppBar from "@/components/App/AppBar.vue";
 import ContentFooter from "@/components/App/AppFooter.vue";
 import SettingsDrawer from "@/components/App/AppSettings.vue";
-function hasElement(className: string) {
-  return document.getElementsByClassName(className).length > 0;
-}
-function initScrollbarElement(className: string) {
-  if (hasElement(className)) {
-    new PerfectScrollbar(`.${className}`);
-  } else {
-    // try to init it later in case this component is loaded async
-    setTimeout(() => {
-      initScrollbarElement(className);
-    }, 100);
-  }
-}
 const drawer = ref(null);
 const showSettingsDrawer = ref(false);
 const sidebarColor = ref("success");
 const sidebarTheme = ref("dark");
 const navbarFixed = ref(false);
-function initScrollbar() {
-  let isWindows = navigator.platform.startsWith("Win");
-  if (isWindows) {
-    initScrollbarElement("sidenav");
-  }
-}
 function toggleSettingsDrawer(value: boolean) {
   showSettingsDrawer.value = value;
 }
@@ -124,8 +101,5 @@ function updateSidebarTheme(value: string) {
 function toggleNavbarPosition(value: boolean) {
   navbarFixed.value = value;
 }
-onMounted(() => {
-  initScrollbar();
-});
 </script>
 <style lang="scss"></style>

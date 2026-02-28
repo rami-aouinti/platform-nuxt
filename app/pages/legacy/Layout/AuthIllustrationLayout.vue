@@ -46,14 +46,10 @@
               md="7"
               class="d-flex flex-column ms-auto me-auto ms-lg-auto me-lg-5 py-0"
             >
-              <fade-transition
-                :duration="200"
-                origin="center top"
-                mode="out-in"
-              >
+              <Transition mode="out-in">
                 <!-- your content here -->
                 <router-view></router-view>
-              </fade-transition>
+              </Transition>
             </v-col>
           </v-row>
         </v-container>
@@ -62,7 +58,5 @@
   </v-app>
 </template>
 <script setup lang="ts">
-import { ref } from "vue";
 import AppBarBlurAuth from "@/components/AppBarBlurAuth";
-import { FadeTransition } from "vue2-transitions";
 </script>
