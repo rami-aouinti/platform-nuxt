@@ -145,6 +145,12 @@
   </v-row>
 </template>
 <script setup lang="ts">
+definePageMeta({
+  title: 'Legacy · Authentication Sign Up Basic',
+  layout: 'auth',
+  middleware: 'guest'
+})
+
 import { ref } from "vue";
 const checkbox = ref(false);
 </script>

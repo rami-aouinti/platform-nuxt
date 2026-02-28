@@ -118,6 +118,13 @@
   </div>
 </template>
 <script setup lang="ts">
+definePageMeta({
+  title: 'Legacy · Kanban',
+  layout: 'administration',
+  requiresAuth: true,
+  middleware: ['auth']
+})
+
 import { ref } from "vue";
 import vueKanban from "vue-kanban";
 import "vue-kanban/src/assets/kanban.scss";

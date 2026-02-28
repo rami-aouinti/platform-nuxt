@@ -10,5 +10,12 @@
   </div>
 </template>
 <script setup lang="ts">
+definePageMeta({
+  title: 'Legacy · Tables Paginated Tables',
+  layout: 'administration',
+  requiresAuth: true,
+  middleware: ['auth']
+})
+
 import PaginatedTable from "./Tables/PaginatedTable.vue";
 </script>

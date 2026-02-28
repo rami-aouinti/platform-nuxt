@@ -98,5 +98,12 @@
   </div>
 </template>
 <script setup lang="ts">
+definePageMeta({
+  title: 'Legacy · Getting Started',
+  layout: 'administration',
+  requiresAuth: true,
+  middleware: ['auth']
+})
+
 
 </script>

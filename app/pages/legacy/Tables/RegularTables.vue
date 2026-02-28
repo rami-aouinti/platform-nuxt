@@ -15,6 +15,13 @@
   </div>
 </template>
 <script setup lang="ts">
+definePageMeta({
+  title: 'Legacy · Tables Regular Tables',
+  layout: 'administration',
+  requiresAuth: true,
+  middleware: ['auth']
+})
+
 import LightTablePagination from "../Dashboard/Widgets/LightTablePagination.vue";
 import LightTableTransparent from "../Dashboard/Widgets/LightTableTransparent.vue";
 import TableInlineActions from "../Dashboard/Widgets/TableInlineActions.vue";

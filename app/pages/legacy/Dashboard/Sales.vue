@@ -312,6 +312,13 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  title: 'Legacy · Sales',
+  layout: 'administration',
+  requiresAuth: true,
+  middleware: ['auth']
+})
+
 import { ref } from "vue";
 import CardChartChannels from "./Widgets/CardChartChannels.vue";
 import CardChartRevenue from "./Widgets/CardChartRevenue.vue";

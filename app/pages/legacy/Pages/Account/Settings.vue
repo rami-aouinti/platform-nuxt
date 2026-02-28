@@ -114,6 +114,13 @@
   </v-container>
 </template>
 <script setup lang="ts">
+definePageMeta({
+  title: 'Legacy · Account Settings',
+  layout: 'default',
+  requiresAuth: true,
+  middleware: ['auth']
+})
+
 import { ref } from "vue";
 import BasicInfo from "./Widgets/BasicInfo.vue";
 import ChangePassword from "./Widgets/ChangePassword.vue";

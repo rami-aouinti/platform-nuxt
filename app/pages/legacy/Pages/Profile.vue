@@ -394,5 +394,12 @@
   </div>
 </template>
 <script setup lang="ts">
+definePageMeta({
+  title: 'Legacy · Profile',
+  layout: 'default',
+  requiresAuth: true,
+  middleware: ['auth']
+})
+
 import CardProfile from "../Components/Cards/CardProfile.vue";
 </script>

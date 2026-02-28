@@ -382,6 +382,13 @@
   </v-container>
 </template>
 <script setup lang="ts">
+definePageMeta({
+  title: 'Legacy · Profile Messages',
+  layout: 'default',
+  requiresAuth: true,
+  middleware: ['auth']
+})
+
 import { ref } from "vue";
 const messages = ref([{
   image: require("@/assets/img/team-2.jpg"),

@@ -142,6 +142,13 @@
   </v-container>
 </template>
 <script setup lang="ts">
+definePageMeta({
+  title: 'Legacy · Profile Projects',
+  layout: 'default',
+  requiresAuth: true,
+  middleware: ['auth']
+})
+
 import { ref } from "vue";
 const cards = ref([{
   image: require("@/assets/img/small-logos/logo-slack.svg"),

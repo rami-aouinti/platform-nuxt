@@ -116,5 +116,12 @@
   </div>
 </template>
 <script setup lang="ts">
+definePageMeta({
+  title: 'Legacy · Orders Order List',
+  layout: 'administration',
+  requiresAuth: true,
+  middleware: ['auth']
+})
+
 import TableOrders from "./Widgets/TableOrders";
 </script>

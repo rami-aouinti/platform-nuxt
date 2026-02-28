@@ -1190,6 +1190,13 @@
   </div>
 </template>
 <script setup lang="ts">
+definePageMeta({
+  title: 'Legacy · Smart Home',
+  layout: 'administration',
+  requiresAuth: true,
+  middleware: ['auth']
+})
+
 import { onMounted, ref } from "vue";
 import Chart from "chart.js/auto";
 import RoundSlider from "vue-round-slider";

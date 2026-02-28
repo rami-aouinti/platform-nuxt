@@ -33,6 +33,13 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  title: 'Legacy · Notifications',
+  layout: 'administration',
+  requiresAuth: true,
+  middleware: ['auth']
+})
+
 import { ref } from "vue";
 import LegacyPageWrapper from '../../../components/legacy-migration/layouts/LegacyPageWrapper.vue';
 import LegacyNotificationsPanel from '../../../components/legacy-migration/notifications/LegacyNotificationsPanel.vue';

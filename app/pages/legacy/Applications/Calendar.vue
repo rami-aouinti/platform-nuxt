@@ -186,6 +186,13 @@
   </div>
 </template>
 <script setup lang="ts">
+definePageMeta({
+  title: 'Legacy · Calendar',
+  layout: 'administration',
+  requiresAuth: true,
+  middleware: ['auth']
+})
+
 import { onMounted, ref } from "vue";
 import CalendarWidget from "./Widgets/CalendarWidget.vue";
 import Chart from "chart.js/auto";

@@ -12,6 +12,13 @@
   </div>
 </template>
 <script setup lang="ts">
+definePageMeta({
+  title: 'Legacy · Tables Sortable Tables',
+  layout: 'administration',
+  requiresAuth: true,
+  middleware: ['auth']
+})
+
 import SortableDark from "./Tables/SortableDark.vue";
 import SortableLight from "./Tables/SortableLight.vue";
 import SortableTranslucent from "./Tables/SortableTranslucent.vue";

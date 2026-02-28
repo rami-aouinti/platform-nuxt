@@ -664,6 +664,13 @@
   </v-container>
 </template>
 <script setup lang="ts">
+definePageMeta({
+  title: 'Legacy · Discover',
+  layout: 'administration',
+  requiresAuth: true,
+  middleware: ['auth']
+})
+
 import { ref } from "vue";
 const stories = ref([{
   image: require("@/assets/img/team-1.jpg"),

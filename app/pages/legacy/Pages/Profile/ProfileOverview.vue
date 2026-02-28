@@ -264,6 +264,13 @@
   </v-container>
 </template>
 <script setup lang="ts">
+definePageMeta({
+  title: 'Legacy · Profile Profile Overview',
+  layout: 'default',
+  requiresAuth: true,
+  middleware: ['auth']
+})
+
 import { ref } from "vue";
 const accountSettings = ref([{
   switchState: true,
