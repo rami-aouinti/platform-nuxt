@@ -19,7 +19,7 @@ withDefaults(
 </script>
 
 <template>
-  <v-card class="stats-card v-alert--border-top">
+  <UiCard class="stats-card v-alert--border-top" rounded="lg" shadow="sm">
     <v-icon
       size="x-large"
       class="stats-icon"
@@ -49,7 +49,7 @@ withDefaults(
     >
       <slot name="footer" />
     </div>
-  </v-card>
+  </UiCard>
 </template>
 
 <style scoped>

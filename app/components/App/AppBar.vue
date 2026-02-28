@@ -57,7 +57,7 @@ const currentLanguageFlag = computed(() => {
   const selected = languageOptions.value.find(
     (item) => item.code === locale.value,
   )
-  return selected?.flag ?? '🌐'
+  return selected?.flag ?? '/flags/en.svg'
 })
 
 const userDisplayName = computed(() => {
@@ -110,9 +110,9 @@ function createActivatorProps(
     <div class="app-bar__right-actions d-flex align-center">
       <v-menu location="bottom end">
         <template #activator="{ props }">
-          <v-btn
+          <UiButton
             variant="text"
-            size="small"
+            size="sm"
             class="mr-2"
             aria-label="Language"
             v-bind="props"
@@ -121,9 +121,9 @@ function createActivatorProps(
               :src="currentLanguageFlag"
               alt=""
               class="app-bar__language-flag"
-            >
+            />
             <v-icon size="18" icon="mdi-chevron-down" class="ml-1" />
-          </v-btn>
+          </UiButton>
         </template>
 
         <v-list density="compact">
@@ -135,7 +135,7 @@ function createActivatorProps(
             @click="setLocale(language.code)"
           >
             <v-list-item-title>
-              <img :src="language.flag" alt="" class="app-bar__language-flag">
+              <img :src="language.flag" alt="" class="app-bar__language-flag" />
             </v-list-item-title>
           </v-list-item>
         </v-list>
@@ -150,26 +150,28 @@ function createActivatorProps(
         true-icon="mdi-weather-night"
         class="opacity-80"
       />
-      <v-btn
+      <UiButton
         icon
         href="https://github.com/rami-aouinti/platform-nuxt"
-        size="small"
+        size="sm"
         class="ml-2"
         target="_blank"
+        variant="text"
       >
         <v-icon size="26" icon="mdi-github" />
-      </v-btn>
+      </UiButton>
       <v-menu location="bottom">
         <template #activator="{ props: menu }">
           <v-tooltip location="bottom">
             <template #activator="{ props: tooltip }">
-              <v-btn
+              <UiButton
                 icon
                 v-bind="createActivatorProps(menu, tooltip)"
                 class="ml-1"
+                variant="text"
               >
                 <v-icon icon="mdi-account-circle" size="36" />
-              </v-btn>
+              </UiButton>
             </template>
             <span>{{ userDisplayName }}</span>
           </v-tooltip>
