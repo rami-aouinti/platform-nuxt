@@ -1,6 +1,30 @@
 import { vuetifyMdiAliases } from './app/utils/vuetifyMdiAliases'
 import { defineNuxtConfig } from 'nuxt/config'
 
+const legacyInternalPageMatchers = [
+  '/legacy/Components/',
+  '/legacy/Layout/',
+  '/legacy/Tables/Tables/',
+  '/legacy/Widgets/',
+]
+
+const shouldExcludeLegacyInternalPage = (file: string) =>
+  legacyInternalPageMatchers.some((segment) => file.includes(segment))
+
+const filterLegacyInternalPages = (pages: Array<{ file?: string; children?: any[] }>) => {
+  for (let index = pages.length - 1; index >= 0; index -= 1) {
+    const page = pages[index]
+
+    if (page.children?.length) {
+      filterLegacyInternalPages(page.children)
+    }
+
+    if (page.file && shouldExcludeLegacyInternalPage(page.file)) {
+      pages.splice(index, 1)
+    }
+  }
+}
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   devtools: { enabled: true },
@@ -99,4 +123,9 @@ export default defineNuxtConfig({
     },
   },
   compatibilityDate: '2024-08-05',
+  hooks: {
+    'pages:extend'(pages) {
+      filterLegacyInternalPages(pages)
+    },
+  },
 })
