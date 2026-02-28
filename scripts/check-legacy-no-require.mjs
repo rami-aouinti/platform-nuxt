@@ -1,13 +1,13 @@
 import { execSync } from 'node:child_process'
 
 const target = 'app/pages/legacy'
-const command = `rg -n "require\\(" ${target} --glob "**/*.vue"`
+const command = `rg -n "require\\(" ${target} --glob "**/*.{vue,ts,js,mjs,cjs}"`
 
 try {
   const output = execSync(command, { stdio: ['ignore', 'pipe', 'pipe'] }).toString().trim()
 
   if (output) {
-    console.error('CommonJS require() usage is forbidden in legacy Vue pages:')
+    console.error('CommonJS require() usage is forbidden in legacy pages:')
     console.error(output)
     process.exit(1)
   }
