@@ -26,7 +26,7 @@ const isDark = computed({
   },
 })
 const authStore = useAuthStore()
-const { isAuthenticated, profile, hasAdminAccess, rolesLoading } =
+const { isAuthenticated, profile, hasAdminAccess, rolesLoading, initialized } =
   storeToRefs(authStore)
 
 const localeFlags: Record<string, string> = {
@@ -54,8 +54,10 @@ const languageOptions = computed(() =>
 )
 
 const currentLanguageFlag = computed(() => {
-  const selected = languageOptions.value.find((item) => item.code === locale.value)
-  return selected?.flag ?? '/flags/en.svg'
+  const selected = languageOptions.value.find(
+    (item) => item.code === locale.value,
+  )
+  return selected?.flag ?? '🌐'
 })
 
 const userDisplayName = computed(() => {
@@ -204,7 +206,9 @@ function createActivatorProps(
             to="/quiz"
           />
           <v-list-item
-            v-if="isAuthenticated && !rolesLoading && hasAdminAccess"
+            v-if="
+              isAuthenticated && initialized && !rolesLoading && hasAdminAccess
+            "
             :title="t('appbar.administration')"
             prepend-icon="mdi-shield-account-outline"
             to="/admin"

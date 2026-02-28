@@ -19,6 +19,7 @@ export const useAuthStore = defineStore('auth', () => {
   const rolesLoading = ref(false)
   const rolesError = ref<string | null>(null)
   const profileRequest = ref<Promise<void> | null>(null)
+  const initialized = ref(false)
 
   const isAuthenticated = computed(() => Boolean(token.value))
   const hasAdminAccess = computed(() => canAccessAdmin(roles.value))
@@ -107,11 +108,12 @@ export const useAuthStore = defineStore('auth', () => {
 
     profileRequest.value = (async () => {
       try {
-        const [profileResponse, groupsResponse, rolesResponse] = await Promise.all([
-          $fetch<AuthProfile>('/api/profile', { headers }),
-          $fetch<AuthGroup[]>('/api/profile/groups', { headers }),
-          $fetch<AuthRole[]>('/api/profile/roles', { headers }),
-        ])
+        const [profileResponse, groupsResponse, rolesResponse] =
+          await Promise.all([
+            $fetch<AuthProfile>('/api/profile', { headers }),
+            $fetch<AuthGroup[]>('/api/profile/groups', { headers }),
+            $fetch<AuthRole[]>('/api/profile/roles', { headers }),
+          ])
 
         profile.value = profileResponse
         groups.value = groupsResponse
@@ -174,14 +176,13 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function initAuth() {
-    if (!import.meta.client) {
-      return
-    }
+    initialized.value = false
 
     const storedToken = readPersistedToken()
 
     if (!storedToken) {
       logout()
+      initialized.value = true
       return
     }
 
@@ -197,6 +198,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     if (hydrateAuthStateFromCache()) {
+      initialized.value = true
       return
     }
 
@@ -204,6 +206,8 @@ export const useAuthStore = defineStore('auth', () => {
       await fetchProfileData()
     } catch {
       logout()
+    } finally {
+      initialized.value = true
     }
   }
 
@@ -215,6 +219,7 @@ export const useAuthStore = defineStore('auth', () => {
     primaryRole,
     rolesLoading,
     rolesError,
+    initialized,
     isAuthenticated,
     hasAdminAccess,
     login,
