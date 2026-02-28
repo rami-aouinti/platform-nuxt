@@ -38,9 +38,11 @@ const usersDescriptor = getAdminResourceDescriptor('users')
 const { roles } = storeToRefs(authStore)
 const { track } = useInternalEventTracking()
 
-const canCreate = computed(() => isRoot(roles.value))
-const canEdit = computed(() => isRoot(roles.value))
-const canDelete = computed(() => isRoot(roles.value))
+const userSchema = ref<AdminResourceSchema | null>(null)
+
+const canCreate = computed(() => isRoot(roles.value) && userSchema.value?.isCreatable !== false)
+const canEdit = computed(() => isRoot(roles.value) && userSchema.value?.isEditable !== false)
+const canDelete = computed(() => isRoot(roles.value) && userSchema.value?.isEditable !== false)
 const canShow = computed(() => canManageUsers(roles.value))
 const canManageGroups = computed(() => isRoot(roles.value))
 
@@ -105,9 +107,6 @@ const fallbackDetailFields = [
   { key: 'email', label: 'Email' },
 ]
 
-const userSchema = ref<AdminResourceSchema | null>(null)
-
-
 function resolveResourceEndpoint(endpoint: AdminResourceEndpoint | undefined, id?: string) {
   if (!endpoint) {
     return null
@@ -128,7 +127,13 @@ const detailFields = computed(() => {
   return buildSchemaFieldConfigs(userSchema.value?.editable, fallbackDetailFields)
 })
 
-const editableFields = computed(() => detailFields.value)
+const editableFields = computed(() => {
+  if (userSchema.value?.isEditable === false) {
+    return []
+  }
+
+  return detailFields.value
+})
 
 function normalize(payload: unknown): UserRecord[] {
   return extractCollectionFromPayload(payload).map((entry, index) => {

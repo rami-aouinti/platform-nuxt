@@ -8,4 +8,10 @@ export type AdminSchemaField = {
 export type AdminResourceSchema = {
   displayable: AdminSchemaField[]
   editable: AdminSchemaField[]
+  creatable: {
+    fields: AdminSchemaField[]
+    required: string[]
+  } | false
+  isEditable: boolean
+  isCreatable: boolean
 }

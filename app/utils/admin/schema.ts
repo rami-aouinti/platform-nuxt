@@ -51,7 +51,7 @@ export function normalizeAdminSchema(payload: unknown): AdminResourceSchema | nu
     return null
   }
 
-  const body = payload as { displayable?: unknown; editable?: unknown }
+  const body = payload as { displayable?: unknown; editable?: unknown; creatable?: unknown }
   const displayable = Array.isArray(body.displayable)
     ? body.displayable.map(normalizeSchemaField).filter((field): field is AdminSchemaField => Boolean(field))
     : []
@@ -59,11 +59,29 @@ export function normalizeAdminSchema(payload: unknown): AdminResourceSchema | nu
     ? body.editable.map(normalizeSchemaField).filter((field): field is AdminSchemaField => Boolean(field))
     : []
 
-  if (displayable.length === 0 && editable.length === 0) {
+  const isEditable = body.editable !== false
+  const rawCreatable = body.creatable
+  const isCreatable = rawCreatable !== false
+
+  const creatableFields = rawCreatable && typeof rawCreatable === 'object' && Array.isArray((rawCreatable as { fields?: unknown }).fields)
+    ? (rawCreatable as { fields: unknown[] }).fields.map(normalizeSchemaField).filter((field): field is AdminSchemaField => Boolean(field))
+    : []
+
+  const creatableRequired = rawCreatable && typeof rawCreatable === 'object' && Array.isArray((rawCreatable as { required?: unknown }).required)
+    ? (rawCreatable as { required: unknown[] }).required.map(value => String(value ?? '').trim()).filter(Boolean)
+    : []
+
+  if (displayable.length === 0 && editable.length === 0 && creatableFields.length === 0 && !isEditable && !isCreatable) {
     return null
   }
 
-  return { displayable, editable }
+  return {
+    displayable,
+    editable,
+    creatable: isCreatable ? { fields: creatableFields, required: creatableRequired } : false,
+    isEditable,
+    isCreatable,
+  }
 }
 
 export function buildSchemaColumns(schema: AdminResourceSchema | null, fallbackColumns: DataTableHeader[]): DataTableHeader[] {
