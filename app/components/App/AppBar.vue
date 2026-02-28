@@ -112,7 +112,6 @@ function createActivatorProps(
         <template #activator="{ props }">
           <UiButton
             variant="text"
-            size="sm"
             class="mr-2"
             aria-label="Language"
             v-bind="props"
@@ -122,7 +121,6 @@ function createActivatorProps(
               alt=""
               class="app-bar__language-flag"
             />
-            <v-icon size="18" icon="mdi-chevron-down" class="ml-1" />
           </UiButton>
         </template>
 
