@@ -12,6 +12,7 @@ import { buildSchemaColumns, buildSchemaFieldConfigs, normalizeAdminSchema } fro
 definePageMeta({
   icon: 'mdi-key-variant',
   title: 'Api keys',
+  subtitle: 'Api keys Management Administration',
   drawerIndex: 74,
   requiresAuth: true,
   requiresAdmin: true,

@@ -20,14 +20,14 @@ const items = computed(() =>
 <template>
   <v-container>
     <v-row>
-      <v-col>
-        <v-card v-for="item in items" :key="item.title" class="mb-1">
-          <v-list-item
-            v-bind="item"
-            append-icon="mdi-chevron-right"
-            :ripple="false"
-            class="py-4"
-          />
+      <v-col v-for="item in items" :key="item.title" cols="12" sm="6" md="4">
+        <v-card :to="item.disabled ? undefined : item.to" rounded="lg" variant="outlined" class="h-100 d-flex flex-column">
+          <v-card-title class="d-flex align-center ga-2">
+            <v-icon :icon="item.prependIcon" />
+            <span>{{ item.title }}</span>
+          </v-card-title>
+
+          <v-card-text class="text-medium-emphasis">{{ item.subtitle }}</v-card-text>
         </v-card>
       </v-col>
     </v-row>

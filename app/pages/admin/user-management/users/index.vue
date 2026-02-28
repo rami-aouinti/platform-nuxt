@@ -25,6 +25,7 @@ type UserGroup = {
 definePageMeta({
   icon: 'mdi-account-multiple-outline',
   title: 'Users',
+  subtitle: 'Users Management Administration',
   drawerIndex: 71,
   requiresAuth: true,
   requiresAdmin: true,

@@ -14,6 +14,7 @@ type RoleRecord = { id: string; [key: string]: unknown }
 definePageMeta({
   icon: 'mdi-shield-account-outline',
   title: 'Roles',
+  subtitle: 'Roles Management Administration',
   drawerIndex: 73,
   requiresAuth: true,
   requiresAdmin: true,

@@ -23,6 +23,7 @@ type UserRecord = {
 definePageMeta({
   icon: 'mdi-account-group-outline',
   title: 'User groups',
+  subtitle: 'User groups Management Administration',
   drawerIndex: 72,
   requiresAuth: true,
   requiresAdmin: true,
