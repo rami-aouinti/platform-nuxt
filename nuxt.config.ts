@@ -1,5 +1,4 @@
 import { vuetifyMdiAliases } from './app/utils/vuetifyMdiAliases'
-import { defineNuxtConfig } from 'nuxt/config'
 
 const legacyInternalPageMatchers = [
   '/legacy/Components/',
