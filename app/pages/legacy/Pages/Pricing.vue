@@ -170,6 +170,12 @@ definePageMeta({
 })
 
 import { ref } from "vue";
+import imageLogoCoinbase from "@/assets/img/logos/gray-logos/logo-coinbase.svg";
+import imageLogoNasa from "@/assets/img/logos/gray-logos/logo-nasa.svg";
+import imageLogoNetflix from "@/assets/img/logos/gray-logos/logo-netflix.svg";
+import imageLogoPinterest from "@/assets/img/logos/gray-logos/logo-pinterest.svg";
+import imageLogoSpotify from "@/assets/img/logos/gray-logos/logo-spotify.svg";
+import imageLogoVodafone from "@/assets/img/logos/gray-logos/logo-vodafone.svg";
 const tab = ref("");
 const plans = ref([{
   title: "Starter",
@@ -246,22 +252,22 @@ const plans = ref([{
 }]);
 const brands = ref([{
   name: "coinbase",
-  image: require("@/assets/img/logos/gray-logos/logo-coinbase.svg")
+  image: imageLogoCoinbase
 }, {
   name: "nasa",
-  image: require("@/assets/img/logos/gray-logos/logo-nasa.svg")
+  image: imageLogoNasa
 }, {
   name: "netflix",
-  image: require("@/assets/img/logos/gray-logos/logo-netflix.svg")
+  image: imageLogoNetflix
 }, {
   name: "pinterest",
-  image: require("@/assets/img/logos/gray-logos/logo-pinterest.svg")
+  image: imageLogoPinterest
 }, {
   name: "spotify",
-  image: require("@/assets/img/logos/gray-logos/logo-spotify.svg")
+  image: imageLogoSpotify
 }, {
   name: "vodafone",
-  image: require("@/assets/img/logos/gray-logos/logo-vodafone.svg")
+  image: imageLogoVodafone
 }]);
 const panels = ref([{
   title: "How do I order?",

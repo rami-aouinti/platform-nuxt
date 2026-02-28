@@ -21,28 +21,28 @@
                         class="me-2"
                         src="../../../assets/img/products/product-details-2.jpg"
                         v-pswp="
-                          require('@/assets/img/products/product-details-2.jpg')
+                          imageProductDetails2
                         "
                       />
                       <img
                         class="me-2"
                         src="../../../assets/img/products/product-details-3.jpg"
                         v-pswp="
-                          require('@/assets/img/products/product-details-3.jpg')
+                          imageProductDetails3
                         "
                       />
                       <img
                         class="me-2"
                         src="../../../assets/img/products/product-details-4.jpg"
                         v-pswp="
-                          require('@/assets/img/products/product-details-4.jpg')
+                          imageProductDetails4
                         "
                       />
                       <img
                         class="me-2"
                         src="../../../assets/img/products/product-details-5.jpg"
                         v-pswp="
-                          require('@/assets/img/products/product-details-5.jpg')
+                          imageProductDetails5
                         "
                       />
                     </Photoswipe>
@@ -217,6 +217,10 @@ definePageMeta({
 import { ref } from "vue";
 import Photoswipe from "vue-pswipe";
 import TableProducts from "./Widgets/TableProducts.vue";
+import imageProductDetails2 from "@/assets/img/products/product-details-2.jpg";
+import imageProductDetails3 from "@/assets/img/products/product-details-3.jpg";
+import imageProductDetails4 from "@/assets/img/products/product-details-4.jpg";
+import imageProductDetails5 from "@/assets/img/products/product-details-5.jpg";
 Vue.use(Photoswipe);
 const materials = ref(["Wood", "Aluminium", "Leather"]);
 const colors = ref(["White", "Black", "Gray"]);

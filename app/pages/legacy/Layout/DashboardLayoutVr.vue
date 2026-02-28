@@ -10,7 +10,7 @@
     </div>
     <v-main
       class="mt-4 mx-4 border-radius-xl position-relative"
-      :style="`background-image: url(${require('../../assets/img/vr-bg.jpg')}); background-size: cover;`"
+      :style="`background-image: url(${new URL('../../assets/img/vr-bg.jpg', import.meta.url).href}); background-size: cover;`"
     >
       <drawer :drawer="drawer" class="bg-white border-radius-xl"></drawer>
       <fade-transition :duration="200" origin="center top" mode="out-in">

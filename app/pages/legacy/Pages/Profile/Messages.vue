@@ -390,27 +390,32 @@ definePageMeta({
 })
 
 import { ref } from "vue";
+import imageTeam2 from "@/assets/img/team-2.jpg";
+import imageTeam1 from "@/assets/img/team-1.jpg";
+import imageTeam3 from "@/assets/img/team-3.jpg";
+import imageTeam5 from "@/assets/img/team-5.jpg";
+import imageTeam4 from "@/assets/img/team-4.jpg";
 const messages = ref([{
-  image: require("@/assets/img/team-2.jpg"),
+  image: imageTeam2,
   name: "Charlie Watson",
   message: "Typing..."
 }, {
-  image: require("@/assets/img/team-1.jpg"),
+  image: imageTeam1,
   name: "Jana Doe",
   time: "1 hour ago",
   message: "Computer users and program..."
 }, {
-  image: require("@/assets/img/team-3.jpg"),
+  image: imageTeam3,
   name: "Mila Skylar",
   time: "24 min ago",
   message: "You can subscribe to receive wee..."
 }, {
-  image: require("@/assets/img/team-5.jpg"),
+  image: imageTeam5,
   name: "Sofia Scarlett",
   time: "7 hours ago",
   message: "It’s an effective resource rega..."
 }, {
-  image: require("@/assets/img/team-4.jpg"),
+  image: imageTeam4,
   name: "Tom Klein",
   time: "1 day ago",
   message: "Be sure to check it out if your dev..."
