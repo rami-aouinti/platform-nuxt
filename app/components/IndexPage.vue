@@ -23,7 +23,7 @@ const items = computed(() =>
       <v-col v-for="item in items" :key="item.title" cols="12" sm="6" md="4">
         <v-card :to="item.disabled ? undefined : item.to" class="stats-card v-alert--border-top" elevation="24">
           <v-card-title class="d-flex align-center ga-2">
-            <v-icon :icon="item.prependIcon" />
+            <v-icon color="primary" :icon="item.prependIcon" />
             <span>{{ item.title }}</span>
           </v-card-title>
 

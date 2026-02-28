@@ -17,7 +17,7 @@ export default defineNuxtConfig({
   pinia: {
     storesDirs: ['./app/stores/**'],
   },
-  css: ['~/assets/styles/index.css'],
+  css: ['~/assets/styles/index.css', "~/assets/styles/material-dashboard.scss",],
   experimental: { typedPages: true },
   typescript: {
     shim: false,
