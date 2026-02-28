@@ -1,35 +1,29 @@
 <template>
-  <v-card class="card-shadow mb-6">
-    <v-card-title class="text-h6">Sortable Dark</v-card-title>
-    <v-table density="comfortable">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Email</th>
-          <th class="text-right">Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="item in rows" :key="item.email">
-          <td>{{ item.name }}</td>
-          <td>{{ item.email }}</td>
-          <td class="text-right">
-            <v-chip size="small" color="success" variant="tonal">Active</v-chip>
-          </td>
-        </tr>
-      </tbody>
-    </v-table>
-  </v-card>
+  <legacy-table
+    title="Sortable Dark"
+    :headers="headers"
+    :items="rows"
+    default-sort-by="email"
+    searchable
+  />
 </template>
 
 <script>
+import LegacyTable from '../../../../components/legacy-migration/composites/LegacyTable.vue'
+
 export default {
+  components: { LegacyTable },
   data() {
     return {
+      headers: [
+        { text: 'Name', value: 'name' },
+        { text: 'Email', value: 'email' },
+        { text: 'Status', value: 'status', align: 'end' },
+      ],
       rows: [
-        { name: 'Alice Martin', email: 'alice@example.com' },
-        { name: 'John Doe', email: 'john@example.com' },
-        { name: 'Jane Smith', email: 'jane@example.com' },
+        { name: 'Alice Martin', email: 'alice@example.com', status: 'Active' },
+        { name: 'John Doe', email: 'john@example.com', status: 'Active' },
+        { name: 'Jane Smith', email: 'jane@example.com', status: 'Active' },
       ],
     }
   },
