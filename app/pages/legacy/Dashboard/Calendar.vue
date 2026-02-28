@@ -244,7 +244,7 @@
   </div>
 </template>
 <script>
-import FullCalendar from "@fullcalendar/vue";
+import FullCalendar from "@fullcalendar/vue3";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
@@ -267,7 +267,7 @@ export default {
         contentHeight: "auto",
         headerToolbar: false,
         selectable: true,
-        selectHelper: true,
+        selectMirror: true,
         dateClick: this.onDateClick,
         eventClick: this.onEventClick,
         editable: true,

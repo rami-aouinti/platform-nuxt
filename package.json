@@ -15,7 +15,8 @@
     "lint:admin-imports": "node scripts/check-admin-legacy-imports.mjs",
     "legacy:migration:inventory": "node scripts/generate-legacy-migration-inventory.mjs",
     "legacy:migration:check": "node scripts/check-legacy-migration-status.mjs",
-    "legacy:imports:check": "node scripts/check-legacy-imports.mjs"
+    "legacy:imports:check": "node scripts/check-legacy-imports.mjs",
+    "lint:fullcalendar-imports": "node scripts/check-fullcalendar-vue-imports.mjs"
   },
   "devDependencies": {
     "@iconify-json/mdi": "^1.2.3",
