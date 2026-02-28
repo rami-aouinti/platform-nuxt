@@ -10,23 +10,22 @@
   />
 </template>
 
-<script>
-import LegacyTable from '../../../../components/legacy-migration/composites/LegacyTable.vue'
-import users from './Users'
-
-export default {
-  name: 'PaginatedTable',
-  components: { LegacyTable },
-  data() {
-    return {
-      headers: [
-        { text: 'Name', value: 'name' },
-        { text: 'Email', value: 'email' },
-        { text: 'Age', value: 'age' },
-        { text: 'Salary', value: 'salary' },
-      ],
-      users,
-    }
-  },
-}
+<script setup lang="ts">
+import { ref } from "vue";
+import LegacyTable from '../../../../components/legacy-migration/composites/LegacyTable.vue';
+import usersData from './Users';
+const headers = ref([{
+  text: 'Name',
+  value: 'name'
+}, {
+  text: 'Email',
+  value: 'email'
+}, {
+  text: 'Age',
+  value: 'age'
+}, {
+  text: 'Salary',
+  value: 'salary'
+}]);
+const users = ref(usersData);
 </script>

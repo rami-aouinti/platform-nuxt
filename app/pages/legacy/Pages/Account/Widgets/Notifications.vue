@@ -108,41 +108,30 @@
     </div>
   </v-card>
 </template>
-<script>
-export default {
-  name: "notifications",
-  data() {
-    return {
-      notifications: [
-        {
-          title: "Mentions",
-          description: "Notify when another user mentions you in a comment",
-          switch1: true,
-          switch2: false,
-          switch3: false,
-        },
-        {
-          title: "Comments",
-          description: "Notify when another user comments your item",
-          switch1: true,
-          switch2: true,
-          switch3: false,
-        },
-        {
-          title: "Follows",
-          description: "Notify when another user follows you",
-          switch1: false,
-          switch2: true,
-          switch3: false,
-        },
-        {
-          text: "Log in from a new device",
-          switch1: true,
-          switch2: true,
-          switch3: true,
-        },
-      ],
-    };
-  },
-};
+<script setup lang="ts">
+import { ref } from "vue";
+const notifications = ref([{
+  title: "Mentions",
+  description: "Notify when another user mentions you in a comment",
+  switch1: true,
+  switch2: false,
+  switch3: false
+}, {
+  title: "Comments",
+  description: "Notify when another user comments your item",
+  switch1: true,
+  switch2: true,
+  switch3: false
+}, {
+  title: "Follows",
+  description: "Notify when another user follows you",
+  switch1: false,
+  switch2: true,
+  switch3: false
+}, {
+  text: "Log in from a new device",
+  switch1: true,
+  switch2: true,
+  switch3: true
+}]);
 </script>

@@ -311,117 +311,84 @@
   </div>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref } from "vue";
 import CardChartChannels from "./Widgets/CardChartChannels.vue";
 import CardChartRevenue from "./Widgets/CardChartRevenue.vue";
 import CardChartSalesAge from "./Widgets/CardChartSalesAge.vue";
-
-export default {
-  name: "Sales",
-  components: {
-    CardChartChannels,
-    CardChartRevenue,
-    CardChartSalesAge,
-  },
-  data() {
-    return {
-      stats: [
-        {
-          text: "Sales",
-          value: "$230,220",
-          growth: "+55%",
-        },
-        {
-          text: "Customers",
-          value: "3.200",
-          growth: "+12%",
-        },
-        {
-          text: "Avg. Revenue",
-          value: "$1.200",
-          growth: "+$213",
-        },
-      ],
-      countries: [
-        {
-          avatar: require("@/assets/img/icons/flags/US.png"),
-          country: "United States",
-          sales: "2.500",
-          bounce: "29.9%",
-        },
-        {
-          avatar: require("@/assets/img/icons/flags/DE.png"),
-          country: "Germany",
-          sales: "3.900",
-          bounce: "40.22%",
-        },
-        {
-          avatar: require("@/assets/img/icons/flags/GB.png"),
-          country: "Great Britain",
-          sales: "1.400",
-          bounce: "23.44%",
-        },
-        {
-          avatar: require("@/assets/img/icons/flags/BR.png"),
-          country: "Brasil",
-          sales: "562",
-          bounce: "32.14%",
-        },
-        {
-          avatar: require("@/assets/img/icons/flags/AU.png"),
-          country: "Australia",
-          sales: "400",
-          bounce: "56.83%",
-        },
-      ],
-      products: [
-        {
-          product: "Nike v22 Running",
-          orders: "8.232",
-          imgSrc:
-            "https://raw.githubusercontent.com/creativetimofficial/public-assets/master/soft-ui-design-system/assets/img/ecommerce/blue-shoe.jpg",
-          value: "$130.992",
-          ads: "$9.500",
-          refunds: 13,
-        },
-        {
-          product: "Business Kit (Mug + Notebook)",
-          orders: "12.821",
-          imgSrc:
-            "https://raw.githubusercontent.com/creativetimofficial/public-assets/master/soft-ui-design-system/assets/img/ecommerce/black-mug.jpg",
-          value: "$80.250",
-          ads: "$4.200",
-          refunds: 40,
-        },
-        {
-          product: "Black Chair",
-          orders: "2.421",
-          imgSrc:
-            "https://raw.githubusercontent.com/creativetimofficial/public-assets/master/soft-ui-design-system/assets/img/ecommerce/black-chair.jpg",
-          value: "$40.600",
-          ads: "$9.430",
-          refunds: 54,
-        },
-        {
-          product: "Wireless Charger",
-          orders: "5.921",
-          imgSrc:
-            "https://raw.githubusercontent.com/creativetimofficial/public-assets/master/soft-ui-design-system/assets/img/ecommerce/bang-sound.jpg",
-          value: "$91.300",
-          ads: "$7.364",
-          refunds: 5,
-        },
-        {
-          product: "Mountain Trip Kit (Camera + Backpack)",
-          orders: "921",
-          imgSrc:
-            "https://raw.githubusercontent.com/creativetimofficial/public-assets/master/soft-ui-design-system/assets/img/ecommerce/photo-tools.jpg",
-          value: "$140.925",
-          ads: "$20.531",
-          refunds: 121,
-        },
-      ],
-    };
-  },
-};
+const stats = ref([{
+  text: "Sales",
+  value: "$230,220",
+  growth: "+55%"
+}, {
+  text: "Customers",
+  value: "3.200",
+  growth: "+12%"
+}, {
+  text: "Avg. Revenue",
+  value: "$1.200",
+  growth: "+$213"
+}]);
+const countries = ref([{
+  avatar: require("@/assets/img/icons/flags/US.png"),
+  country: "United States",
+  sales: "2.500",
+  bounce: "29.9%"
+}, {
+  avatar: require("@/assets/img/icons/flags/DE.png"),
+  country: "Germany",
+  sales: "3.900",
+  bounce: "40.22%"
+}, {
+  avatar: require("@/assets/img/icons/flags/GB.png"),
+  country: "Great Britain",
+  sales: "1.400",
+  bounce: "23.44%"
+}, {
+  avatar: require("@/assets/img/icons/flags/BR.png"),
+  country: "Brasil",
+  sales: "562",
+  bounce: "32.14%"
+}, {
+  avatar: require("@/assets/img/icons/flags/AU.png"),
+  country: "Australia",
+  sales: "400",
+  bounce: "56.83%"
+}]);
+const products = ref([{
+  product: "Nike v22 Running",
+  orders: "8.232",
+  imgSrc: "https://raw.githubusercontent.com/creativetimofficial/public-assets/master/soft-ui-design-system/assets/img/ecommerce/blue-shoe.jpg",
+  value: "$130.992",
+  ads: "$9.500",
+  refunds: 13
+}, {
+  product: "Business Kit (Mug + Notebook)",
+  orders: "12.821",
+  imgSrc: "https://raw.githubusercontent.com/creativetimofficial/public-assets/master/soft-ui-design-system/assets/img/ecommerce/black-mug.jpg",
+  value: "$80.250",
+  ads: "$4.200",
+  refunds: 40
+}, {
+  product: "Black Chair",
+  orders: "2.421",
+  imgSrc: "https://raw.githubusercontent.com/creativetimofficial/public-assets/master/soft-ui-design-system/assets/img/ecommerce/black-chair.jpg",
+  value: "$40.600",
+  ads: "$9.430",
+  refunds: 54
+}, {
+  product: "Wireless Charger",
+  orders: "5.921",
+  imgSrc: "https://raw.githubusercontent.com/creativetimofficial/public-assets/master/soft-ui-design-system/assets/img/ecommerce/bang-sound.jpg",
+  value: "$91.300",
+  ads: "$7.364",
+  refunds: 5
+}, {
+  product: "Mountain Trip Kit (Camera + Backpack)",
+  orders: "921",
+  imgSrc: "https://raw.githubusercontent.com/creativetimofficial/public-assets/master/soft-ui-design-system/assets/img/ecommerce/photo-tools.jpg",
+  value: "$140.925",
+  ads: "$20.531",
+  refunds: 121
+}]);
 </script>

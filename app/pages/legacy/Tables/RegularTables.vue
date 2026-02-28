@@ -14,23 +14,11 @@
     </v-container>
   </div>
 </template>
-<script>
+<script setup lang="ts">
 import LightTablePagination from "../Dashboard/Widgets/LightTablePagination.vue";
 import LightTableTransparent from "../Dashboard/Widgets/LightTableTransparent.vue";
 import TableInlineActions from "../Dashboard/Widgets/TableInlineActions.vue";
 import TableInlineActionsStriped from "../Dashboard/Widgets/TableInlineActionsStriped.vue";
 import CheckTogglesTable from "../Dashboard/Widgets/CheckTogglesTable.vue";
 import DarkTable from "../Dashboard/Widgets/DarkTable.vue";
-
-export default {
-  name: "regular-tables",
-  components: {
-    LightTablePagination,
-    LightTableTransparent,
-    TableInlineActions,
-    TableInlineActionsStriped,
-    CheckTogglesTable,
-    DarkTable,
-  },
-};
 </script>

@@ -127,54 +127,39 @@
     </v-card-text>
   </v-card>
 </template>
-<script>
-export default {
-  name: "light-table",
-  data() {
-    return {
-      projects: [
-        {
-          id: 230019,
-          project: "Christopher Knight Home",
-          imgSrc:
-            "https://raw.githubusercontent.com/creativetimofficial/public-assets/master/soft-ui-design-system/assets/img/ecommerce/black-chair.jpg",
-          price: "$89.53",
-          lastIcon: "half",
-          progressValue: "80",
-          progressColor: "success",
-        },
-        {
-          id: 87120,
-          project: "Bar Height Swivel Barstool",
-          imgSrc:
-            "https://raw.githubusercontent.com/creativetimofficial/public-assets/master/soft-ui-design-system/assets/img/ecommerce/chair-pink.jpg",
-          price: "$99.99",
-          lastIcon: "full",
-          progressValue: "90",
-          progressColor: "success",
-        },
-        {
-          id: 412301,
-          project: "Signature Design by Ashley",
-          imgSrc:
-            "https://raw.githubusercontent.com/creativetimofficial/public-assets/master/soft-ui-design-system/assets/img/ecommerce/chair-steel.jpg",
-          price: "$129.00",
-          lastIcon: "half",
-          progressValue: "60",
-          progressColor: "warning",
-        },
-        {
-          id: 199200,
-          project: "Modern Square",
-          imgSrc:
-            "https://raw.githubusercontent.com/creativetimofficial/public-assets/master/soft-ui-design-system/assets/img/ecommerce/chair-wood.jpg",
-          price: "$59.99",
-          lastIcon: "half",
-          progressValue: "30",
-          progressColor: "warning",
-        },
-      ],
-    };
-  },
-};
+<script setup lang="ts">
+import { ref } from "vue";
+const projects = ref([{
+  id: 230019,
+  project: "Christopher Knight Home",
+  imgSrc: "https://raw.githubusercontent.com/creativetimofficial/public-assets/master/soft-ui-design-system/assets/img/ecommerce/black-chair.jpg",
+  price: "$89.53",
+  lastIcon: "half",
+  progressValue: "80",
+  progressColor: "success"
+}, {
+  id: 87120,
+  project: "Bar Height Swivel Barstool",
+  imgSrc: "https://raw.githubusercontent.com/creativetimofficial/public-assets/master/soft-ui-design-system/assets/img/ecommerce/chair-pink.jpg",
+  price: "$99.99",
+  lastIcon: "full",
+  progressValue: "90",
+  progressColor: "success"
+}, {
+  id: 412301,
+  project: "Signature Design by Ashley",
+  imgSrc: "https://raw.githubusercontent.com/creativetimofficial/public-assets/master/soft-ui-design-system/assets/img/ecommerce/chair-steel.jpg",
+  price: "$129.00",
+  lastIcon: "half",
+  progressValue: "60",
+  progressColor: "warning"
+}, {
+  id: 199200,
+  project: "Modern Square",
+  imgSrc: "https://raw.githubusercontent.com/creativetimofficial/public-assets/master/soft-ui-design-system/assets/img/ecommerce/chair-wood.jpg",
+  price: "$59.99",
+  lastIcon: "half",
+  progressValue: "30",
+  progressColor: "warning"
+}]);
 </script>

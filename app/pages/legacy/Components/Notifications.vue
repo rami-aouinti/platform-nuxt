@@ -561,191 +561,162 @@
     </v-container>
   </div>
 </template>
-<script>
+<script setup lang="ts">
+import { ref } from "vue";
 import swal from "sweetalert2";
-
-export default {
-  name: "notifcations",
-  data() {
-    return {
-      checkbox: false,
-      snackbar: {
-        color: null,
-        visible: false,
+const checkbox = ref(false);
+const snackbar = ref({
+  color: null,
+  visible: false
+});
+const sweetAlerts = ref([{
+  color: "#5e72e4",
+  name: "Basic Alert",
+  type: "basic"
+}, {
+  color: "#11cdef",
+  name: "Info Alert",
+  type: "info"
+}, {
+  color: "#2dce89",
+  name: "Success alert",
+  type: "success"
+}, {
+  color: "#fb6340",
+  name: "Warning alert",
+  type: "warning"
+}, {
+  color: "#172b4d",
+  name: "Question",
+  type: "question"
+}]);
+const snackbars = ref([{
+  color: "#172b4d",
+  name: "Default"
+}, {
+  color: "#11cdef",
+  name: "Info"
+}, {
+  color: "#2dce89",
+  name: "Success"
+}, {
+  color: "#fb6340",
+  name: "Warning"
+}, {
+  color: "#f5365c",
+  name: "Danger"
+}]);
+const alerts = ref([{
+  type: "default",
+  color: "#3c4d69"
+}, {
+  type: "primary",
+  color: "#7889e8"
+}, {
+  type: "secondary",
+  color: "#f8fbfc"
+}, {
+  type: "info",
+  color: "#37d5f2"
+}, {
+  type: "success",
+  color: "#4fd69c"
+}, {
+  type: "danger",
+  color: "#f75676"
+}, {
+  type: "warning",
+  color: "#fc7c5f"
+}]);
+function capitalize(s) {
+  return s[0].toUpperCase() + s.slice(1);
+}
+function SnackbarShow(type) {
+  if (!type) return;
+  switch (type) {
+    case "Default":
+      console.log("aaaa");
+      snackbar.value = {
+        color: "#172b4d",
+        visible: true
+      };
+      break;
+    case "Info":
+      snackbar.value = {
+        color: "#11cdef",
+        visible: true
+      };
+      break;
+    case "Success":
+      snackbar.value = {
+        color: "#2dce89",
+        visible: true
+      };
+      break;
+    case "Warning":
+      snackbar.value = {
+        color: "#fb6340",
+        visible: true
+      };
+      break;
+    case "Danger":
+      snackbar.value = {
+        color: "#f5365c",
+        visible: true
+      };
+      break;
+  }
+}
+function showSwal(type) {
+  if (type === "basic") {
+    swal.fire({
+      title: `Here's a message!`,
+      text: `A few words about this sweet alert ...`,
+      buttonsStyling: false,
+      customClass: {
+        confirmButton: "sweet-btn-primary"
+      }
+    });
+  } else if (type === "info") {
+    swal.fire({
+      icon: "info",
+      title: `Info`,
+      text: `A few words about this sweet alert ...`,
+      buttonsStyling: false,
+      customClass: {
+        confirmButton: "sweet-btn-info"
+      }
+    });
+  } else if (type === "success") {
+    swal.fire({
+      title: `Success`,
+      text: "A few words about this sweet alert ...",
+      buttonsStyling: false,
+      customClass: {
+        confirmButton: "sweet-btn-success"
       },
-      sweetAlerts: [
-        {
-          color: "#5e72e4",
-          name: "Basic Alert",
-          type: "basic",
-        },
-        {
-          color: "#11cdef",
-          name: "Info Alert",
-          type: "info",
-        },
-        {
-          color: "#2dce89",
-          name: "Success alert",
-          type: "success",
-        },
-        {
-          color: "#fb6340",
-          name: "Warning alert",
-          type: "warning",
-        },
-        {
-          color: "#172b4d",
-          name: "Question",
-          type: "question",
-        },
-      ],
-      snackbars: [
-        {
-          color: "#172b4d",
-          name: "Default",
-        },
-        {
-          color: "#11cdef",
-          name: "Info",
-        },
-        {
-          color: "#2dce89",
-          name: "Success",
-        },
-        {
-          color: "#fb6340",
-          name: "Warning",
-        },
-        {
-          color: "#f5365c",
-          name: "Danger",
-        },
-      ],
-      alerts: [
-        {
-          type: "default",
-          color: "#3c4d69",
-        },
-        {
-          type: "primary",
-          color: "#7889e8",
-        },
-        {
-          type: "secondary",
-          color: "#f8fbfc",
-        },
-        {
-          type: "info",
-          color: "#37d5f2",
-        },
-        {
-          type: "success",
-          color: "#4fd69c",
-        },
-        {
-          type: "danger",
-          color: "#f75676",
-        },
-        {
-          type: "warning",
-          color: "#fc7c5f",
-        },
-      ],
-    };
-  },
-  methods: {
-    capitalize(s) {
-      return s[0].toUpperCase() + s.slice(1);
-    },
-    SnackbarShow(type) {
-      if (!type) return;
-      switch (type) {
-        case "Default":
-          console.log("aaaa");
-          this.snackbar = {
-            color: "#172b4d",
-            visible: true,
-          };
-          break;
-        case "Info":
-          this.snackbar = {
-            color: "#11cdef",
-            visible: true,
-          };
-          break;
-        case "Success":
-          this.snackbar = {
-            color: "#2dce89",
-            visible: true,
-          };
-          break;
-        case "Warning":
-          this.snackbar = {
-            color: "#fb6340",
-            visible: true,
-          };
-          break;
-        case "Danger":
-          this.snackbar = {
-            color: "#f5365c",
-            visible: true,
-          };
-          break;
-      }
-    },
-    showSwal(type) {
-      if (type === "basic") {
-        swal.fire({
-          title: `Here's a message!`,
-          text: `A few words about this sweet alert ...`,
-          buttonsStyling: false,
-          customClass: {
-            confirmButton: "sweet-btn-primary",
-          },
-        });
-      } else if (type === "info") {
-        swal.fire({
-          icon: "info",
-          title: `Info`,
-          text: `A few words about this sweet alert ...`,
-          buttonsStyling: false,
-          customClass: {
-            confirmButton: "sweet-btn-info",
-          },
-        });
-      } else if (type === "success") {
-        swal.fire({
-          title: `Success`,
-          text: "A few words about this sweet alert ...",
-          buttonsStyling: false,
-          customClass: {
-            confirmButton: "sweet-btn-success",
-          },
-          icon: "success",
-        });
-      } else if (type === "warning") {
-        swal.fire({
-          title: `Warning`,
-          text: "A few words about this sweet alert ...",
-          buttonsStyling: false,
-          customClass: {
-            confirmButton: "sweet-btn-warning",
-          },
-          icon: "warning",
-        });
-      } else if (type === "question") {
-        swal.fire({
-          title: `Are you sure?`,
-          text: "A few words about this sweet alert ...",
-          buttonsStyling: false,
-          customClass: {
-            confirmButton: "sweet-btn-default",
-          },
-          icon: "question",
-        });
-      }
-    },
-  },
-};
+      icon: "success"
+    });
+  } else if (type === "warning") {
+    swal.fire({
+      title: `Warning`,
+      text: "A few words about this sweet alert ...",
+      buttonsStyling: false,
+      customClass: {
+        confirmButton: "sweet-btn-warning"
+      },
+      icon: "warning"
+    });
+  } else if (type === "question") {
+    swal.fire({
+      title: `Are you sure?`,
+      text: "A few words about this sweet alert ...",
+      buttonsStyling: false,
+      customClass: {
+        confirmButton: "sweet-btn-default"
+      },
+      icon: "question"
+    });
+  }
+}
 </script>

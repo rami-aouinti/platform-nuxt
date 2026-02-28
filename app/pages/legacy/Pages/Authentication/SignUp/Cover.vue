@@ -100,13 +100,7 @@
     </v-col>
   </v-row>
 </template>
-<script>
-export default {
-  name: "sign-up-basic",
-  data() {
-    return {
-      checkbox: false,
-    };
-  },
-};
+<script setup lang="ts">
+import { ref } from "vue";
+const checkbox = ref(false);
 </script>

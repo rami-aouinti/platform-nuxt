@@ -393,10 +393,6 @@
     </v-row>
   </div>
 </template>
-<script>
+<script setup lang="ts">
 import CardProfile from "../Components/Cards/CardProfile.vue";
-export default {
-  components: { CardProfile },
-  name: "profile",
-};
 </script>

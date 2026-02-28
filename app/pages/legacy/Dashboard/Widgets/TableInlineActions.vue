@@ -22,16 +22,16 @@
   </v-card>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      rows: [
-        { name: 'Alice Martin', email: 'alice@example.com' },
-        { name: 'John Doe', email: 'john@example.com' },
-        { name: 'Jane Smith', email: 'jane@example.com' },
-      ],
-    }
-  },
-}
+<script setup lang="ts">
+import { ref } from "vue";
+const rows = ref([{
+  name: 'Alice Martin',
+  email: 'alice@example.com'
+}, {
+  name: 'John Doe',
+  email: 'john@example.com'
+}, {
+  name: 'Jane Smith',
+  email: 'jane@example.com'
+}]);
 </script>

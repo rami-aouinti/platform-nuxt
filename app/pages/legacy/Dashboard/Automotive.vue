@@ -517,49 +517,35 @@
   </div>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref } from "vue";
 import { latLng } from "leaflet";
 import { LMap, LTileLayer } from "vue2-leaflet";
 import "leaflet/dist/leaflet.css";
-
-export default {
-  name: "Automotive",
-  components: {
-    LMap,
-    LTileLayer,
-  },
-  data() {
-    return {
-      slider: "",
-      zoom: 11,
-      center: latLng(38.89, -77.03),
-      url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-      attribution:
-        '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
-      withPopup: latLng(47.41322, -1.219482),
-      withTooltip: latLng(47.41422, -1.250482),
-      currentZoom: 11.5,
-      currentCenter: latLng(47.41322, -1.219482),
-      showParagraph: false,
-      mapOptions: {
-        zoomSnap: 0.5,
-      },
-      showMap: true,
-    };
-  },
-  methods: {
-    zoomUpdate(zoom) {
-      this.currentZoom = zoom;
-    },
-    centerUpdate(center) {
-      this.currentCenter = center;
-    },
-    showLongText() {
-      this.showParagraph = !this.showParagraph;
-    },
-    innerClick() {
-      alert("Click!");
-    },
-  },
-};
+const slider = ref("");
+const zoom = ref(11);
+const center = ref(latLng(38.89, -77.03));
+const url = ref("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png");
+const attribution = ref('&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors');
+const withPopup = ref(latLng(47.41322, -1.219482));
+const withTooltip = ref(latLng(47.41422, -1.250482));
+const currentZoom = ref(11.5);
+const currentCenter = ref(latLng(47.41322, -1.219482));
+const showParagraph = ref(false);
+const mapOptions = ref({
+  zoomSnap: 0.5
+});
+const showMap = ref(true);
+function zoomUpdate(zoom) {
+  currentZoom.value = zoom;
+}
+function centerUpdate(center) {
+  currentCenter.value = center;
+}
+function showLongText() {
+  showParagraph.value = !showParagraph.value;
+}
+function innerClick() {
+  alert("Click!");
+}
 </script>

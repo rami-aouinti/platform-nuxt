@@ -25,89 +25,80 @@
     </div>
   </v-card>
 </template>
-<script>
+<script setup lang="ts">
+import { onMounted, ref } from "vue";
 import Chart from "chart.js/auto";
-
-export default {
-  name: "bar-chart",
-  data: function () {
-    return {
-      barChartId: "bar-chart",
-    };
-  },
-  mounted() {
-    new Chart(document.getElementById(this.barChartId).getContext("2d"), {
-      type: "bar",
-      data: {
-        labels: ["16-20", "21-25", "26-30", "31-36", "36-42", "42+"],
-        datasets: [
-          {
-            label: "Sales by age",
-            weight: 5,
-            borderWidth: 0,
-            borderRadius: 4,
-            backgroundColor: "#3A416F",
-            data: [15, 20, 12, 60, 20, 15],
-            fill: false,
-            maxBarThickness: 35,
-          },
-        ],
+const barChartId = ref("bar-chart");
+onMounted(() => {
+  new Chart(document.getElementById(barChartId.value).getContext("2d"), {
+    type: "bar",
+    data: {
+      labels: ["16-20", "21-25", "26-30", "31-36", "36-42", "42+"],
+      datasets: [{
+        label: "Sales by age",
+        weight: 5,
+        borderWidth: 0,
+        borderRadius: 4,
+        backgroundColor: "#3A416F",
+        data: [15, 20, 12, 60, 20, 15],
+        fill: false,
+        maxBarThickness: 35
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        }
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
+      scales: {
+        y: {
+          grid: {
+            drawBorder: false,
+            display: true,
+            drawOnChartArea: true,
+            drawTicks: false,
+            borderDash: [5, 5],
+            color: "#c1c4ce5c"
+          },
+          ticks: {
+            display: true,
+            padding: 10,
+            color: "#9ca2b7",
+            font: {
+              size: 14,
+              weight: 300,
+              family: "Roboto",
+              style: "normal",
+              lineHeight: 2
+            }
+          }
+        },
+        x: {
+          grid: {
+            drawBorder: false,
             display: false,
+            drawOnChartArea: true,
+            drawTicks: true,
+            color: "#c1c4ce5c"
           },
-        },
-        scales: {
-          y: {
-            grid: {
-              drawBorder: false,
-              display: true,
-              drawOnChartArea: true,
-              drawTicks: false,
-              borderDash: [5, 5],
-              color: "#c1c4ce5c",
-            },
-            ticks: {
-              display: true,
-              padding: 10,
-              color: "#9ca2b7",
-              font: {
-                size: 14,
-                weight: 300,
-                family: "Roboto",
-                style: "normal",
-                lineHeight: 2,
-              },
-            },
-          },
-          x: {
-            grid: {
-              drawBorder: false,
-              display: false,
-              drawOnChartArea: true,
-              drawTicks: true,
-              color: "#c1c4ce5c",
-            },
-            ticks: {
-              display: true,
-              color: "#9ca2b7",
-              padding: 10,
-              font: {
-                size: 14,
-                weight: 300,
-                family: "Roboto",
-                style: "normal",
-                lineHeight: 2,
-              },
-            },
-          },
-        },
-      },
-    });
-  },
-};
+          ticks: {
+            display: true,
+            color: "#9ca2b7",
+            padding: 10,
+            font: {
+              size: 14,
+              weight: 300,
+              family: "Roboto",
+              style: "normal",
+              lineHeight: 2
+            }
+          }
+        }
+      }
+    }
+  });
+});
 </script>

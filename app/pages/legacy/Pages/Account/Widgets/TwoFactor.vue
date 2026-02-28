@@ -76,8 +76,6 @@
     </div>
   </v-card>
 </template>
-<script>
-export default {
-  name: "two-factor",
-};
+<script setup lang="ts">
+
 </script>

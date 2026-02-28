@@ -73,8 +73,6 @@
     </div>
   </v-card>
 </template>
-<script>
-export default {
-  name: "change-password",
-};
+<script setup lang="ts">
+
 </script>

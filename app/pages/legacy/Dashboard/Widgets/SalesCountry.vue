@@ -127,94 +127,75 @@
     </v-row>
   </v-card>
 </template>
-<script>
+<script setup lang="ts">
+import { onMounted, ref } from "vue";
 import jsVectorMap from "jsvectormap";
 import "jsvectormap/dist/maps/world.js";
 import "jsvectormap/dist/maps/world-merc";
 import "jsvectormap/dist/css/jsvectormap.min.css";
-
-export default {
-  name: "sales-country",
-  data() {
-    return {
-      countries: [
-        {
-          avatar: require("@/assets/img/icons/flags/US.png"),
-          country: "United States",
-          sales: "2.500",
-          value: "$230,900",
-          bounce: "29.9%",
-        },
-        {
-          avatar: require("@/assets/img/icons/flags/DE.png"),
-          country: "Germany",
-          sales: "3.900",
-          value: "$440,000",
-          bounce: "40.22%",
-        },
-        {
-          avatar: require("@/assets/img/icons/flags/GB.png"),
-          country: "Great Britain",
-          sales: "1.400",
-          value: "$190,700",
-          bounce: "23.44%",
-        },
-        {
-          avatar: require("@/assets/img/icons/flags/BR.png"),
-          country: "Brasil",
-          sales: "562",
-          value: "$143,960",
-          bounce: "32.14%",
-        },
-      ],
-    };
-  },
-
-  mounted() {
-    new jsVectorMap({
-      selector: "#map",
-      map: "world_merc",
-      zoomOnScroll: false,
-      zoomButtons: false,
-      selectedMarkers: [1, 3],
-      markersSelectable: true,
-      markers: [
-        {
-          name: "USA",
-          coords: [40.71296415909766, -74.00437720027804],
-        },
-        {
-          name: "Germany",
-          coords: [51.17661451970939, 10.97947735117339],
-        },
-        {
-          name: "Brazil",
-          coords: [-7.596735421549542, -54.781694323779185],
-        },
-        {
-          name: "Russia",
-          coords: [62.318222797104276, 89.81564777631716],
-        },
-        {
-          name: "China",
-          coords: [22.320178999475512, 114.17161225541399],
-          style: {
-            fill: "#E91E63",
-          },
-        },
-      ],
-      markerStyle: {
-        initial: {
-          fill: "#e91e63",
-        },
-        hover: {
-          fill: "E91E63",
-        },
-        selected: {
-          fill: "E91E63",
-        },
+const countries = ref([{
+  avatar: require("@/assets/img/icons/flags/US.png"),
+  country: "United States",
+  sales: "2.500",
+  value: "$230,900",
+  bounce: "29.9%"
+}, {
+  avatar: require("@/assets/img/icons/flags/DE.png"),
+  country: "Germany",
+  sales: "3.900",
+  value: "$440,000",
+  bounce: "40.22%"
+}, {
+  avatar: require("@/assets/img/icons/flags/GB.png"),
+  country: "Great Britain",
+  sales: "1.400",
+  value: "$190,700",
+  bounce: "23.44%"
+}, {
+  avatar: require("@/assets/img/icons/flags/BR.png"),
+  country: "Brasil",
+  sales: "562",
+  value: "$143,960",
+  bounce: "32.14%"
+}]);
+onMounted(() => {
+  new jsVectorMap({
+    selector: "#map",
+    map: "world_merc",
+    zoomOnScroll: false,
+    zoomButtons: false,
+    selectedMarkers: [1, 3],
+    markersSelectable: true,
+    markers: [{
+      name: "USA",
+      coords: [40.71296415909766, -74.00437720027804]
+    }, {
+      name: "Germany",
+      coords: [51.17661451970939, 10.97947735117339]
+    }, {
+      name: "Brazil",
+      coords: [-7.596735421549542, -54.781694323779185]
+    }, {
+      name: "Russia",
+      coords: [62.318222797104276, 89.81564777631716]
+    }, {
+      name: "China",
+      coords: [22.320178999475512, 114.17161225541399],
+      style: {
+        fill: "#E91E63"
+      }
+    }],
+    markerStyle: {
+      initial: {
+        fill: "#e91e63"
       },
-    });
-  },
-};
+      hover: {
+        fill: "E91E63"
+      },
+      selected: {
+        fill: "E91E63"
+      }
+    }
+  });
+});
 </script>

@@ -277,45 +277,35 @@
     </v-container>
   </div>
 </template>
-<script>
-export default {
-  data() {
-    return {
-      timeline: [
-        {
-          title: "Order received",
-          date: "22 DEC 7:20 PM",
-          color: "#b0eed3",
-          iconColor: "#1aae6f",
-          icon: "notifications",
-          btn: "secondary",
-        },
-        {
-          title: "Generate order id #1832412",
-          date: "22 DEC 7:21 AM",
-          color: "#b0eed3",
-          iconColor: "#1aae6f",
-          icon: "code",
-          btn: "secondary",
-        },
-        {
-          title: "Order transmited to courier",
-          date: "22 DEC 8:10 AM",
-          color: "#b0eed3",
-          iconColor: "#1aae6f",
-          icon: "shopping_cart",
-          btn: "secondary",
-        },
-        {
-          title: "Order delivered",
-          date: "22 DEC 4:54 PM",
-          color: "#b0eed3",
-          iconColor: "#1aae6f",
-          icon: "done",
-          btn: "success",
-        },
-      ],
-    };
-  },
-};
+<script setup lang="ts">
+import { ref } from "vue";
+const timeline = ref([{
+  title: "Order received",
+  date: "22 DEC 7:20 PM",
+  color: "#b0eed3",
+  iconColor: "#1aae6f",
+  icon: "notifications",
+  btn: "secondary"
+}, {
+  title: "Generate order id #1832412",
+  date: "22 DEC 7:21 AM",
+  color: "#b0eed3",
+  iconColor: "#1aae6f",
+  icon: "code",
+  btn: "secondary"
+}, {
+  title: "Order transmited to courier",
+  date: "22 DEC 8:10 AM",
+  color: "#b0eed3",
+  iconColor: "#1aae6f",
+  icon: "shopping_cart",
+  btn: "secondary"
+}, {
+  title: "Order delivered",
+  date: "22 DEC 4:54 PM",
+  color: "#b0eed3",
+  iconColor: "#1aae6f",
+  icon: "done",
+  btn: "success"
+}]);
 </script>

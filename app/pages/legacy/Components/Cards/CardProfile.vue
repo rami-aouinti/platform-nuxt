@@ -11,6 +11,6 @@
   </v-card>
 </template>
 
-<script>
-export default {}
+<script setup lang="ts">
+
 </script>

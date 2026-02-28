@@ -38,96 +38,87 @@
     </div>
   </v-card>
 </template>
-<script>
+<script setup lang="ts">
+import { onMounted, ref } from "vue";
 import Chart from "chart.js/auto";
-
-export default {
-  name: "card-completed-tasks",
-  data: function () {
-    return {
-      tasksViewsID: "tasksViews",
-    };
-  },
-  mounted() {
-    new Chart(document.getElementById(this.tasksViewsID).getContext("2d"), {
-      type: "line",
-      data: {
-        labels: ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-        datasets: [
-          {
-            label: "Mobile apps",
-            tension: 0,
-            pointRadius: 5,
-            pointBackgroundColor: "rgba(255, 255, 255, .8)",
-            pointBorderColor: "transparent",
-            borderColor: "rgba(255, 255, 255, .8)",
-            borderWidth: 4,
-            backgroundColor: "transparent",
-            fill: true,
-            data: [50, 40, 300, 220, 500, 250, 400, 230, 500],
-            maxBarThickness: 6,
-          },
-        ],
+const tasksViewsID = ref("tasksViews");
+onMounted(() => {
+  new Chart(document.getElementById(tasksViewsID.value).getContext("2d"), {
+    type: "line",
+    data: {
+      labels: ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+      datasets: [{
+        label: "Mobile apps",
+        tension: 0,
+        pointRadius: 5,
+        pointBackgroundColor: "rgba(255, 255, 255, .8)",
+        pointBorderColor: "transparent",
+        borderColor: "rgba(255, 255, 255, .8)",
+        borderWidth: 4,
+        backgroundColor: "transparent",
+        fill: true,
+        data: [50, 40, 300, 220, 500, 250, 400, 230, 500],
+        maxBarThickness: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        }
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
+      interaction: {
+        intersect: false,
+        mode: "index"
+      },
+      scales: {
+        y: {
+          grid: {
+            drawBorder: false,
+            display: true,
+            drawOnChartArea: true,
+            drawTicks: false,
+            borderDash: [5, 5],
+            color: "rgba(255, 255, 255, .2)"
+          },
+          ticks: {
+            display: true,
+            padding: 10,
+            color: "#f8f9fa",
+            font: {
+              size: 14,
+              weight: 300,
+              family: "Roboto",
+              style: "normal",
+              lineHeight: 2
+            }
+          }
+        },
+        x: {
+          grid: {
+            drawBorder: false,
             display: false,
+            drawOnChartArea: false,
+            drawTicks: false,
+            borderDash: [5, 5]
           },
-        },
-        interaction: {
-          intersect: false,
-          mode: "index",
-        },
-        scales: {
-          y: {
-            grid: {
-              drawBorder: false,
-              display: true,
-              drawOnChartArea: true,
-              drawTicks: false,
-              borderDash: [5, 5],
-              color: "rgba(255, 255, 255, .2)",
-            },
-            ticks: {
-              display: true,
-              padding: 10,
-              color: "#f8f9fa",
-              font: {
-                size: 14,
-                weight: 300,
-                family: "Roboto",
-                style: "normal",
-                lineHeight: 2,
-              },
-            },
-          },
-          x: {
-            grid: {
-              drawBorder: false,
-              display: false,
-              drawOnChartArea: false,
-              drawTicks: false,
-              borderDash: [5, 5],
-            },
-            ticks: {
-              display: true,
-              color: "#f8f9fa",
-              padding: 10,
-              font: {
-                size: 14,
-                weight: 300,
-                family: "Roboto",
-                style: "normal",
-                lineHeight: 2,
-              },
-            },
-          },
-        },
-      },
-    });
-  },
-};
+          ticks: {
+            display: true,
+            color: "#f8f9fa",
+            padding: 10,
+            font: {
+              size: 14,
+              weight: 300,
+              family: "Roboto",
+              style: "normal",
+              lineHeight: 2
+            }
+          }
+        }
+      }
+    }
+  });
+});
 </script>

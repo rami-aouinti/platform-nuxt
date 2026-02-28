@@ -50,106 +50,85 @@
     </div>
   </v-card>
 </template>
-<script>
+<script setup lang="ts">
+import { onMounted, ref } from "vue";
 import Chart from "chart.js/auto";
-
-export default {
-  name: "doughnut-chart",
-  data: function () {
-    return {
-      doughnutChartId: "doughnut-chart",
-      affiliates: [
-        {
-          image: require("@/assets/img/small-logos/logo-devto.svg"),
-          text: "DevTo",
-          percent: 25,
-        },
-        {
-          image: require("@/assets/img/small-logos/logo-creative-tim.svg"),
-          text: "Creative Tim",
-          percent: 13,
-        },
-        {
-          image: require("@/assets/img/small-logos/logo-bootstrap.svg"),
-          text: "Boostrap",
-          percent: 12,
-        },
-        {
-          image: require("@/assets/img/small-logos/logo-github.svg"),
-          text: "GitHub",
-          percent: 37,
-        },
-        {
-          image: require("@/assets/img/small-logos/logo-google-webdev.svg"),
-          text: "Google Webdev",
-          percent: 13,
-        },
-      ],
-    };
-  },
-  mounted() {
-    new Chart(document.getElementById(this.doughnutChartId).getContext("2d"), {
-      type: "doughnut",
-      data: {
-        labels: ["Creative Tim", "Github", "Bootsnipp", "Dev.to", "Codeinwp"],
-        datasets: [
-          {
-            label: "Projects",
-            weight: 9,
-            cutout: 60,
-            tension: 0.9,
-            pointRadius: 2,
-            borderWidth: 2,
-            backgroundColor: [
-              "#03A9F4",
-              "#3A416F",
-              "#fb8c00",
-              "#a8b8d8",
-              "#e91e63",
-            ],
-            data: [15, 20, 12, 60, 20],
-            fill: false,
-          },
-        ],
+const doughnutChartId = ref("doughnut-chart");
+const affiliates = ref([{
+  image: require("@/assets/img/small-logos/logo-devto.svg"),
+  text: "DevTo",
+  percent: 25
+}, {
+  image: require("@/assets/img/small-logos/logo-creative-tim.svg"),
+  text: "Creative Tim",
+  percent: 13
+}, {
+  image: require("@/assets/img/small-logos/logo-bootstrap.svg"),
+  text: "Boostrap",
+  percent: 12
+}, {
+  image: require("@/assets/img/small-logos/logo-github.svg"),
+  text: "GitHub",
+  percent: 37
+}, {
+  image: require("@/assets/img/small-logos/logo-google-webdev.svg"),
+  text: "Google Webdev",
+  percent: 13
+}]);
+onMounted(() => {
+  new Chart(document.getElementById(doughnutChartId.value).getContext("2d"), {
+    type: "doughnut",
+    data: {
+      labels: ["Creative Tim", "Github", "Bootsnipp", "Dev.to", "Codeinwp"],
+      datasets: [{
+        label: "Projects",
+        weight: 9,
+        cutout: 60,
+        tension: 0.9,
+        pointRadius: 2,
+        borderWidth: 2,
+        backgroundColor: ["#03A9F4", "#3A416F", "#fb8c00", "#a8b8d8", "#e91e63"],
+        data: [15, 20, 12, 60, 20],
+        fill: false
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        }
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
+      interaction: {
+        intersect: false,
+        mode: "index"
+      },
+      scales: {
+        y: {
+          grid: {
+            drawBorder: false,
             display: false,
+            drawOnChartArea: false,
+            drawTicks: false
           },
+          ticks: {
+            display: false
+          }
         },
-        interaction: {
-          intersect: false,
-          mode: "index",
-        },
-        scales: {
-          y: {
-            grid: {
-              drawBorder: false,
-              display: false,
-              drawOnChartArea: false,
-              drawTicks: false,
-            },
-            ticks: {
-              display: false,
-            },
+        x: {
+          grid: {
+            drawBorder: false,
+            display: false,
+            drawOnChartArea: false,
+            drawTicks: false
           },
-          x: {
-            grid: {
-              drawBorder: false,
-              display: false,
-              drawOnChartArea: false,
-              drawTicks: false,
-            },
-            ticks: {
-              display: false,
-            },
-          },
-        },
-      },
-    });
-  },
-};
+          ticks: {
+            display: false
+          }
+        }
+      }
+    }
+  });
+});
 </script>

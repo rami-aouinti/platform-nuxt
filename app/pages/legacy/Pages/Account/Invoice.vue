@@ -249,32 +249,22 @@
     </v-row>
   </v-container>
 </template>
-<script>
-export default {
-  name: "Invoice",
-  data() {
-    return {
-      items: [
-        {
-          title: "Mentions",
-          qty: "1",
-          rate: "9.00",
-          amount: "9.00",
-        },
-        {
-          title: "Soft UI Design System PRO",
-          qty: "3",
-          rate: "100.00",
-          amount: "300.00",
-        },
-        {
-          title: "Parts for service",
-          qty: "1",
-          rate: "89.00",
-          amount: "89.00",
-        },
-      ],
-    };
-  },
-};
+<script setup lang="ts">
+import { ref } from "vue";
+const items = ref([{
+  title: "Mentions",
+  qty: "1",
+  rate: "9.00",
+  amount: "9.00"
+}, {
+  title: "Soft UI Design System PRO",
+  qty: "3",
+  rate: "100.00",
+  amount: "300.00"
+}, {
+  title: "Parts for service",
+  qty: "1",
+  rate: "89.00",
+  amount: "89.00"
+}]);
 </script>

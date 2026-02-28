@@ -501,211 +501,188 @@
     </v-container>
   </div>
 </template>
-<script>
+<script setup lang="ts">
+import { onBeforeMount, onBeforeUnmount, onMounted, ref } from "vue";
 import Chart from "chart.js/auto";
 import CategoriesCard from "./Widgets/CategoriesCard.vue";
 import CategoriesCardDashboard from "./Widgets/CategoriesCardDashboard.vue";
 import Calendar from "../Dashboard/Widgets/Calendar.vue";
+const chartWidgets = ref("widgetsChart");
+const chartLine = ref("lineChart");
+const switch1 = ref(true);
+const timeline = ref([{
+  title: "$2400, تغييرات في التصميم",
+  date: "22 ديسمبر 7:20 مساءً",
+  icon: "notifications",
+  btn: "default"
+}, {
+  title: "طلب جديد # 1832412",
+  date: "21 ديسمبر 11 م",
+  icon: "code",
+  btn: "primary"
+}, {
+  title: "مدفوعات الخادم لشهر أبريل",
+  date: "21 ديسمبر 9:34 مساءً",
+  icon: "shopping_cart",
+  btn: "success"
+}, {
+  title: "تمت إضافة بطاقة جديدة للأمر رقم 4395133",
+  date: "20 ديسمبر 2:20 صباحًا",
+  icon: "credit_card",
+  btn: "info"
+}, {
+  title: "فتح الحزم من أجل التطوير",
+  date: "18 ديسمبر ، 4:54 صباحًا",
+  icon: "vpn_key",
+  btn: "default"
+}, {
+  title: "طلب جديد # 9583120",
+  date: "17 ديسمبر",
+  iconColor: "#f80031",
+  icon: "bug_report",
+  btn: "primary"
+}]);
+onMounted(() => {
+  if (!process.client) return;
 
-export default {
-  name: "Rtl",
-  components: {
-    CategoriesCard,
-    CategoriesCardDashboard,
-    Calendar,
-  },
-  data: function () {
-    return {
-      chartWidgets: "widgetsChart",
-      chartLine: "lineChart",
-      switch1: true,
-      timeline: [
-        {
-          title: "$2400, تغييرات في التصميم",
-          date: "22 ديسمبر 7:20 مساءً",
-          icon: "notifications",
-          btn: "default",
-        },
-        {
-          title: "طلب جديد # 1832412",
-          date: "21 ديسمبر 11 م",
-          icon: "code",
-          btn: "primary",
-        },
-        {
-          title: "مدفوعات الخادم لشهر أبريل",
-          date: "21 ديسمبر 9:34 مساءً",
-          icon: "shopping_cart",
-          btn: "success",
-        },
-        {
-          title: "تمت إضافة بطاقة جديدة للأمر رقم 4395133",
-          date: "20 ديسمبر 2:20 صباحًا",
-          icon: "credit_card",
-          btn: "info",
-        },
-        {
-          title: "فتح الحزم من أجل التطوير",
-          date: "18 ديسمبر ، 4:54 صباحًا",
-          icon: "vpn_key",
-          btn: "default",
-        },
-        {
-          title: "طلب جديد # 9583120",
-          date: "17 ديسمبر",
-          iconColor: "#f80031",
-          icon: "bug_report",
-          btn: "primary",
-        },
-      ],
-    };
-  },
-  mounted() {
-    if (!process.client) return;
-
-    // Chart widgets
-    new Chart(document.getElementById(this.chartWidgets).getContext("2d"), {
-      type: "line",
-      data: {
-        labels: ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-        datasets: [
-          {
-            label: "Tasks",
-            tension: 0,
-            pointRadius: 5,
-            pointBackgroundColor: "#E91E63",
-            pointBorderColor: "transparent",
-            borderColor: "#E91E63",
-            borderWidth: 4,
-            backgroundColor: "transparent",
-            data: [40, 45, 42, 41, 40, 43, 40, 42, 39],
-            maxBarThickness: 6,
-            fill: true,
-          },
-        ],
+  // Chart widgets
+  new Chart(document.getElementById(chartWidgets.value).getContext("2d"), {
+    type: "line",
+    data: {
+      labels: ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+      datasets: [{
+        label: "Tasks",
+        tension: 0,
+        pointRadius: 5,
+        pointBackgroundColor: "#E91E63",
+        pointBorderColor: "transparent",
+        borderColor: "#E91E63",
+        borderWidth: 4,
+        backgroundColor: "transparent",
+        data: [40, 45, 42, 41, 40, 43, 40, 42, 39],
+        maxBarThickness: 6,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        }
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
+      interaction: {
+        intersect: false,
+        mode: "index"
+      },
+      scales: {
+        y: {
+          grid: {
+            drawBorder: false,
             display: false,
+            drawOnChartArea: true,
+            drawTicks: false,
+            borderDash: [5, 5]
           },
+          ticks: {
+            display: true,
+            padding: 10,
+            color: "#9ca2b7",
+            font: {
+              size: 14,
+              weight: 300,
+              family: "Roboto",
+              style: "normal",
+              lineHeight: 2
+            }
+          }
         },
-        interaction: {
-          intersect: false,
-          mode: "index",
-        },
-        scales: {
-          y: {
-            grid: {
-              drawBorder: false,
-              display: false,
-              drawOnChartArea: true,
-              drawTicks: false,
-              borderDash: [5, 5],
-            },
-            ticks: {
-              display: true,
-              padding: 10,
-              color: "#9ca2b7",
-              font: {
-                size: 14,
-                weight: 300,
-                family: "Roboto",
-                style: "normal",
-                lineHeight: 2,
-              },
-            },
+        x: {
+          grid: {
+            drawBorder: false,
+            display: true,
+            drawOnChartArea: true,
+            drawTicks: false,
+            borderDash: [5, 5],
+            color: "#c1c4ce5c"
           },
-          x: {
-            grid: {
-              drawBorder: false,
-              display: true,
-              drawOnChartArea: true,
-              drawTicks: false,
-              borderDash: [5, 5],
-              color: "#c1c4ce5c",
-            },
-            ticks: {
-              display: true,
-              padding: 10,
-              color: "#9ca2b7",
-              font: {
-                size: 14,
-                weight: 300,
-                family: "Roboto",
-                style: "normal",
-                lineHeight: 2,
-              },
-            },
-          },
-        },
+          ticks: {
+            display: true,
+            padding: 10,
+            color: "#9ca2b7",
+            font: {
+              size: 14,
+              weight: 300,
+              family: "Roboto",
+              style: "normal",
+              lineHeight: 2
+            }
+          }
+        }
+      }
+    }
+  });
+  // Chart line
+  new Chart(document.getElementById(chartLine.value).getContext("2d"), {
+    type: "line",
+    data: {
+      labels: ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+      datasets: [{
+        label: "Visitors",
+        tension: 0.5,
+        borderWidth: 2,
+        pointRadius: 0,
+        borderColor: "#344767",
+        backgroundColor: "transparent",
+        data: [50, 45, 60, 60, 80, 65, 90, 80, 100],
+        maxBarThickness: 6,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        }
       },
-    });
-    // Chart line
-    new Chart(document.getElementById(this.chartLine).getContext("2d"), {
-      type: "line",
-      data: {
-        labels: ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-        datasets: [
-          {
-            label: "Visitors",
-            tension: 0.5,
-            borderWidth: 2,
-            pointRadius: 0,
-            borderColor: "#344767",
-            backgroundColor: "transparent",
-            data: [50, 45, 60, 60, 80, 65, 90, 80, 100],
-            maxBarThickness: 6,
-            fill: true,
-          },
-        ],
+      interaction: {
+        intersect: false,
+        mode: "index"
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
+      scales: {
+        y: {
+          grid: {
+            drawBorder: false,
             display: false,
+            drawOnChartArea: false,
+            drawTicks: false
           },
+          ticks: {
+            display: false
+          }
         },
-        interaction: {
-          intersect: false,
-          mode: "index",
-        },
-        scales: {
-          y: {
-            grid: {
-              drawBorder: false,
-              display: false,
-              drawOnChartArea: false,
-              drawTicks: false,
-            },
-            ticks: {
-              display: false,
-            },
+        x: {
+          grid: {
+            drawBorder: false,
+            display: false,
+            drawOnChartArea: false,
+            drawTicks: false
           },
-          x: {
-            grid: {
-              drawBorder: false,
-              display: false,
-              drawOnChartArea: false,
-              drawTicks: false,
-            },
-            ticks: {
-              display: false,
-            },
-          },
-        },
-      },
-    });
-  },
-  created() {
-    this.$vuetify.rtl = true;
-  },
-  beforeUnmount() {
-    this.$vuetify.rtl = false;
-  },
-};
+          ticks: {
+            display: false
+          }
+        }
+      }
+    }
+  });
+});
+onBeforeMount(() => {
+  $vuetify.rtl = true;
+});
+onBeforeUnmount(() => {
+  $vuetify.rtl = false;
+});
 </script>

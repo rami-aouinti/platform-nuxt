@@ -26,35 +26,20 @@
     </v-main>
   </v-app>
 </template>
-<script>
+<script setup lang="ts">
+import { ref } from "vue";
 import AppBarAuth from "@/components/AppBarAuth";
 import { FadeTransition } from "vue2-transitions";
 import ContentFooter from "@/components/App/AppFooter.vue";
-
-export default {
-  name: "page-layout",
-  components: {
-    AppBarAuth,
-    FadeTransition,
-    ContentFooter,
-  },
-  data() {
-    return {
-      paragraphs: "",
-      tab: null,
-    };
-  },
-  methods: {
-    headerTitle() {
-      switch (this.$route.name) {
-        case "SignUpBasic":
-          this.paragraphs =
-            "Use these awesome forms to login or create new account in your project for free.";
-          return "Welcome!";
-        default:
-          break;
-      }
-    },
-  },
-};
+const paragraphs = ref("");
+const tab = ref(null);
+function headerTitle() {
+  switch ($route.name) {
+    case "SignUpBasic":
+      paragraphs.value = "Use these awesome forms to login or create new account in your project for free.";
+      return "Welcome!";
+    default:
+      break;
+  }
+}
 </script>

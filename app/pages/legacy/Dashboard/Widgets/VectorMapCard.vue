@@ -83,75 +83,55 @@
     </v-card-text>
   </v-card>
 </template>
-<script>
+<script setup lang="ts">
+import { ref } from "vue";
 import WorldMap from "@/components/WorldMap/WorldMap.vue";
-export default {
-  name: "map-card",
-  components: {
-    WorldMap,
-  },
-  data() {
-    return {
-      mapData: {
-        AUS: 760,
-        BRA: 900,
-        CAN: 120,
-        DEU: 1300,
-        FRA: 540,
-        GBR: 690,
-        GEO: 200,
-        IND: 200,
-        ROU: 600,
-        RUS: 757,
-        USA: 1800,
-      },
-      points: [
-        {
-          name: "Brazil",
-          centered: "BRA",
-        },
-        {
-          name: "France",
-          centered: "FRA",
-        },
-        {
-          name: "Italy",
-          centered: "ITA",
-        },
-        {
-          name: "Oman",
-          centered: "OMN",
-        },
-        {
-          name: "Indonesia",
-          centered: "IDN",
-        },
-        {
-          name: "Romania",
-          centered: "ROU",
-        },
-      ],
-      real: [
-        {
-          flag: require("@/assets/img/icons/flags/US.png"),
-          country: "United States",
-          visits: "2500",
-          bounce: "30%",
-        },
-        {
-          flag: require("@/assets/img/icons/flags/DE.png"),
-          country: "Germany",
-          visits: "2500",
-          bounce: "30%",
-        },
-        {
-          flag: require("@/assets/img/icons/flags/GB.png"),
-          country: "Great Britain",
-          visits: "2500",
-          bounce: "30%",
-        },
-      ],
-    };
-  },
-};
+const mapData = ref({
+  AUS: 760,
+  BRA: 900,
+  CAN: 120,
+  DEU: 1300,
+  FRA: 540,
+  GBR: 690,
+  GEO: 200,
+  IND: 200,
+  ROU: 600,
+  RUS: 757,
+  USA: 1800
+});
+const points = ref([{
+  name: "Brazil",
+  centered: "BRA"
+}, {
+  name: "France",
+  centered: "FRA"
+}, {
+  name: "Italy",
+  centered: "ITA"
+}, {
+  name: "Oman",
+  centered: "OMN"
+}, {
+  name: "Indonesia",
+  centered: "IDN"
+}, {
+  name: "Romania",
+  centered: "ROU"
+}]);
+const real = ref([{
+  flag: require("@/assets/img/icons/flags/US.png"),
+  country: "United States",
+  visits: "2500",
+  bounce: "30%"
+}, {
+  flag: require("@/assets/img/icons/flags/DE.png"),
+  country: "Germany",
+  visits: "2500",
+  bounce: "30%"
+}, {
+  flag: require("@/assets/img/icons/flags/GB.png"),
+  country: "Great Britain",
+  visits: "2500",
+  bounce: "30%"
+}]);
 </script>

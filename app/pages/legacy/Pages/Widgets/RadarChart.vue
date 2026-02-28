@@ -23,50 +23,33 @@
     </div>
   </v-card>
 </template>
-<script>
+<script setup lang="ts">
+import { onMounted, ref } from "vue";
 import Chart from "chart.js/auto";
-
-export default {
-  name: "radar-chart",
-  data: function () {
-    return {
-      radarChartId: "radar-chart",
-    };
-  },
-  mounted() {
-    new Chart(document.getElementById(this.radarChartId).getContext("2d"), {
-      type: "radar",
-      data: {
-        labels: [
-          "English",
-          "Maths",
-          "Physics",
-          "Chemistry",
-          "Biology",
-          "History",
-        ],
-        datasets: [
-          {
-            label: "Student A",
-            backgroundColor: "rgba(58,65,111,0.2)",
-            data: [65, 75, 70, 80, 60, 80],
-            borderDash: [5, 5],
-          },
-          {
-            label: "Student B",
-            backgroundColor: "rgba(203,12,159,0.2)",
-            data: [54, 65, 60, 70, 70, 75],
-          },
-        ],
-      },
-      options: {
-        plugins: {
-          legend: {
-            display: false,
-          },
-        },
-      },
-    });
-  },
-};
+const radarChartId = ref("radar-chart");
+onMounted(() => {
+  new Chart(document.getElementById(radarChartId.value).getContext("2d"), {
+    type: "radar",
+    data: {
+      labels: ["English", "Maths", "Physics", "Chemistry", "Biology", "History"],
+      datasets: [{
+        label: "Student A",
+        backgroundColor: "rgba(58,65,111,0.2)",
+        data: [65, 75, 70, 80, 60, 80],
+        borderDash: [5, 5]
+      }, {
+        label: "Student B",
+        backgroundColor: "rgba(203,12,159,0.2)",
+        data: [54, 65, 60, 70, 70, 75]
+      }]
+    },
+    options: {
+      plugins: {
+        legend: {
+          display: false
+        }
+      }
+    }
+  });
+});
 </script>

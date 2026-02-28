@@ -301,26 +301,11 @@
     </v-container>
   </div>
 </template>
-<script>
+<script setup lang="ts">
+import { ref } from "vue";
 import HtmlEditor from "./Widgets/HtmlEditor.vue";
-
-export default {
-  components: {
-    HtmlEditor,
-  },
-  data() {
-    return {
-      categories: [
-        "Clothing",
-        "Electronics",
-        "Furniture",
-        "Others",
-        "Real Estate",
-      ],
-      colors: ["Black", "Red", "Blue", "Green", "Orange"],
-      coins: ["USD", "BTC", "CNY", "EUR"],
-      tags: ["Black Friday", "Sale", "Out of stock", "In stock"],
-    };
-  },
-};
+const categories = ref(["Clothing", "Electronics", "Furniture", "Others", "Real Estate"]);
+const colors = ref(["Black", "Red", "Blue", "Green", "Orange"]);
+const coins = ref(["USD", "BTC", "CNY", "EUR"]);
+const tags = ref(["Black Friday", "Sale", "Out of stock", "In stock"]);
 </script>

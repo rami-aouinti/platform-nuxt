@@ -146,63 +146,12 @@
     </div>
   </v-card>
 </template>
-<script>
-export default {
-  name: "basic-info",
-  data() {
-    return {
-      gender: ["Female", "Male"],
-      months: [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "Octomber",
-        "November",
-        "December",
-      ],
-      days: [
-        "1",
-        "2",
-        "3",
-        "4",
-        "5",
-        "6",
-        "7",
-        "8",
-        "9",
-        "10",
-        "11",
-        "12",
-        "13",
-        "14",
-        "15",
-        "16",
-        "17",
-        "18",
-        "19",
-        "20",
-        "21",
-        "22",
-        "23",
-        "24",
-        "25",
-        "26",
-        "27",
-        "28",
-        "29",
-        "30",
-        "31",
-      ],
-      years: ["2021", "2020", "2019"],
-      languages: ["English", "French", "Spanish"],
-      skills: ["vuejs", "angular", "react"],
-    };
-  },
-};
+<script setup lang="ts">
+import { ref } from "vue";
+const gender = ref(["Female", "Male"]);
+const months = ref(["January", "February", "March", "April", "May", "June", "July", "August", "September", "Octomber", "November", "December"]);
+const days = ref(["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"]);
+const years = ref(["2021", "2020", "2019"]);
+const languages = ref(["English", "French", "Spanish"]);
+const skills = ref(["vuejs", "angular", "react"]);
 </script>

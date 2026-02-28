@@ -83,31 +83,21 @@
     </div>
   </v-card>
 </template>
-<script>
-export default {
-  name: "sessions",
-  data() {
-    return {
-      sessions: [
-        {
-          icon: "fas fa-desktop",
-          title: "Bucharest 68.133.163.201",
-          description: "Your current session",
-          badge: "Active",
-          city: "EU",
-        },
-        {
-          icon: "fas fa-desktop",
-          text: "Chrome on macOS",
-          city: "US",
-        },
-        {
-          icon: "fas fa-mobile",
-          text: "Safari on iPhone",
-          city: "US",
-        },
-      ],
-    };
-  },
-};
+<script setup lang="ts">
+import { ref } from "vue";
+const sessions = ref([{
+  icon: "fas fa-desktop",
+  title: "Bucharest 68.133.163.201",
+  description: "Your current session",
+  badge: "Active",
+  city: "EU"
+}, {
+  icon: "fas fa-desktop",
+  text: "Chrome on macOS",
+  city: "US"
+}, {
+  icon: "fas fa-mobile",
+  text: "Safari on iPhone",
+  city: "US"
+}]);
 </script>

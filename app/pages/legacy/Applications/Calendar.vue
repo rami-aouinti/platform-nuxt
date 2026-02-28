@@ -185,127 +185,102 @@
     </v-container>
   </div>
 </template>
-<script>
+<script setup lang="ts">
+import { onMounted, ref } from "vue";
 import CalendarWidget from "./Widgets/CalendarWidget.vue";
 import Chart from "chart.js/auto";
-
-export default {
-  name: "Calendar",
-  components: {
-    CalendarWidget,
-  },
-  data: function () {
-    return {
-      lineChartId: "chart-line-1",
-      avatars: [
-        {
-          image: require("@/assets/img/team-1.jpg"),
-          name: "Elena Morison",
-        },
-        {
-          image: require("@/assets/img/team-2.jpg"),
-          name: "Ryan Milly",
-        },
-        {
-          image: require("@/assets/img/team-3.jpg"),
-          name: "Nick Daniel",
-        },
-        {
-          image: require("@/assets/img/team-4.jpg"),
-          name: "Peterson",
-        },
-        {
-          image: require("@/assets/img/team-5.jpg"),
-          name: "Milla",
-        },
-      ],
-      events: [
-        {
-          icon: "attach_money",
-          title: "Cyber Week",
-          date: "27 March 2021, at 12:30 PM",
-        },
-        {
-          icon: "notifications",
-          title: "Meeting with Marry",
-          date: "24 March 2021, at 10:00 PM",
-        },
-        {
-          icon: "auto_stories",
-          title: "Book Deposit Hall",
-          date: "25 March 2021, at 9:30 AM",
-        },
-        {
-          icon: "local_shipping",
-          title: "Shipment Deal UK",
-          date: "25 March 2021, at 2:00 PM",
-        },
-        {
-          icon: "palette",
-          title: "Verify Dashboard Color Palette",
-          date: "26 March 2021, at 9:00 AM",
-        },
-      ],
-    };
-  },
-  mounted() {
-    var ctx = document.getElementById(this.lineChartId).getContext("2d");
-
-    new Chart(ctx, {
-      type: "line",
-      data: {
-        labels: ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-        datasets: [
-          {
-            label: "Visitors",
-            tension: 0.5,
-            borderWidth: 2,
-            pointRadius: 0,
-            borderColor: "#fff",
-            data: [50, 45, 60, 60, 80, 65, 90, 80, 100],
-            maxBarThickness: 6,
-            fill: true,
-          },
-        ],
+const lineChartId = ref("chart-line-1");
+const avatars = ref([{
+  image: require("@/assets/img/team-1.jpg"),
+  name: "Elena Morison"
+}, {
+  image: require("@/assets/img/team-2.jpg"),
+  name: "Ryan Milly"
+}, {
+  image: require("@/assets/img/team-3.jpg"),
+  name: "Nick Daniel"
+}, {
+  image: require("@/assets/img/team-4.jpg"),
+  name: "Peterson"
+}, {
+  image: require("@/assets/img/team-5.jpg"),
+  name: "Milla"
+}]);
+const events = ref([{
+  icon: "attach_money",
+  title: "Cyber Week",
+  date: "27 March 2021, at 12:30 PM"
+}, {
+  icon: "notifications",
+  title: "Meeting with Marry",
+  date: "24 March 2021, at 10:00 PM"
+}, {
+  icon: "auto_stories",
+  title: "Book Deposit Hall",
+  date: "25 March 2021, at 9:30 AM"
+}, {
+  icon: "local_shipping",
+  title: "Shipment Deal UK",
+  date: "25 March 2021, at 2:00 PM"
+}, {
+  icon: "palette",
+  title: "Verify Dashboard Color Palette",
+  date: "26 March 2021, at 9:00 AM"
+}]);
+onMounted(() => {
+  var ctx = document.getElementById(lineChartId.value).getContext("2d");
+  new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+      datasets: [{
+        label: "Visitors",
+        tension: 0.5,
+        borderWidth: 2,
+        pointRadius: 0,
+        borderColor: "#fff",
+        data: [50, 45, 60, 60, 80, 65, 90, 80, 100],
+        maxBarThickness: 6,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        }
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
+      interaction: {
+        intersect: false,
+        mode: "index"
+      },
+      scales: {
+        y: {
+          grid: {
+            drawBorder: false,
             display: false,
+            drawOnChartArea: false,
+            drawTicks: false
           },
+          ticks: {
+            display: false
+          }
         },
-        interaction: {
-          intersect: false,
-          mode: "index",
-        },
-        scales: {
-          y: {
-            grid: {
-              drawBorder: false,
-              display: false,
-              drawOnChartArea: false,
-              drawTicks: false,
-            },
-            ticks: {
-              display: false,
-            },
+        x: {
+          grid: {
+            drawBorder: false,
+            display: false,
+            drawOnChartArea: false,
+            drawTicks: false
           },
-          x: {
-            grid: {
-              drawBorder: false,
-              display: false,
-              drawOnChartArea: false,
-              drawTicks: false,
-            },
-            ticks: {
-              display: false,
-            },
-          },
-        },
-      },
-    });
-  },
-};
+          ticks: {
+            display: false
+          }
+        }
+      }
+    }
+  });
+});
 </script>

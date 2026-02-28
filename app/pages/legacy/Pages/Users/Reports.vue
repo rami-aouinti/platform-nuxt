@@ -177,43 +177,28 @@
     </v-row>
   </v-container>
 </template>
-<script>
+<script setup lang="ts">
+import { ref } from "vue";
 import ReportsTable from "./Widgets/ReportsTable.vue";
-
-export default {
-  name: "Dashboard",
-  components: {
-    ReportsTable,
-  },
-  data: function () {
-    return {
-      cards: [
-        {
-          icon: "account_circle",
-          text: "Users Active",
-          value: "1,600",
-          percent: "+55%",
-        },
-        {
-          icon: "pan_tool",
-          text: "Click Events",
-          value: "357",
-          percent: "+124%",
-        },
-        {
-          icon: "shopping_basket",
-          text: "Purchases",
-          value: "2,300",
-          percent: "+15%",
-        },
-        {
-          icon: "thumb_up",
-          text: "Likes",
-          value: "940",
-          percent: "+90%",
-        },
-      ],
-    };
-  },
-};
+const cards = ref([{
+  icon: "account_circle",
+  text: "Users Active",
+  value: "1,600",
+  percent: "+55%"
+}, {
+  icon: "pan_tool",
+  text: "Click Events",
+  value: "357",
+  percent: "+124%"
+}, {
+  icon: "shopping_basket",
+  text: "Purchases",
+  value: "2,300",
+  percent: "+15%"
+}, {
+  icon: "thumb_up",
+  text: "Likes",
+  value: "940",
+  percent: "+90%"
+}]);
 </script>

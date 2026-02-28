@@ -71,79 +71,61 @@
     </v-main>
   </v-app>
 </template>
-<script>
+<script setup lang="ts">
+import { onMounted, ref } from "vue";
 // /* eslint-disable no-new */
 import PerfectScrollbar from "perfect-scrollbar";
 import "perfect-scrollbar/css/perfect-scrollbar.css";
-
-function hasElement(className) {
-  return document.getElementsByClassName(className).length > 0;
-}
-
-function initScrollbar(className) {
-  if (hasElement(className)) {
-    new PerfectScrollbar(`.${className}`);
-  } else {
-    // try to init it later in case this component is loaded async
-    setTimeout(() => {
-      initScrollbar(className);
-    }, 100);
-  }
-}
-
 import { FadeTransition } from "vue2-transitions";
 import Drawer from "@/components/App/AppDrawer.vue";
 import AppBar from "@/components/App/AppBar.vue";
 import ContentFooter from "@/components/App/AppFooter.vue";
 import SettingsDrawer from "@/components/App/AppSettings.vue";
-
-export default {
-  components: {
-    ContentFooter,
-    FadeTransition,
-    Drawer,
-    AppBar,
-    SettingsDrawer,
-  },
-  data() {
-    return {
-      drawer: null,
-      showSettingsDrawer: false,
-      sidebarColor: "success",
-      sidebarTheme: "dark",
-      navbarFixed: false,
-    };
-  },
-  methods: {
-    initScrollbar() {
-      let isWindows = navigator.platform.startsWith("Win");
-      if (isWindows) {
-        initScrollbar("sidenav");
-      }
-    },
-    toggleSettingsDrawer(value) {
-      this.showSettingsDrawer = value;
-    },
-    updateSidebarColor(value) {
-      this.sidebarColor = value;
-    },
-    updateSidebarTheme(value) {
-      let siblings = event.target.closest("button").parentElement.children;
-      for (var i = 0; i < siblings.length; i++) {
-        siblings[i].classList.remove("bg-gradient-default");
-        siblings[i].classList.add("btn-outline-default");
-      }
-      event.target.closest("button").classList.add("bg-gradient-default");
-      event.target.closest("button").classList.remove("btn-outline-default");
-      this.sidebarTheme = value;
-    },
-    toggleNavbarPosition(value) {
-      this.navbarFixed = value;
-    },
-  },
-  mounted() {
-    this.initScrollbar();
-  },
-};
+function hasElement(className: string) {
+  return document.getElementsByClassName(className).length > 0;
+}
+function initScrollbarElement(className: string) {
+  if (hasElement(className)) {
+    new PerfectScrollbar(`.${className}`);
+  } else {
+    // try to init it later in case this component is loaded async
+    setTimeout(() => {
+      initScrollbarElement(className);
+    }, 100);
+  }
+}
+const drawer = ref(null);
+const showSettingsDrawer = ref(false);
+const sidebarColor = ref("success");
+const sidebarTheme = ref("dark");
+const navbarFixed = ref(false);
+function initScrollbar() {
+  let isWindows = navigator.platform.startsWith("Win");
+  if (isWindows) {
+    initScrollbarElement("sidenav");
+  }
+}
+function toggleSettingsDrawer(value: boolean) {
+  showSettingsDrawer.value = value;
+}
+function updateSidebarColor(value: string) {
+  sidebarColor.value = value;
+}
+function updateSidebarTheme(value: string) {
+  let siblings = event.target.closest("button").parentElement.children;
+  for (var i = 0; i < siblings.length; i++) {
+    siblings[i].classList.remove("bg-gradient-default");
+    siblings[i].classList.add("btn-outline-default");
+  }
+  event.target.closest("button").classList.add("bg-gradient-default");
+  event.target.closest("button").classList.remove("btn-outline-default");
+  sidebarTheme.value = value;
+}
+function toggleNavbarPosition(value: boolean) {
+  navbarFixed.value = value;
+}
+onMounted(() => {
+  initScrollbar();
+});
 </script>
 <style lang="scss"></style>

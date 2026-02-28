@@ -87,13 +87,7 @@
     </div>
   </v-card>
 </template>
-<script>
-export default {
-  name: "sign-up-illustration",
-  data() {
-    return {
-      checkbox: false,
-    };
-  },
-};
+<script setup lang="ts">
+import { ref } from "vue";
+const checkbox = ref(false);
 </script>
