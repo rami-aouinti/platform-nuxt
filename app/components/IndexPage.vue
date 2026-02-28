@@ -21,7 +21,7 @@ const items = computed(() =>
   <v-container>
     <v-row>
       <v-col v-for="item in items" :key="item.title" cols="12" sm="6" md="4">
-        <v-card :to="item.disabled ? undefined : item.to" rounded="lg" variant="outlined" class="h-100 d-flex flex-column">
+        <v-card :to="item.disabled ? undefined : item.to" class="stats-card v-alert--border-top" elevation="24">
           <v-card-title class="d-flex align-center ga-2">
             <v-icon :icon="item.prependIcon" />
             <span>{{ item.title }}</span>
@@ -33,3 +33,32 @@ const items = computed(() =>
     </v-row>
   </v-container>
 </template>
+
+<style scoped>
+.stats-card {
+  padding: 5px;
+  padding-top: 10px;
+  .card-title {
+    width: fit-content;
+    .card-title--name {
+      display: inline-block;
+      backdrop-filter: blur(3px);
+    }
+  }
+  .caption {
+    font-size: 12px;
+    letter-spacing: 0;
+  }
+  .stats-icon {
+    position: absolute;
+    opacity: 0.3;
+  }
+  .stats-footer {
+    :deep(span) {
+      display: inline-block;
+      font-size: 12px !important;
+      letter-spacing: 0 !important;
+    }
+  }
+}
+</style>
