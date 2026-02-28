@@ -429,51 +429,53 @@ onMounted(() => {
           <div class="admin-resource-controls__actions d-flex ga-2 d-flex align-center">
             <v-text-field
               v-model="localSearch"
-              placeholder="Recherche"
+              placeholder="Search"
               prepend-inner-icon="mdi-magnify"
               hide-details
-              density="compact"
               variant="outlined"
               clearable
             />
             <v-btn
               color="success"
-              variant="text"
-              prepend-icon="mdi-file-excel"
+              icon="mdi-file-excel"
               size="small"
+              variant="outlined"
+              rounded="lg"
               :disabled="!rows.length"
               :loading="exportingExcel"
               @click="exportToExcel"
             >
-              Excel
             </v-btn>
             <v-btn
               color="error"
-              variant="text"
-              prepend-icon="mdi-file-pdf-box"
+              icon="mdi-file-pdf-box"
               size="small"
+              variant="outlined"
+              rounded="lg"
               :disabled="!rows.length"
               :loading="exportingPdf"
               @click="exportToPdf"
             >
-              PDF
             </v-btn>
             <v-btn
               icon="mdi-refresh"
               color="primary"
-              variant="text"
               size="small"
+              variant="outlined"
+              rounded="lg"
               aria-label="Actualiser"
               @click="emit('refresh')"
-            />
+            >
+            </v-btn>
             <v-btn
               v-if="canCreate"
               color="primary"
-              prepend-icon="mdi-plus"
               size="small"
+              variant="outlined"
+              icon="mdi-plus"
+              rounded="lg"
               @click="emit('create')"
             >
-              New
             </v-btn>
           </div>
         </div>
