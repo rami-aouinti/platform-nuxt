@@ -8,12 +8,26 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
     '@vueuse/nuxt',
     'vuetify-nuxt-module',
+    '@nuxtjs/i18n',
     'nuxt-auth-utils',
     'nuxt-echarts',
     '@nuxt/icon',
     '@nuxt/eslint',
     '@nuxt/test-utils/module',
   ],
+
+  i18n: {
+    defaultLocale: 'en',
+    strategy: 'no_prefix',
+    detectBrowserLanguage: false,
+    lazy: true,
+    langDir: 'locales',
+    locales: [
+      { code: 'en', name: 'English', file: 'en.json' },
+      { code: 'de', name: 'Deutsch', file: 'de.json' },
+      { code: 'fr', name: 'Français', file: 'fr.json' },
+    ],
+  },
   pinia: {
     storesDirs: ['./app/stores/**'],
   },

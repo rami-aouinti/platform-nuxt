@@ -7,7 +7,7 @@ import type { HTMLAttributes } from 'vue'
 const theme = useTheme()
 const drawer = useState('drawer')
 const route = useRoute()
-const isAdministrationRoute = computed(() => route.path.startsWith('/admin') || route.path.startsWith('/administration'))
+const { t, locale, locales, setLocale } = useI18n()
 const breadcrumbs = computed(() => {
   return route!.matched
     .filter((item) => item.meta && item.meta.title)
@@ -28,6 +28,27 @@ const isDark = computed({
 const authStore = useAuthStore()
 const { isAuthenticated, profile, hasAdminAccess, rolesLoading } =
   storeToRefs(authStore)
+
+const languageOptions = computed(() =>
+  locales.value.map((entry) => {
+    if (typeof entry === 'string') {
+      return {
+        code: entry,
+        name: entry.toUpperCase(),
+      }
+    }
+
+    return {
+      code: entry.code,
+      name: entry.name ?? entry.code.toUpperCase(),
+    }
+  }),
+)
+
+const currentLanguageName = computed(() => {
+  const selected = languageOptions.value.find((item) => item.code === locale.value)
+  return selected?.name ?? locale.value.toUpperCase()
+})
 
 const userDisplayName = computed(() => {
   const currentProfile = profile.value
@@ -72,11 +93,29 @@ function createActivatorProps(
 <template>
   <v-app-bar flat>
     <v-app-bar-nav-icon @click="drawer = !drawer" />
-    <v-breadcrumbs :items="breadcrumbs"  />
+    <v-breadcrumbs :items="breadcrumbs" />
     <v-spacer />
     <div id="app-bar" class="app-bar__portal" />
     <v-spacer />
     <div class="app-bar__right-actions d-flex align-center">
+      <v-menu location="bottom end">
+        <template #activator="{ props }">
+          <v-btn variant="text" size="small" class="mr-2" v-bind="props">
+            {{ currentLanguageName }}
+            <v-icon size="18" icon="mdi-chevron-down" class="ml-1" />
+          </v-btn>
+        </template>
+
+        <v-list density="compact">
+          <v-list-item
+            v-for="language in languageOptions"
+            :key="language.code"
+            :title="language.name"
+            :active="language.code === locale"
+            @click="setLocale(language.code)"
+          />
+        </v-list>
+      </v-menu>
       <v-switch
         v-model="isDark"
         color=""
@@ -98,62 +137,62 @@ function createActivatorProps(
       </v-btn>
       <v-menu location="bottom">
         <template #activator="{ props: menu }">
-        <v-tooltip location="bottom">
-          <template #activator="{ props: tooltip }">
-            <v-btn
-              icon
-              v-bind="createActivatorProps(menu, tooltip)"
-              class="ml-1"
-            >
-              <v-icon icon="mdi-account-circle" size="36" />
-            </v-btn>
-          </template>
-          <span>{{ userDisplayName }}</span>
-        </v-tooltip>
+          <v-tooltip location="bottom">
+            <template #activator="{ props: tooltip }">
+              <v-btn
+                icon
+                v-bind="createActivatorProps(menu, tooltip)"
+                class="ml-1"
+              >
+                <v-icon icon="mdi-account-circle" size="36" />
+              </v-btn>
+            </template>
+            <span>{{ userDisplayName }}</span>
+          </v-tooltip>
         </template>
         <v-list>
-        <v-list-item
-          v-if="!isAuthenticated"
-          title="Login"
-          prepend-icon="mdi-login"
-          to="/login"
-        />
-        <v-list-item
-          v-else
-          title="Profile"
-          prepend-icon="mdi-account"
-          to="/profile"
-        />
-        <v-list-item
-          v-if="isAuthenticated"
-          title="CRM"
-          prepend-icon="mdi-account-group-outline"
-          to="/crm"
-        />
-        <v-list-item
-          v-if="isAuthenticated"
-          title="Calendar"
-          prepend-icon="mdi-calendar-month-outline"
-          to="/calendar"
-        />
-        <v-list-item
-          v-if="isAuthenticated"
-          title="Quiz"
-          prepend-icon="mdi-help-circle-outline"
-          to="/quiz"
-        />
-        <v-list-item
-          v-if="isAuthenticated && !rolesLoading && hasAdminAccess"
-          title="Administration"
-          prepend-icon="mdi-shield-account-outline"
-          to="/admin"
-        />
-        <v-list-item
-          v-if="isAuthenticated"
-          title="Logout"
-          prepend-icon="mdi-logout"
-          @click="logout"
-        />
+          <v-list-item
+            v-if="!isAuthenticated"
+            :title="t('appbar.login')"
+            prepend-icon="mdi-login"
+            to="/login"
+          />
+          <v-list-item
+            v-else
+            :title="t('appbar.profile')"
+            prepend-icon="mdi-account"
+            to="/profile"
+          />
+          <v-list-item
+            v-if="isAuthenticated"
+            :title="t('appbar.crm')"
+            prepend-icon="mdi-account-group-outline"
+            to="/crm"
+          />
+          <v-list-item
+            v-if="isAuthenticated"
+            :title="t('appbar.calendar')"
+            prepend-icon="mdi-calendar-month-outline"
+            to="/calendar"
+          />
+          <v-list-item
+            v-if="isAuthenticated"
+            :title="t('appbar.quiz')"
+            prepend-icon="mdi-help-circle-outline"
+            to="/quiz"
+          />
+          <v-list-item
+            v-if="isAuthenticated && !rolesLoading && hasAdminAccess"
+            :title="t('appbar.administration')"
+            prepend-icon="mdi-shield-account-outline"
+            to="/admin"
+          />
+          <v-list-item
+            v-if="isAuthenticated"
+            :title="t('appbar.logout')"
+            prepend-icon="mdi-logout"
+            @click="logout"
+          />
         </v-list>
       </v-menu>
     </div>
@@ -169,4 +208,3 @@ function createActivatorProps(
   flex-shrink: 0;
 }
 </style>
-
