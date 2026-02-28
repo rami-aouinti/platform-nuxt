@@ -29,25 +29,33 @@ const authStore = useAuthStore()
 const { isAuthenticated, profile, hasAdminAccess, rolesLoading } =
   storeToRefs(authStore)
 
+const localeFlags: Record<string, string> = {
+  en: '/flags/en.svg',
+  de: '/flags/de.svg',
+  fr: '/flags/fr.svg',
+}
+
 const languageOptions = computed(() =>
   locales.value.map((entry) => {
     if (typeof entry === 'string') {
       return {
         code: entry,
         name: entry.toUpperCase(),
+        flag: localeFlags[entry] ?? '/flags/en.svg',
       }
     }
 
     return {
       code: entry.code,
       name: entry.name ?? entry.code.toUpperCase(),
+      flag: localeFlags[entry.code] ?? '/flags/en.svg',
     }
   }),
 )
 
-const currentLanguageName = computed(() => {
+const currentLanguageFlag = computed(() => {
   const selected = languageOptions.value.find((item) => item.code === locale.value)
-  return selected?.name ?? locale.value.toUpperCase()
+  return selected?.flag ?? '/flags/en.svg'
 })
 
 const userDisplayName = computed(() => {
@@ -100,8 +108,18 @@ function createActivatorProps(
     <div class="app-bar__right-actions d-flex align-center">
       <v-menu location="bottom end">
         <template #activator="{ props }">
-          <v-btn variant="text" size="small" class="mr-2" v-bind="props">
-            {{ currentLanguageName }}
+          <v-btn
+            variant="text"
+            size="small"
+            class="mr-2"
+            aria-label="Language"
+            v-bind="props"
+          >
+            <img
+              :src="currentLanguageFlag"
+              alt=""
+              class="app-bar__language-flag"
+            >
             <v-icon size="18" icon="mdi-chevron-down" class="ml-1" />
           </v-btn>
         </template>
@@ -110,10 +128,14 @@ function createActivatorProps(
           <v-list-item
             v-for="language in languageOptions"
             :key="language.code"
-            :title="language.name"
             :active="language.code === locale"
+            :aria-label="language.name"
             @click="setLocale(language.code)"
-          />
+          >
+            <v-list-item-title>
+              <img :src="language.flag" alt="" class="app-bar__language-flag">
+            </v-list-item-title>
+          </v-list-item>
         </v-list>
       </v-menu>
       <v-switch
@@ -206,5 +228,13 @@ function createActivatorProps(
 
 .app-bar__right-actions {
   flex-shrink: 0;
+}
+
+.app-bar__language-flag {
+  width: 22px;
+  height: 15px;
+  object-fit: cover;
+  border-radius: 2px;
+  display: block;
 }
 </style>
