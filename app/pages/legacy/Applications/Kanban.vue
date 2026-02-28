@@ -48,12 +48,8 @@
         </v-col>
         <v-col cols="12">
           <kanban-board :stages="stages" :blocks="blocks">
-            <div
-              v-for="block in blocks"
-              :slot="block.id"
-              :key="block.id"
-              class="pa-1"
-            >
+            <template v-for="block in blocks" #[block.id] :key="block.id">
+              <div class="pa-1">
               <div v-if="block.image">
                 <v-img :src="block.image" class="border-radius-md mb-3"></v-img>
               </div>
@@ -113,7 +109,8 @@
                   </span>
                 </div>
               </div>
-            </div>
+              </div>
+            </template>
           </kanban-board>
         </v-col>
       </v-row>

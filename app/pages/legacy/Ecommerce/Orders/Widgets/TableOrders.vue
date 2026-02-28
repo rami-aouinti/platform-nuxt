@@ -34,7 +34,7 @@
                     v-model="search"
                     placeholder="Search"
                   >
-                    <template slot="prepend-inner">
+                    <template #prepend-inner>
                       <v-icon
                         color="#adb5bd"
                         size="18px"

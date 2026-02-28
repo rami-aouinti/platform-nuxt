@@ -5,8 +5,8 @@
         <v-col lg="7" cols="12">
           <v-card class="border-radius-xl card-shadow py-5 mb-lg-0 mb-6">
             <div class="px-4 py-4 mt-n14">
-              <v-tabs-items v-model="tab" class="shadow-dark border-radius-lg">
-                <v-tab-item key="1" value="tab-1">
+              <v-window v-model="tab" class="shadow-dark border-radius-lg">
+                <v-window-item key="1" value="tab-1">
                   <div
                     class="height-400 border-radius-lg"
                     :style="`background-image: url(${require('../../assets/img/bg-smart-home-1.jpg')}); background-size: cover;`"
@@ -34,9 +34,9 @@
                       </div>
                     </div>
                   </div>
-                </v-tab-item>
+                </v-window-item>
 
-                <v-tab-item key="2" value="tab-2">
+                <v-window-item key="2" value="tab-2">
                   <div
                     class="height-400 border-radius-lg"
                     :style="`background-image: url(${require('../../assets/img/bg-smart-home-2.jpg')}); background-size: cover;`"
@@ -64,9 +64,9 @@
                       </div>
                     </div>
                   </div>
-                </v-tab-item>
+                </v-window-item>
 
-                <v-tab-item key="3" value="tab-3">
+                <v-window-item key="3" value="tab-3">
                   <div
                     class="height-400 border-radius-lg"
                     :style="`background-image: url(${require('../../assets/img/home-decor-3.jpg')}); background-size: cover;`"
@@ -94,8 +94,8 @@
                       </div>
                     </div>
                   </div>
-                </v-tab-item>
-              </v-tabs-items>
+                </v-window-item>
+              </v-window>
             </div>
             <div class="d-flex pb-0 px-4 pb-0 align-items-center">
               <h6 class="text-h6 my-auto text-typo font-weight-bold me-5">
@@ -1213,6 +1213,8 @@ export default {
     };
   },
   mounted() {
+    if (!process.client) return;
+
     // Chart consumption
     new Chart(document.getElementById(this.chartConsumption).getContext("2d"), {
       type: "doughnut",

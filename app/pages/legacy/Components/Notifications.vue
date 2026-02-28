@@ -392,7 +392,7 @@
                             mb-4
                           "
                         >
-                          <template slot="prepend-inner">
+                          <template #prepend-inner>
                             <v-icon color="#adb5bd" size=".875rem"
                               >ni-email-83</v-icon
                             >
@@ -416,7 +416,7 @@
                             mb-6
                           "
                         >
-                          <template slot="prepend-inner">
+                          <template #prepend-inner>
                             <v-icon color="#adb5bd" size=".875rem"
                               >ni-lock-circle-open</v-icon
                             >
