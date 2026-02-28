@@ -107,6 +107,7 @@ const sections: AdminSection[] = [
   },
   {
     title: 'Blog Management',
+    to: '/admin/blog-management',
     icon: 'mdi-post-outline',
     description: 'Administrer les contenus éditoriaux du blog.',
     permission: 'admin',
