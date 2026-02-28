@@ -83,7 +83,7 @@ drawerState.value = lgAndUp.value && width.value !== 1280
       </v-list>
     </template>
     <v-list nav density="compact">
-      <AppDrawerItem v-for="route in routes" :key="route.name" :item="route" />
+      <AppDrawerItem v-for="route in routes" :key="route.path" :item="route" />
     </v-list>
     <v-spacer />
     <template #append>
