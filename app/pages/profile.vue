@@ -90,31 +90,16 @@ const projects = [
   },
 ]
 
-const menu = ref([{
-  icon: "mdi-person",
-  text: "Profile"
-}, {
-  icon: "mdi-receipt",
-  text: "Basic Info"
-}, {
-  icon: "mdi-lock",
-  text: "Change Password"
-}, {
-  icon: "mdi-security",
-  text: "2FA"
-}, {
-  icon: "mdi-clipboard-account",
-  text: "Accounts"
-}, {
-  icon: "mdi-bell",
-  text: "Notifications"
-}, {
-  icon: "mdi-settings",
-  text: "Sessions"
-}, {
-  icon: "mdi-delete",
-  text: "Delete Account"
-}])
+const menu = ref([
+  { icon: 'mdi-person', text: 'Profile', to: '/profile' },
+  { icon: 'mdi-receipt', text: 'Basic Info', to: '/profile/basic-info' },
+  { icon: 'mdi-lock', text: 'Change Password', to: '/profile/change-password' },
+  { icon: 'mdi-security', text: '2FA', to: '/profile/two-factor-auth' },
+  { icon: 'mdi-clipboard-account', text: 'Accounts', to: '/profile/accounts' },
+  { icon: 'mdi-bell', text: 'Notifications', to: '/profile/notifications' },
+  { icon: 'mdi-settings', text: 'Sessions', to: '/profile/sessions' },
+  { icon: 'mdi-delete', text: 'Delete Account', to: '/profile/delete-account' },
+])
 
 const hasData = computed(() => {
   return (
@@ -236,7 +221,7 @@ onMounted(loadProfileDataIfNeeded)
                 v-for="item in menu"
                 :key="item.icon"
                 class="px-3 py-1 border-radius-lg mb-2"
-                href="#profile"
+                :to="item.to"
               >
                 <template #prepend>
                   <v-icon size="18" class="material-icons-round me-2 text-dark">{{ item.icon }}</v-icon>
