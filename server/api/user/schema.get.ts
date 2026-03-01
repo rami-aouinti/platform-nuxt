@@ -1,6 +1,6 @@
 import { createProxyCollectionHandler } from '../../utils/proxy-handler-factory'
 
 export default createProxyCollectionHandler({
-  upstreamPath: '/api/v1/user/schema',
+  upstreamPath: '/api/api/v1/admin/users/schema',
   method: 'GET',
 })

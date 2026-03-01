@@ -1,6 +1,6 @@
 import { createProxyCollectionHandler } from '../../utils/proxy-handler-factory'
 
 export default createProxyCollectionHandler({
-  upstreamPath: '/api/v1/user_group',
+  upstreamPath: '/api/api/v1/admin/user_group',
   method: 'POST',
 })

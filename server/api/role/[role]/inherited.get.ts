@@ -8,5 +8,5 @@ export default createProxyEntityHandler({
     message: 'Role identifier is required.',
   },
   upstreamPathBuilder: role =>
-    `/api/v1/role/${encodeURIComponent(role)}/inherited`,
+    `/api/api/v1/admin/role/${encodeURIComponent(role)}/inherited`,
 })

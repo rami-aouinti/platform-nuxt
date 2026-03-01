@@ -7,5 +7,5 @@ export default createProxyEntityHandler({
     statusMessage: 'Invalid user parameter.',
     message: 'User identifier is required.',
   },
-  upstreamPathBuilder: id => `/api/v1/user/${encodeURIComponent(id)}`,
+  upstreamPathBuilder: id => `/api/api/v1/admin/users/${encodeURIComponent(id)}`,
 })

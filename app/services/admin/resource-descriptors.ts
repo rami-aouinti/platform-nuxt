@@ -2,21 +2,21 @@ import type { AdminResourceDescriptor } from '~/types/admin-resource'
 
 export const adminResourceDescriptors = {
   users: {
-    schemaEndpoint: '/api/user/schema',
+    schemaEndpoint: '/api/v1/admin/users/schema',
     list: {
-      endpoint: '/api/user',
-      countEndpoint: '/api/user/count',
+      endpoint: '/api/v1/admin/users',
+      countEndpoint: '/api/v1/admin/users/count',
     },
-    show: ({ id }) => `/api/user/${encodeURIComponent(String(id ?? ''))}`,
-    create: '/api/user',
-    patch: ({ id }) => `/api/user/${encodeURIComponent(String(id ?? ''))}`,
-    delete: ({ id }) => `/api/user/${encodeURIComponent(String(id ?? ''))}`,
+    show: ({ id }) => `/api/v1/admin/users/${encodeURIComponent(String(id ?? ''))}`,
+    create: '/api/v1/admin/users',
+    patch: ({ id }) => `/api/v1/admin/users/${encodeURIComponent(String(id ?? ''))}`,
+    delete: ({ id }) => `/api/v1/admin/users/${encodeURIComponent(String(id ?? ''))}`,
     relationActions: {
       groups: {
-        list: ({ id }) => `/api/user/${encodeURIComponent(String(id ?? ''))}/groups`,
+        list: ({ id }) => `/api/v1/admin/users/${encodeURIComponent(String(id ?? ''))}/groups`,
       },
       roles: {
-        list: ({ id }) => `/api/user/${encodeURIComponent(String(id ?? ''))}/roles`,
+        list: ({ id }) => `/api/v1/admin/users/${encodeURIComponent(String(id ?? ''))}/roles`,
       },
     },
     permissions: {
@@ -28,15 +28,15 @@ export const adminResourceDescriptors = {
     },
   },
   roles: {
-    schemaEndpoint: '/api/role/schema',
+    schemaEndpoint: '/api/v1/admin/role/schema',
     list: {
-      endpoint: '/api/role',
-      countEndpoint: '/api/role/count',
+      endpoint: '/api/v1/admin/role',
+      countEndpoint: '/api/v1/admin/role/count',
     },
-    show: ({ id }) => `/api/role/${encodeURIComponent(String(id ?? ''))}`,
-    create: '/api/role',
-    patch: ({ id }) => `/api/role/${encodeURIComponent(String(id ?? ''))}`,
-    delete: ({ id }) => `/api/role/${encodeURIComponent(String(id ?? ''))}`,
+    show: ({ id }) => `/api/v1/admin/role/${encodeURIComponent(String(id ?? ''))}`,
+    create: '/api/v1/admin/role',
+    patch: ({ id }) => `/api/v1/admin/role/${encodeURIComponent(String(id ?? ''))}`,
+    delete: ({ id }) => `/api/v1/admin/role/${encodeURIComponent(String(id ?? ''))}`,
     permissions: {
       canCreate: false,
       canEdit: false,
@@ -46,18 +46,18 @@ export const adminResourceDescriptors = {
     },
   },
   groups: {
-    schemaEndpoint: '/api/user_group/schema',
+    schemaEndpoint: '/api/v1/admin/user_group/schema',
     list: {
-      endpoint: '/api/user_group',
-      countEndpoint: '/api/user_group/count',
+      endpoint: '/api/v1/admin/user_group',
+      countEndpoint: '/api/v1/admin/user_group/count',
     },
-    show: ({ id }) => `/api/user_group/${encodeURIComponent(String(id ?? ''))}`,
-    create: '/api/user_group',
-    patch: ({ id }) => `/api/user_group/${encodeURIComponent(String(id ?? ''))}`,
-    delete: ({ id }) => `/api/user_group/${encodeURIComponent(String(id ?? ''))}`,
+    show: ({ id }) => `/api/v1/admin/user_group/${encodeURIComponent(String(id ?? ''))}`,
+    create: '/api/v1/admin/user_group',
+    patch: ({ id }) => `/api/v1/admin/user_group/${encodeURIComponent(String(id ?? ''))}`,
+    delete: ({ id }) => `/api/v1/admin/user_group/${encodeURIComponent(String(id ?? ''))}`,
     relationActions: {
       users: {
-        list: ({ id }) => `/api/user_group/${encodeURIComponent(String(id ?? ''))}/users`,
+        list: ({ id }) => `/api/v1/admin/user_group/${encodeURIComponent(String(id ?? ''))}/users`,
       },
     },
     permissions: {
