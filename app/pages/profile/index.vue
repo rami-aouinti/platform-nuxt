@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import type { Component } from 'vue'
+import { markRaw } from 'vue'
 import { useAuthStore } from '~/stores/auth'
 import { useProfileCompaniesStore } from '~/stores/profileCompanies'
 import imageKalVisualsSquare from '~/assets/img/kal-visuals-square.jpg'
@@ -144,7 +145,7 @@ const projectAvatars = [imageTeam1, imageTeam2, imageTeam3, imageTeam4]
 type TabDefinition = {
   id: string
   icon: string
-  label: string
+  labelKey: string
   description?: string
   component?: Component
 }
@@ -160,58 +161,72 @@ type MenuItem = {
 
 const activeTab = ref('overview')
 
-const tabs = computed<TabDefinition[]>(() => [
-  { id: 'overview', icon: 'mdi-person', label: t('profile.tabs.overview') },
+const tabDefinitions: TabDefinition[] = [
+  { id: 'overview', icon: 'mdi-person', labelKey: 'profile.tabs.overview' },
   {
     id: 'basic-info',
     icon: 'mdi-receipt',
-    label: t('profile.tabs.basicInfo'),
+    labelKey: 'profile.tabs.basicInfo',
     description: t('profile.tabDescriptions.basicInfo'),
-    component: BasicInfoTab,
+    component: markRaw(BasicInfoTab),
   },
   {
     id: 'change-password',
     icon: 'mdi-lock',
-    label: t('profile.tabs.changePassword'),
+    labelKey: 'profile.tabs.changePassword',
     description: t('profile.tabDescriptions.changePassword'),
-    component: ChangePasswordTab,
+    component: markRaw(ChangePasswordTab),
   },
   {
     id: 'two-factor-auth',
     icon: 'mdi-security',
-    label: t('profile.tabs.twoFactorAuth'),
+    labelKey: 'profile.tabs.twoFactorAuth',
     description: t('profile.tabDescriptions.twoFactorAuth'),
-    component: TwoFactorAuthTab,
+    component: markRaw(TwoFactorAuthTab),
   },
   {
     id: 'accounts',
     icon: 'mdi-clipboard-account',
-    label: t('profile.tabs.accounts'),
+    labelKey: 'profile.tabs.accounts',
     description: t('profile.tabDescriptions.accounts'),
-    component: AccountsTab,
+    component: markRaw(AccountsTab),
   },
   {
     id: 'notifications',
     icon: 'mdi-bell',
-    label: t('profile.tabs.notifications'),
+    labelKey: 'profile.tabs.notifications',
     description: t('profile.tabDescriptions.notifications'),
-    component: NotificationsTab,
+    component: markRaw(NotificationsTab),
   },
   {
     id: 'sessions',
     icon: 'mdi-settings',
-    label: t('profile.tabs.sessions'),
+    labelKey: 'profile.tabs.sessions',
     description: t('profile.tabDescriptions.sessions'),
-    component: SessionsTab,
+    component: markRaw(SessionsTab),
   },
   {
     id: 'delete-account',
     icon: 'mdi-delete',
-    label: t('profile.tabs.deleteAccount'),
+    labelKey: 'profile.tabs.deleteAccount',
     description: t('profile.tabDescriptions.deleteAccount'),
-    component: DeleteAccountTab,
+    component: markRaw(DeleteAccountTab),
   },
-])
+]
+
+const tabs = computed(() =>
+  tabDefinitions.map((tab) => ({
+    ...tab,
+    label: t(tab.labelKey),
+  })),
+)
+
+const componentTabs = computed(() =>
+  tabs.value.filter(
+    (tab): tab is (typeof tabs.value)[number] & { component: Component } =>
+      tab.id !== 'overview' && Boolean(tab.component),
+  ),
+)
 
 const menuItems = computed<MenuItem[]>(() => [
   ...tabs.value.map((tab) => ({
@@ -1006,9 +1021,7 @@ onMounted(async () => {
           </v-window-item>
 
           <v-window-item
-            v-for="tab in tabs.filter(
-              (item) => item.id !== 'overview' && item.component,
-            )"
+            v-for="tab in componentTabs"
             :key="tab.id"
             :value="tab.id"
           >
