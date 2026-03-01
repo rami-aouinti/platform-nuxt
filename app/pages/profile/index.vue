@@ -22,6 +22,7 @@ import TwoFactorAuthTab from '~/components/profile/tabs/TwoFactorAuthTab.vue'
 import NotificationsTab from '~/components/profile/tabs/NotificationsTab.vue'
 import SessionsTab from '~/components/profile/tabs/SessionsTab.vue'
 import DeleteAccountTab from '~/components/profile/tabs/DeleteAccountTab.vue'
+import ResumesTab from '~/components/profile/tabs/ResumesTab.vue'
 
 definePageMeta({
   icon: 'mdi-account-circle-outline',
@@ -62,7 +63,6 @@ const {
   usesSchemaFallback,
 } = storeToRefs(profileCompaniesStore)
 const route = useRoute()
-const router = useRouter()
 
 const isLoading = ref(false)
 const errorMessage = ref<string | null>(null)
@@ -154,9 +154,7 @@ type MenuItem = {
   id: string
   icon: string
   label: string
-  type: 'tab' | 'route'
-  tabId?: string
-  to?: string
+  tabId: string
 }
 
 const activeTab = ref('overview')
@@ -206,6 +204,12 @@ const tabDefinitions: TabDefinition[] = [
     component: markRaw(SessionsTab),
   },
   {
+    id: 'resumes',
+    icon: 'mdi-note-text-outline',
+    labelKey: 'profile.resumes',
+    component: markRaw(ResumesTab),
+  },
+  {
     id: 'delete-account',
     icon: 'mdi-delete',
     labelKey: 'profile.tabs.deleteAccount',
@@ -228,40 +232,21 @@ const componentTabs = computed(() =>
   ),
 )
 
-const menuItems = computed<MenuItem[]>(() => [
-  ...tabs.value.map((tab) => ({
+const menuItems = computed<MenuItem[]>(() =>
+  tabs.value.map((tab) => ({
     id: `tab-${tab.id}`,
     icon: tab.icon,
     label: tab.label,
-    type: 'tab' as const,
     tabId: tab.id,
   })),
-  {
-    id: 'route-resumes',
-    icon: 'mdi-note',
-    label: t('profile.resumes'),
-    type: 'route' as const,
-    to: '/profile/resumes',
-  },
-])
+)
 
 function isMenuItemActive(item: MenuItem) {
-  if (item.type === 'tab') {
-    return activeTab.value === item.tabId
-  }
-
-  return item.to ? route.path.startsWith(item.to) : false
+  return activeTab.value === item.tabId
 }
 
 function handleMenuItemClick(item: MenuItem) {
-  if (item.type === 'tab' && item.tabId) {
-    activeTab.value = item.tabId
-    return
-  }
-
-  if (item.type === 'route' && item.to) {
-    router.push(item.to)
-  }
+  activeTab.value = item.tabId
 }
 
 const hasData = computed(() => {
@@ -520,6 +505,7 @@ watch(
   },
   { immediate: true },
 )
+
 
 onMounted(async () => {
   await Promise.all([

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Notify } from '~/stores/notification'
+import { useAuthStore } from '~/stores/auth'
 
 type SessionItem = {
   id: string
