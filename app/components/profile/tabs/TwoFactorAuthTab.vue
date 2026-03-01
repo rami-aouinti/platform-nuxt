@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Notify } from '~/stores/notification'
+import { useAuthStore } from '~/stores/auth'
 
 const authStore = useAuthStore()
 const loading = ref(false)

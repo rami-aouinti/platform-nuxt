@@ -521,6 +521,7 @@ watch(
   { immediate: true },
 )
 
+
 onMounted(async () => {
   await Promise.all([
     loadProfileDataIfNeeded(),
