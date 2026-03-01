@@ -122,7 +122,7 @@ const menu = ref([
   { icon: 'mdi-lock', text: 'Change Password', to: '/profile/change-password' },
   { icon: 'mdi-security', text: '2FA', to: '/profile/two-factor-auth' },
   { icon: 'mdi-clipboard-account', text: 'Accounts', to: '/profile/accounts' },
-  { icon: 'mdi-file-account', text: t('profile.resumes'), to: '/resumes' },
+  { icon: 'mdi-file-account', text: t('profile.resumes'), to: '/profile/resumes' },
   { icon: 'mdi-bell', text: 'Notifications', to: '/profile/notifications' },
   { icon: 'mdi-settings', text: 'Sessions', to: '/profile/sessions' },
   { icon: 'mdi-delete', text: 'Delete Account', to: '/profile/delete-account' },
@@ -372,7 +372,7 @@ onMounted(async () => {
                 block
                 rounded="lg"
                 prepend-icon="mdi-plus-circle-outline"
-                @click="navigateFromProfileMenu('/resumes/new')"
+                @click="navigateFromProfileMenu('/profile/resumes/new')"
               >
                 {{ t('profile.createResume') }}
               </v-btn>
