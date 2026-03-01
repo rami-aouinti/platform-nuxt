@@ -479,19 +479,6 @@ onMounted(async () => {
                 <v-list-item-title class="text-dark text-sm">{{ item.label }}</v-list-item-title>
               </v-list-item>
             </v-list>
-
-            <div class="px-3 pb-3 pt-1">
-              <v-btn
-                color="primary"
-                variant="tonal"
-                block
-                rounded="lg"
-                prepend-icon="mdi-plus-circle-outline"
-                @click="router.push('/profile/resumes/new')"
-              >
-                {{ t('profile.createResume') }}
-              </v-btn>
-            </div>
           </div>
         </v-card>
       </v-col>
@@ -587,7 +574,7 @@ onMounted(async () => {
               <div class="d-flex flex-column ga-4">
                 <div v-for="conversation in conversations" :key="`${conversation.user}-${conversation.message}`" class="conversation-row d-flex align-center justify-space-between ga-3">
                   <div class="d-flex align-center ga-3 flex-grow-1 min-w-0">
-                    <v-avatar size="58" rounded="lg"><img :src="conversation.avatar" :alt="conversation.user" /></v-avatar>
+                    <v-avatar size="58" rounded="lg"><v-img :src="conversation.avatar" :alt="conversation.user" /></v-avatar>
                     <div class="min-w-0">
                       <p class="text-h6 font-weight-bold text-typo mb-1 text-truncate">{{ conversation.user }}</p>
                       <p class="text-body-2 text-medium-emphasis mb-0 text-truncate">{{ conversation.message }}</p>
