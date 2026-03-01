@@ -34,6 +34,8 @@ type SocialAccount = {
 const { t } = useI18n()
 const auth = useAuthStore()
 const { isAuthenticated, profile, roles, groups } = storeToRefs(auth)
+const router = useRouter()
+const route = useRoute()
 
 const isLoading = ref(false)
 const errorMessage = ref<string | null>(null)
@@ -183,6 +185,14 @@ function formatGroupRole(group: (typeof groups.value)[number]) {
   return '-'
 }
 
+async function navigateFromProfileMenu(to: string) {
+  if (route.path === to) {
+    return
+  }
+
+  await router.push(to)
+}
+
 async function loadProfileDataIfNeeded() {
   if (!isAuthenticated.value) {
     return
@@ -221,7 +231,8 @@ onMounted(loadProfileDataIfNeeded)
                 v-for="item in menu"
                 :key="item.icon"
                 class="px-3 py-1 border-radius-lg mb-2"
-                :to="item.to"
+                :active="route.path === item.to"
+                @click="navigateFromProfileMenu(item.to)"
               >
                 <template #prepend>
                   <v-icon size="18" class="material-icons-round me-2 text-dark">{{ item.icon }}</v-icon>
