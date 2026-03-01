@@ -201,7 +201,7 @@ onMounted(loadProfileDataIfNeeded)
 <template>
   <v-container fluid>
     <v-sheet rounded="xl">
-      <div class="d-flex flex-column flex-md-row align-md-center justify-space-between ga-4">
+      <div class="d-flex flex-column flex-md-row align-md-center justify-space-between ga-4" style="padding: 15px; margin: 15px;">
         <div class="d-flex align-center ga-4">
           <UiAvatar size="xl" class="hero-avatar text-h4 font-weight-bold">{{ avatarInitials }}</UiAvatar>
           <div>
@@ -328,82 +328,3 @@ onMounted(loadProfileDataIfNeeded)
     </v-card>
   </v-container>
 </template>
-
-<style scoped>
-.profile-page {
-  min-height: calc(100dvh - 120px);
-}
-
-.hero-card {
-  position: relative;
-  overflow: hidden;
-  border: 1px solid rgba(124, 90, 233, 0.2);
-}
-
-.hero-top-stripe {
-  height: 84px;
-  background: linear-gradient(90deg, #b22771 0%, #8a2be2 100%);
-}
-
-.hero-avatar {
-  margin-top: -44px;
-  border: 4px solid #fff;
-  box-shadow: 0 10px 30px rgba(32, 33, 36, 0.14);
-  background: linear-gradient(140deg, #293f72 0%, #5b6ba6 100%);
-  color: #fff;
-}
-
-.profile-block {
-  border: 1px solid rgba(17, 24, 39, 0.06);
-}
-
-.vertical-divider {
-  position: absolute;
-  right: -10px;
-  top: 2%;
-  height: 96%;
-  width: 1px;
-  background: rgba(17, 24, 39, 0.07);
-}
-
-.state-card {
-  padding: 1rem 1.25rem;
-  border-radius: 16px;
-  border: 1px solid rgba(17, 24, 39, 0.1);
-}
-
-.conversation-row {
-  border-radius: 14px;
-  padding: 8px;
-  transition: transform 0.22s ease, background-color 0.22s ease;
-}
-
-.conversation-row:hover {
-  transform: translateX(6px);
-  background: rgba(178, 39, 113, 0.06);
-}
-
-.reply-btn {
-  text-transform: uppercase;
-  color: #e91e63;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  background: transparent;
-}
-
-.project-card {
-  border-radius: 1rem;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-
-.project-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 18px 35px rgba(17, 24, 39, 0.12);
-}
-
-.project-btn {
-  border-width: 2px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-</style>
