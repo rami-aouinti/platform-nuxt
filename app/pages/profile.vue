@@ -91,28 +91,28 @@ const projects = [
 ]
 
 const menu = ref([{
-  icon: "person",
+  icon: "mdi-person",
   text: "Profile"
 }, {
-  icon: "receipt_long",
+  icon: "mdi-receipt",
   text: "Basic Info"
 }, {
-  icon: "lock",
+  icon: "mdi-lock",
   text: "Change Password"
 }, {
-  icon: "security",
+  icon: "mdi-security",
   text: "2FA"
 }, {
-  icon: "badge",
+  icon: "mdi-clipboard-account",
   text: "Accounts"
 }, {
-  icon: "campaign",
+  icon: "mdi-bell",
   text: "Notifications"
 }, {
-  icon: "settings_applications",
+  icon: "mdi-settings",
   text: "Sessions"
 }, {
-  icon: "delete",
+  icon: "mdi-delete",
   text: "Delete Account"
 }])
 
@@ -280,7 +280,7 @@ onMounted(loadProfileDataIfNeeded)
         </v-alert>
 
         <v-row v-else>
-          <v-col cols="12" lg="4" class="position-relative">
+          <v-col cols="12" lg="6" class="position-relative">
             <v-card class="profile-block h-100 pa-4" rounded="xl" elevation="0">
               <h3 class="text-h5 text-typo mb-4">{{ t('profile.platformSettings') }}</h3>
 
@@ -303,7 +303,7 @@ onMounted(loadProfileDataIfNeeded)
             <div class="vertical-divider d-none d-lg-block" />
           </v-col>
 
-          <v-col cols="12" lg="4" class="position-relative">
+          <v-col cols="12" lg="6" class="position-relative">
             <v-card class="profile-block h-100 pa-4" rounded="xl" elevation="0">
               <h3 class="text-h5 text-typo mb-4">{{ t('profile.profileInformation') }}</h3>
               <p class="text-body-1 text-medium-emphasis mb-6">{{ profileSummary }}</p>
@@ -330,7 +330,7 @@ onMounted(loadProfileDataIfNeeded)
             <div class="vertical-divider d-none d-lg-block" />
           </v-col>
 
-          <v-col cols="12" lg="4">
+          <v-col cols="12" lg="6">
             <v-card class="profile-block h-100 pa-4" rounded="xl" elevation="0">
               <h3 class="text-h5 text-typo mb-4">Conversations</h3>
 
@@ -366,7 +366,7 @@ onMounted(loadProfileDataIfNeeded)
                   <v-btn color="pink" variant="outlined" rounded="pill" class="project-btn">{{ t('profile.viewProject') }}</v-btn>
                   <div class="avatar-group d-flex">
                     <v-avatar v-for="avatar in project.avatars" :key="avatar" size="32" class="ms-n2 border border-white">
-                      <img :src="avatar" alt="Project member" />
+                      <v-img :src="avatar" alt="Project member" />
                     </v-avatar>
                   </div>
                 </div>
