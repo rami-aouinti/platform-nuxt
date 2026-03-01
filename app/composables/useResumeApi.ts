@@ -287,14 +287,40 @@ function createCrudApi<TItem, TCreate, TUpdate, TPatch>(basePath: string) {
   }
 }
 
+function omitResumeFromPayload<TPayload extends { resume?: string }>(payload: TPayload) {
+  const { resume: _resume, ...rest } = payload
+  return rest
+}
+
+function createResumeComponentCrudApi<TItem, TCreate extends { resume?: string }, TUpdate extends { resume?: string }, TPatch extends { resume?: string }>(
+  nestedPath: (resumeId: Id) => string,
+) {
+  return {
+    list: (resumeId: Id, query?: ResumeListQuery) => request<PaginatedResponse<TItem>>('GET', nestedPath(resumeId), { query }),
+    get: (resumeId: Id, id: Id) => request<TItem>('GET', `${nestedPath(resumeId)}/${id}`),
+    create: (resumeId: Id, payload: TCreate, notifications?: { success: string; errorContext: string }) => notifications
+      ? withCrudNotifications(notifications, () => request<TItem>('POST', nestedPath(resumeId), { body: omitResumeFromPayload(payload) }))
+      : request<TItem>('POST', nestedPath(resumeId), { body: omitResumeFromPayload(payload) }),
+    update: (resumeId: Id, id: Id, payload: TUpdate, notifications?: { success: string; errorContext: string }) => notifications
+      ? withCrudNotifications(notifications, () => request<TItem>('PUT', `${nestedPath(resumeId)}/${id}`, { body: omitResumeFromPayload(payload) }))
+      : request<TItem>('PUT', `${nestedPath(resumeId)}/${id}`, { body: omitResumeFromPayload(payload) }),
+    patch: (resumeId: Id, id: Id, payload: TPatch, notifications?: { success: string; errorContext: string }) => notifications
+      ? withCrudNotifications(notifications, () => request<TItem>('PATCH', `${nestedPath(resumeId)}/${id}`, { body: omitResumeFromPayload(payload) }))
+      : request<TItem>('PATCH', `${nestedPath(resumeId)}/${id}`, { body: omitResumeFromPayload(payload) }),
+    remove: (resumeId: Id, id: Id, notifications?: { success: string; errorContext: string }) => notifications
+      ? withCrudNotifications(notifications, () => request<unknown>('DELETE', `${nestedPath(resumeId)}/${id}`))
+      : request<unknown>('DELETE', `${nestedPath(resumeId)}/${id}`),
+  }
+}
+
 export function useResumeApi() {
-  const resumesApi = createCrudApi<Resume, CreateResumePayload, UpdateResumePayload, PatchResumePayload>('/api/v1/resumes')
-  const experiencesApi = createCrudApi<ResumeExperience, CreateResumeExperiencePayload, UpdateResumeExperiencePayload, PatchResumeExperiencePayload>('/api/v1/resume-experiences')
-  const educationApi = createCrudApi<ResumeEducation, CreateResumeEducationPayload, UpdateResumeEducationPayload, PatchResumeEducationPayload>('/api/v1/resume-education')
-  const skillsApi = createCrudApi<ResumeSkill, CreateResumeSkillPayload, UpdateResumeSkillPayload, PatchResumeSkillPayload>('/api/v1/resume-skills')
+  const resumesApi = createCrudApi<Resume, CreateResumePayload, UpdateResumePayload, PatchResumePayload>('/api/v1/me/profile/resumes')
+  const experiencesApi = createResumeComponentCrudApi<ResumeExperience, CreateResumeExperiencePayload, UpdateResumeExperiencePayload, PatchResumeExperiencePayload>((resumeId) => `/api/v1/me/profile/resumes/${resumeId}/experiences`)
+  const educationApi = createResumeComponentCrudApi<ResumeEducation, CreateResumeEducationPayload, UpdateResumeEducationPayload, PatchResumeEducationPayload>((resumeId) => `/api/v1/me/profile/resumes/${resumeId}/educations`)
+  const skillsApi = createResumeComponentCrudApi<ResumeSkill, CreateResumeSkillPayload, UpdateResumeSkillPayload, PatchResumeSkillPayload>((resumeId) => `/api/v1/me/profile/resumes/${resumeId}/skills`)
 
   return {
-    getMyResumes: (query?: ResumeListQuery) => request<PaginatedResponse<Resume>>('GET', '/api/v1/resumes/my', { query }),
+    getMyResumes: resumesApi.list,
     getResumes: resumesApi.list,
     getResume: resumesApi.get,
     createResume: (payload: CreateResumePayload) => resumesApi.create(payload, {
@@ -316,57 +342,57 @@ export function useResumeApi() {
 
     getResumeExperiences: experiencesApi.list,
     getResumeExperience: experiencesApi.get,
-    createResumeExperience: (payload: CreateResumeExperiencePayload) => experiencesApi.create(payload, {
+    createResumeExperience: (resumeId: Id, payload: CreateResumeExperiencePayload) => experiencesApi.create(resumeId, payload, {
       success: 'Expérience créée.',
       errorContext: "Création de l'expérience impossible.",
     }),
-    updateResumeExperience: (id: Id, payload: UpdateResumeExperiencePayload) => experiencesApi.update(id, payload, {
+    updateResumeExperience: (resumeId: Id, id: Id, payload: UpdateResumeExperiencePayload) => experiencesApi.update(resumeId, id, payload, {
       success: 'Expérience mise à jour.',
       errorContext: "Mise à jour de l'expérience impossible.",
     }),
-    patchResumeExperience: (id: Id, payload: PatchResumeExperiencePayload) => experiencesApi.patch(id, payload, {
+    patchResumeExperience: (resumeId: Id, id: Id, payload: PatchResumeExperiencePayload) => experiencesApi.patch(resumeId, id, payload, {
       success: 'Expérience mise à jour.',
       errorContext: "Mise à jour partielle de l'expérience impossible.",
     }),
-    deleteResumeExperience: (id: Id) => experiencesApi.remove(id, {
+    deleteResumeExperience: (resumeId: Id, id: Id) => experiencesApi.remove(resumeId, id, {
       success: 'Expérience supprimée.',
       errorContext: "Suppression de l'expérience impossible.",
     }),
 
     getResumeEducationList: educationApi.list,
     getResumeEducation: educationApi.get,
-    createResumeEducation: (payload: CreateResumeEducationPayload) => educationApi.create(payload, {
+    createResumeEducation: (resumeId: Id, payload: CreateResumeEducationPayload) => educationApi.create(resumeId, payload, {
       success: 'Formation créée.',
       errorContext: 'Création de la formation impossible.',
     }),
-    updateResumeEducation: (id: Id, payload: UpdateResumeEducationPayload) => educationApi.update(id, payload, {
+    updateResumeEducation: (resumeId: Id, id: Id, payload: UpdateResumeEducationPayload) => educationApi.update(resumeId, id, payload, {
       success: 'Formation mise à jour.',
       errorContext: 'Mise à jour de la formation impossible.',
     }),
-    patchResumeEducation: (id: Id, payload: PatchResumeEducationPayload) => educationApi.patch(id, payload, {
+    patchResumeEducation: (resumeId: Id, id: Id, payload: PatchResumeEducationPayload) => educationApi.patch(resumeId, id, payload, {
       success: 'Formation mise à jour.',
       errorContext: 'Mise à jour partielle de la formation impossible.',
     }),
-    deleteResumeEducation: (id: Id) => educationApi.remove(id, {
+    deleteResumeEducation: (resumeId: Id, id: Id) => educationApi.remove(resumeId, id, {
       success: 'Formation supprimée.',
       errorContext: 'Suppression de la formation impossible.',
     }),
 
     getResumeSkills: skillsApi.list,
     getResumeSkill: skillsApi.get,
-    createResumeSkill: (payload: CreateResumeSkillPayload) => skillsApi.create(payload, {
+    createResumeSkill: (resumeId: Id, payload: CreateResumeSkillPayload) => skillsApi.create(resumeId, payload, {
       success: 'Compétence créée.',
       errorContext: 'Création de la compétence impossible.',
     }),
-    updateResumeSkill: (id: Id, payload: UpdateResumeSkillPayload) => skillsApi.update(id, payload, {
+    updateResumeSkill: (resumeId: Id, id: Id, payload: UpdateResumeSkillPayload) => skillsApi.update(resumeId, id, payload, {
       success: 'Compétence mise à jour.',
       errorContext: 'Mise à jour de la compétence impossible.',
     }),
-    patchResumeSkill: (id: Id, payload: PatchResumeSkillPayload) => skillsApi.patch(id, payload, {
+    patchResumeSkill: (resumeId: Id, id: Id, payload: PatchResumeSkillPayload) => skillsApi.patch(resumeId, id, payload, {
       success: 'Compétence mise à jour.',
       errorContext: 'Mise à jour partielle de la compétence impossible.',
     }),
-    deleteResumeSkill: (id: Id) => skillsApi.remove(id, {
+    deleteResumeSkill: (resumeId: Id, id: Id) => skillsApi.remove(resumeId, id, {
       success: 'Compétence supprimée.',
       errorContext: 'Suppression de la compétence impossible.',
     }),
