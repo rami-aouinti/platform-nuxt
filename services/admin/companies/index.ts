@@ -1,6 +1,6 @@
 import { createAdminCrudService, type Id, type PatchPayload } from '../shared/index'
 
-const COMPANIES_BASE_PATH = '/api/v1/companies'
+const COMPANIES_BASE_PATH = '/api/companies'
 
 export interface Company {
   id: Id

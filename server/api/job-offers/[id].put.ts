@@ -8,7 +8,7 @@ const updateJobOffer = createProxyEntityHandler({
     statusMessage: 'Invalid job offer parameter.',
     message: 'Job offer identifier is required.',
   },
-  upstreamPathBuilder: id => `/api/v1/job-offers/${encodeURIComponent(id)}`,
+  upstreamPathBuilder: id => `/api/job-offers/${encodeURIComponent(id)}`,
 })
 
 export default defineEventHandler(async (event) => {

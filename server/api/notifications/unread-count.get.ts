@@ -2,7 +2,7 @@ import { createProxyCollectionHandler } from '../../utils/proxy-handler-factory'
 import { requireAuthenticatedRequest } from '../../utils/require-auth'
 
 const unreadNotificationsCount = createProxyCollectionHandler({
-  upstreamPath: '/api/v1/notifications/unread-count',
+  upstreamPath: '/api/notifications/unread-count',
   method: 'GET',
 })
 
