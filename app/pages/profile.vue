@@ -125,6 +125,7 @@ const menu = ref([
   { icon: 'mdi-file-account', text: t('profile.resumes'), to: '/profile/resumes' },
   { icon: 'mdi-bell', text: 'Notifications', to: '/profile/notifications' },
   { icon: 'mdi-settings', text: 'Sessions', to: '/profile/sessions' },
+  { icon: 'mdi-note', text: 'Resume', to: '/profile/resumes' },
   { icon: 'mdi-delete', text: 'Delete Account', to: '/profile/delete-account' },
 ])
 
@@ -243,10 +244,6 @@ function parseProject(item: Record<string, unknown>, index: number): ProfileProj
 }
 
 async function navigateFromProfileMenu(to: string) {
-  if (route.path === to) {
-    return
-  }
-
   await router.push(to)
 }
 
