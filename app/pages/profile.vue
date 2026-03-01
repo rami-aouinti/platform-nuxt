@@ -132,6 +132,15 @@ type TabDefinition = {
   component?: Component
 }
 
+type MenuItem = {
+  id: string
+  icon: string
+  label: string
+  type: 'tab' | 'route'
+  tabId?: string
+  to?: string
+}
+
 const activeTab = ref('overview')
 
 const tabs = computed<TabDefinition[]>(() => [
@@ -186,6 +195,42 @@ const tabs = computed<TabDefinition[]>(() => [
     component: DeleteAccountTab,
   },
 ])
+
+const menuItems = computed<MenuItem[]>(() => [
+  ...tabs.value.map((tab) => ({
+    id: `tab-${tab.id}`,
+    icon: tab.icon,
+    label: tab.label,
+    type: 'tab' as const,
+    tabId: tab.id,
+  })),
+  {
+    id: 'route-resumes',
+    icon: 'mdi-note',
+    label: t('profile.resumes'),
+    type: 'route' as const,
+    to: '/profile/resumes',
+  },
+])
+
+function isMenuItemActive(item: MenuItem) {
+  if (item.type === 'tab') {
+    return activeTab.value === item.tabId
+  }
+
+  return item.to ? route.path.startsWith(item.to) : false
+}
+
+function handleMenuItemClick(item: MenuItem) {
+  if (item.type === 'tab' && item.tabId) {
+    activeTab.value = item.tabId
+    return
+  }
+
+  if (item.type === 'route' && item.to) {
+    router.push(item.to)
+  }
+}
 
 const hasData = computed(() => {
   return (
@@ -422,28 +467,16 @@ onMounted(async () => {
           <div class="px-4 pt-3 pb-0">
             <v-list class="border-radius-sm" nav>
               <v-list-item
-                v-for="item in tabs"
-                :key="item.icon"
+                v-for="item in menuItems"
+                :key="item.id"
                 class="px-3 py-1 border-radius-lg mb-2"
-                :active="activeTab === item.id"
-                @click="activeTab = item.id"
+                :active="isMenuItemActive(item)"
+                @click="handleMenuItemClick(item)"
               >
                 <template #prepend>
                   <v-icon size="18" class="material-icons-round me-2 text-dark">{{ item.icon }}</v-icon>
                 </template>
                 <v-list-item-title class="text-dark text-sm">{{ item.label }}</v-list-item-title>
-              </v-list-item>
-            </v-list>
-
-            <v-list class="border-radius-sm" nav>
-              <v-list-item
-                class="px-3 py-1 border-radius-lg mb-2"
-                @click="router.push('/profile/resumes')"
-              >
-                <template #prepend>
-                  <v-icon size="18" class="material-icons-round me-2 text-dark">mdi-note</v-icon>
-                </template>
-                <v-list-item-title class="text-dark text-sm">{{ t('profile.resumes') }}</v-list-item-title>
               </v-list-item>
             </v-list>
 
