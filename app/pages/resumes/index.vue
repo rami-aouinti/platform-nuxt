@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import { useResumeStore } from '~/stores/resume'
+
 definePageMeta({
   title: 'Mes CV',
   icon: 'mdi-file-document-multiple-outline',
   drawerIndex: 24,
   requiresAuth: true,
   middleware: ['auth'],
+  alias: ['/profile/resumes'],
 })
 
 const resumeStore = useResumeStore()
@@ -33,7 +36,7 @@ onMounted(loadResumes)
       <h1 class="text-h5">Mes CV</h1>
       <div class="d-flex ga-2">
         <v-btn :loading="loading" :disabled="loading" prepend-icon="mdi-refresh" variant="text" @click="loadResumes">Rafraîchir</v-btn>
-        <v-btn color="primary" prepend-icon="mdi-plus" to="/resumes/new">Nouveau CV</v-btn>
+        <v-btn color="primary" prepend-icon="mdi-plus" to="/profile/resumes/new">Nouveau CV</v-btn>
       </div>
     </div>
 
@@ -48,7 +51,7 @@ onMounted(loadResumes)
           <v-card-subtitle>{{ resume.headline || 'Aucune accroche' }}</v-card-subtitle>
           <v-card-text>{{ resume.location || 'Lieu non renseigné' }}</v-card-text>
           <v-card-actions>
-            <v-btn variant="text" color="primary" :to="`/resumes/${resume.id}`">Ouvrir</v-btn>
+            <v-btn variant="text" color="primary" :to="`/profile/resumes/${resume.id}`">Ouvrir</v-btn>
             <v-spacer />
             <v-btn
               color="error"

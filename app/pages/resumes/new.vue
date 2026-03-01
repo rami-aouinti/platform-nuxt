@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useResumeStore } from '~/stores/resume'
 import { notifyFormValidationError } from '~/stores/_factories/storeNotifications'
 import type { ResumeFormModel } from '~/types/resume'
 
@@ -7,6 +8,7 @@ definePageMeta({
   icon: 'mdi-file-plus-outline',
   requiresAuth: true,
   middleware: ['auth'],
+  alias: ['/profile/resumes/new'],
 })
 
 const resumeStore = useResumeStore()
@@ -32,7 +34,7 @@ async function submit() {
 
   const resume = await resumeStore.saveResumeFromForm(form.value)
 
-  await router.push(`/resumes/${resume.id}`)
+  await router.push(`/profile/resumes/${resume.id}`)
 }
 </script>
 
@@ -40,7 +42,7 @@ async function submit() {
   <v-container class="py-6">
     <div class="d-flex align-center justify-space-between mb-4">
       <h1 class="text-h5">Créer un CV</h1>
-      <v-btn variant="text" to="/resumes">Retour à la liste</v-btn>
+      <v-btn variant="text" to="/profile/resumes">Retour à la liste</v-btn>
     </div>
 
     <v-card>

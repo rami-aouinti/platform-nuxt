@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useResumeStore } from '~/stores/resume'
 import { notifyFormValidationError } from '~/stores/_factories/storeNotifications'
 import type { ResumeEducation, ResumeExperience, ResumeSkill } from '~/composables/useResumeApi'
 import type {
@@ -13,6 +14,7 @@ definePageMeta({
   icon: 'mdi-file-document-edit-outline',
   requiresAuth: true,
   middleware: ['auth'],
+  alias: ['/profile/resumes/:id'],
 })
 
 const route = useRoute()
@@ -102,7 +104,7 @@ async function patchResumeData() {
 
 async function removeResume() {
   await resumeStore.deleteResume(resumeId.value)
-  await router.push('/resumes')
+  await router.push('/profile/resumes')
 }
 
 function editExperience(item: ResumeExperience) {
@@ -209,7 +211,7 @@ onMounted(loadData)
     <div class="d-flex justify-space-between align-center mb-4 ga-2 flex-wrap">
       <h1 class="text-h5">{{ resumeStore.currentResume?.title || 'CV' }}</h1>
       <div class="d-flex ga-2">
-        <v-btn variant="text" to="/resumes">Retour</v-btn>
+        <v-btn variant="text" to="/profile/resumes">Retour</v-btn>
         <v-btn color="error" :loading="busy" :disabled="loading || busy" @click="removeResume">Supprimer le CV</v-btn>
       </div>
     </div>
