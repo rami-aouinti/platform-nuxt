@@ -109,6 +109,8 @@
         "updates": "Mises à jour mensuelles du produit",
         "newsletter": "S'abonner à la newsletter"
       }
-    }
+    },
+    "resumes": "CV",
+    "createResume": "Créer un CV"
   }
 }

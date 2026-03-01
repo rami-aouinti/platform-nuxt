@@ -109,6 +109,8 @@
         "updates": "Monthly product updates",
         "newsletter": "Subscribe to newsletter"
       }
-    }
+    },
+    "resumes": "Resumes",
+    "createResume": "Create a resume"
   }
 }
