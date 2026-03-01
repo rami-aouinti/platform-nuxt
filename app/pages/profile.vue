@@ -61,6 +61,7 @@ const {
   usesSchemaFallback,
 } = storeToRefs(profileCompaniesStore)
 const route = useRoute()
+const router = useRouter()
 
 const isLoading = ref(false)
 const errorMessage = ref<string | null>(null)
@@ -240,6 +241,11 @@ function isMenuItemActive(item: MenuItem) {
 function handleMenuItemClick(item: MenuItem) {
   if (item.type === 'tab' && item.tabId) {
     activeTab.value = item.tabId
+    return
+  }
+
+  if (item.type === 'route' && item.to) {
+    router.push(item.to)
   }
 }
 
