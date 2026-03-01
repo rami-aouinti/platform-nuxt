@@ -754,8 +754,6 @@ onMounted(async () => {
           >
             <component
               :is="tab.component"
-              :title="tab.label"
-              :description="tab.description || ''"
             />
           </v-window-item>
         </v-window>
