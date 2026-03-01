@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
+import type { Component } from 'vue'
 import { useAuthStore } from '~/stores/auth'
 import { useProfileCompaniesStore } from '~/stores/profileCompanies'
 import imageKalVisualsSquare from '@/assets/img/kal-visuals-square.jpg'
@@ -13,6 +14,13 @@ import imageHomeDecor3 from '@/assets/img/home-decor-3.jpg'
 import imageHomeDecor4 from '@/assets/img/home-decor-4.jpg'
 import imageTeam1 from '@/assets/img/team-1.jpg'
 import imageTeam2 from '@/assets/img/team-2.jpg'
+import BasicInfoTab from '~/components/profile/tabs/BasicInfoTab.vue'
+import AccountsTab from '~/components/profile/tabs/AccountsTab.vue'
+import ChangePasswordTab from '~/components/profile/tabs/ChangePasswordTab.vue'
+import TwoFactorAuthTab from '~/components/profile/tabs/TwoFactorAuthTab.vue'
+import NotificationsTab from '~/components/profile/tabs/NotificationsTab.vue'
+import SessionsTab from '~/components/profile/tabs/SessionsTab.vue'
+import DeleteAccountTab from '~/components/profile/tabs/DeleteAccountTab.vue'
 
 definePageMeta({
   icon: 'mdi-account-circle-outline',
@@ -53,6 +61,7 @@ const {
   usesSchemaFallback,
 } = storeToRefs(profileCompaniesStore)
 const router = useRouter()
+const route = useRoute()
 
 const isLoading = ref(false)
 const errorMessage = ref<string | null>(null)
@@ -115,17 +124,67 @@ const conversationFallback = [
 const projectImages = [imageHomeDecor1, imageHomeDecor2, imageHomeDecor3, imageHomeDecor4]
 const projectAvatars = [imageTeam1, imageTeam2, imageTeam3, imageTeam4]
 
+type TabDefinition = {
+  id: string
+  icon: string
+  label: string
+  description?: string
+  component?: Component
+}
+
 const activeTab = ref('overview')
 
-const tabs = computed(() => [
-  { id: 'overview', icon: 'mdi-person', label: 'Profile', component: 'overview' },
-  { id: 'basic-info', icon: 'mdi-receipt', label: 'Basic Info', component: 'basic-info' },
-  { id: 'change-password', icon: 'mdi-lock', label: 'Change Password', component: 'change-password' },
-  { id: 'two-factor-auth', icon: 'mdi-security', label: '2FA', component: 'two-factor-auth' },
-  { id: 'accounts', icon: 'mdi-clipboard-account', label: 'Accounts', component: 'accounts' },
-  { id: 'notifications', icon: 'mdi-bell', label: 'Notifications', component: 'notifications' },
-  { id: 'sessions', icon: 'mdi-settings', label: 'Sessions', component: 'sessions' },
-  { id: 'delete-account', icon: 'mdi-delete', label: 'Delete Account', component: 'delete-account' },
+const tabs = computed<TabDefinition[]>(() => [
+  { id: 'overview', icon: 'mdi-person', label: t('profile.tabs.overview') },
+  {
+    id: 'basic-info',
+    icon: 'mdi-receipt',
+    label: t('profile.tabs.basicInfo'),
+    description: t('profile.tabDescriptions.basicInfo'),
+    component: BasicInfoTab,
+  },
+  {
+    id: 'change-password',
+    icon: 'mdi-lock',
+    label: t('profile.tabs.changePassword'),
+    description: t('profile.tabDescriptions.changePassword'),
+    component: ChangePasswordTab,
+  },
+  {
+    id: 'two-factor-auth',
+    icon: 'mdi-security',
+    label: t('profile.tabs.twoFactorAuth'),
+    description: t('profile.tabDescriptions.twoFactorAuth'),
+    component: TwoFactorAuthTab,
+  },
+  {
+    id: 'accounts',
+    icon: 'mdi-clipboard-account',
+    label: t('profile.tabs.accounts'),
+    description: t('profile.tabDescriptions.accounts'),
+    component: AccountsTab,
+  },
+  {
+    id: 'notifications',
+    icon: 'mdi-bell',
+    label: t('profile.tabs.notifications'),
+    description: t('profile.tabDescriptions.notifications'),
+    component: NotificationsTab,
+  },
+  {
+    id: 'sessions',
+    icon: 'mdi-settings',
+    label: t('profile.tabs.sessions'),
+    description: t('profile.tabDescriptions.sessions'),
+    component: SessionsTab,
+  },
+  {
+    id: 'delete-account',
+    icon: 'mdi-delete',
+    label: t('profile.tabs.deleteAccount'),
+    description: t('profile.tabDescriptions.deleteAccount'),
+    component: DeleteAccountTab,
+  },
 ])
 
 const hasData = computed(() => {
@@ -330,6 +389,25 @@ async function loadProjects() {
     projectsLoading.value = false
   }
 }
+
+
+function resolveTabFromRoute() {
+  const queryTab = typeof route.query.tab === 'string' ? route.query.tab : null
+  const hashTab = route.hash.startsWith('#tab-') ? route.hash.replace('#tab-', '') : null
+  const requestedTab = queryTab ?? hashTab
+
+  if (requestedTab && tabs.value.some((tab) => tab.id === requestedTab)) {
+    activeTab.value = requestedTab
+  }
+}
+
+watch(
+  () => [route.query.tab, route.hash],
+  () => {
+    resolveTabFromRoute()
+  },
+  { immediate: true },
+)
 
 onMounted(async () => {
   await Promise.all([loadProfileDataIfNeeded(), loadCompanySchema(), loadCompanies(), loadProjects()])
@@ -649,14 +727,15 @@ onMounted(async () => {
           </v-window-item>
 
           <v-window-item
-            v-for="tab in tabs.filter((item) => item.id !== 'overview')"
+            v-for="tab in tabs.filter((item) => item.id !== 'overview' && item.component)"
             :key="tab.id"
             :value="tab.id"
           >
-            <v-card class="profile-block pa-4 pa-md-6" rounded="xl" elevation="0">
-              <h3 class="text-h4 text-typo mb-2">{{ tab.label }}</h3>
-              <p class="text-body-1 text-medium-emphasis mb-0">Section "{{ tab.label }}" en préparation.</p>
-            </v-card>
+            <component
+              :is="tab.component"
+              :title="tab.label"
+              :description="tab.description || ''"
+            />
           </v-window-item>
         </v-window>
       </v-col>

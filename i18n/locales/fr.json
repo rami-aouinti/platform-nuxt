@@ -111,6 +111,25 @@
       }
     },
     "resumes": "CV",
-    "createResume": "Créer un CV"
+    "createResume": "Créer un CV",
+    "tabs": {
+      "overview": "Profil",
+      "basicInfo": "Informations de base",
+      "changePassword": "Changer le mot de passe",
+      "twoFactorAuth": "Authentification à deux facteurs",
+      "accounts": "Comptes",
+      "notifications": "Notifications",
+      "sessions": "Sessions",
+      "deleteAccount": "Supprimer le compte"
+    },
+    "tabDescriptions": {
+      "basicInfo": "Cette section est dédiée aux informations de base du profil.",
+      "changePassword": "Cette section est dédiée au changement de mot de passe.",
+      "twoFactorAuth": "Cette section est dédiée à l'authentification à deux facteurs.",
+      "accounts": "Cette section est dédiée à la gestion des comptes liés.",
+      "notifications": "Cette section est dédiée aux préférences de notification.",
+      "sessions": "Cette section est dédiée à la gestion des sessions actives.",
+      "deleteAccount": "Cette section est dédiée à la suppression du compte."
+    }
   }
 }

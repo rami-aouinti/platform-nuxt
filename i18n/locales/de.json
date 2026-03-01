@@ -111,6 +111,25 @@
       }
     },
     "resumes": "Lebensläufe",
-    "createResume": "Lebenslauf erstellen"
+    "createResume": "Lebenslauf erstellen",
+    "tabs": {
+      "overview": "Profil",
+      "basicInfo": "Grundinformationen",
+      "changePassword": "Passwort ändern",
+      "twoFactorAuth": "2FA",
+      "accounts": "Konten",
+      "notifications": "Benachrichtigungen",
+      "sessions": "Sitzungen",
+      "deleteAccount": "Konto löschen"
+    },
+    "tabDescriptions": {
+      "basicInfo": "Dieser Abschnitt ist den grundlegenden Profilinformationen gewidmet.",
+      "changePassword": "Dieser Abschnitt ist dem Ändern des Passworts gewidmet.",
+      "twoFactorAuth": "Dieser Abschnitt ist der Zwei-Faktor-Authentifizierung gewidmet.",
+      "accounts": "Dieser Abschnitt ist der Verwaltung verknüpfter Konten gewidmet.",
+      "notifications": "Dieser Abschnitt ist den Benachrichtigungseinstellungen gewidmet.",
+      "sessions": "Dieser Abschnitt ist der Verwaltung aktiver Sitzungen gewidmet.",
+      "deleteAccount": "Dieser Abschnitt ist dem Löschen des Kontos gewidmet."
+    }
   }
 }
