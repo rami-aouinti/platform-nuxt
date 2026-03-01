@@ -61,13 +61,13 @@ export const useResumeStore = defineStore('resume', () => {
   const experienceCrud = createCrudEntityStore<ResumeExperience, CreateResumeExperiencePayload, UpdateResumeExperiencePayload, PatchResumeExperiencePayload>({
     entityLabel: 'Expérience',
     fetch: async () => {
-      const response = await api.getResumeExperiences({ where: { resume: activeResumeId.value }, limit: 100 })
+      const response = await api.getResumeExperiences(activeResumeId.value, { limit: 100 })
       return response.data || []
     },
-    create: payload => api.createResumeExperience(payload),
-    update: (id, payload) => api.updateResumeExperience(id, payload),
-    patch: (id, payload) => api.patchResumeExperience(id, payload),
-    remove: id => api.deleteResumeExperience(id),
+    create: payload => api.createResumeExperience(activeResumeId.value, payload),
+    update: (id, payload) => api.updateResumeExperience(activeResumeId.value, id, payload),
+    patch: (id, payload) => api.patchResumeExperience(activeResumeId.value, id, payload),
+    remove: id => api.deleteResumeExperience(activeResumeId.value, id),
     getId: entity => entity.id,
     applyUpdate: (entity, payload) => ({ ...entity, ...payload }),
     applyPatch: (entity, payload) => ({ ...entity, ...payload }),
@@ -80,13 +80,13 @@ export const useResumeStore = defineStore('resume', () => {
   const educationCrud = createCrudEntityStore<ResumeEducation, CreateResumeEducationPayload, UpdateResumeEducationPayload, PatchResumeEducationPayload>({
     entityLabel: 'Formation',
     fetch: async () => {
-      const response = await api.getResumeEducationList({ where: { resume: activeResumeId.value }, limit: 100 })
+      const response = await api.getResumeEducationList(activeResumeId.value, { limit: 100 })
       return response.data || []
     },
-    create: payload => api.createResumeEducation(payload),
-    update: (id, payload) => api.updateResumeEducation(id, payload),
-    patch: (id, payload) => api.patchResumeEducation(id, payload),
-    remove: id => api.deleteResumeEducation(id),
+    create: payload => api.createResumeEducation(activeResumeId.value, payload),
+    update: (id, payload) => api.updateResumeEducation(activeResumeId.value, id, payload),
+    patch: (id, payload) => api.patchResumeEducation(activeResumeId.value, id, payload),
+    remove: id => api.deleteResumeEducation(activeResumeId.value, id),
     getId: entity => entity.id,
     applyUpdate: (entity, payload) => ({ ...entity, ...payload }),
     applyPatch: (entity, payload) => ({ ...entity, ...payload }),
@@ -99,13 +99,13 @@ export const useResumeStore = defineStore('resume', () => {
   const skillCrud = createCrudEntityStore<ResumeSkill, CreateResumeSkillPayload, UpdateResumeSkillPayload, PatchResumeSkillPayload>({
     entityLabel: 'Compétence',
     fetch: async () => {
-      const response = await api.getResumeSkills({ where: { resume: activeResumeId.value }, limit: 100 })
+      const response = await api.getResumeSkills(activeResumeId.value, { limit: 100 })
       return response.data || []
     },
-    create: payload => api.createResumeSkill(payload),
-    update: (id, payload) => api.updateResumeSkill(id, payload),
-    patch: (id, payload) => api.patchResumeSkill(id, payload),
-    remove: id => api.deleteResumeSkill(id),
+    create: payload => api.createResumeSkill(activeResumeId.value, payload),
+    update: (id, payload) => api.updateResumeSkill(activeResumeId.value, id, payload),
+    patch: (id, payload) => api.patchResumeSkill(activeResumeId.value, id, payload),
+    remove: id => api.deleteResumeSkill(activeResumeId.value, id),
     getId: entity => entity.id,
     applyUpdate: (entity, payload) => ({ ...entity, ...payload }),
     applyPatch: (entity, payload) => ({ ...entity, ...payload }),
@@ -238,7 +238,7 @@ export const useResumeStore = defineStore('resume', () => {
 
   async function createExperience(payload: CreateResumeExperiencePayload) {
     activeResumeId.value = payload.resume
-    const created = await experienceCrud.create(payload)
+    const created = await api.createResumeExperience(payload.resume, payload)
     syncEntityMaps(payload.resume)
     markDirty(`experience:${payload.resume}`, false)
     return created
@@ -249,10 +249,11 @@ export const useResumeStore = defineStore('resume', () => {
   }
 
   async function updateExperience(id: string, payload: UpdateResumeExperiencePayload) {
-    activeResumeId.value = payload.resume
-    const updated = await experienceCrud.update(id, payload)
-    syncEntityMaps(payload.resume)
-    markDirty(`experience:${payload.resume}`, false)
+    const resumeId = payload.resume || activeResumeId.value || currentResume.value?.id || ''
+    activeResumeId.value = resumeId
+    const updated = await api.updateResumeExperience(resumeId, id, payload)
+    syncEntityMaps(resumeId)
+    markDirty(`experience:${resumeId}`, false)
     return updated
   }
 
@@ -262,7 +263,7 @@ export const useResumeStore = defineStore('resume', () => {
 
   async function patchExperience(id: string, payload: PatchResumeExperiencePayload) {
     const resumeId = activeResumeId.value || currentResume.value?.id || ''
-    const patched = await experienceCrud.patch(id, payload)
+    const patched = await api.patchResumeExperience(resumeId, id, payload)
     if (resumeId) {
       syncEntityMaps(resumeId)
       markDirty(`experience:${resumeId}`, false)
@@ -276,14 +277,14 @@ export const useResumeStore = defineStore('resume', () => {
 
   async function deleteExperience(id: string, resumeId: string) {
     activeResumeId.value = resumeId
-    await experienceCrud.remove(id)
+    await api.deleteResumeExperience(resumeId, id)
     syncEntityMaps(resumeId)
     markDirty(`experience:${resumeId}`, false)
   }
 
   async function createEducation(payload: CreateResumeEducationPayload) {
     activeResumeId.value = payload.resume
-    const created = await educationCrud.create(payload)
+    const created = await api.createResumeEducation(payload.resume, payload)
     syncEntityMaps(payload.resume)
     markDirty(`education:${payload.resume}`, false)
     return created
@@ -294,10 +295,11 @@ export const useResumeStore = defineStore('resume', () => {
   }
 
   async function updateEducation(id: string, payload: UpdateResumeEducationPayload) {
-    activeResumeId.value = payload.resume
-    const updated = await educationCrud.update(id, payload)
-    syncEntityMaps(payload.resume)
-    markDirty(`education:${payload.resume}`, false)
+    const resumeId = payload.resume || activeResumeId.value || currentResume.value?.id || ''
+    activeResumeId.value = resumeId
+    const updated = await api.updateResumeEducation(resumeId, id, payload)
+    syncEntityMaps(resumeId)
+    markDirty(`education:${resumeId}`, false)
     return updated
   }
 
@@ -307,7 +309,7 @@ export const useResumeStore = defineStore('resume', () => {
 
   async function patchEducation(id: string, payload: PatchResumeEducationPayload) {
     const resumeId = activeResumeId.value || currentResume.value?.id || ''
-    const patched = await educationCrud.patch(id, payload)
+    const patched = await api.patchResumeEducation(resumeId, id, payload)
     if (resumeId) {
       syncEntityMaps(resumeId)
       markDirty(`education:${resumeId}`, false)
@@ -321,14 +323,14 @@ export const useResumeStore = defineStore('resume', () => {
 
   async function deleteEducation(id: string, resumeId: string) {
     activeResumeId.value = resumeId
-    await educationCrud.remove(id)
+    await api.deleteResumeEducation(resumeId, id)
     syncEntityMaps(resumeId)
     markDirty(`education:${resumeId}`, false)
   }
 
   async function createSkill(payload: CreateResumeSkillPayload) {
     activeResumeId.value = payload.resume
-    const created = await skillCrud.create(payload)
+    const created = await api.createResumeSkill(payload.resume, payload)
     syncEntityMaps(payload.resume)
     markDirty(`skill:${payload.resume}`, false)
     return created
@@ -339,10 +341,11 @@ export const useResumeStore = defineStore('resume', () => {
   }
 
   async function updateSkill(id: string, payload: UpdateResumeSkillPayload) {
-    activeResumeId.value = payload.resume
-    const updated = await skillCrud.update(id, payload)
-    syncEntityMaps(payload.resume)
-    markDirty(`skill:${payload.resume}`, false)
+    const resumeId = payload.resume || activeResumeId.value || currentResume.value?.id || ''
+    activeResumeId.value = resumeId
+    const updated = await api.updateResumeSkill(resumeId, id, payload)
+    syncEntityMaps(resumeId)
+    markDirty(`skill:${resumeId}`, false)
     return updated
   }
 
@@ -352,7 +355,7 @@ export const useResumeStore = defineStore('resume', () => {
 
   async function patchSkill(id: string, payload: PatchResumeSkillPayload) {
     const resumeId = activeResumeId.value || currentResume.value?.id || ''
-    const patched = await skillCrud.patch(id, payload)
+    const patched = await api.patchResumeSkill(resumeId, id, payload)
     if (resumeId) {
       syncEntityMaps(resumeId)
       markDirty(`skill:${resumeId}`, false)
@@ -366,7 +369,7 @@ export const useResumeStore = defineStore('resume', () => {
 
   async function deleteSkill(id: string, resumeId: string) {
     activeResumeId.value = resumeId
-    await skillCrud.remove(id)
+    await api.deleteResumeSkill(resumeId, id)
     syncEntityMaps(resumeId)
     markDirty(`skill:${resumeId}`, false)
   }
