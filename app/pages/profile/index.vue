@@ -160,6 +160,7 @@ type MenuItem = {
 }
 
 const activeTab = ref('overview')
+const isSyncingTabWithRoute = ref(false)
 
 const tabDefinitions: TabDefinition[] = [
   { id: 'overview', icon: 'mdi-person', labelKey: 'profile.tabs.overview' },
@@ -255,13 +256,17 @@ function isMenuItemActive(item: MenuItem) {
 
 function handleMenuItemClick(item: MenuItem) {
   if (item.type === 'tab' && item.tabId) {
-    activeTab.value = item.tabId
+    setActiveTab(item.tabId)
     return
   }
 
   if (item.type === 'route' && item.to) {
     router.push(item.to)
   }
+}
+
+function setActiveTab(tabId: string) {
+  activeTab.value = tabId
 }
 
 const hasData = computed(() => {
@@ -509,8 +514,15 @@ function resolveTabFromRoute() {
   const requestedTab = queryTab ?? hashTab
 
   if (requestedTab && tabs.value.some((tab) => tab.id === requestedTab)) {
-    activeTab.value = requestedTab
+    isSyncingTabWithRoute.value = true
+    setActiveTab(requestedTab)
+    isSyncingTabWithRoute.value = false
+    return
   }
+
+  isSyncingTabWithRoute.value = true
+  setActiveTab('overview')
+  isSyncingTabWithRoute.value = false
 }
 
 watch(
