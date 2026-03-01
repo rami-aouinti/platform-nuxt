@@ -31,6 +31,20 @@ type SocialAccount = {
   email?: string
 }
 
+type Company = {
+  id: string
+  name: string
+  role?: string | null
+  description?: string | null
+}
+
+type ProfileProject = {
+  id: string
+  title: string
+  style?: string | null
+  description?: string | null
+}
+
 const { t } = useI18n()
 const auth = useAuthStore()
 const { isAuthenticated, profile, roles, groups } = storeToRefs(auth)
@@ -40,6 +54,12 @@ const route = useRoute()
 const isLoading = ref(false)
 const errorMessage = ref<string | null>(null)
 const socialAccounts = ref<SocialAccount[]>([])
+const companies = ref<Company[]>([])
+const companiesLoading = ref(false)
+const companiesError = ref<string | null>(null)
+const projects = ref<ProfileProject[]>([])
+const projectsLoading = ref(false)
+const projectsError = ref<string | null>(null)
 
 const accountSettings = ref<ToggleItem[]>([
   { enabled: true, text: t('profile.settings.account.follow') },
@@ -61,36 +81,8 @@ const conversationFallback = [
   { avatar: imageTeam3, user: 'Nick Daniel', message: 'Hi! I need more information..' },
 ]
 
-const projects = [
-  {
-    image: imageHomeDecor1,
-    title: 'Project #2',
-    style: 'Modern',
-    description: 'As Uber works through a huge amount of internal management turmoil.',
-    avatars: [imageTeam1, imageTeam2, imageTeam3, imageTeam4],
-  },
-  {
-    image: imageHomeDecor2,
-    title: 'Project #1',
-    style: 'Scandinavian',
-    description: 'Music is something that every person has his or her own specific opinion about.',
-    avatars: [imageTeam3, imageTeam4, imageTeam1, imageTeam2],
-  },
-  {
-    image: imageHomeDecor3,
-    title: 'Project #3',
-    style: 'Minimalist',
-    description: 'Different people have different taste, and various types of music.',
-    avatars: [imageTeam4, imageTeam3, imageTeam2, imageTeam1],
-  },
-  {
-    image: imageHomeDecor4,
-    title: 'Project #4',
-    style: 'Gothic',
-    description: 'Why would anyone pick blue over pink? Pink is obviously a better color.',
-    avatars: [imageTeam4, imageTeam3, imageTeam2, imageTeam1],
-  },
-]
+const projectImages = [imageHomeDecor1, imageHomeDecor2, imageHomeDecor3, imageHomeDecor4]
+const projectAvatars = [imageTeam1, imageTeam2, imageTeam3, imageTeam4]
 
 const menu = ref([
   { icon: 'mdi-person', text: 'Profile', to: '/profile' },
@@ -108,8 +100,23 @@ const hasData = computed(() => {
     Boolean(profile.value) ||
     roles.value.length > 0 ||
     groups.value.length > 0 ||
-    socialAccounts.value.length > 0
+    socialAccounts.value.length > 0 ||
+    companies.value.length > 0 ||
+    projects.value.length > 0
   )
+})
+
+const decoratedProjects = computed(() => {
+  return projects.value.map((project, index) => ({
+    ...project,
+    image: projectImages[index % projectImages.length],
+    avatars: [
+      projectAvatars[index % projectAvatars.length],
+      projectAvatars[(index + 1) % projectAvatars.length],
+      projectAvatars[(index + 2) % projectAvatars.length],
+      projectAvatars[(index + 3) % projectAvatars.length],
+    ],
+  }))
 })
 
 const displayName = computed(() => {
@@ -185,6 +192,32 @@ function formatGroupRole(group: (typeof groups.value)[number]) {
   return '-'
 }
 
+function normalizeItems<T>(response: T[] | { items?: T[] } | null | undefined): T[] {
+  if (Array.isArray(response)) {
+    return response
+  }
+
+  return response?.items ?? []
+}
+
+function parseCompany(item: Record<string, unknown>, index: number): Company {
+  return {
+    id: String(item.id ?? item.companyId ?? index),
+    name: String(item.name ?? item.companyName ?? `Company #${index + 1}`),
+    role: typeof item.role === 'string' ? item.role : null,
+    description: typeof item.description === 'string' ? item.description : null,
+  }
+}
+
+function parseProject(item: Record<string, unknown>, index: number): ProfileProject {
+  return {
+    id: String(item.id ?? item.projectId ?? index),
+    title: String(item.title ?? item.name ?? `Project #${index + 1}`),
+    style: typeof item.style === 'string' ? item.style : null,
+    description: typeof item.description === 'string' ? item.description : null,
+  }
+}
+
 async function navigateFromProfileMenu(to: string) {
   if (route.path === to) {
     return
@@ -217,7 +250,59 @@ async function loadProfileDataIfNeeded() {
   }
 }
 
-onMounted(loadProfileDataIfNeeded)
+async function loadCompanies() {
+  if (!isAuthenticated.value) {
+    return
+  }
+
+  companiesLoading.value = true
+  companiesError.value = null
+
+  try {
+    const companiesResponse = await $fetch<Record<string, unknown>[] | { items?: Record<string, unknown>[] }>(
+      '/api/v1/me/profile/companies',
+      {
+        headers: auth.token ? { Authorization: `Bearer ${auth.token}` } : undefined,
+      },
+    )
+
+    companies.value = normalizeItems(companiesResponse).map(parseCompany)
+  } catch {
+    companiesError.value = 'Impossible de charger vos companies.'
+    companies.value = []
+  } finally {
+    companiesLoading.value = false
+  }
+}
+
+async function loadProjects() {
+  if (!isAuthenticated.value) {
+    return
+  }
+
+  projectsLoading.value = true
+  projectsError.value = null
+
+  try {
+    const projectsResponse = await $fetch<Record<string, unknown>[] | { items?: Record<string, unknown>[] }>(
+      '/api/v1/me/profile/projects',
+      {
+        headers: auth.token ? { Authorization: `Bearer ${auth.token}` } : undefined,
+      },
+    )
+
+    projects.value = normalizeItems(projectsResponse).map(parseProject)
+  } catch {
+    projectsError.value = 'Impossible de charger vos projects.'
+    projects.value = []
+  } finally {
+    projectsLoading.value = false
+  }
+}
+
+onMounted(async () => {
+  await Promise.all([loadProfileDataIfNeeded(), loadCompanies(), loadProjects()])
+})
 </script>
 
 <template>
@@ -347,16 +432,85 @@ onMounted(loadProfileDataIfNeeded)
         </v-row>
 
         <v-card v-if="hasData" class="profile-block mt-6 pa-4 pa-md-6" rounded="xl" elevation="0">
+          <h3 class="text-h4 text-typo mb-1">Mes companies</h3>
+          <p class="text-h6 text-medium-emphasis mb-6">Vos entreprises associées</p>
+
+          <div v-if="companiesLoading" class="d-flex align-center ga-3">
+            <v-progress-circular indeterminate color="primary" />
+            <span>Chargement des companies...</span>
+          </div>
+
+          <v-alert
+            v-else-if="companiesError"
+            type="error"
+            variant="tonal"
+            density="comfortable"
+            rounded="lg"
+            class="mb-4"
+          >
+            {{ companiesError }}
+          </v-alert>
+
+          <v-alert
+            v-else-if="companies.length === 0"
+            type="info"
+            variant="tonal"
+            density="comfortable"
+            rounded="lg"
+            class="mb-4"
+          >
+            Aucune company associée à ce profil.
+          </v-alert>
+
+          <v-row v-else class="mb-2">
+            <v-col v-for="company in companies" :key="company.id" cols="12" md="6" xl="4">
+              <v-card variant="tonal" rounded="lg" class="h-100 pa-4">
+                <p class="text-h6 text-typo mb-1">{{ company.name }}</p>
+                <p class="text-body-2 text-medium-emphasis mb-3">{{ company.role || 'Rôle non défini' }}</p>
+                <p class="text-body-2 text-medium-emphasis mb-0">{{ company.description || 'Aucune description disponible.' }}</p>
+              </v-card>
+            </v-col>
+          </v-row>
+
+          <v-divider class="my-6" />
+
           <h3 class="text-h4 text-typo mb-1">{{ t('profile.projects') }}</h3>
           <p class="text-h6 text-medium-emphasis mb-6">Architects design houses</p>
 
-          <v-row>
-            <v-col v-for="project in projects" :key="project.title" cols="12" md="6" xl="3">
+          <div v-if="projectsLoading" class="d-flex align-center ga-3">
+            <v-progress-circular indeterminate color="primary" />
+            <span>Chargement des projects...</span>
+          </div>
+
+          <v-alert
+            v-else-if="projectsError"
+            type="error"
+            variant="tonal"
+            density="comfortable"
+            rounded="lg"
+            class="mb-4"
+          >
+            {{ projectsError }}
+          </v-alert>
+
+          <v-alert
+            v-else-if="decoratedProjects.length === 0"
+            type="info"
+            variant="tonal"
+            density="comfortable"
+            rounded="lg"
+            class="mb-4"
+          >
+            Aucun project associé à ce profil.
+          </v-alert>
+
+          <v-row v-else>
+            <v-col v-for="project in decoratedProjects" :key="project.id" cols="12" md="6" xl="3">
               <div class="project-card h-100">
                 <v-img :src="project.image" height="190" cover class="rounded-xl mb-4" />
                 <p class="text-body-1 text-medium-emphasis mb-1">{{ project.title }}</p>
-                <p class="text-h4 text-typo font-weight-bold mb-3">{{ project.style }}</p>
-                <p class="text-body-1 text-medium-emphasis mb-5">{{ project.description }}</p>
+                <p class="text-h4 text-typo font-weight-bold mb-3">{{ project.style || '-' }}</p>
+                <p class="text-body-1 text-medium-emphasis mb-5">{{ project.description || 'Aucune description disponible.' }}</p>
 
                 <div class="d-flex align-center justify-space-between">
                   <v-btn color="pink" variant="outlined" rounded="pill" class="project-btn">{{ t('profile.viewProject') }}</v-btn>
