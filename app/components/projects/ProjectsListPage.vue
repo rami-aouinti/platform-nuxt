@@ -19,6 +19,7 @@ type CrmProjectExtended = CrmProject & {
   managers?: Array<{ id?: string } | string> | null
 }
 
+const { t } = useI18n()
 const crmApi = useCrmApi()
 const rows = ref<ProjectRow[]>([])
 const state = ref<ProjectsViewState>('loading')
@@ -106,9 +107,9 @@ onMounted(load)
 <template>
   <v-container class="py-6">
     <div class="d-flex align-center justify-space-between mb-4 ga-2 flex-wrap">
-      <h1 class="text-h5">Projects</h1>
+      <h1 class="text-h5">{{ t('projects.title') }}</h1>
       <div class="d-flex ga-2 flex-wrap">
-        <v-btn variant="text" prepend-icon="mdi-sync" @click="load">Reload</v-btn>
+        <v-btn variant="text" prepend-icon="mdi-sync" @click="load">{{ t('common.reload') }}</v-btn>
       </div>
     </div>
 

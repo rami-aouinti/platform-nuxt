@@ -13,6 +13,7 @@ interface KanbanTask {
   assigneeId?: string | null
 }
 
+const { t } = useI18n()
 const authStore = useAuthStore()
 const state = ref<TasksState>('loading')
 const tasks = ref<KanbanTask[]>([])
@@ -26,10 +27,10 @@ const currentUser = computed<TaskManagerUser>(() => ({
 }))
 
 const columns = computed(() => [
-  { title: 'To do', status: 'todo' as const },
-  { title: 'In progress', status: 'in_progress' as const },
-  { title: 'Done', status: 'completed' as const },
-  { title: 'Archived', status: 'archived' as const },
+  { title: t('tasks.columns.todo'), status: 'todo' as const },
+  { title: t('tasks.columns.inProgress'), status: 'in_progress' as const },
+  { title: t('tasks.columns.done'), status: 'completed' as const },
+  { title: t('tasks.columns.archived'), status: 'archived' as const },
 ])
 
 const actionsByStatus: Record<TaskStatus, TaskWorkflowAction[]> = {
@@ -45,10 +46,10 @@ function canRunTaskAction(task: KanbanTask) {
 
 function actionLabel(action: TaskWorkflowAction) {
   return {
-    start: 'Start',
-    complete: 'Complete',
-    archive: 'Archive',
-    reopen: 'Reopen',
+    start: t('tasks.actions.start'),
+    complete: t('tasks.actions.complete'),
+    archive: t('tasks.actions.archive'),
+    reopen: t('tasks.actions.reopen'),
   }[action]
 }
 
@@ -120,11 +121,11 @@ onMounted(() => load('success'))
 <template>
   <v-container class="py-6">
     <div class="d-flex align-center justify-space-between mb-4 ga-2 flex-wrap">
-      <h1 class="text-h5">Tasks</h1>
+      <h1 class="text-h5">{{ t('tasks.title') }}</h1>
       <div class="d-flex ga-2 flex-wrap">
-        <v-btn variant="text" prepend-icon="mdi-sync" @click="load('success')">Reload</v-btn>
-        <v-btn variant="text" @click="load('empty')">Simuler empty</v-btn>
-        <v-btn variant="text" color="error" @click="load('error')">Simuler error</v-btn>
+        <v-btn variant="text" prepend-icon="mdi-sync" @click="load('success')">{{ t('common.reload') }}</v-btn>
+        <v-btn variant="text" @click="load('empty')">{{ t('common.simulateEmpty') }}</v-btn>
+        <v-btn variant="text" color="error" @click="load('error')">{{ t('common.simulateError') }}</v-btn>
       </div>
     </div>
 

@@ -10,6 +10,8 @@ const props = defineProps({
   },
 })
 
+const { t } = useI18n()
+
 const topCountries = computed(() =>
   Object.entries(props.mapData)
     .sort(([, a], [, b]) => Number(b) - Number(a))
@@ -19,7 +21,7 @@ const topCountries = computed(() =>
 
 <template>
   <div class="world-map-placeholder pa-4 mb-4 rounded border">
-    <div class="text-subtitle-2 mb-2">World map unavailable in legacy mode</div>
+    <div class="text-subtitle-2 mb-2">{{ t('worldMap.unavailable') }}</div>
     <v-chip-group column>
       <v-chip
         v-for="([country, visits], index) in topCountries"

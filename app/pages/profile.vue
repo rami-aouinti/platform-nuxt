@@ -15,7 +15,7 @@ import imageTeam2 from '@/assets/img/team-2.jpg'
 
 definePageMeta({
   icon: 'mdi-account-circle-outline',
-  title: 'Profile',
+  title: 'Profil',
   middleware: 'auth',
   requiresAuth: true,
 })
@@ -31,6 +31,7 @@ type SocialAccount = {
   email?: string
 }
 
+const { t } = useI18n()
 const auth = useAuthStore()
 const { isAuthenticated, profile, roles, groups } = storeToRefs(auth)
 
@@ -39,15 +40,15 @@ const errorMessage = ref<string | null>(null)
 const socialAccounts = ref<SocialAccount[]>([])
 
 const accountSettings = ref<ToggleItem[]>([
-  { enabled: true, text: 'Email me when someone follows me' },
-  { enabled: false, text: 'Email me when someone answers on...' },
-  { enabled: true, text: 'Email me when someone mentions me...' },
+  { enabled: true, text: t('profile.settings.account.follow') },
+  { enabled: false, text: t('profile.settings.account.answers') },
+  { enabled: true, text: t('profile.settings.account.mentions') },
 ])
 
 const applicationSettings = ref<ToggleItem[]>([
-  { enabled: false, text: 'New launches and projects' },
-  { enabled: true, text: 'Monthly product updates' },
-  { enabled: false, text: 'Subscribe to newsletter' },
+  { enabled: false, text: t('profile.settings.application.launches') },
+  { enabled: true, text: t('profile.settings.application.updates') },
+  { enabled: false, text: t('profile.settings.application.newsletter') },
 ])
 
 const conversationFallback = [
@@ -124,20 +125,20 @@ const avatarInitials = computed(() => {
 
 const subtitle = computed(() => {
   const role = roles.value[0]?.replace('ROLE_', '').replaceAll('_', ' ')
-  return role ? `${role} · ${profile.value?.timezone ?? 'UTC'}` : 'Member'
+  return role ? `${role} · ${profile.value?.timezone ?? 'UTC'}` : t('profile.member')
 })
 
 const profileSummary = computed(() => {
-  return `Hi, I'm ${displayName.value}. You can review your profile details, roles, groups, and connected providers in this workspace.`
+  return t('profile.summary', { name: displayName.value })
 })
 
 const profileRows = computed(() => [
-  { label: 'Full Name', value: displayName.value },
-  { label: 'Username', value: profile.value?.username || '-' },
-  { label: 'Email', value: profile.value?.email || '-' },
-  { label: 'Language', value: profile.value?.language || '-' },
-  { label: 'Locale', value: profile.value?.locale || '-' },
-  { label: 'Location', value: profile.value?.timezone || '-' },
+  { label: t('profile.fields.fullName'), value: displayName.value },
+  { label: t('profile.fields.username'), value: profile.value?.username || '-' },
+  { label: t('profile.fields.email'), value: profile.value?.email || '-' },
+  { label: t('profile.fields.language'), value: profile.value?.language || '-' },
+  { label: t('profile.fields.locale'), value: profile.value?.locale || '-' },
+  { label: t('profile.fields.location'), value: profile.value?.timezone || '-' },
 ])
 
 const conversations = computed(() => {
@@ -148,7 +149,7 @@ const conversations = computed(() => {
   return socialAccounts.value.map((account, index) => ({
     avatar: conversationFallback[index % conversationFallback.length]?.avatar,
     user: account.username || account.provider || `Provider #${index + 1}`,
-    message: account.email || `Connected with ${account.provider ?? 'provider'}`,
+    message: account.email || t('profile.connectedWith', { provider: account.provider ?? t('profile.providerFallback') }),
   }))
 })
 
@@ -189,7 +190,7 @@ async function loadProfileDataIfNeeded() {
     })
     socialAccounts.value = socialResponse?.items ?? []
   } catch {
-    errorMessage.value = 'Impossible de charger les informations du profil.'
+    errorMessage.value = t('profile.loadError')
   } finally {
     isLoading.value = false
   }
@@ -211,9 +212,9 @@ onMounted(loadProfileDataIfNeeded)
         </div>
 
         <div class="d-flex ga-2 flex-wrap">
-          <v-chip color="primary" variant="tonal" prepend-icon="mdi-shield-account">{{ roles.length }} Roles</v-chip>
-          <v-chip color="secondary" variant="tonal" prepend-icon="mdi-account-group">{{ groups.length }} Groups</v-chip>
-          <v-chip color="info" variant="tonal" prepend-icon="mdi-connection">{{ socialAccounts.length }} Accounts</v-chip>
+          <v-chip color="primary" variant="tonal" prepend-icon="mdi-shield-account">{{ t('profile.countRoles', { count: roles.length }) }}</v-chip>
+          <v-chip color="secondary" variant="tonal" prepend-icon="mdi-account-group">{{ t('profile.countGroups', { count: groups.length }) }}</v-chip>
+          <v-chip color="info" variant="tonal" prepend-icon="mdi-connection">{{ t('profile.countAccounts', { count: socialAccounts.length }) }}</v-chip>
         </div>
       </div>
     </v-sheet>
@@ -234,9 +235,9 @@ onMounted(loadProfileDataIfNeeded)
     <v-row v-else>
       <v-col cols="12" lg="4" class="position-relative">
         <v-card class="profile-block h-100 pa-4" rounded="xl" elevation="0">
-          <h3 class="text-h5 text-typo mb-4">Platform Settings</h3>
+          <h3 class="text-h5 text-typo mb-4">{{ t('profile.platformSettings') }}</h3>
 
-          <p class="text-uppercase text-caption font-weight-bold text-medium-emphasis mb-3">Account</p>
+          <p class="text-uppercase text-caption font-weight-bold text-medium-emphasis mb-3">{{ t('profile.account') }}</p>
           <div class="d-flex flex-column ga-4 mb-6">
             <div v-for="setting in accountSettings" :key="setting.text" class="d-flex align-center justify-space-between ga-3">
               <v-switch v-model="setting.enabled" color="primary" hide-details inset density="comfortable" />
@@ -244,7 +245,7 @@ onMounted(loadProfileDataIfNeeded)
             </div>
           </div>
 
-          <p class="text-uppercase text-caption font-weight-bold text-medium-emphasis mb-3">Application</p>
+          <p class="text-uppercase text-caption font-weight-bold text-medium-emphasis mb-3">{{ t('profile.application') }}</p>
           <div class="d-flex flex-column ga-4">
             <div v-for="setting in applicationSettings" :key="setting.text" class="d-flex align-center justify-space-between ga-3">
               <v-switch v-model="setting.enabled" color="primary" hide-details inset density="comfortable" />
@@ -257,7 +258,7 @@ onMounted(loadProfileDataIfNeeded)
 
       <v-col cols="12" lg="4" class="position-relative">
         <v-card class="profile-block h-100 pa-4" rounded="xl" elevation="0">
-          <h3 class="text-h5 text-typo mb-4">Profile Information</h3>
+          <h3 class="text-h5 text-typo mb-4">{{ t('profile.profileInformation') }}</h3>
           <p class="text-body-1 text-medium-emphasis mb-6">{{ profileSummary }}</p>
           <v-divider class="mb-5" />
 
@@ -268,13 +269,13 @@ onMounted(loadProfileDataIfNeeded)
             </div>
 
             <div class="text-body-1">
-              <strong class="text-typo">Social:</strong>
+              <strong class="text-typo">{{ t('profile.social') }}:</strong>
               <span v-if="socialProviders.length" class="ms-2 text-medium-emphasis">{{ socialProviders.join(', ') }}</span>
-              <span v-else class="ms-2 text-medium-emphasis">Aucun compte lié</span>
+              <span v-else class="ms-2 text-medium-emphasis">{{ t('profile.noLinkedAccount') }}</span>
             </div>
 
             <div class="text-body-1">
-              <strong class="text-typo">Groups:</strong>
+              <strong class="text-typo">{{ t('profile.groups') }}:</strong>
               <span class="ms-2 text-medium-emphasis">{{ groups.map((group) => `${group.name} (${formatGroupRole(group)})`).join(' · ') || 'Aucun groupe' }}</span>
             </div>
           </div>
@@ -303,7 +304,7 @@ onMounted(loadProfileDataIfNeeded)
     </v-row>
 
     <v-card v-if="hasData" class="profile-block mt-6 pa-4 pa-md-6" rounded="xl" elevation="0">
-      <h3 class="text-h4 text-typo mb-1">Projects</h3>
+      <h3 class="text-h4 text-typo mb-1">{{ t('profile.projects') }}</h3>
       <p class="text-h6 text-medium-emphasis mb-6">Architects design houses</p>
 
       <v-row>
@@ -315,7 +316,7 @@ onMounted(loadProfileDataIfNeeded)
             <p class="text-body-1 text-medium-emphasis mb-5">{{ project.description }}</p>
 
             <div class="d-flex align-center justify-space-between">
-              <v-btn color="pink" variant="outlined" rounded="pill" class="project-btn">View Project</v-btn>
+              <v-btn color="pink" variant="outlined" rounded="pill" class="project-btn">{{ t('profile.viewProject') }}</v-btn>
               <div class="avatar-group d-flex">
                 <v-avatar v-for="avatar in project.avatars" :key="avatar" size="32" class="ms-n2 border border-white">
                   <img :src="avatar" alt="Project member" />

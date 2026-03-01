@@ -2,6 +2,7 @@
 import { mergeProps } from 'vue'
 import { useStorage } from '@vueuse/core'
 
+const { t } = useI18n()
 const theme = useTheme()
 const primary = useStorage('theme-primary', '#1697f6')
 const color = computed({
@@ -32,7 +33,7 @@ const menuShow = ref(false)
     offset="15"
   >
     <template #activator="{ props: menu }">
-      <v-tooltip location="top" text="Theme Palette">
+      <v-tooltip location="top" :text="t('settings.themePalette')">
         <template #activator="{ props: tooltip }">
           <v-btn
             icon="mdi-palette-outline"
@@ -44,7 +45,7 @@ const menuShow = ref(false)
     </template>
     <v-card width="320">
       <v-card-text class="text-center">
-        <v-label class="mb-3"> Theme Palette </v-label>
+        <v-label class="mb-3"> {{ t('settings.themePalette') }} </v-label>
         <v-color-picker
           v-model="color"
           show-swatches

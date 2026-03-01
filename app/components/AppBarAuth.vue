@@ -4,7 +4,11 @@
       BroWorld
     </NuxtLink>
     <v-spacer />
-    <v-btn variant="text" color="white" to="/login">Sign in</v-btn>
-    <v-btn variant="outlined" color="white" to="/register">Sign up</v-btn>
+    <v-btn variant="text" color="white" to="/login">{{ t('auth.signIn') }}</v-btn>
+    <v-btn variant="outlined" color="white" to="/register">{{ t('auth.signUp') }}</v-btn>
   </v-app-bar>
 </template>
+
+<script setup lang="ts">
+const { t } = useI18n()
+</script>

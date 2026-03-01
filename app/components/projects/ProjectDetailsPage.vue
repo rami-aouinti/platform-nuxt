@@ -27,6 +27,7 @@ type CrmTaskExtended = CrmTask & {
 }
 
 const props = defineProps<{ projectId: string }>()
+const { t } = useI18n()
 const authStore = useAuthStore()
 const crmApi = useCrmApi()
 
@@ -184,7 +185,7 @@ watch(() => props.projectId, load, { immediate: true })
             </span>
           </template>
         </v-tooltip>
-        <v-btn variant="text" prepend-icon="mdi-sync" @click="load">Reload</v-btn>
+        <v-btn variant="text" prepend-icon="mdi-sync" @click="load">{{ t('common.reload') }}</v-btn>
       </div>
     </div>
 

@@ -7,5 +7,108 @@
     "quiz": "Quiz",
     "administration": "Verwaltung",
     "logout": "Abmelden"
+  },
+  "auth": {
+    "signIn": "Anmelden",
+    "signUp": "Registrieren"
+  },
+  "common": {
+    "reload": "Neu laden",
+    "simulateEmpty": "Leerzustand simulieren",
+    "simulateError": "Fehler simulieren",
+    "cancel": "Abbrechen",
+    "confirm": "Bestätigen"
+  },
+  "tasks": {
+    "title": "Aufgaben",
+    "columns": {
+      "todo": "Offen",
+      "inProgress": "In Bearbeitung",
+      "done": "Erledigt",
+      "archived": "Archiviert"
+    },
+    "actions": {
+      "start": "Starten",
+      "complete": "Abschließen",
+      "archive": "Archivieren",
+      "reopen": "Wieder öffnen"
+    },
+    "confirmArchive": "Aufgabe \"{title}\" endgültig archivieren?"
+  },
+  "taskRequests": {
+    "title": "Aufgabenanfragen",
+    "priority": {
+      "low": "Niedrig",
+      "medium": "Mittel",
+      "high": "Hoch"
+    }
+  },
+  "worldMap": {
+    "unavailable": "Weltkarte im Legacy-Modus nicht verfügbar"
+  },
+  "settings": {
+    "themePalette": "Themenpalette"
+  },
+  "dialogConfirm": {
+    "typeToConfirm": "Geben Sie \"{value}\" zur Bestätigung ein",
+    "expectedValue": "Erwarteter Wert: {value}"
+  },
+  "adminUsers": {
+    "tabs": {
+      "profile": "Profil",
+      "roles": "Rollen",
+      "groups": "Gruppen"
+    },
+    "fields": {
+      "id": "ID",
+      "username": "Benutzername",
+      "email": "E-Mail",
+      "firstName": "Vorname",
+      "lastName": "Nachname"
+    },
+    "heading": "Administration · Benutzer {id}",
+    "addGroup": "Gruppe hinzufügen"
+  },
+  "projects": {
+    "title": "Projekte"
+  },
+  "profile": {
+    "member": "Mitglied",
+    "summary": "Hallo, ich bin {name}. Sie können in diesem Bereich Ihre Profildaten, Rollen, Gruppen und verbundenen Anbieter einsehen.",
+    "fields": {
+      "fullName": "Vollständiger Name",
+      "username": "Benutzername",
+      "email": "E-Mail",
+      "language": "Sprache",
+      "locale": "Gebietsschema",
+      "location": "Standort"
+    },
+    "connectedWith": "Verbunden mit {provider}",
+    "providerFallback": "Anbieter",
+    "loadError": "Profilinformationen konnten nicht geladen werden.",
+    "countRoles": "{count} Rollen",
+    "countGroups": "{count} Gruppen",
+    "countAccounts": "{count} Konten",
+    "platformSettings": "Plattformeinstellungen",
+    "account": "Konto",
+    "application": "Anwendung",
+    "profileInformation": "Profilinformationen",
+    "social": "Sozial",
+    "noLinkedAccount": "Kein verknüpftes Konto",
+    "groups": "Gruppen",
+    "projects": "Projekte",
+    "viewProject": "Projekt anzeigen",
+    "settings": {
+      "account": {
+        "follow": "E-Mail erhalten, wenn mir jemand folgt",
+        "answers": "E-Mail erhalten, wenn jemand antwortet...",
+        "mentions": "E-Mail erhalten, wenn mich jemand erwähnt..."
+      },
+      "application": {
+        "launches": "Neue Veröffentlichungen und Projekte",
+        "updates": "Monatliche Produktupdates",
+        "newsletter": "Newsletter abonnieren"
+      }
+    }
   }
 }
