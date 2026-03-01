@@ -15,7 +15,7 @@ import imageTeam2 from '@/assets/img/team-2.jpg'
 
 definePageMeta({
   icon: 'mdi-account-circle-outline',
-  title: 'Profil',
+  title: 'Profile',
   middleware: 'auth',
   requiresAuth: true,
 })
@@ -89,6 +89,33 @@ const projects = [
     avatars: [imageTeam4, imageTeam3, imageTeam2, imageTeam1],
   },
 ]
+
+const switche = ref(true);
+const menu = ref([{
+  icon: "person",
+  text: "Profile"
+}, {
+  icon: "receipt_long",
+  text: "Basic Info"
+}, {
+  icon: "lock",
+  text: "Change Password"
+}, {
+  icon: "security",
+  text: "2FA"
+}, {
+  icon: "badge",
+  text: "Accounts"
+}, {
+  icon: "campaign",
+  text: "Notifications"
+}, {
+  icon: "settings_applications",
+  text: "Sessions"
+}, {
+  icon: "delete",
+  text: "Delete Account"
+}]);
 
 const hasData = computed(() => {
   return (
@@ -201,131 +228,163 @@ onMounted(loadProfileDataIfNeeded)
 
 <template>
   <v-container fluid>
-    <v-sheet rounded="xl">
-      <div class="d-flex flex-column flex-md-row align-md-center justify-space-between ga-4" style="padding: 15px; margin: 15px;">
-        <div class="d-flex align-center ga-4">
-          <UiAvatar size="xl" class="hero-avatar text-h4 font-weight-bold">{{ avatarInitials }}</UiAvatar>
-          <div>
-            <h1 class="text-h4 font-weight-bold text-typo mb-1">{{ displayName }}</h1>
-            <p class="text-h6 text-medium-emphasis mb-0">{{ subtitle }}</p>
-          </div>
-        </div>
-
-        <div class="d-flex ga-2 flex-wrap">
-          <v-chip color="primary" variant="tonal" prepend-icon="mdi-shield-account">{{ t('profile.countRoles', { count: roles.length }) }}</v-chip>
-          <v-chip color="secondary" variant="tonal" prepend-icon="mdi-account-group">{{ t('profile.countGroups', { count: groups.length }) }}</v-chip>
-          <v-chip color="info" variant="tonal" prepend-icon="mdi-connection">{{ t('profile.countAccounts', { count: socialAccounts.length }) }}</v-chip>
-        </div>
-      </div>
-    </v-sheet>
-
-    <div v-if="isLoading" class="state-card d-flex align-center ga-3 mb-4">
-      <v-progress-circular indeterminate color="primary" />
-      <span>Chargement du profil...</span>
-    </div>
-
-    <v-alert v-else-if="errorMessage" type="error" variant="tonal" density="comfortable" class="mb-4" rounded="lg">
-      {{ errorMessage }}
-    </v-alert>
-
-    <v-alert v-else-if="!hasData" type="info" variant="tonal" density="comfortable" class="mb-4" rounded="lg">
-      Aucune donnée de profil disponible.
-    </v-alert>
-
-    <v-row v-else>
-      <v-col cols="12" lg="4" class="position-relative">
-        <v-card class="profile-block h-100 pa-4" rounded="xl" elevation="0">
-          <h3 class="text-h5 text-typo mb-4">{{ t('profile.platformSettings') }}</h3>
-
-          <p class="text-uppercase text-caption font-weight-bold text-medium-emphasis mb-3">{{ t('profile.account') }}</p>
-          <div class="d-flex flex-column ga-4 mb-6">
-            <div v-for="setting in accountSettings" :key="setting.text" class="d-flex align-center justify-space-between ga-3">
-              <v-switch v-model="setting.enabled" color="primary" hide-details inset density="comfortable" />
-              <span class="text-body-1 text-medium-emphasis">{{ setting.text }}</span>
-            </div>
-          </div>
-
-          <p class="text-uppercase text-caption font-weight-bold text-medium-emphasis mb-3">{{ t('profile.application') }}</p>
-          <div class="d-flex flex-column ga-4">
-            <div v-for="setting in applicationSettings" :key="setting.text" class="d-flex align-center justify-space-between ga-3">
-              <v-switch v-model="setting.enabled" color="primary" hide-details inset density="comfortable" />
-              <span class="text-body-1 text-medium-emphasis">{{ setting.text }}</span>
-            </div>
+    <v-row class="px-4">
+      <v-col lg="3">
+        <v-card class="card-shadow border-radius-xl position-sticky top-1">
+          <div class="px-4 pt-3 pb-0">
+            <v-list>
+              <v-list-item-group class="border-radius-sm">
+                <v-list-item
+                  class="px-3 py-1 border-radius-lg mb-2"
+                  v-for="item in menu"
+                  :key="item.icon"
+                >
+                  <v-icon
+                    size="18"
+                    class="material-icons-round me-2 text-dark"
+                  >{{ item.icon }}</v-icon
+                  >
+                  <v-list-item-content class="py-0">
+                    <a href="#profile" class="text-decoration-none">
+                      <div class="d-flex flex-column">
+                        <span class="text-dark text-sm">{{ item.text }}</span>
+                      </div>
+                    </a>
+                  </v-list-item-content>
+                </v-list-item>
+              </v-list-item-group>
+            </v-list>
           </div>
         </v-card>
-        <div class="vertical-divider d-none d-lg-block" />
       </v-col>
-
-      <v-col cols="12" lg="4" class="position-relative">
-        <v-card class="profile-block h-100 pa-4" rounded="xl" elevation="0">
-          <h3 class="text-h5 text-typo mb-4">{{ t('profile.profileInformation') }}</h3>
-          <p class="text-body-1 text-medium-emphasis mb-6">{{ profileSummary }}</p>
-          <v-divider class="mb-5" />
-
-          <div class="d-flex flex-column ga-3">
-            <div v-for="row in profileRows" :key="row.label" class="text-body-1">
-              <strong class="text-typo">{{ row.label }}:</strong>
-              <span class="text-medium-emphasis ms-2">{{ row.value }}</span>
+      <v-col lg="9">
+        <v-sheet rounded="xl">
+          <div class="d-flex flex-column flex-md-row align-md-center justify-space-between ga-4" style="padding: 15px; margin: 15px;">
+            <div class="d-flex align-center ga-4">
+              <UiAvatar size="xl" class="hero-avatar text-h4 font-weight-bold">{{ avatarInitials }}</UiAvatar>
+              <div>
+                <h1 class="text-h4 font-weight-bold text-typo mb-1">{{ displayName }}</h1>
+                <p class="text-h6 text-medium-emphasis mb-0">{{ subtitle }}</p>
+              </div>
             </div>
 
-            <div class="text-body-1">
-              <strong class="text-typo">{{ t('profile.social') }}:</strong>
-              <span v-if="socialProviders.length" class="ms-2 text-medium-emphasis">{{ socialProviders.join(', ') }}</span>
-              <span v-else class="ms-2 text-medium-emphasis">{{ t('profile.noLinkedAccount') }}</span>
-            </div>
-
-            <div class="text-body-1">
-              <strong class="text-typo">{{ t('profile.groups') }}:</strong>
-              <span class="ms-2 text-medium-emphasis">{{ groups.map((group) => `${group.name} (${formatGroupRole(group)})`).join(' · ') || 'Aucun groupe' }}</span>
+            <div class="d-flex ga-2 flex-wrap">
+              <v-chip color="primary" variant="tonal" prepend-icon="mdi-shield-account">{{ t('profile.countRoles', { count: roles.length }) }}</v-chip>
+              <v-chip color="secondary" variant="tonal" prepend-icon="mdi-account-group">{{ t('profile.countGroups', { count: groups.length }) }}</v-chip>
+              <v-chip color="info" variant="tonal" prepend-icon="mdi-connection">{{ t('profile.countAccounts', { count: socialAccounts.length }) }}</v-chip>
             </div>
           </div>
-        </v-card>
-        <div class="vertical-divider d-none d-lg-block" />
-      </v-col>
+        </v-sheet>
 
-      <v-col cols="12" lg="4">
-        <v-card class="profile-block h-100 pa-4" rounded="xl" elevation="0">
-          <h3 class="text-h5 text-typo mb-4">Conversations</h3>
+        <div v-if="isLoading" class="state-card d-flex align-center ga-3 mb-4">
+          <v-progress-circular indeterminate color="primary" />
+          <span>Chargement du profil...</span>
+        </div>
 
-          <div class="d-flex flex-column ga-4">
-            <div v-for="conversation in conversations" :key="`${conversation.user}-${conversation.message}`" class="conversation-row d-flex align-center justify-space-between ga-3">
-              <div class="d-flex align-center ga-3 flex-grow-1 min-w-0">
-                <v-avatar size="58" rounded="lg"><img :src="conversation.avatar" :alt="conversation.user" /></v-avatar>
-                <div class="min-w-0">
-                  <p class="text-h6 font-weight-bold text-typo mb-1 text-truncate">{{ conversation.user }}</p>
-                  <p class="text-body-2 text-medium-emphasis mb-0 text-truncate">{{ conversation.message }}</p>
+        <v-alert v-else-if="errorMessage" type="error" variant="tonal" density="comfortable" class="mb-4" rounded="lg">
+          {{ errorMessage }}
+        </v-alert>
+
+        <v-alert v-else-if="!hasData" type="info" variant="tonal" density="comfortable" class="mb-4" rounded="lg">
+          Aucune donnée de profil disponible.
+        </v-alert>
+
+        <v-row v-else>
+          <v-col cols="12" lg="4" class="position-relative">
+            <v-card class="profile-block h-100 pa-4" rounded="xl" elevation="0">
+              <h3 class="text-h5 text-typo mb-4">{{ t('profile.platformSettings') }}</h3>
+
+              <p class="text-uppercase text-caption font-weight-bold text-medium-emphasis mb-3">{{ t('profile.account') }}</p>
+              <div class="d-flex flex-column ga-4 mb-6">
+                <div v-for="setting in accountSettings" :key="setting.text" class="d-flex align-center justify-space-between ga-3">
+                  <v-switch v-model="setting.enabled" color="primary" hide-details inset density="comfortable" />
+                  <span class="text-body-1 text-medium-emphasis">{{ setting.text }}</span>
                 </div>
               </div>
-              <button class="reply-btn">Reply</button>
-            </div>
-          </div>
+
+              <p class="text-uppercase text-caption font-weight-bold text-medium-emphasis mb-3">{{ t('profile.application') }}</p>
+              <div class="d-flex flex-column ga-4">
+                <div v-for="setting in applicationSettings" :key="setting.text" class="d-flex align-center justify-space-between ga-3">
+                  <v-switch v-model="setting.enabled" color="primary" hide-details inset density="comfortable" />
+                  <span class="text-body-1 text-medium-emphasis">{{ setting.text }}</span>
+                </div>
+              </div>
+            </v-card>
+            <div class="vertical-divider d-none d-lg-block" />
+          </v-col>
+
+          <v-col cols="12" lg="4" class="position-relative">
+            <v-card class="profile-block h-100 pa-4" rounded="xl" elevation="0">
+              <h3 class="text-h5 text-typo mb-4">{{ t('profile.profileInformation') }}</h3>
+              <p class="text-body-1 text-medium-emphasis mb-6">{{ profileSummary }}</p>
+              <v-divider class="mb-5" />
+
+              <div class="d-flex flex-column ga-3">
+                <div v-for="row in profileRows" :key="row.label" class="text-body-1">
+                  <strong class="text-typo">{{ row.label }}:</strong>
+                  <span class="text-medium-emphasis ms-2">{{ row.value }}</span>
+                </div>
+
+                <div class="text-body-1">
+                  <strong class="text-typo">{{ t('profile.social') }}:</strong>
+                  <span v-if="socialProviders.length" class="ms-2 text-medium-emphasis">{{ socialProviders.join(', ') }}</span>
+                  <span v-else class="ms-2 text-medium-emphasis">{{ t('profile.noLinkedAccount') }}</span>
+                </div>
+
+                <div class="text-body-1">
+                  <strong class="text-typo">{{ t('profile.groups') }}:</strong>
+                  <span class="ms-2 text-medium-emphasis">{{ groups.map((group) => `${group.name} (${formatGroupRole(group)})`).join(' · ') || 'Aucun groupe' }}</span>
+                </div>
+              </div>
+            </v-card>
+            <div class="vertical-divider d-none d-lg-block" />
+          </v-col>
+
+          <v-col cols="12" lg="4">
+            <v-card class="profile-block h-100 pa-4" rounded="xl" elevation="0">
+              <h3 class="text-h5 text-typo mb-4">Conversations</h3>
+
+              <div class="d-flex flex-column ga-4">
+                <div v-for="conversation in conversations" :key="`${conversation.user}-${conversation.message}`" class="conversation-row d-flex align-center justify-space-between ga-3">
+                  <div class="d-flex align-center ga-3 flex-grow-1 min-w-0">
+                    <v-avatar size="58" rounded="lg"><img :src="conversation.avatar" :alt="conversation.user" /></v-avatar>
+                    <div class="min-w-0">
+                      <p class="text-h6 font-weight-bold text-typo mb-1 text-truncate">{{ conversation.user }}</p>
+                      <p class="text-body-2 text-medium-emphasis mb-0 text-truncate">{{ conversation.message }}</p>
+                    </div>
+                  </div>
+                  <button class="reply-btn">Reply</button>
+                </div>
+              </div>
+            </v-card>
+          </v-col>
+        </v-row>
+
+        <v-card v-if="hasData" class="profile-block mt-6 pa-4 pa-md-6" rounded="xl" elevation="0">
+          <h3 class="text-h4 text-typo mb-1">{{ t('profile.projects') }}</h3>
+          <p class="text-h6 text-medium-emphasis mb-6">Architects design houses</p>
+
+          <v-row>
+            <v-col v-for="project in projects" :key="project.title" cols="12" md="6" xl="3">
+              <div class="project-card h-100">
+                <v-img :src="project.image" height="190" cover class="rounded-xl mb-4" />
+                <p class="text-body-1 text-medium-emphasis mb-1">{{ project.title }}</p>
+                <p class="text-h4 text-typo font-weight-bold mb-3">{{ project.style }}</p>
+                <p class="text-body-1 text-medium-emphasis mb-5">{{ project.description }}</p>
+
+                <div class="d-flex align-center justify-space-between">
+                  <v-btn color="pink" variant="outlined" rounded="pill" class="project-btn">{{ t('profile.viewProject') }}</v-btn>
+                  <div class="avatar-group d-flex">
+                    <v-avatar v-for="avatar in project.avatars" :key="avatar" size="32" class="ms-n2 border border-white">
+                      <img :src="avatar" alt="Project member" />
+                    </v-avatar>
+                  </div>
+                </div>
+              </div>
+            </v-col>
+          </v-row>
         </v-card>
       </v-col>
     </v-row>
-
-    <v-card v-if="hasData" class="profile-block mt-6 pa-4 pa-md-6" rounded="xl" elevation="0">
-      <h3 class="text-h4 text-typo mb-1">{{ t('profile.projects') }}</h3>
-      <p class="text-h6 text-medium-emphasis mb-6">Architects design houses</p>
-
-      <v-row>
-        <v-col v-for="project in projects" :key="project.title" cols="12" md="6" xl="3">
-          <div class="project-card h-100">
-            <v-img :src="project.image" height="190" cover class="rounded-xl mb-4" />
-            <p class="text-body-1 text-medium-emphasis mb-1">{{ project.title }}</p>
-            <p class="text-h4 text-typo font-weight-bold mb-3">{{ project.style }}</p>
-            <p class="text-body-1 text-medium-emphasis mb-5">{{ project.description }}</p>
-
-            <div class="d-flex align-center justify-space-between">
-              <v-btn color="pink" variant="outlined" rounded="pill" class="project-btn">{{ t('profile.viewProject') }}</v-btn>
-              <div class="avatar-group d-flex">
-                <v-avatar v-for="avatar in project.avatars" :key="avatar" size="32" class="ms-n2 border border-white">
-                  <img :src="avatar" alt="Project member" />
-                </v-avatar>
-              </div>
-            </div>
-          </div>
-        </v-col>
-      </v-row>
-    </v-card>
   </v-container>
 </template>
