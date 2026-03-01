@@ -533,25 +533,6 @@ watch(
   { immediate: true },
 )
 
-watch(activeTab, async (tabId) => {
-  if (isSyncingTabWithRoute.value) {
-    return
-  }
-
-  const nextQuery = { ...route.query }
-
-  if (tabId === 'overview') {
-    delete nextQuery.tab
-  } else {
-    nextQuery.tab = tabId
-  }
-
-  await router.replace({
-    path: route.path,
-    query: nextQuery,
-    hash: tabId === 'overview' ? '' : `#tab-${tabId}`,
-  })
-})
 
 onMounted(async () => {
   await Promise.all([
