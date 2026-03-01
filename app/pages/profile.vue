@@ -90,7 +90,6 @@ const projects = [
   },
 ]
 
-const switche = ref(true);
 const menu = ref([{
   icon: "person",
   text: "Profile"
@@ -115,7 +114,7 @@ const menu = ref([{
 }, {
   icon: "delete",
   text: "Delete Account"
-}]);
+}])
 
 const hasData = computed(() => {
   return (
@@ -232,27 +231,18 @@ onMounted(loadProfileDataIfNeeded)
       <v-col lg="3">
         <v-card class="card-shadow border-radius-xl position-sticky top-1">
           <div class="px-4 pt-3 pb-0">
-            <v-list>
-              <v-list-item-group class="border-radius-sm">
-                <v-list-item
-                  class="px-3 py-1 border-radius-lg mb-2"
-                  v-for="item in menu"
-                  :key="item.icon"
-                >
-                  <v-icon
-                    size="18"
-                    class="material-icons-round me-2 text-dark"
-                  >{{ item.icon }}</v-icon
-                  >
-                  <v-list-item-content class="py-0">
-                    <a href="#profile" class="text-decoration-none">
-                      <div class="d-flex flex-column">
-                        <span class="text-dark text-sm">{{ item.text }}</span>
-                      </div>
-                    </a>
-                  </v-list-item-content>
-                </v-list-item>
-              </v-list-item-group>
+            <v-list class="border-radius-sm" nav>
+              <v-list-item
+                v-for="item in menu"
+                :key="item.icon"
+                class="px-3 py-1 border-radius-lg mb-2"
+                href="#profile"
+              >
+                <template #prepend>
+                  <v-icon size="18" class="material-icons-round me-2 text-dark">{{ item.icon }}</v-icon>
+                </template>
+                <v-list-item-title class="text-dark text-sm">{{ item.text }}</v-list-item-title>
+              </v-list-item>
             </v-list>
           </div>
         </v-card>
