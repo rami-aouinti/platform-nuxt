@@ -257,7 +257,7 @@ function createActivatorProps(
 
 <style scoped>
 .app-bar--floating {
-  top: 14px;
+  top: 15px;
   left: 0 !important;
   right: 0 !important;
   inset-inline-start: 0 !important;
@@ -274,6 +274,10 @@ function createActivatorProps(
 
 .app-bar__right-actions {
   flex-shrink: 0;
+}
+
+.app-bar--floating .app-bar__brand {
+  margin-inline-start: 10px;
 }
 
 .app-bar__brand {
