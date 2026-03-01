@@ -11,10 +11,14 @@ withDefaults(
   defineProps<{
     showDrawerToggle?: boolean
     showBrandLink?: boolean
+    showBreadcrumbs?: boolean
+    floating?: boolean
   }>(),
   {
     showDrawerToggle: true,
     showBrandLink: false,
+    showBreadcrumbs: true,
+    floating: false,
   },
 )
 const { t, locale, locales, setLocale } = useI18n()
@@ -111,7 +115,12 @@ function createActivatorProps(
 </script>
 
 <template>
-  <v-app-bar flat>
+  <v-app-bar
+    flat
+    :class="{
+      'app-bar--floating': floating,
+    }"
+  >
     <v-app-bar-nav-icon v-if="showDrawerToggle" @click="drawer = !drawer" />
     <NuxtLink v-if="showBrandLink" to="/" class="app-bar__brand">
       <v-icon
@@ -124,7 +133,7 @@ function createActivatorProps(
         Bro<span class="text-primary">World</span>
       </span>
     </NuxtLink>
-    <v-breadcrumbs :items="breadcrumbs" />
+    <v-breadcrumbs v-if="showBreadcrumbs" :items="breadcrumbs" />
     <v-spacer />
     <div id="app-bar" class="app-bar__portal" />
     <v-spacer />
@@ -247,12 +256,28 @@ function createActivatorProps(
 </template>
 
 <style scoped>
-.app-bar__breadcrumbs--hidden {
-  display: none;
+.app-bar--floating {
+  top: 15px;
+  left: 0 !important;
+  right: 0 !important;
+  inset-inline-start: 0 !important;
+  inset-inline-end: 0 !important;
+  margin-inline: auto !important;
+  width: calc(100% - 32px);
+  max-width: 1240px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 18px;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
 }
 
 .app-bar__right-actions {
   flex-shrink: 0;
+}
+
+.app-bar--floating .app-bar__brand {
+  margin-inline-start: 10px;
 }
 
 .app-bar__brand {
@@ -273,5 +298,13 @@ function createActivatorProps(
   object-fit: cover;
   border-radius: 2px;
   display: block;
+}
+
+@media (max-width: 960px) {
+  .app-bar--floating {
+    top: 8px;
+    width: calc(100% - 16px);
+    border-radius: 14px;
+  }
 }
 </style>

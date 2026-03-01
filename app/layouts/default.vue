@@ -1,6 +1,11 @@
 <template>
   <div class="default-layout">
-    <AppBar :show-drawer-toggle="false" show-brand-link />
+    <AppBar
+      :show-drawer-toggle="false"
+      :show-breadcrumbs="false"
+      :floating="true"
+      show-brand-link
+    />
     <v-main class="default-layout-main">
       <slot />
     </v-main>
