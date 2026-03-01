@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
     return cachedGroups
   }
 
-  const groups = await proxyAuthApiWithPathFallback(event, ['/api/v1/me/profile/groups', '/api/v1/profile/groups'], 'GET')
+  const groups = await proxyAuthApiWithPathFallback(event, ['/api/v1/me/profile/groups', '/api/v1/profile/groups', '/api/profile/groups'], 'GET')
   const normalizedGroups = normalizeProfileGroups(groups)
   writeProfileEndpointCache(event, GROUPS_CACHE_KEY, normalizedGroups)
 
