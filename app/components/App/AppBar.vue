@@ -257,18 +257,10 @@ function createActivatorProps(
 
 <style scoped>
 .app-bar--floating {
-  top: 15px;
-  left: 0 !important;
-  right: 0 !important;
-  inset-inline-start: 0 !important;
-  inset-inline-end: 0 !important;
-  margin-inline: auto !important;
-  width: calc(100% - 32px);
-  max-width: 1240px;
+  margin: 10px;
   border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 18px;
   backdrop-filter: blur(10px);
-  background: rgba(255, 255, 255, 0.86);
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
 }
 

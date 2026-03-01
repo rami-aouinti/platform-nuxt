@@ -6,7 +6,7 @@
       :floating="true"
       show-brand-link
     />
-    <v-main class="default-layout-main">
+    <v-main>
       <slot />
     </v-main>
     <AppFooter />

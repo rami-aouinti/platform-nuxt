@@ -199,10 +199,9 @@ onMounted(loadProfileDataIfNeeded)
 </script>
 
 <template>
-  <v-container fluid class="profile-page pa-4 pa-md-6">
-    <v-sheet class="hero-card mb-6" rounded="xl">
-      <div class="hero-top-stripe" />
-      <div class="pa-4 pa-md-8 d-flex flex-column flex-md-row align-md-center justify-space-between ga-4">
+  <v-container fluid>
+    <v-sheet rounded="xl">
+      <div class="d-flex flex-column flex-md-row align-md-center justify-space-between ga-4">
         <div class="d-flex align-center ga-4">
           <UiAvatar size="xl" class="hero-avatar text-h4 font-weight-bold">{{ avatarInitials }}</UiAvatar>
           <div>
@@ -332,7 +331,6 @@ onMounted(loadProfileDataIfNeeded)
 
 <style scoped>
 .profile-page {
-  background: #f8f9fb;
   min-height: calc(100dvh - 120px);
 }
 
@@ -340,7 +338,6 @@ onMounted(loadProfileDataIfNeeded)
   position: relative;
   overflow: hidden;
   border: 1px solid rgba(124, 90, 233, 0.2);
-  background: linear-gradient(150deg, #ffffff 10%, #f9f4ff 100%);
 }
 
 .hero-top-stripe {
@@ -358,7 +355,6 @@ onMounted(loadProfileDataIfNeeded)
 
 .profile-block {
   border: 1px solid rgba(17, 24, 39, 0.06);
-  background: #fff;
 }
 
 .vertical-divider {
@@ -374,7 +370,6 @@ onMounted(loadProfileDataIfNeeded)
   padding: 1rem 1.25rem;
   border-radius: 16px;
   border: 1px solid rgba(17, 24, 39, 0.1);
-  background: #fff;
 }
 
 .conversation-row {
