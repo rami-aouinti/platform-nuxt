@@ -8,7 +8,7 @@ const markNotificationAsRead = createProxyEntityHandler({
     statusMessage: 'Invalid notification parameter.',
     message: 'Notification identifier is required.',
   },
-  upstreamPathBuilder: id => `/api/v1/notifications/${encodeURIComponent(id)}/read`,
+  upstreamPathBuilder: id => `/api/notifications/${encodeURIComponent(id)}/read`,
 })
 
 export default defineEventHandler(async (event) => {

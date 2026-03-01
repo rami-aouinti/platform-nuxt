@@ -6,5 +6,5 @@ export default defineEventHandler(async (event) => {
   requireAuthenticatedRequest(event)
   const suffix = buildQuerySuffix(event)
 
-  return await proxyAuthApiGet(event, `/api/v1/notifications${suffix}`)
+  return await proxyAuthApiGet(event, `/api/notifications${suffix}`)
 })

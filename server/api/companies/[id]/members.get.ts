@@ -7,5 +7,5 @@ export default createProxyEntityHandler({
     statusMessage: 'Invalid company parameter.',
     message: 'Company identifier is required.',
   },
-  upstreamPathBuilder: id => `/api/v1/companies/${encodeURIComponent(id)}/members`,
+  upstreamPathBuilder: id => `/api/companies/${encodeURIComponent(id)}/members`,
 })
