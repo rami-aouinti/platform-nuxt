@@ -1,4 +1,4 @@
-import { proxyAuthApiGet } from '../../utils/auth-api-proxy'
+import { proxyAuthApiWithPathFallback } from '../../utils/proxy-auth-api-with-fallback'
 import { readProfileEndpointCache, writeProfileEndpointCache } from '../../utils/profile-endpoint-cache'
 import { normalizeProfilePayload } from '../../utils/profile-response-normalizers'
 
@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
     return cachedProfile
   }
 
-  const profile = await proxyAuthApiGet(event, '/api/v1/me/profile')
+  const profile = await proxyAuthApiWithPathFallback(event, ['/api/v1/me/profile', '/api/v1/profile'], 'GET')
   const normalizedProfile = normalizeProfilePayload(profile)
   writeProfileEndpointCache(event, PROFILE_CACHE_KEY, normalizedProfile)
 
