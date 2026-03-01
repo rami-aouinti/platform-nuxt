@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth'
+import { useProfileCompaniesStore } from '~/stores/profileCompanies'
 import imageKalVisualsSquare from '@/assets/img/kal-visuals-square.jpg'
 import imageMarie from '@/assets/img/marie.jpg'
 import imageIvanaSquare from '@/assets/img/ivana-square.jpg'
@@ -31,13 +32,6 @@ type SocialAccount = {
   email?: string
 }
 
-type Company = {
-  id: string
-  name: string
-  role?: string | null
-  description?: string | null
-}
-
 type ProfileProject = {
   id: string
   title: string
@@ -47,19 +41,57 @@ type ProfileProject = {
 
 const { t } = useI18n()
 const auth = useAuthStore()
+const profileCompaniesStore = useProfileCompaniesStore()
 const { isAuthenticated, profile, roles, groups } = storeToRefs(auth)
+const {
+  list: companies,
+  loading: companiesLoading,
+  error: companiesError,
+  schema: companySchema,
+  schemaLoading: companySchemaLoading,
+  schemaError: companySchemaError,
+  usesSchemaFallback,
+} = storeToRefs(profileCompaniesStore)
 const router = useRouter()
 const route = useRoute()
 
 const isLoading = ref(false)
 const errorMessage = ref<string | null>(null)
 const socialAccounts = ref<SocialAccount[]>([])
-const companies = ref<Company[]>([])
-const companiesLoading = ref(false)
-const companiesError = ref<string | null>(null)
 const projects = ref<ProfileProject[]>([])
 const projectsLoading = ref(false)
 const projectsError = ref<string | null>(null)
+
+const createCompanyForm = ref({
+  name: '',
+  role: '',
+  description: '',
+})
+const creatingCompany = ref(false)
+
+const companySchemaFields = computed(() => {
+  const schemaProperties = companySchema.value?.properties ?? {}
+
+  return ['name', 'role', 'description'].map((key) => {
+    const property = schemaProperties[key]
+    return {
+      key,
+      label: typeof property?.title === 'string'
+        ? property.title
+        : key === 'name'
+          ? 'Nom de la société'
+          : key === 'role'
+            ? 'Rôle'
+            : 'Description',
+      required: companySchema.value?.required?.includes(key) ?? key === 'name',
+    }
+  })
+})
+
+function getCompanyFieldMeta(key: 'name' | 'role' | 'description') {
+  return companySchemaFields.value.find(field => field.key === key)
+}
+
 
 const accountSettings = ref<ToggleItem[]>([
   { enabled: true, text: t('profile.settings.account.follow') },
@@ -201,15 +233,6 @@ function normalizeItems<T>(response: T[] | { items?: T[] } | null | undefined): 
   return response?.items ?? []
 }
 
-function parseCompany(item: Record<string, unknown>, index: number): Company {
-  return {
-    id: String(item.id ?? item.companyId ?? index),
-    name: String(item.name ?? item.companyName ?? `Company #${index + 1}`),
-    role: typeof item.role === 'string' ? item.role : null,
-    description: typeof item.description === 'string' ? item.description : null,
-  }
-}
-
 function parseProject(item: Record<string, unknown>, index: number): ProfileProject {
   return {
     id: String(item.id ?? item.projectId ?? index),
@@ -256,23 +279,38 @@ async function loadCompanies() {
     return
   }
 
-  companiesLoading.value = true
-  companiesError.value = null
+  await profileCompaniesStore.fetchList()
+}
+
+async function loadCompanySchema() {
+  if (!isAuthenticated.value) {
+    return
+  }
+
+  await profileCompaniesStore.fetchSchema('post')
+}
+
+async function createCompany() {
+  if (!createCompanyForm.value.name.trim()) {
+    return
+  }
+
+  creatingCompany.value = true
 
   try {
-    const companiesResponse = await $fetch<Record<string, unknown>[] | { items?: Record<string, unknown>[] }>(
-      '/api/v1/me/profile/companies',
-      {
-        headers: auth.token ? { Authorization: `Bearer ${auth.token}` } : undefined,
-      },
-    )
+    await profileCompaniesStore.create({
+      name: createCompanyForm.value.name.trim(),
+      ...(createCompanyForm.value.role.trim() ? { role: createCompanyForm.value.role.trim() } : {}),
+      ...(createCompanyForm.value.description.trim() ? { description: createCompanyForm.value.description.trim() } : {}),
+    })
 
-    companies.value = normalizeItems(companiesResponse).map(parseCompany)
-  } catch {
-    companiesError.value = 'Impossible de charger vos companies.'
-    companies.value = []
+    createCompanyForm.value = {
+      name: '',
+      role: '',
+      description: '',
+    }
   } finally {
-    companiesLoading.value = false
+    creatingCompany.value = false
   }
 }
 
@@ -302,7 +340,7 @@ async function loadProjects() {
 }
 
 onMounted(async () => {
-  await Promise.all([loadProfileDataIfNeeded(), loadCompanies(), loadProjects()])
+  await Promise.all([loadProfileDataIfNeeded(), loadCompanySchema(), loadCompanies(), loadProjects()])
 })
 </script>
 
@@ -447,7 +485,70 @@ onMounted(async () => {
 
         <v-card v-if="hasData" class="profile-block mt-6 pa-4 pa-md-6" rounded="xl" elevation="0">
           <h3 class="text-h4 text-typo mb-1">Mes companies</h3>
-          <p class="text-h6 text-medium-emphasis mb-6">Vos entreprises associées</p>
+          <p class="text-h6 text-medium-emphasis mb-4">Vos entreprises associées</p>
+
+          <v-alert
+            v-if="companySchemaError"
+            type="warning"
+            variant="tonal"
+            density="comfortable"
+            rounded="lg"
+            class="mb-4"
+          >
+            {{ companySchemaError }}
+          </v-alert>
+
+          <v-card variant="outlined" rounded="lg" class="pa-4 mb-6">
+            <div class="d-flex justify-space-between align-center mb-3">
+              <p class="text-h6 mb-0">Ajouter une société</p>
+              <v-chip v-if="usesSchemaFallback" size="small" color="warning" variant="tonal">Fallback</v-chip>
+            </div>
+
+            <v-row>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="createCompanyForm.name"
+                  :label="getCompanyFieldMeta('name')?.label || 'Nom de la société'"
+                  :required="getCompanyFieldMeta('name')?.required"
+                  :disabled="creatingCompany || companySchemaLoading"
+                  density="comfortable"
+                  variant="outlined"
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="createCompanyForm.role"
+                  :label="getCompanyFieldMeta('role')?.label || 'Rôle'"
+                  :required="getCompanyFieldMeta('role')?.required"
+                  :disabled="creatingCompany || companySchemaLoading"
+                  density="comfortable"
+                  variant="outlined"
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-textarea
+                  v-model="createCompanyForm.description"
+                  :label="getCompanyFieldMeta('description')?.label || 'Description'"
+                  :required="getCompanyFieldMeta('description')?.required"
+                  :disabled="creatingCompany || companySchemaLoading"
+                  density="comfortable"
+                  variant="outlined"
+                  rows="3"
+                />
+              </v-col>
+            </v-row>
+
+            <div class="d-flex justify-end">
+              <v-btn
+                color="primary"
+                :loading="creatingCompany"
+                :disabled="!createCompanyForm.name.trim()"
+                @click="createCompany"
+              >
+                Créer la société
+              </v-btn>
+            </div>
+          </v-card>
 
           <div v-if="companiesLoading" class="d-flex align-center ga-3">
             <v-progress-circular indeterminate color="primary" />
