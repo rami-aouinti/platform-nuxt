@@ -1,6 +1,17 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth'
+import imageKalVisualsSquare from '@/assets/img/kal-visuals-square.jpg'
+import imageMarie from '@/assets/img/marie.jpg'
+import imageIvanaSquare from '@/assets/img/ivana-square.jpg'
+import imageTeam4 from '@/assets/img/team-4.jpg'
+import imageTeam3 from '@/assets/img/team-3.jpg'
+import imageHomeDecor1 from '@/assets/img/home-decor-1.jpg'
+import imageHomeDecor2 from '@/assets/img/home-decor-2.jpg'
+import imageHomeDecor3 from '@/assets/img/home-decor-3.jpg'
+import imageHomeDecor4 from '@/assets/img/home-decor-4.jpg'
+import imageTeam1 from '@/assets/img/team-1.jpg'
+import imageTeam2 from '@/assets/img/team-2.jpg'
 
 definePageMeta({
   icon: 'mdi-account-circle-outline',
@@ -9,30 +20,81 @@ definePageMeta({
   requiresAuth: true,
 })
 
+type ToggleItem = {
+  text: string
+  enabled: boolean
+}
+
+type SocialAccount = {
+  provider?: string
+  username?: string
+  email?: string
+}
+
 const auth = useAuthStore()
 const { isAuthenticated, profile, roles, groups } = storeToRefs(auth)
 
 const isLoading = ref(false)
 const errorMessage = ref<string | null>(null)
+const socialAccounts = ref<SocialAccount[]>([])
 
-const identityFields = [
-  { label: 'ID', key: 'id', icon: 'mdi-identifier' },
-  { label: 'Username', key: 'username', icon: 'mdi-account-outline' },
-  { label: 'Email', key: 'email', icon: 'mdi-email-outline' },
+const accountSettings = ref<ToggleItem[]>([
+  { enabled: true, text: 'Email me when someone follows me' },
+  { enabled: false, text: 'Email me when someone answers on...' },
+  { enabled: true, text: 'Email me when someone mentions me...' },
+])
+
+const applicationSettings = ref<ToggleItem[]>([
+  { enabled: false, text: 'New launches and projects' },
+  { enabled: true, text: 'Monthly product updates' },
+  { enabled: false, text: 'Subscribe to newsletter' },
+])
+
+const conversationFallback = [
+  { avatar: imageKalVisualsSquare, user: 'Sophie B.', message: 'Hi! I need more information..' },
+  { avatar: imageMarie, user: 'Anne Marie', message: 'Awesome work, can you..' },
+  { avatar: imageIvanaSquare, user: 'Ivanna', message: 'About files I can..' },
+  { avatar: imageTeam4, user: 'Peterson', message: 'Have a great afternoon..' },
+  { avatar: imageTeam3, user: 'Nick Daniel', message: 'Hi! I need more information..' },
+]
+
+const projects = [
   {
-    label: 'First name',
-    key: 'firstName',
-    icon: 'mdi-card-account-details-outline',
+    image: imageHomeDecor1,
+    title: 'Project #2',
+    style: 'Modern',
+    description: 'As Uber works through a huge amount of internal management turmoil.',
+    avatars: [imageTeam1, imageTeam2, imageTeam3, imageTeam4],
   },
-  { label: 'Last name', key: 'lastName', icon: 'mdi-badge-account-outline' },
-  { label: 'Language', key: 'language', icon: 'mdi-translate' },
-  { label: 'Locale', key: 'locale', icon: 'mdi-map-marker-radius-outline' },
-  { label: 'Timezone', key: 'timezone', icon: 'mdi-earth' },
-] as const
+  {
+    image: imageHomeDecor2,
+    title: 'Project #1',
+    style: 'Scandinavian',
+    description: 'Music is something that every person has his or her own specific opinion about.',
+    avatars: [imageTeam3, imageTeam4, imageTeam1, imageTeam2],
+  },
+  {
+    image: imageHomeDecor3,
+    title: 'Project #3',
+    style: 'Minimalist',
+    description: 'Different people have different taste, and various types of music.',
+    avatars: [imageTeam4, imageTeam3, imageTeam2, imageTeam1],
+  },
+  {
+    image: imageHomeDecor4,
+    title: 'Project #4',
+    style: 'Gothic',
+    description: 'Why would anyone pick blue over pink? Pink is obviously a better color.',
+    avatars: [imageTeam4, imageTeam3, imageTeam2, imageTeam1],
+  },
+]
 
 const hasData = computed(() => {
   return (
-    Boolean(profile.value) || roles.value.length > 0 || groups.value.length > 0
+    Boolean(profile.value) ||
+    roles.value.length > 0 ||
+    groups.value.length > 0 ||
+    socialAccounts.value.length > 0
   )
 })
 
@@ -60,15 +122,41 @@ const avatarInitials = computed(() => {
   return profile.value?.username?.charAt(0)?.toUpperCase() || 'U'
 })
 
-function formatProfileValue(key: string) {
-  const value = profile.value?.[key]
+const subtitle = computed(() => {
+  const role = roles.value[0]?.replace('ROLE_', '').replaceAll('_', ' ')
+  return role ? `${role} · ${profile.value?.timezone ?? 'UTC'}` : 'Member'
+})
 
-  if (value === undefined || value === null || value === '') {
-    return '-'
+const profileSummary = computed(() => {
+  return `Hi, I'm ${displayName.value}. You can review your profile details, roles, groups, and connected providers in this workspace.`
+})
+
+const profileRows = computed(() => [
+  { label: 'Full Name', value: displayName.value },
+  { label: 'Username', value: profile.value?.username || '-' },
+  { label: 'Email', value: profile.value?.email || '-' },
+  { label: 'Language', value: profile.value?.language || '-' },
+  { label: 'Locale', value: profile.value?.locale || '-' },
+  { label: 'Location', value: profile.value?.timezone || '-' },
+])
+
+const conversations = computed(() => {
+  if (socialAccounts.value.length === 0) {
+    return conversationFallback
   }
 
-  return String(value)
-}
+  return socialAccounts.value.map((account, index) => ({
+    avatar: conversationFallback[index % conversationFallback.length]?.avatar,
+    user: account.username || account.provider || `Provider #${index + 1}`,
+    message: account.email || `Connected with ${account.provider ?? 'provider'}`,
+  }))
+})
+
+const socialProviders = computed(() => {
+  return socialAccounts.value
+    .map((account) => account.provider)
+    .filter((provider): provider is string => Boolean(provider))
+})
 
 function formatGroupRole(group: (typeof groups.value)[number]) {
   if (typeof group.role === 'string') {
@@ -88,15 +176,18 @@ async function loadProfileDataIfNeeded() {
     return
   }
 
-  if (hasData.value) {
-    return
-  }
-
   isLoading.value = true
   errorMessage.value = null
 
   try {
-    await auth.fetchProfileData()
+    if (!profile.value && roles.value.length === 0 && groups.value.length === 0) {
+      await auth.fetchProfileData()
+    }
+
+    const socialResponse = await $fetch<{ items?: SocialAccount[] }>('/api/v1/me/social-accounts', {
+      headers: auth.token ? { Authorization: `Bearer ${auth.token}` } : undefined,
+    })
+    socialAccounts.value = socialResponse?.items ?? []
   } catch {
     errorMessage.value = 'Impossible de charger les informations du profil.'
   } finally {
@@ -109,226 +200,215 @@ onMounted(loadProfileDataIfNeeded)
 
 <template>
   <v-container fluid class="profile-page pa-4 pa-md-6">
-    <v-row class="mb-6">
-      <v-col cols="12">
-        <v-sheet class="hero-card pa-6 pa-md-8" rounded="xl">
-          <div
-            class="d-flex flex-column flex-sm-row ga-4 align-sm-center justify-space-between"
-          >
-            <div class="d-flex ga-4 align-center">
-              <UiAvatar
-                size="xl"
-                color="primary"
-                class="text-h5 font-weight-bold"
-              >
-                {{ avatarInitials }}
-              </UiAvatar>
-
-              <div>
-                <p class="text-overline text-medium-emphasis mb-1">
-                  Mon espace
-                </p>
-                <h1 class="text-h4 font-weight-bold mb-1">{{ displayName }}</h1>
-                <p class="text-body-2 text-medium-emphasis mb-0">
-                  Consultez vos informations, vos rôles et vos groupes en un
-                  coup d'œil.
-                </p>
-              </div>
-            </div>
-
-            <div class="d-flex ga-3 flex-wrap">
-              <v-chip
-                color="primary"
-                variant="elevated"
-                prepend-icon="mdi-shield-account-outline"
-              >
-                {{ roles.length }} rôle{{ roles.length > 1 ? 's' : '' }}
-              </v-chip>
-              <v-chip
-                color="secondary"
-                variant="elevated"
-                prepend-icon="mdi-account-group-outline"
-              >
-                {{ groups.length }} groupe{{ groups.length > 1 ? 's' : '' }}
-              </v-chip>
-            </div>
+    <v-sheet class="hero-card mb-6" rounded="xl">
+      <div class="hero-top-stripe" />
+      <div class="pa-4 pa-md-8 d-flex flex-column flex-md-row align-md-center justify-space-between ga-4">
+        <div class="d-flex align-center ga-4">
+          <UiAvatar size="xl" class="hero-avatar text-h4 font-weight-bold">{{ avatarInitials }}</UiAvatar>
+          <div>
+            <h1 class="text-h4 font-weight-bold text-typo mb-1">{{ displayName }}</h1>
+            <p class="text-h6 text-medium-emphasis mb-0">{{ subtitle }}</p>
           </div>
-        </v-sheet>
-      </v-col>
-    </v-row>
+        </div>
 
-    <div v-if="isLoading" class="state-card d-flex align-center ga-3">
+        <div class="d-flex ga-2 flex-wrap">
+          <v-chip color="primary" variant="tonal" prepend-icon="mdi-shield-account">{{ roles.length }} Roles</v-chip>
+          <v-chip color="secondary" variant="tonal" prepend-icon="mdi-account-group">{{ groups.length }} Groups</v-chip>
+          <v-chip color="info" variant="tonal" prepend-icon="mdi-connection">{{ socialAccounts.length }} Accounts</v-chip>
+        </div>
+      </div>
+    </v-sheet>
+
+    <div v-if="isLoading" class="state-card d-flex align-center ga-3 mb-4">
       <v-progress-circular indeterminate color="primary" />
       <span>Chargement du profil...</span>
     </div>
 
-    <v-alert
-      v-else-if="errorMessage"
-      type="error"
-      variant="tonal"
-      density="comfortable"
-      class="mb-0"
-      rounded="lg"
-    >
+    <v-alert v-else-if="errorMessage" type="error" variant="tonal" density="comfortable" class="mb-4" rounded="lg">
       {{ errorMessage }}
     </v-alert>
 
-    <v-alert
-      v-else-if="!hasData"
-      type="info"
-      variant="tonal"
-      density="comfortable"
-      class="mb-0"
-      rounded="lg"
-    >
+    <v-alert v-else-if="!hasData" type="info" variant="tonal" density="comfortable" class="mb-4" rounded="lg">
       Aucune donnée de profil disponible.
     </v-alert>
 
-    <v-row v-else class="ga-0">
-      <v-col cols="12" md="5" class="pr-md-3 mb-4 mb-md-0">
-        <UiCard rounded="xl" elevation="0" shadow="md" class="h-100">
-          <v-card-item>
-            <v-card-title class="d-flex align-center ga-2">
-              <v-icon icon="mdi-card-account-details-outline" color="primary" />
-              Identité
-            </v-card-title>
-            <v-card-subtitle
-              >Informations personnelles de votre compte</v-card-subtitle
-            >
-          </v-card-item>
+    <v-row v-else>
+      <v-col cols="12" lg="4" class="position-relative">
+        <v-card class="profile-block h-100 pa-4" rounded="xl" elevation="0">
+          <h3 class="text-h5 text-typo mb-4">Platform Settings</h3>
 
-          <v-divider />
+          <p class="text-uppercase text-caption font-weight-bold text-medium-emphasis mb-3">Account</p>
+          <div class="d-flex flex-column ga-4 mb-6">
+            <div v-for="setting in accountSettings" :key="setting.text" class="d-flex align-center justify-space-between ga-3">
+              <v-switch v-model="setting.enabled" color="primary" hide-details inset density="comfortable" />
+              <span class="text-body-1 text-medium-emphasis">{{ setting.text }}</span>
+            </div>
+          </div>
 
-          <v-list class="py-0" lines="two">
-            <v-list-item
-              v-for="field in identityFields"
-              :key="field.key"
-              min-height="64"
-            >
-              <template #prepend>
-                <UiAvatar size="sm" color="surface-variant">
-                  <v-icon :icon="field.icon" size="18" />
-                </UiAvatar>
-              </template>
-
-              <v-list-item-title class="font-weight-medium">{{
-                field.label
-              }}</v-list-item-title>
-              <v-list-item-subtitle>{{
-                formatProfileValue(field.key)
-              }}</v-list-item-subtitle>
-            </v-list-item>
-          </v-list>
-        </UiCard>
+          <p class="text-uppercase text-caption font-weight-bold text-medium-emphasis mb-3">Application</p>
+          <div class="d-flex flex-column ga-4">
+            <div v-for="setting in applicationSettings" :key="setting.text" class="d-flex align-center justify-space-between ga-3">
+              <v-switch v-model="setting.enabled" color="primary" hide-details inset density="comfortable" />
+              <span class="text-body-1 text-medium-emphasis">{{ setting.text }}</span>
+            </div>
+          </div>
+        </v-card>
+        <div class="vertical-divider d-none d-lg-block" />
       </v-col>
 
-      <v-col cols="12" md="7" class="pl-md-3">
-        <v-row>
-          <v-col cols="12" class="pb-4">
-            <UiCard rounded="xl" elevation="0" shadow="md">
-              <v-card-item>
-                <v-card-title class="d-flex align-center ga-2">
-                  <v-icon icon="mdi-shield-account-outline" color="primary" />
-                  Roles
-                </v-card-title>
-                <v-card-subtitle
-                  >Autorisations attribuées à votre profil</v-card-subtitle
-                >
-              </v-card-item>
+      <v-col cols="12" lg="4" class="position-relative">
+        <v-card class="profile-block h-100 pa-4" rounded="xl" elevation="0">
+          <h3 class="text-h5 text-typo mb-4">Profile Information</h3>
+          <p class="text-body-1 text-medium-emphasis mb-6">{{ profileSummary }}</p>
+          <v-divider class="mb-5" />
 
-              <v-divider />
+          <div class="d-flex flex-column ga-3">
+            <div v-for="row in profileRows" :key="row.label" class="text-body-1">
+              <strong class="text-typo">{{ row.label }}:</strong>
+              <span class="text-medium-emphasis ms-2">{{ row.value }}</span>
+            </div>
 
-              <v-card-text>
-                <div v-if="roles.length > 0" class="d-flex flex-wrap ga-2">
-                  <v-chip
-                    v-for="role in roles"
-                    :key="role"
-                    color="primary"
-                    variant="tonal"
-                    prepend-icon="mdi-shield-check-outline"
-                  >
-                    {{ role }}
-                  </v-chip>
+            <div class="text-body-1">
+              <strong class="text-typo">Social:</strong>
+              <span v-if="socialProviders.length" class="ms-2 text-medium-emphasis">{{ socialProviders.join(', ') }}</span>
+              <span v-else class="ms-2 text-medium-emphasis">Aucun compte lié</span>
+            </div>
+
+            <div class="text-body-1">
+              <strong class="text-typo">Groups:</strong>
+              <span class="ms-2 text-medium-emphasis">{{ groups.map((group) => `${group.name} (${formatGroupRole(group)})`).join(' · ') || 'Aucun groupe' }}</span>
+            </div>
+          </div>
+        </v-card>
+        <div class="vertical-divider d-none d-lg-block" />
+      </v-col>
+
+      <v-col cols="12" lg="4">
+        <v-card class="profile-block h-100 pa-4" rounded="xl" elevation="0">
+          <h3 class="text-h5 text-typo mb-4">Conversations</h3>
+
+          <div class="d-flex flex-column ga-4">
+            <div v-for="conversation in conversations" :key="`${conversation.user}-${conversation.message}`" class="conversation-row d-flex align-center justify-space-between ga-3">
+              <div class="d-flex align-center ga-3 flex-grow-1 min-w-0">
+                <v-avatar size="58" rounded="lg"><img :src="conversation.avatar" :alt="conversation.user" /></v-avatar>
+                <div class="min-w-0">
+                  <p class="text-h6 font-weight-bold text-typo mb-1 text-truncate">{{ conversation.user }}</p>
+                  <p class="text-body-2 text-medium-emphasis mb-0 text-truncate">{{ conversation.message }}</p>
                 </div>
-                <p v-else class="text-medium-emphasis mb-0">Aucun rôle.</p>
-              </v-card-text>
-            </UiCard>
-          </v-col>
-
-          <v-col cols="12">
-            <UiCard rounded="xl" elevation="0" shadow="md">
-              <v-card-item>
-                <v-card-title class="d-flex align-center ga-2">
-                  <v-icon icon="mdi-account-group-outline" color="secondary" />
-                  Groups
-                </v-card-title>
-                <v-card-subtitle
-                  >Groupes et niveau d'accès associés</v-card-subtitle
-                >
-              </v-card-item>
-
-              <v-divider />
-
-              <v-list v-if="groups.length > 0" class="py-0">
-                <v-list-item
-                  v-for="group in groups"
-                  :key="`${group.id}-${group.name}`"
-                  min-height="64"
-                >
-                  <template #prepend>
-                    <UiAvatar size="sm" color="secondary" variant="tonal">
-                      <v-icon icon="mdi-account-group" size="18" />
-                    </UiAvatar>
-                  </template>
-
-                  <v-list-item-title class="font-weight-medium">{{
-                    group.name
-                  }}</v-list-item-title>
-                  <v-list-item-subtitle class="text-medium-emphasis">
-                    Rôle du groupe: {{ formatGroupRole(group) }}
-                  </v-list-item-subtitle>
-                </v-list-item>
-              </v-list>
-              <v-card-text v-else>
-                <p class="text-medium-emphasis mb-0">Aucun groupe.</p>
-              </v-card-text>
-            </UiCard>
-          </v-col>
-        </v-row>
+              </div>
+              <button class="reply-btn">Reply</button>
+            </div>
+          </div>
+        </v-card>
       </v-col>
     </v-row>
+
+    <v-card v-if="hasData" class="profile-block mt-6 pa-4 pa-md-6" rounded="xl" elevation="0">
+      <h3 class="text-h4 text-typo mb-1">Projects</h3>
+      <p class="text-h6 text-medium-emphasis mb-6">Architects design houses</p>
+
+      <v-row>
+        <v-col v-for="project in projects" :key="project.title" cols="12" md="6" xl="3">
+          <div class="project-card h-100">
+            <v-img :src="project.image" height="190" cover class="rounded-xl mb-4" />
+            <p class="text-body-1 text-medium-emphasis mb-1">{{ project.title }}</p>
+            <p class="text-h4 text-typo font-weight-bold mb-3">{{ project.style }}</p>
+            <p class="text-body-1 text-medium-emphasis mb-5">{{ project.description }}</p>
+
+            <div class="d-flex align-center justify-space-between">
+              <v-btn color="pink" variant="outlined" rounded="pill" class="project-btn">View Project</v-btn>
+              <div class="avatar-group d-flex">
+                <v-avatar v-for="avatar in project.avatars" :key="avatar" size="32" class="ms-n2 border border-white">
+                  <img :src="avatar" alt="Project member" />
+                </v-avatar>
+              </div>
+            </div>
+          </div>
+        </v-col>
+      </v-row>
+    </v-card>
   </v-container>
 </template>
 
 <style scoped>
 .profile-page {
-  background:
-    radial-gradient(
-      circle at top right,
-      rgb(var(--v-theme-primary), 0.09),
-      transparent 35%
-    ),
-    radial-gradient(
-      circle at 10% 10%,
-      rgb(var(--v-theme-secondary), 0.06),
-      transparent 30%
-    );
+  background: #f8f9fb;
   min-height: calc(100dvh - 120px);
 }
 
 .hero-card {
-  border: 1px solid rgb(var(--v-theme-primary), 0.15);
-  background: linear-gradient(
-    140deg,
-    rgb(var(--v-theme-surface)) 0%,
-    rgb(var(--v-theme-primary), 0.08) 140%
-  );
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(124, 90, 233, 0.2);
+  background: linear-gradient(150deg, #ffffff 10%, #f9f4ff 100%);
+}
+
+.hero-top-stripe {
+  height: 84px;
+  background: linear-gradient(90deg, #b22771 0%, #8a2be2 100%);
+}
+
+.hero-avatar {
+  margin-top: -44px;
+  border: 4px solid #fff;
+  box-shadow: 0 10px 30px rgba(32, 33, 36, 0.14);
+  background: linear-gradient(140deg, #293f72 0%, #5b6ba6 100%);
+  color: #fff;
+}
+
+.profile-block {
+  border: 1px solid rgba(17, 24, 39, 0.06);
+  background: #fff;
+}
+
+.vertical-divider {
+  position: absolute;
+  right: -10px;
+  top: 2%;
+  height: 96%;
+  width: 1px;
+  background: rgba(17, 24, 39, 0.07);
 }
 
 .state-card {
   padding: 1rem 1.25rem;
   border-radius: 16px;
-  border: 1px solid rgb(var(--v-theme-primary), 0.15);
-  background: rgb(var(--v-theme-surface));
+  border: 1px solid rgba(17, 24, 39, 0.1);
+  background: #fff;
+}
+
+.conversation-row {
+  border-radius: 14px;
+  padding: 8px;
+  transition: transform 0.22s ease, background-color 0.22s ease;
+}
+
+.conversation-row:hover {
+  transform: translateX(6px);
+  background: rgba(178, 39, 113, 0.06);
+}
+
+.reply-btn {
+  text-transform: uppercase;
+  color: #e91e63;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  background: transparent;
+}
+
+.project-card {
+  border-radius: 1rem;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.project-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 18px 35px rgba(17, 24, 39, 0.12);
+}
+
+.project-btn {
+  border-width: 2px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 </style>
