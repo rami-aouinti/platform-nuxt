@@ -35,7 +35,11 @@ import {
   mapResumeSkillFormModelToUpdatePayload,
 } from '~/domain/resume/mappers'
 import { createCrudEntityStore } from '~/stores/_factories/createCrudEntityStore'
-import { getErrorMessage, notifyCrudError, notifyCrudSuccess } from '~/stores/_factories/storeNotifications'
+import {
+  getErrorMessage,
+  notifyCrudError,
+  notifyCrudSuccess,
+} from '~/stores/_factories/storeNotifications'
 import type {
   ResumeEducationFormModel,
   ResumeExperienceFormModel,
@@ -58,60 +62,92 @@ export const useResumeStore = defineStore('resume', () => {
 
   const activeResumeId = ref<string>('')
 
-  const experienceCrud = createCrudEntityStore<ResumeExperience, CreateResumeExperiencePayload, UpdateResumeExperiencePayload, PatchResumeExperiencePayload>({
+  const experienceCrud = createCrudEntityStore<
+    ResumeExperience,
+    CreateResumeExperiencePayload,
+    UpdateResumeExperiencePayload,
+    PatchResumeExperiencePayload
+  >({
     entityLabel: 'Expérience',
     fetch: async () => {
-      const response = await api.getResumeExperiences(activeResumeId.value, { limit: 100 })
-      return response.data || []
+      const response = await api.getResumeExperiences(activeResumeId.value, {
+        limit: 100,
+      })
+      return normalizeCollectionResponse<ResumeExperience>(response)
     },
-    create: payload => api.createResumeExperience(activeResumeId.value, payload),
-    update: (id, payload) => api.updateResumeExperience(activeResumeId.value, id, payload),
-    patch: (id, payload) => api.patchResumeExperience(activeResumeId.value, id, payload),
-    remove: id => api.deleteResumeExperience(activeResumeId.value, id),
-    getId: entity => entity.id,
+    create: (payload) =>
+      api.createResumeExperience(activeResumeId.value, payload),
+    update: (id, payload) =>
+      api.updateResumeExperience(activeResumeId.value, id, payload),
+    patch: (id, payload) =>
+      api.patchResumeExperience(activeResumeId.value, id, payload),
+    remove: (id) => api.deleteResumeExperience(activeResumeId.value, id),
+    getId: (entity) => entity.id,
     applyUpdate: (entity, payload) => ({ ...entity, ...payload }),
     applyPatch: (entity, payload) => ({ ...entity, ...payload }),
     notifier: {
-      success: action => notifyCrudSuccess('Expérience', action),
-      error: (action, errorValue) => notifyCrudError('Expérience', action, errorValue),
+      success: (action) => notifyCrudSuccess('Expérience', action),
+      error: (action, errorValue) =>
+        notifyCrudError('Expérience', action, errorValue),
     },
   })
 
-  const educationCrud = createCrudEntityStore<ResumeEducation, CreateResumeEducationPayload, UpdateResumeEducationPayload, PatchResumeEducationPayload>({
+  const educationCrud = createCrudEntityStore<
+    ResumeEducation,
+    CreateResumeEducationPayload,
+    UpdateResumeEducationPayload,
+    PatchResumeEducationPayload
+  >({
     entityLabel: 'Formation',
     fetch: async () => {
-      const response = await api.getResumeEducationList(activeResumeId.value, { limit: 100 })
-      return response.data || []
+      const response = await api.getResumeEducationList(activeResumeId.value, {
+        limit: 100,
+      })
+      return normalizeCollectionResponse<ResumeEducation>(response)
     },
-    create: payload => api.createResumeEducation(activeResumeId.value, payload),
-    update: (id, payload) => api.updateResumeEducation(activeResumeId.value, id, payload),
-    patch: (id, payload) => api.patchResumeEducation(activeResumeId.value, id, payload),
-    remove: id => api.deleteResumeEducation(activeResumeId.value, id),
-    getId: entity => entity.id,
+    create: (payload) =>
+      api.createResumeEducation(activeResumeId.value, payload),
+    update: (id, payload) =>
+      api.updateResumeEducation(activeResumeId.value, id, payload),
+    patch: (id, payload) =>
+      api.patchResumeEducation(activeResumeId.value, id, payload),
+    remove: (id) => api.deleteResumeEducation(activeResumeId.value, id),
+    getId: (entity) => entity.id,
     applyUpdate: (entity, payload) => ({ ...entity, ...payload }),
     applyPatch: (entity, payload) => ({ ...entity, ...payload }),
     notifier: {
-      success: action => notifyCrudSuccess('Formation', action),
-      error: (action, errorValue) => notifyCrudError('Formation', action, errorValue),
+      success: (action) => notifyCrudSuccess('Formation', action),
+      error: (action, errorValue) =>
+        notifyCrudError('Formation', action, errorValue),
     },
   })
 
-  const skillCrud = createCrudEntityStore<ResumeSkill, CreateResumeSkillPayload, UpdateResumeSkillPayload, PatchResumeSkillPayload>({
+  const skillCrud = createCrudEntityStore<
+    ResumeSkill,
+    CreateResumeSkillPayload,
+    UpdateResumeSkillPayload,
+    PatchResumeSkillPayload
+  >({
     entityLabel: 'Compétence',
     fetch: async () => {
-      const response = await api.getResumeSkills(activeResumeId.value, { limit: 100 })
-      return response.data || []
+      const response = await api.getResumeSkills(activeResumeId.value, {
+        limit: 100,
+      })
+      return normalizeCollectionResponse<ResumeSkill>(response)
     },
-    create: payload => api.createResumeSkill(activeResumeId.value, payload),
-    update: (id, payload) => api.updateResumeSkill(activeResumeId.value, id, payload),
-    patch: (id, payload) => api.patchResumeSkill(activeResumeId.value, id, payload),
-    remove: id => api.deleteResumeSkill(activeResumeId.value, id),
-    getId: entity => entity.id,
+    create: (payload) => api.createResumeSkill(activeResumeId.value, payload),
+    update: (id, payload) =>
+      api.updateResumeSkill(activeResumeId.value, id, payload),
+    patch: (id, payload) =>
+      api.patchResumeSkill(activeResumeId.value, id, payload),
+    remove: (id) => api.deleteResumeSkill(activeResumeId.value, id),
+    getId: (entity) => entity.id,
     applyUpdate: (entity, payload) => ({ ...entity, ...payload }),
     applyPatch: (entity, payload) => ({ ...entity, ...payload }),
     notifier: {
-      success: action => notifyCrudSuccess('Compétence', action),
-      error: (action, errorValue) => notifyCrudError('Compétence', action, errorValue),
+      success: (action) => notifyCrudSuccess('Compétence', action),
+      error: (action, errorValue) =>
+        notifyCrudError('Compétence', action, errorValue),
     },
   })
 
@@ -125,7 +161,36 @@ export const useResumeStore = defineStore('resume', () => {
     skillsByResumeId.value[resumeId] = [...skillCrud.rows.value]
   }
 
-  async function withAction<T>(action: string, run: () => Promise<T>, notify?: { entityLabel: string, kind: 'fetch' | 'create' | 'update' | 'patch' | 'remove' }): Promise<T> {
+  function normalizeCollectionResponse<T>(response: unknown): T[] {
+    if (Array.isArray(response)) {
+      return response as T[]
+    }
+
+    if (!response || typeof response !== 'object') {
+      return []
+    }
+
+    const typedResponse = response as { data?: unknown; items?: unknown }
+
+    if (Array.isArray(typedResponse.data)) {
+      return typedResponse.data as T[]
+    }
+
+    if (Array.isArray(typedResponse.items)) {
+      return typedResponse.items as T[]
+    }
+
+    return []
+  }
+
+  async function withAction<T>(
+    action: string,
+    run: () => Promise<T>,
+    notify?: {
+      entityLabel: string
+      kind: 'fetch' | 'create' | 'update' | 'patch' | 'remove'
+    },
+  ): Promise<T> {
     loadingByAction.value[action] = true
     errorByAction.value[action] = null
 
@@ -143,11 +208,18 @@ export const useResumeStore = defineStore('resume', () => {
   }
 
   async function fetchResumeList() {
-    return withAction('fetchResumeList', async () => {
-      const response = await api.getMyResumes({ limit: 50, order: 'updatedAt:desc' })
-      resumeList.value = response.data || []
-      return resumeList.value
-    }, { entityLabel: 'CV', kind: 'fetch' })
+    return withAction(
+      'fetchResumeList',
+      async () => {
+        const response = await api.getMyResumes({
+          limit: 50,
+          order: 'updatedAt:desc',
+        })
+        resumeList.value = normalizeCollectionResponse<Resume>(response)
+        return resumeList.value
+      },
+      { entityLabel: 'CV', kind: 'fetch' },
+    )
   }
 
   async function fetchResumeAggregate(resumeId: string) {
@@ -169,13 +241,20 @@ export const useResumeStore = defineStore('resume', () => {
   }
 
   async function saveResume(payload: CreateResumePayload) {
-    return withAction('saveResume', async () => {
-      const created = await api.createResume(payload)
-      currentResume.value = created
-      resumeList.value = [created, ...resumeList.value.filter((resume) => resume.id !== created.id)]
-      markDirty(`resume:${created.id}`, false)
-      return created
-    }, { entityLabel: 'CV', kind: 'create' })
+    return withAction(
+      'saveResume',
+      async () => {
+        const created = await api.createResume(payload)
+        currentResume.value = created
+        resumeList.value = [
+          created,
+          ...resumeList.value.filter((resume) => resume.id !== created.id),
+        ]
+        markDirty(`resume:${created.id}`, false)
+        return created
+      },
+      { entityLabel: 'CV', kind: 'create' },
+    )
   }
 
   async function saveResumeFromForm(form: ResumeFormModel) {
@@ -183,27 +262,46 @@ export const useResumeStore = defineStore('resume', () => {
   }
 
   async function patchResume(resumeId: string, payload: PatchResumePayload) {
-    return withAction('patchResume', async () => {
-      const patched = await api.patchResume(resumeId, payload)
-      currentResume.value = patched
-      resumeList.value = resumeList.value.map((resume) => resume.id === resumeId ? patched : resume)
-      markDirty(`resume:${resumeId}`, false)
-      return patched
-    }, { entityLabel: 'CV', kind: 'patch' })
+    return withAction(
+      'patchResume',
+      async () => {
+        const patched = await api.patchResume(resumeId, payload)
+        currentResume.value = patched
+        resumeList.value = resumeList.value.map((resume) =>
+          resume.id === resumeId ? patched : resume,
+        )
+        markDirty(`resume:${resumeId}`, false)
+        return patched
+      },
+      { entityLabel: 'CV', kind: 'patch' },
+    )
   }
 
-  async function patchResumeFromForm(resumeId: string, form: ResumeFormModel, previous?: ResumeFormModel) {
-    return patchResume(resumeId, mapResumeFormModelToPatchPayload(form, previous))
+  async function patchResumeFromForm(
+    resumeId: string,
+    form: ResumeFormModel,
+    previous?: ResumeFormModel,
+  ) {
+    return patchResume(
+      resumeId,
+      mapResumeFormModelToPatchPayload(form, previous),
+    )
   }
 
   async function updateResume(resumeId: string, payload: UpdateResumePayload) {
-    return withAction('updateResume', async () => {
-      const updated = await api.updateResume(resumeId, payload)
-      currentResume.value = updated
-      resumeList.value = resumeList.value.map((resume) => resume.id === resumeId ? updated : resume)
-      markDirty(`resume:${resumeId}`, false)
-      return updated
-    }, { entityLabel: 'CV', kind: 'update' })
+    return withAction(
+      'updateResume',
+      async () => {
+        const updated = await api.updateResume(resumeId, payload)
+        currentResume.value = updated
+        resumeList.value = resumeList.value.map((resume) =>
+          resume.id === resumeId ? updated : resume,
+        )
+        markDirty(`resume:${resumeId}`, false)
+        return updated
+      },
+      { entityLabel: 'CV', kind: 'update' },
+    )
   }
 
   async function updateResumeFromForm(resumeId: string, form: ResumeFormModel) {
@@ -211,29 +309,39 @@ export const useResumeStore = defineStore('resume', () => {
   }
 
   async function deleteResume(resumeId: string) {
-    return withAction('deleteResume', async () => {
-      await api.deleteResume(resumeId)
-      resumeList.value = resumeList.value.filter((resume) => resume.id !== resumeId)
-      if (currentResume.value?.id === resumeId) currentResume.value = null
+    return withAction(
+      'deleteResume',
+      async () => {
+        await api.deleteResume(resumeId)
+        resumeList.value = resumeList.value.filter(
+          (resume) => resume.id !== resumeId,
+        )
+        if (currentResume.value?.id === resumeId) currentResume.value = null
 
-      const { [resumeId]: _removedExperience, ...nextExperiences } = experiencesByResumeId.value
-      const { [resumeId]: _removedEducation, ...nextEducations } = educationsByResumeId.value
-      const { [resumeId]: _removedSkill, ...nextSkills } = skillsByResumeId.value
-      const dirtyKey = `resume:${resumeId}`
-      const { [dirtyKey]: _removedDirty, ...nextDirtyFlags } = dirtyFlags.value
+        const { [resumeId]: _removedExperience, ...nextExperiences } =
+          experiencesByResumeId.value
+        const { [resumeId]: _removedEducation, ...nextEducations } =
+          educationsByResumeId.value
+        const { [resumeId]: _removedSkill, ...nextSkills } =
+          skillsByResumeId.value
+        const dirtyKey = `resume:${resumeId}`
+        const { [dirtyKey]: _removedDirty, ...nextDirtyFlags } =
+          dirtyFlags.value
 
-      experiencesByResumeId.value = nextExperiences
-      educationsByResumeId.value = nextEducations
-      skillsByResumeId.value = nextSkills
-      dirtyFlags.value = nextDirtyFlags
+        experiencesByResumeId.value = nextExperiences
+        educationsByResumeId.value = nextEducations
+        skillsByResumeId.value = nextSkills
+        dirtyFlags.value = nextDirtyFlags
 
-      if (activeResumeId.value === resumeId) {
-        activeResumeId.value = ''
-        experienceCrud.setRows([])
-        educationCrud.setRows([])
-        skillCrud.setRows([])
-      }
-    }, { entityLabel: 'CV', kind: 'remove' })
+        if (activeResumeId.value === resumeId) {
+          activeResumeId.value = ''
+          experienceCrud.setRows([])
+          educationCrud.setRows([])
+          skillCrud.setRows([])
+        }
+      },
+      { entityLabel: 'CV', kind: 'remove' },
+    )
   }
 
   async function createExperience(payload: CreateResumeExperiencePayload) {
@@ -248,8 +356,12 @@ export const useResumeStore = defineStore('resume', () => {
     return createExperience(mapResumeExperienceFormModelToCreatePayload(form))
   }
 
-  async function updateExperience(id: string, payload: UpdateResumeExperiencePayload) {
-    const resumeId = payload.resume || activeResumeId.value || currentResume.value?.id || ''
+  async function updateExperience(
+    id: string,
+    payload: UpdateResumeExperiencePayload,
+  ) {
+    const resumeId =
+      payload.resume || activeResumeId.value || currentResume.value?.id || ''
     activeResumeId.value = resumeId
     const updated = await api.updateResumeExperience(resumeId, id, payload)
     syncEntityMaps(resumeId)
@@ -257,11 +369,20 @@ export const useResumeStore = defineStore('resume', () => {
     return updated
   }
 
-  async function updateExperienceFromForm(id: string, form: ResumeExperienceFormModel) {
-    return updateExperience(id, mapResumeExperienceFormModelToUpdatePayload(form))
+  async function updateExperienceFromForm(
+    id: string,
+    form: ResumeExperienceFormModel,
+  ) {
+    return updateExperience(
+      id,
+      mapResumeExperienceFormModelToUpdatePayload(form),
+    )
   }
 
-  async function patchExperience(id: string, payload: PatchResumeExperiencePayload) {
+  async function patchExperience(
+    id: string,
+    payload: PatchResumeExperiencePayload,
+  ) {
     const resumeId = activeResumeId.value || currentResume.value?.id || ''
     const patched = await api.patchResumeExperience(resumeId, id, payload)
     if (resumeId) {
@@ -271,8 +392,15 @@ export const useResumeStore = defineStore('resume', () => {
     return patched
   }
 
-  async function patchExperienceFromForm(id: string, form: ResumeExperienceFormModel, previous?: ResumeExperienceFormModel) {
-    return patchExperience(id, mapResumeExperienceFormModelToPatchPayload(form, previous))
+  async function patchExperienceFromForm(
+    id: string,
+    form: ResumeExperienceFormModel,
+    previous?: ResumeExperienceFormModel,
+  ) {
+    return patchExperience(
+      id,
+      mapResumeExperienceFormModelToPatchPayload(form, previous),
+    )
   }
 
   async function deleteExperience(id: string, resumeId: string) {
@@ -294,8 +422,12 @@ export const useResumeStore = defineStore('resume', () => {
     return createEducation(mapResumeEducationFormModelToCreatePayload(form))
   }
 
-  async function updateEducation(id: string, payload: UpdateResumeEducationPayload) {
-    const resumeId = payload.resume || activeResumeId.value || currentResume.value?.id || ''
+  async function updateEducation(
+    id: string,
+    payload: UpdateResumeEducationPayload,
+  ) {
+    const resumeId =
+      payload.resume || activeResumeId.value || currentResume.value?.id || ''
     activeResumeId.value = resumeId
     const updated = await api.updateResumeEducation(resumeId, id, payload)
     syncEntityMaps(resumeId)
@@ -303,11 +435,17 @@ export const useResumeStore = defineStore('resume', () => {
     return updated
   }
 
-  async function updateEducationFromForm(id: string, form: ResumeEducationFormModel) {
+  async function updateEducationFromForm(
+    id: string,
+    form: ResumeEducationFormModel,
+  ) {
     return updateEducation(id, mapResumeEducationFormModelToUpdatePayload(form))
   }
 
-  async function patchEducation(id: string, payload: PatchResumeEducationPayload) {
+  async function patchEducation(
+    id: string,
+    payload: PatchResumeEducationPayload,
+  ) {
     const resumeId = activeResumeId.value || currentResume.value?.id || ''
     const patched = await api.patchResumeEducation(resumeId, id, payload)
     if (resumeId) {
@@ -317,8 +455,15 @@ export const useResumeStore = defineStore('resume', () => {
     return patched
   }
 
-  async function patchEducationFromForm(id: string, form: ResumeEducationFormModel, previous?: ResumeEducationFormModel) {
-    return patchEducation(id, mapResumeEducationFormModelToPatchPayload(form, previous))
+  async function patchEducationFromForm(
+    id: string,
+    form: ResumeEducationFormModel,
+    previous?: ResumeEducationFormModel,
+  ) {
+    return patchEducation(
+      id,
+      mapResumeEducationFormModelToPatchPayload(form, previous),
+    )
   }
 
   async function deleteEducation(id: string, resumeId: string) {
@@ -341,7 +486,8 @@ export const useResumeStore = defineStore('resume', () => {
   }
 
   async function updateSkill(id: string, payload: UpdateResumeSkillPayload) {
-    const resumeId = payload.resume || activeResumeId.value || currentResume.value?.id || ''
+    const resumeId =
+      payload.resume || activeResumeId.value || currentResume.value?.id || ''
     activeResumeId.value = resumeId
     const updated = await api.updateResumeSkill(resumeId, id, payload)
     syncEntityMaps(resumeId)
@@ -363,7 +509,11 @@ export const useResumeStore = defineStore('resume', () => {
     return patched
   }
 
-  async function patchSkillFromForm(id: string, form: ResumeSkillFormModel, previous?: ResumeSkillFormModel) {
+  async function patchSkillFromForm(
+    id: string,
+    form: ResumeSkillFormModel,
+    previous?: ResumeSkillFormModel,
+  ) {
     return patchSkill(id, mapResumeSkillFormModelToPatchPayload(form, previous))
   }
 
@@ -381,7 +531,13 @@ export const useResumeStore = defineStore('resume', () => {
   const experienceCount = computed(() => currentResumeExperiences.value.length)
   const educationCount = computed(() => currentResumeEducations.value.length)
   const skillCount = computed(() => currentResumeSkills.value.length)
-  const isBusy = computed(() => Object.values(loadingByAction.value).some(Boolean) || experienceCrud.saving.value || educationCrud.saving.value || skillCrud.saving.value)
+  const isBusy = computed(
+    () =>
+      Object.values(loadingByAction.value).some(Boolean) ||
+      experienceCrud.saving.value ||
+      educationCrud.saving.value ||
+      skillCrud.saving.value,
+  )
 
   return {
     currentResume,
