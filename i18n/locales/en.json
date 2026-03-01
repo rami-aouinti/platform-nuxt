@@ -130,6 +130,31 @@
       "notifications": "This section is dedicated to notification preferences.",
       "sessions": "This section is dedicated to active session management.",
       "deleteAccount": "This section is dedicated to account deletion."
+    },
+    "resumePages": {
+      "listTitle": "My resumes",
+      "refresh": "Refresh",
+      "newResume": "New resume",
+      "empty": "No resumes yet.",
+      "untitled": "Untitled",
+      "noHeadline": "No headline",
+      "locationUnknown": "Location not specified",
+      "open": "Open",
+      "delete": "Delete",
+      "createTitle": "Create a resume",
+      "backToList": "Back to list",
+      "create": "Create",
+      "detailFallbackTitle": "Resume",
+      "back": "Back",
+      "deleteResume": "Delete resume",
+      "resumeInfo": "Resume information",
+      "update": "Update (PUT)",
+      "patch": "Patch (PATCH)",
+      "experiences": "Experiences",
+      "education": "Education",
+      "skills": "Skills",
+      "cancel": "Cancel",
+      "add": "Add"
     }
   }
 }
