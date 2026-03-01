@@ -130,6 +130,31 @@
       "notifications": "Cette section est dédiée aux préférences de notification.",
       "sessions": "Cette section est dédiée à la gestion des sessions actives.",
       "deleteAccount": "Cette section est dédiée à la suppression du compte."
+    },
+    "resumePages": {
+      "listTitle": "Mes CV",
+      "refresh": "Rafraîchir",
+      "newResume": "Nouveau CV",
+      "empty": "Aucun CV pour le moment.",
+      "untitled": "Sans titre",
+      "noHeadline": "Aucune accroche",
+      "locationUnknown": "Lieu non renseigné",
+      "open": "Ouvrir",
+      "delete": "Supprimer",
+      "createTitle": "Créer un CV",
+      "backToList": "Retour à la liste",
+      "create": "Créer",
+      "detailFallbackTitle": "CV",
+      "back": "Retour",
+      "deleteResume": "Supprimer le CV",
+      "resumeInfo": "Informations du CV",
+      "update": "Mettre à jour (PUT)",
+      "patch": "Patch (PATCH)",
+      "experiences": "Expériences",
+      "education": "Formations",
+      "skills": "Compétences",
+      "cancel": "Annuler",
+      "add": "Ajouter"
     }
   }
 }

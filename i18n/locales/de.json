@@ -130,6 +130,31 @@
       "notifications": "Dieser Abschnitt ist den Benachrichtigungseinstellungen gewidmet.",
       "sessions": "Dieser Abschnitt ist der Verwaltung aktiver Sitzungen gewidmet.",
       "deleteAccount": "Dieser Abschnitt ist dem Löschen des Kontos gewidmet."
+    },
+    "resumePages": {
+      "listTitle": "Meine Lebensläufe",
+      "refresh": "Aktualisieren",
+      "newResume": "Neuer Lebenslauf",
+      "empty": "Noch keine Lebensläufe vorhanden.",
+      "untitled": "Ohne Titel",
+      "noHeadline": "Keine Überschrift",
+      "locationUnknown": "Ort nicht angegeben",
+      "open": "Öffnen",
+      "delete": "Löschen",
+      "createTitle": "Lebenslauf erstellen",
+      "backToList": "Zurück zur Liste",
+      "create": "Erstellen",
+      "detailFallbackTitle": "Lebenslauf",
+      "back": "Zurück",
+      "deleteResume": "Lebenslauf löschen",
+      "resumeInfo": "Lebenslaufinformationen",
+      "update": "Aktualisieren (PUT)",
+      "patch": "Patch (PATCH)",
+      "experiences": "Erfahrungen",
+      "education": "Ausbildung",
+      "skills": "Fähigkeiten",
+      "cancel": "Abbrechen",
+      "add": "Hinzufügen"
     }
   }
 }

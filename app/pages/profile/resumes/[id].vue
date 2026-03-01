@@ -17,6 +17,7 @@ definePageMeta({
   alias: ['/profile/resumes/:id'],
 })
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const resumeStore = useResumeStore()
@@ -209,37 +210,37 @@ onMounted(loadData)
 <template>
   <v-container class="py-6">
     <div class="d-flex justify-space-between align-center mb-4 ga-2 flex-wrap">
-      <h1 class="text-h5">{{ resumeStore.currentResume?.title || 'CV' }}</h1>
+      <h1 class="text-h5">{{ resumeStore.currentResume?.title || t('profile.resumePages.detailFallbackTitle') }}</h1>
       <div class="d-flex ga-2">
-        <v-btn variant="text" to="/profile/resumes">Retour</v-btn>
-        <v-btn color="error" :loading="busy" :disabled="loading || busy" @click="removeResume">Supprimer le CV</v-btn>
+        <v-btn variant="text" to="/profile/resumes">{{ t('profile.resumePages.back') }}</v-btn>
+        <v-btn color="error" :loading="busy" :disabled="loading || busy" @click="removeResume">{{ t('profile.resumePages.deleteResume') }}</v-btn>
       </div>
     </div>
 
     <v-progress-linear v-if="loading" indeterminate class="mb-4" />
 
     <v-expansion-panels multiple>
-      <v-expansion-panel title="Informations du CV">
+      <v-expansion-panel :title="t('profile.resumePages.resumeInfo')">
         <v-expansion-panel-text>
           <v-form ref="resumeFormRef" v-model="isResumeFormValid">
             <ResumeForm v-model="resumeForm" :disabled="loading || busy" />
           </v-form>
           <div class="d-flex justify-end ga-2">
-            <v-btn color="primary" :loading="busy" :disabled="loading || busy || !isResumeFormValid" @click="saveResume">Mettre à jour (PUT)</v-btn>
-            <v-btn variant="outlined" :loading="busy" :disabled="loading || busy || !isResumeFormValid" @click="patchResumeData">Patch (PATCH)</v-btn>
+            <v-btn color="primary" :loading="busy" :disabled="loading || busy || !isResumeFormValid" @click="saveResume">{{ t('profile.resumePages.update') }}</v-btn>
+            <v-btn variant="outlined" :loading="busy" :disabled="loading || busy || !isResumeFormValid" @click="patchResumeData">{{ t('profile.resumePages.patch') }}</v-btn>
           </div>
         </v-expansion-panel-text>
       </v-expansion-panel>
 
-      <v-expansion-panel :title="`Expériences (${resumeStore.experienceCount})`">
+      <v-expansion-panel :title="`${t('profile.resumePages.experiences')} (${resumeStore.experienceCount})`">
         <v-expansion-panel-text>
           <v-form ref="experienceFormRef" v-model="isExperienceFormValid">
             <ResumeExperienceForm v-model="experienceForm" :disabled="loading || busy" />
           </v-form>
           <div class="d-flex justify-end ga-2 mb-4">
-            <v-btn variant="text" :disabled="loading || busy" @click="resetExperienceForm">Annuler</v-btn>
-            <v-btn color="primary" :loading="busy" :disabled="loading || busy || !isExperienceFormValid" @click="submitExperience">{{ editingExperienceId ? 'Mettre à jour (PUT)' : 'Ajouter' }}</v-btn>
-            <v-btn v-if="editingExperienceId" variant="outlined" :loading="busy" :disabled="loading || busy || !isExperienceFormValid" @click="patchSelectedExperience">Patch</v-btn>
+            <v-btn variant="text" :disabled="loading || busy" @click="resetExperienceForm">{{ t('profile.resumePages.cancel') }}</v-btn>
+            <v-btn color="primary" :loading="busy" :disabled="loading || busy || !isExperienceFormValid" @click="submitExperience">{{ editingExperienceId ? t('profile.resumePages.update') : t('profile.resumePages.add') }}</v-btn>
+            <v-btn v-if="editingExperienceId" variant="outlined" :loading="busy" :disabled="loading || busy || !isExperienceFormValid" @click="patchSelectedExperience">{{ t('profile.resumePages.patch') }}</v-btn>
           </div>
           <v-list lines="two">
             <v-list-item v-for="item in experiences" :key="item.id" :title="`${item.role} · ${item.company}`" :subtitle="item.startDate">
@@ -252,15 +253,15 @@ onMounted(loadData)
         </v-expansion-panel-text>
       </v-expansion-panel>
 
-      <v-expansion-panel :title="`Formations (${resumeStore.educationCount})`">
+      <v-expansion-panel :title="`${t('profile.resumePages.education')} (${resumeStore.educationCount})`">
         <v-expansion-panel-text>
           <v-form ref="educationFormRef" v-model="isEducationFormValid">
             <ResumeEducationForm v-model="educationForm" :disabled="loading || busy" />
           </v-form>
           <div class="d-flex justify-end ga-2 mb-4">
-            <v-btn variant="text" :disabled="loading || busy" @click="resetEducationForm">Annuler</v-btn>
-            <v-btn color="primary" :loading="busy" :disabled="loading || busy || !isEducationFormValid" @click="submitEducation">{{ editingEducationId ? 'Mettre à jour (PUT)' : 'Ajouter' }}</v-btn>
-            <v-btn v-if="editingEducationId" variant="outlined" :loading="busy" :disabled="loading || busy || !isEducationFormValid" @click="patchSelectedEducation">Patch</v-btn>
+            <v-btn variant="text" :disabled="loading || busy" @click="resetEducationForm">{{ t('profile.resumePages.cancel') }}</v-btn>
+            <v-btn color="primary" :loading="busy" :disabled="loading || busy || !isEducationFormValid" @click="submitEducation">{{ editingEducationId ? t('profile.resumePages.update') : t('profile.resumePages.add') }}</v-btn>
+            <v-btn v-if="editingEducationId" variant="outlined" :loading="busy" :disabled="loading || busy || !isEducationFormValid" @click="patchSelectedEducation">{{ t('profile.resumePages.patch') }}</v-btn>
           </div>
           <v-list lines="two">
             <v-list-item v-for="item in educationList" :key="item.id" :title="item.institution" :subtitle="item.degree || '-'">
@@ -273,15 +274,15 @@ onMounted(loadData)
         </v-expansion-panel-text>
       </v-expansion-panel>
 
-      <v-expansion-panel :title="`Compétences (${resumeStore.skillCount})`">
+      <v-expansion-panel :title="`${t('profile.resumePages.skills')} (${resumeStore.skillCount})`">
         <v-expansion-panel-text>
           <v-form ref="skillFormRef" v-model="isSkillFormValid">
             <ResumeSkillForm v-model="skillForm" :disabled="loading || busy" />
           </v-form>
           <div class="d-flex justify-end ga-2 mb-4">
-            <v-btn variant="text" :disabled="loading || busy" @click="resetSkillForm">Annuler</v-btn>
-            <v-btn color="primary" :loading="busy" :disabled="loading || busy || !isSkillFormValid" @click="submitSkill">{{ editingSkillId ? 'Mettre à jour (PUT)' : 'Ajouter' }}</v-btn>
-            <v-btn v-if="editingSkillId" variant="outlined" :loading="busy" :disabled="loading || busy || !isSkillFormValid" @click="patchSelectedSkill">Patch</v-btn>
+            <v-btn variant="text" :disabled="loading || busy" @click="resetSkillForm">{{ t('profile.resumePages.cancel') }}</v-btn>
+            <v-btn color="primary" :loading="busy" :disabled="loading || busy || !isSkillFormValid" @click="submitSkill">{{ editingSkillId ? t('profile.resumePages.update') : t('profile.resumePages.add') }}</v-btn>
+            <v-btn v-if="editingSkillId" variant="outlined" :loading="busy" :disabled="loading || busy || !isSkillFormValid" @click="patchSelectedSkill">{{ t('profile.resumePages.patch') }}</v-btn>
           </div>
           <v-list lines="two">
             <v-list-item v-for="item in skills" :key="item.id" :title="item.name" :subtitle="item.level || '-'">

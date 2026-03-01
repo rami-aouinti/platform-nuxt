@@ -11,6 +11,7 @@ definePageMeta({
   alias: ['/profile/resumes/new'],
 })
 
+const { t } = useI18n()
 const resumeStore = useResumeStore()
 const router = useRouter()
 
@@ -41,8 +42,8 @@ async function submit() {
 <template>
   <v-container class="py-6">
     <div class="d-flex align-center justify-space-between mb-4">
-      <h1 class="text-h5">Créer un CV</h1>
-      <v-btn variant="text" to="/profile/resumes">Retour à la liste</v-btn>
+      <h1 class="text-h5">{{ t('profile.resumePages.createTitle') }}</h1>
+      <v-btn variant="text" to="/profile/resumes">{{ t('profile.resumePages.backToList') }}</v-btn>
     </div>
 
     <v-card>
@@ -53,7 +54,7 @@ async function submit() {
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn color="primary" :loading="loading" :disabled="loading || !isResumeFormValid" @click="submit">Créer</v-btn>
+        <v-btn color="primary" :loading="loading" :disabled="loading || !isResumeFormValid" @click="submit">{{ t('profile.resumePages.create') }}</v-btn>
       </v-card-actions>
     </v-card>
   </v-container>

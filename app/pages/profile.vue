@@ -60,7 +60,6 @@ const {
   schemaError: companySchemaError,
   usesSchemaFallback,
 } = storeToRefs(profileCompaniesStore)
-const router = useRouter()
 const route = useRoute()
 
 const isLoading = ref(false)
@@ -224,11 +223,6 @@ function isMenuItemActive(item: MenuItem) {
 function handleMenuItemClick(item: MenuItem) {
   if (item.type === 'tab' && item.tabId) {
     activeTab.value = item.tabId
-    return
-  }
-
-  if (item.type === 'route' && item.to) {
-    router.push(item.to)
   }
 }
 
@@ -471,6 +465,7 @@ onMounted(async () => {
                 :key="item.id"
                 class="px-3 py-1 border-radius-lg mb-2"
                 :active="isMenuItemActive(item)"
+                :to="item.type === 'route' ? item.to : undefined"
                 @click="handleMenuItemClick(item)"
               >
                 <template #prepend>
