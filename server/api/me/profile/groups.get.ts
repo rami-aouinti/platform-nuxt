@@ -2,7 +2,7 @@ import { proxyAuthApiGet } from '../../../utils/auth-api-proxy'
 import { readProfileEndpointCache, writeProfileEndpointCache } from '../../../utils/profile-endpoint-cache'
 import { normalizeProfileGroups } from '../../../utils/profile-response-normalizers'
 
-const GROUPS_CACHE_KEY = 'v1-profile-groups'
+const GROUPS_CACHE_KEY = 'me-profile-groups'
 
 export default defineEventHandler(async (event) => {
   const cachedGroups = readProfileEndpointCache(event, GROUPS_CACHE_KEY)

@@ -32,11 +32,38 @@ describe('profile-response-normalizers', () => {
     })
   })
 
+  it('extracts profile from wrapped me payload', () => {
+    expect(normalizeProfilePayload({
+      data: {
+        id: 'u-1',
+        firstName: 'John',
+        lastName: 'Doe',
+        roles: [{ id: 'ROLE_USER' }],
+      },
+    })).toEqual({
+      id: 'u-1',
+      firstName: 'John',
+      lastName: 'Doe',
+      username: '',
+      email: '',
+      language: '',
+      locale: '',
+      timezone: '',
+      roles: ['ROLE_USER'],
+    })
+  })
+
   it('extracts roles from wrapped payload', () => {
     expect(normalizeProfileRoles({
       id: 'u-1',
       username: 'john-root',
       roles: [{ id: 'ROLE_ROOT' }, { id: 'ROLE_ADMIN' }],
+    })).toEqual(['ROLE_ROOT', 'ROLE_ADMIN'])
+  })
+
+  it('extracts roles from data envelope', () => {
+    expect(normalizeProfileRoles({
+      data: [{ id: 'ROLE_ROOT' }, { id: 'ROLE_ADMIN' }],
     })).toEqual(['ROLE_ROOT', 'ROLE_ADMIN'])
   })
 
@@ -55,6 +82,22 @@ describe('profile-response-normalizers', () => {
       {
         id: '10000000-0000-1000-8000-000000000005',
         role: { id: 'ROLE_ROOT' },
+        name: 'Root users',
+      },
+    ])
+  })
+
+  it('extracts groups from data envelope', () => {
+    expect(normalizeProfileGroups({
+      data: [
+        {
+          id: '10000000-0000-1000-8000-000000000005',
+          name: 'Root users',
+        },
+      ],
+    })).toEqual([
+      {
+        id: '10000000-0000-1000-8000-000000000005',
         name: 'Root users',
       },
     ])

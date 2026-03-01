@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
     return cachedGroups
   }
 
-  const groups = await proxyAuthApiGet(event, '/api/v1/profile/groups')
+  const groups = await proxyAuthApiGet(event, '/api/v1/me/profile/groups')
   const normalizedGroups = normalizeProfileGroups(groups)
   writeProfileEndpointCache(event, GROUPS_CACHE_KEY, normalizedGroups)
 

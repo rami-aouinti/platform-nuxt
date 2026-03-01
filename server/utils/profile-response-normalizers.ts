@@ -27,6 +27,10 @@ export function normalizeProfileRoles(payload: unknown): string[] {
     return normalizeProfileRoles((payload as { roles?: unknown }).roles)
   }
 
+  if (payload && typeof payload === 'object' && 'data' in payload) {
+    return normalizeProfileRoles((payload as { data?: unknown }).data)
+  }
+
   return []
 }
 
@@ -34,6 +38,8 @@ export function normalizeProfileGroups(payload: unknown): GroupCandidate[] {
   const source =
     payload && typeof payload === 'object' && 'groups' in payload
       ? (payload as { groups?: unknown }).groups
+      : payload && typeof payload === 'object' && 'data' in payload
+        ? (payload as { data?: unknown }).data
       : payload
 
   if (!Array.isArray(source)) {
@@ -46,7 +52,13 @@ export function normalizeProfileGroups(payload: unknown): GroupCandidate[] {
 }
 
 export function normalizeProfilePayload(payload: unknown): NormalizedAuthProfile {
-  const source = (payload && typeof payload === 'object' ? payload : {}) as Record<string, unknown>
+  const payloadRecord = (payload && typeof payload === 'object' ? payload : {}) as Record<string, unknown>
+  const source =
+    payloadRecord.profile && typeof payloadRecord.profile === 'object'
+      ? payloadRecord.profile as Record<string, unknown>
+      : payloadRecord.data && typeof payloadRecord.data === 'object'
+        ? payloadRecord.data as Record<string, unknown>
+        : payloadRecord
 
   return {
     ...source,

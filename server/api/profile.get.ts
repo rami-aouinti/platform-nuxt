@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
     return cachedProfile
   }
 
-  const profile = await proxyAuthApiGet(event, '/api/v1/profile')
+  const profile = await proxyAuthApiGet(event, '/api/v1/me/profile')
   const normalizedProfile = normalizeProfilePayload(profile)
   writeProfileEndpointCache(event, PROFILE_CACHE_KEY, normalizedProfile)
 
