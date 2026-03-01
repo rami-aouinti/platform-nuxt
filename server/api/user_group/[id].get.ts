@@ -7,5 +7,5 @@ export default createProxyEntityHandler({
     statusMessage: 'Invalid user group parameter.',
     message: 'User group identifier is required.',
   },
-  upstreamPathBuilder: id => `/api/v1/user_group/${encodeURIComponent(id)}`,
+  upstreamPathBuilder: id => `/api/api/v1/admin/user_group/${encodeURIComponent(id)}`,
 })

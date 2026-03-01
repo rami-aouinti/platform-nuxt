@@ -7,5 +7,5 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Missing userGroup.' })
   }
 
-  return await proxyAuthApiGet(event, `/api/v1/user_group/${encodeURIComponent(userGroup)}/users`)
+  return await proxyAuthApiGet(event, `/api/api/v1/admin/user_group/${encodeURIComponent(userGroup)}/users`)
 })

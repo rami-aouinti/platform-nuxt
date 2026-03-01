@@ -7,5 +7,5 @@ export default createProxyEntityHandler({
     statusMessage: 'Invalid role parameter.',
     message: 'Role identifier is required.',
   },
-  upstreamPathBuilder: role => `/api/v1/role/${encodeURIComponent(role)}`,
+  upstreamPathBuilder: role => `/api/api/v1/admin/role/${encodeURIComponent(role)}`,
 })

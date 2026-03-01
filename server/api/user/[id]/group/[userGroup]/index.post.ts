@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
 
   return await proxyAuthApiRequest(
     event,
-    `/api/v1/user/${encodeURIComponent(user)}/group/${encodeURIComponent(userGroup)}`,
+    `/api/api/v1/admin/users/${encodeURIComponent(user)}/group/${encodeURIComponent(userGroup)}`,
     'POST',
   )
 })
