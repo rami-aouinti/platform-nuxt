@@ -53,7 +53,6 @@ const {
   usesSchemaFallback,
 } = storeToRefs(profileCompaniesStore)
 const router = useRouter()
-const route = useRoute()
 
 const isLoading = ref(false)
 const errorMessage = ref<string | null>(null)
@@ -116,17 +115,17 @@ const conversationFallback = [
 const projectImages = [imageHomeDecor1, imageHomeDecor2, imageHomeDecor3, imageHomeDecor4]
 const projectAvatars = [imageTeam1, imageTeam2, imageTeam3, imageTeam4]
 
-const menu = ref([
-  { icon: 'mdi-person', text: 'Profile', to: '/profile' },
-  { icon: 'mdi-receipt', text: 'Basic Info', to: '/profile/basic-info' },
-  { icon: 'mdi-lock', text: 'Change Password', to: '/profile/change-password' },
-  { icon: 'mdi-security', text: '2FA', to: '/profile/two-factor-auth' },
-  { icon: 'mdi-clipboard-account', text: 'Accounts', to: '/profile/accounts' },
-  { icon: 'mdi-file-account', text: t('profile.resumes'), to: '/profile/resumes' },
-  { icon: 'mdi-bell', text: 'Notifications', to: '/profile/notifications' },
-  { icon: 'mdi-settings', text: 'Sessions', to: '/profile/sessions' },
-  { icon: 'mdi-note', text: 'Resume', to: '/profile/resumes' },
-  { icon: 'mdi-delete', text: 'Delete Account', to: '/profile/delete-account' },
+const activeTab = ref('overview')
+
+const tabs = computed(() => [
+  { id: 'overview', icon: 'mdi-person', label: 'Profile', component: 'overview' },
+  { id: 'basic-info', icon: 'mdi-receipt', label: 'Basic Info', component: 'basic-info' },
+  { id: 'change-password', icon: 'mdi-lock', label: 'Change Password', component: 'change-password' },
+  { id: 'two-factor-auth', icon: 'mdi-security', label: '2FA', component: 'two-factor-auth' },
+  { id: 'accounts', icon: 'mdi-clipboard-account', label: 'Accounts', component: 'accounts' },
+  { id: 'notifications', icon: 'mdi-bell', label: 'Notifications', component: 'notifications' },
+  { id: 'sessions', icon: 'mdi-settings', label: 'Sessions', component: 'sessions' },
+  { id: 'delete-account', icon: 'mdi-delete', label: 'Delete Account', component: 'delete-account' },
 ])
 
 const hasData = computed(() => {
@@ -243,10 +242,6 @@ function parseProject(item: Record<string, unknown>, index: number): ProfileProj
   }
 }
 
-async function navigateFromProfileMenu(to: string) {
-  await router.push(to)
-}
-
 async function loadProfileDataIfNeeded() {
   if (!isAuthenticated.value) {
     return
@@ -349,16 +344,28 @@ onMounted(async () => {
           <div class="px-4 pt-3 pb-0">
             <v-list class="border-radius-sm" nav>
               <v-list-item
-                v-for="item in menu"
+                v-for="item in tabs"
                 :key="item.icon"
                 class="px-3 py-1 border-radius-lg mb-2"
-                :active="route.path === item.to"
-                @click="navigateFromProfileMenu(item.to)"
+                :active="activeTab === item.id"
+                @click="activeTab = item.id"
               >
                 <template #prepend>
                   <v-icon size="18" class="material-icons-round me-2 text-dark">{{ item.icon }}</v-icon>
                 </template>
-                <v-list-item-title class="text-dark text-sm">{{ item.text }}</v-list-item-title>
+                <v-list-item-title class="text-dark text-sm">{{ item.label }}</v-list-item-title>
+              </v-list-item>
+            </v-list>
+
+            <v-list class="border-radius-sm" nav>
+              <v-list-item
+                class="px-3 py-1 border-radius-lg mb-2"
+                @click="router.push('/profile/resumes')"
+              >
+                <template #prepend>
+                  <v-icon size="18" class="material-icons-round me-2 text-dark">mdi-note</v-icon>
+                </template>
+                <v-list-item-title class="text-dark text-sm">{{ t('profile.resumes') }}</v-list-item-title>
               </v-list-item>
             </v-list>
 
@@ -369,7 +376,7 @@ onMounted(async () => {
                 block
                 rounded="lg"
                 prepend-icon="mdi-plus-circle-outline"
-                @click="navigateFromProfileMenu('/profile/resumes/new')"
+                @click="router.push('/profile/resumes/new')"
               >
                 {{ t('profile.createResume') }}
               </v-btn>
@@ -409,7 +416,9 @@ onMounted(async () => {
           Aucune donnée de profil disponible.
         </v-alert>
 
-        <v-row v-else>
+        <v-window v-else v-model="activeTab" class="mt-2">
+          <v-window-item value="overview">
+        <v-row>
           <v-col cols="12" lg="6" class="position-relative">
             <v-card class="profile-block h-100 pa-4" rounded="xl" elevation="0">
               <h3 class="text-h5 text-typo mb-4">{{ t('profile.platformSettings') }}</h3>
@@ -636,6 +645,20 @@ onMounted(async () => {
             </v-col>
           </v-row>
         </v-card>
+
+          </v-window-item>
+
+          <v-window-item
+            v-for="tab in tabs.filter((item) => item.id !== 'overview')"
+            :key="tab.id"
+            :value="tab.id"
+          >
+            <v-card class="profile-block pa-4 pa-md-6" rounded="xl" elevation="0">
+              <h3 class="text-h4 text-typo mb-2">{{ tab.label }}</h3>
+              <p class="text-body-1 text-medium-emphasis mb-0">Section "{{ tab.label }}" en préparation.</p>
+            </v-card>
+          </v-window-item>
+        </v-window>
       </v-col>
     </v-row>
   </v-container>
