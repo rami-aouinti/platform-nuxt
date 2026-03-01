@@ -1,8 +1,8 @@
-import { proxyAuthApiGet } from '../../utils/auth-api-proxy'
-import { readProfileEndpointCache, writeProfileEndpointCache } from '../../utils/profile-endpoint-cache'
-import { normalizeProfilePayload } from '../../utils/profile-response-normalizers'
+import { proxyAuthApiGet } from '../../../utils/auth-api-proxy'
+import { readProfileEndpointCache, writeProfileEndpointCache } from '../../../utils/profile-endpoint-cache'
+import { normalizeProfilePayload } from '../../../utils/profile-response-normalizers'
 
-const PROFILE_CACHE_KEY = 'v1-profile'
+const PROFILE_CACHE_KEY = 'v1-me-profile'
 
 export default defineEventHandler(async (event) => {
   const cachedProfile = readProfileEndpointCache(event, PROFILE_CACHE_KEY)

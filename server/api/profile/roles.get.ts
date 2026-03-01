@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
     return cachedRoles
   }
 
-  const roles = await proxyAuthApiGet(event, '/api/v1/profile/roles')
+  const roles = await proxyAuthApiGet(event, '/api/v1/me/profile/roles')
   const normalizedRoles = normalizeProfileRoles(roles)
   writeProfileEndpointCache(event, ROLES_CACHE_KEY, normalizedRoles)
 

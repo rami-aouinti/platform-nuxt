@@ -2,7 +2,7 @@ import { proxyAuthApiGet } from '../../../utils/auth-api-proxy'
 import { readProfileEndpointCache, writeProfileEndpointCache } from '../../../utils/profile-endpoint-cache'
 import { normalizeProfileRoles } from '../../../utils/profile-response-normalizers'
 
-const ROLES_CACHE_KEY = 'v1-profile-roles'
+const ROLES_CACHE_KEY = 'me-profile-roles'
 
 export default defineEventHandler(async (event) => {
   const cachedRoles = readProfileEndpointCache(event, ROLES_CACHE_KEY)
