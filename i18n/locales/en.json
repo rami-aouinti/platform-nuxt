@@ -7,5 +7,108 @@
     "quiz": "Quiz",
     "administration": "Administration",
     "logout": "Logout"
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "signUp": "Sign up"
+  },
+  "common": {
+    "reload": "Reload",
+    "simulateEmpty": "Simulate empty",
+    "simulateError": "Simulate error",
+    "cancel": "Cancel",
+    "confirm": "Confirm"
+  },
+  "tasks": {
+    "title": "Tasks",
+    "columns": {
+      "todo": "To do",
+      "inProgress": "In progress",
+      "done": "Done",
+      "archived": "Archived"
+    },
+    "actions": {
+      "start": "Start",
+      "complete": "Complete",
+      "archive": "Archive",
+      "reopen": "Reopen"
+    },
+    "confirmArchive": "Archive task \"{title}\" permanently?"
+  },
+  "taskRequests": {
+    "title": "Task requests",
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    }
+  },
+  "worldMap": {
+    "unavailable": "World map unavailable in legacy mode"
+  },
+  "settings": {
+    "themePalette": "Theme palette"
+  },
+  "dialogConfirm": {
+    "typeToConfirm": "Type \"{value}\" to confirm",
+    "expectedValue": "Expected value: {value}"
+  },
+  "adminUsers": {
+    "tabs": {
+      "profile": "Profile",
+      "roles": "Roles",
+      "groups": "Groups"
+    },
+    "fields": {
+      "id": "ID",
+      "username": "Username",
+      "email": "Email",
+      "firstName": "First name",
+      "lastName": "Last name"
+    },
+    "heading": "Administration · User {id}",
+    "addGroup": "Add a group"
+  },
+  "projects": {
+    "title": "Projects"
+  },
+  "profile": {
+    "member": "Member",
+    "summary": "Hi, I'm {name}. You can review your profile details, roles, groups, and connected providers in this workspace.",
+    "fields": {
+      "fullName": "Full name",
+      "username": "Username",
+      "email": "Email",
+      "language": "Language",
+      "locale": "Locale",
+      "location": "Location"
+    },
+    "connectedWith": "Connected with {provider}",
+    "providerFallback": "provider",
+    "loadError": "Unable to load profile information.",
+    "countRoles": "{count} Roles",
+    "countGroups": "{count} Groups",
+    "countAccounts": "{count} Accounts",
+    "platformSettings": "Platform settings",
+    "account": "Account",
+    "application": "Application",
+    "profileInformation": "Profile information",
+    "social": "Social",
+    "noLinkedAccount": "No linked account",
+    "groups": "Groups",
+    "projects": "Projects",
+    "viewProject": "View project",
+    "settings": {
+      "account": {
+        "follow": "Email me when someone follows me",
+        "answers": "Email me when someone answers on...",
+        "mentions": "Email me when someone mentions me..."
+      },
+      "application": {
+        "launches": "New launches and projects",
+        "updates": "Monthly product updates",
+        "newsletter": "Subscribe to newsletter"
+      }
+    }
   }
 }

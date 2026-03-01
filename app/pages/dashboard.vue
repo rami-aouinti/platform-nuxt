@@ -1,53 +1,53 @@
 <script setup lang="ts">
 definePageMeta({
   icon: 'mdi-monitor-dashboard',
-  title: 'Dashboard',
+  title: 'Tableau de bord',
   drawerIndex: 1,
 })
 const stats = ref([
   {
     icon: 'mdi-web',
-    title: 'Bandwidth',
+    title: 'Bande passante',
     value: 23,
     unit: 'GB',
     color: 'primary',
-    caption: 'Up: 13, Down: 10',
+    caption: 'Montée : 13, Descente : 10',
   },
   {
     icon: 'mdi-rss',
-    title: 'Submissions',
+    title: 'Soumissions',
     value: 108,
     color: 'primary',
-    caption: 'Too young, too naive',
+    caption: 'Trop jeune, trop naïf',
   },
   {
     icon: 'mdi-send',
-    title: 'Requests',
+    title: 'Requêtes',
     value: 1238,
     color: 'warning',
-    caption: 'Limit: 1320',
+    caption: 'Limite : 1320',
   },
   {
     icon: 'mdi-bell',
     title: 'Messages',
     value: 9042,
     color: 'primary',
-    caption: 'Warnings: 300, erros: 47',
+    caption: 'Avertissements : 300, erreurs : 47',
   },
   {
     icon: 'mdi-github',
-    title: 'Github Stars',
+    title: 'Étoiles GitHub',
     value: NaN,
     color: 'grey',
-    caption: 'API has no response',
+    caption: "L'API ne répond pas",
   },
   {
     icon: 'mdi-currency-cny',
-    title: 'Total Fee',
+    title: 'Frais totaux',
     value: 2300,
     unit: '￥',
     color: 'error',
-    caption: 'Upper Limit: 2000 ￥',
+    caption: 'Limite haute : 2000 ￥',
   },
 ])
 </script>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const { t } = useI18n()
 const dialog = ref(false)
 const confirmed = ref(false)
 let resolve: (value: boolean) => void
@@ -20,11 +21,11 @@ const confirmationFieldLabel = computed(() => {
     return confirmationLabel.value
   }
 
-  return `Tapez "${expectedConfirmationText.value}" pour confirmer`
+  return t('dialogConfirm.typeToConfirm', { value: expectedConfirmationText.value })
 })
 
 const confirmationFieldHint = computed(
-  () => `Valeur attendue : ${expectedConfirmationText.value}`,
+  () => t('dialogConfirm.expectedValue', { value: expectedConfirmationText.value }),
 )
 
 watch(dialog, (v) => {
@@ -85,8 +86,8 @@ defineExpose({ open })
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn color="primary" @click="cancel"> Cancel </v-btn>
-        <v-btn color="primary" :disabled="!canConfirm" @click="confirm"> Confirm </v-btn>
+        <v-btn color="primary" @click="cancel"> {{ t('common.cancel') }} </v-btn>
+        <v-btn color="primary" :disabled="!canConfirm" @click="confirm"> {{ t('common.confirm') }} </v-btn>
         <v-spacer />
       </v-card-actions>
     </v-card>

@@ -8,7 +8,7 @@ import { useRelationField } from '~/composables/admin/useRelationField'
 
 definePageMeta({
   icon: 'mdi-account-details-outline',
-  title: 'User details',
+  title: 'Détails utilisateur',
   drawerIndex: 72,
   requiresAuth: true,
   requiresAdmin: true,
@@ -29,6 +29,7 @@ type UserGroup = {
   name: string
 }
 
+const { t } = useI18n()
 const route = useRoute()
 const authStore = useAuthStore()
 const { roles } = storeToRefs(authStore)
@@ -232,7 +233,7 @@ onMounted(async () => {
   <v-container fluid class="pa-6">
     <v-card rounded="xl" elevation="6" class="pa-6">
       <div class="d-flex align-center justify-space-between flex-wrap ga-3 mb-4">
-        <h1 class="text-h4 font-weight-bold">Administration · User {{ userId }}</h1>
+        <h1 class="text-h4 font-weight-bold">{{ t('adminUsers.heading', { id: userId }) }}</h1>
         <v-btn variant="text" prepend-icon="mdi-arrow-left" to="/admin/user-management/users">
           Retour à la liste
         </v-btn>
@@ -241,19 +242,19 @@ onMounted(async () => {
       <v-progress-linear v-if="loading" indeterminate color="primary" class="mb-4" />
 
       <v-tabs v-model="activeTab" color="primary" class="mb-3">
-        <v-tab value="profile">Profile</v-tab>
-        <v-tab value="roles">Roles</v-tab>
-        <v-tab value="groups">Groups</v-tab>
+        <v-tab value="profile">{{ t('adminUsers.tabs.profile') }}</v-tab>
+        <v-tab value="roles">{{ t('adminUsers.tabs.roles') }}</v-tab>
+        <v-tab value="groups">{{ t('adminUsers.tabs.groups') }}</v-tab>
       </v-tabs>
 
       <v-window v-model="activeTab">
         <v-window-item value="profile">
           <v-card v-if="userProfile" variant="tonal" rounded="lg" class="pa-4">
-            <v-text-field :model-value="userProfile?.id ?? userId" label="ID" disabled class="mb-2" />
-            <v-text-field v-model="userProfile.username" label="Username" :disabled="!canManageProfile || busyAction" class="mb-2" />
-            <v-text-field v-model="userProfile.email" label="Email" :disabled="!canManageProfile || busyAction" class="mb-2" />
-            <v-text-field v-model="userProfile.firstName" label="First name" :disabled="!canManageProfile || busyAction" class="mb-2" />
-            <v-text-field v-model="userProfile.lastName" label="Last name" :disabled="!canManageProfile || busyAction" />
+            <v-text-field :model-value="userProfile?.id ?? userId" :label="t('adminUsers.fields.id')" disabled class="mb-2" />
+            <v-text-field v-model="userProfile.username" :label="t('adminUsers.fields.username')" :disabled="!canManageProfile || busyAction" class="mb-2" />
+            <v-text-field v-model="userProfile.email" :label="t('adminUsers.fields.email')" :disabled="!canManageProfile || busyAction" class="mb-2" />
+            <v-text-field v-model="userProfile.firstName" :label="t('adminUsers.fields.firstName')" :disabled="!canManageProfile || busyAction" class="mb-2" />
+            <v-text-field v-model="userProfile.lastName" :label="t('adminUsers.fields.lastName')" :disabled="!canManageProfile || busyAction" />
 
             <div class="d-flex justify-end mt-2">
               <v-btn color="primary" :loading="busyAction" :disabled="!canManageProfile || !userProfile" @click="saveProfile">
@@ -321,7 +322,7 @@ onMounted(async () => {
               <v-col cols="12" md="8">
                 <v-select
                   v-model="selectedGroupId"
-                  label="Ajouter un groupe"
+                  :label="t('adminUsers.addGroup')"
                   prepend-inner-icon="mdi-account-group"
                   :items="availableGroupOptions"
                   item-title="title"

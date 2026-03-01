@@ -2,6 +2,7 @@
 import { Notify } from '~/stores/notification'
 import { TaskStatus, type Task } from '~/types/task-manager'
 
+const { t } = useI18n()
 defineProps<{ tasks: Task[] }>()
 
 const emit = defineEmits<{
@@ -13,10 +14,10 @@ const confirmRef = useTemplateRef('confirmRef')
 type KanbanColumn = 'todo' | 'in_progress' | 'done' | 'archived'
 
 const columns: { key: KanbanColumn; title: string }[] = [
-  { key: 'todo', title: 'Todo' },
-  { key: 'in_progress', title: 'In progress' },
-  { key: 'done', title: 'Done' },
-  { key: 'archived', title: 'Archived' },
+  { key: 'todo', title: t('tasks.columns.todo') },
+  { key: 'in_progress', title: t('tasks.columns.inProgress') },
+  { key: 'done', title: t('tasks.columns.done') },
+  { key: 'archived', title: t('tasks.columns.archived') },
 ]
 
 function inColumn(task: Task, column: KanbanColumn) {
@@ -29,7 +30,7 @@ async function archiveTask(task: Task) {
     return
   }
 
-  const confirmed = await confirmRef.value.open(`Archiver définitivement la tâche "${task.title}" ?`)
+  const confirmed = await confirmRef.value.open(t('tasks.confirmArchive', { title: task.title }))
   if (!confirmed) {
     return
   }
@@ -53,9 +54,9 @@ async function archiveTask(task: Task) {
                 <TaskStatusChip :status="task.status" />
               </v-card-text>
               <v-card-actions>
-                <v-btn size="x-small" variant="text" @click="emit('updateTaskStatus', { id: String(task.id), status: TaskStatus.IN_PROGRESS })">Start</v-btn>
-                <v-btn size="x-small" variant="text" @click="emit('updateTaskStatus', { id: String(task.id), status: TaskStatus.COMPLETED })">Done</v-btn>
-                <v-btn size="x-small" variant="text" color="error" @click="archiveTask(task)">Archive</v-btn>
+                <v-btn size="x-small" variant="text" @click="emit('updateTaskStatus', { id: String(task.id), status: TaskStatus.IN_PROGRESS })">{{ t('tasks.actions.start') }}</v-btn>
+                <v-btn size="x-small" variant="text" @click="emit('updateTaskStatus', { id: String(task.id), status: TaskStatus.COMPLETED })">{{ t('tasks.actions.complete') }}</v-btn>
+                <v-btn size="x-small" variant="text" color="error" @click="archiveTask(task)">{{ t('tasks.actions.archive') }}</v-btn>
               </v-card-actions>
             </v-card>
           </v-card-text>
