@@ -10,7 +10,9 @@ const legacyInternalPageMatchers = [
 const shouldExcludeLegacyInternalPage = (file: string) =>
   legacyInternalPageMatchers.some((segment) => file.includes(segment))
 
-const filterLegacyInternalPages = (pages: Array<{ file?: string; children?: any[] }>) => {
+const filterLegacyInternalPages = (
+  pages: Array<{ file?: string; children?: any[] }>,
+) => {
   for (let index = pages.length - 1; index >= 0; index -= 1) {
     const page = pages[index]
 
@@ -117,6 +119,10 @@ export default defineNuxtConfig({
     },
     authApiBase: '',
     authApiTimeoutMs: 8000,
+    apiVersionProxy: {
+      v1: '/api/v1',
+      v2: '/api/v2',
+    },
     public: {
       authApiBase: 'http://localhost',
     },

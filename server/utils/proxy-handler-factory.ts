@@ -33,8 +33,19 @@ interface ProxyEntityHandlerOptions {
   }
 }
 
+interface VersionedCatchAllProxyHandlerOptions {
+  version: 'v1' | 'v2'
+  getUpstreamVersionPrefix?: (event: H3Event) => string | undefined
+}
+
 function isSupportedMethod(method: string): method is ProxyHttpMethod {
-  return method === 'GET' || method === 'POST' || method === 'PUT' || method === 'PATCH' || method === 'DELETE'
+  return (
+    method === 'GET' ||
+    method === 'POST' ||
+    method === 'PUT' ||
+    method === 'PATCH' ||
+    method === 'DELETE'
+  )
 }
 
 function normalizeCatchAllPath(pathParam: string | string[] | undefined) {
@@ -54,12 +65,19 @@ export function validateRequiredRouteParam(
 
   throw createError({
     statusCode: 400,
-    statusMessage: missingParamError?.statusMessage ?? `Invalid ${paramName} parameter.`,
-    message: missingParamError?.message ?? `Route parameter "${paramName}" is required.`,
+    statusMessage:
+      missingParamError?.statusMessage ?? `Invalid ${paramName} parameter.`,
+    message:
+      missingParamError?.message ??
+      `Route parameter "${paramName}" is required.`,
   })
 }
 
-function proxyRequestByMethod(event: H3Event, path: string, method: ProxyHttpMethod) {
+function proxyRequestByMethod(
+  event: H3Event,
+  path: string,
+  method: ProxyHttpMethod,
+) {
   if (method === 'GET') {
     return proxyAuthApiGet(event, path)
   }
@@ -88,18 +106,34 @@ export function createProxyCollectionHandlerWithQuery(
   })
 }
 
-export function createProxyEntityHandler(options: ProxyEntityHandlerOptions): EventHandler {
+export function createProxyEntityHandler(
+  options: ProxyEntityHandlerOptions,
+): EventHandler {
   const { paramName, upstreamPathBuilder, method, missingParamError } = options
 
   return defineEventHandler(async (event) => {
-    const paramValue = validateRequiredRouteParam(event, paramName, missingParamError)
+    const paramValue = validateRequiredRouteParam(
+      event,
+      paramName,
+      missingParamError,
+    )
     const path = upstreamPathBuilder(paramValue)
 
     return await proxyRequestByMethod(event, path, method)
   })
 }
 
-export function createVersionedCatchAllProxyHandler(version: 'v1' | 'v2'): EventHandler {
+export function createVersionedCatchAllProxyHandler(
+  version: 'v1' | 'v2',
+): EventHandler {
+  return createVersionedCatchAllProxyHandlerWithOptions({ version })
+}
+
+export function createVersionedCatchAllProxyHandlerWithOptions(
+  options: VersionedCatchAllProxyHandlerOptions,
+): EventHandler {
+  const { version, getUpstreamVersionPrefix } = options
+
   return defineEventHandler(async (event) => {
     const method = getMethod(event).toUpperCase()
 
@@ -132,7 +166,12 @@ export function createVersionedCatchAllProxyHandler(version: 'v1' | 'v2'): Event
     requireAuthenticatedRequest(event)
 
     const suffix = buildQuerySuffixFromQuery(getQuery(event))
-    const upstreamPath = `/api/${version}/${normalizedPath}${suffix}`
+    const configuredPrefix = getUpstreamVersionPrefix?.(event)
+    const upstreamVersionPrefix = configuredPrefix?.trim() || `/api/${version}`
+    const normalizedPrefix = upstreamVersionPrefix.endsWith('/')
+      ? upstreamVersionPrefix.slice(0, -1)
+      : upstreamVersionPrefix
+    const upstreamPath = `${normalizedPrefix}/${normalizedPath}${suffix}`
 
     return await proxyAuthApiRequest(event, upstreamPath, method)
   })
