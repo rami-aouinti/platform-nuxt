@@ -560,70 +560,69 @@ onMounted(async () => {
         </v-card>
       </v-col>
       <v-col lg="9">
-        <v-sheet rounded="xl">
-          <div
-            class="d-flex flex-column flex-md-row align-md-center justify-space-between ga-4"
-            style="padding: 15px; margin: 15px"
-          >
-            <div class="d-flex align-center ga-4">
-              <UiAvatar
-                size="xl"
-                class="hero-avatar text-h4 font-weight-bold"
-                >{{ avatarInitials }}</UiAvatar
-              >
-              <div>
-                <h1 class="text-h4 font-weight-bold text-typo mb-1">
-                  {{ displayName }}
-                </h1>
-                <p class="text-h6 text-medium-emphasis mb-0">{{ subtitle }}</p>
-              </div>
-            </div>
-
-            <div class="d-flex ga-2 flex-wrap">
-              <v-chip
-                color="primary"
-                variant="tonal"
-                prepend-icon="mdi-shield-account"
-                >{{ t('profile.countRoles', { count: roles.length }) }}</v-chip
-              >
-              <v-chip
-                color="secondary"
-                variant="tonal"
-                prepend-icon="mdi-account-group"
-                >{{
-                  t('profile.countGroups', { count: groups.length })
-                }}</v-chip
-              >
-              <v-chip
-                color="info"
-                variant="tonal"
-                prepend-icon="mdi-connection"
-                >{{
-                  t('profile.countAccounts', { count: socialAccounts.length })
-                }}</v-chip
-              >
-            </div>
-          </div>
-        </v-sheet>
-
-        <div v-if="isLoading" class="state-card d-flex align-center ga-3 mb-4">
-          <v-progress-circular indeterminate color="primary" />
-          <span>Chargement du profil...</span>
-        </div>
-
-        <v-alert
-          v-else-if="errorMessage"
-          type="error"
-          variant="tonal"
-          density="comfortable"
-          class="mb-4"
-          rounded="lg"
-        >
-          {{ errorMessage }}
-        </v-alert>
-
         <v-window v-model="activeTab" class="mt-2">
           <v-window-item value="overview">
+            <v-sheet rounded="xl">
+              <div
+                class="d-flex flex-column flex-md-row align-md-center justify-space-between ga-4"
+                style="padding: 15px; margin: 15px"
+              >
+                <div class="d-flex align-center ga-4">
+                  <UiAvatar
+                    size="xl"
+                    class="hero-avatar text-h4 font-weight-bold"
+                  >{{ avatarInitials }}</UiAvatar
+                  >
+                  <div>
+                    <h1 class="text-h4 font-weight-bold text-typo mb-1">
+                      {{ displayName }}
+                    </h1>
+                    <p class="text-h6 text-medium-emphasis mb-0">{{ subtitle }}</p>
+                  </div>
+                </div>
+
+                <div class="d-flex ga-2 flex-wrap">
+                  <v-chip
+                    color="primary"
+                    variant="tonal"
+                    prepend-icon="mdi-shield-account"
+                  >{{ t('profile.countRoles', { count: roles.length }) }}</v-chip
+                  >
+                  <v-chip
+                    color="secondary"
+                    variant="tonal"
+                    prepend-icon="mdi-account-group"
+                  >{{
+                      t('profile.countGroups', { count: groups.length })
+                    }}</v-chip
+                  >
+                  <v-chip
+                    color="info"
+                    variant="tonal"
+                    prepend-icon="mdi-connection"
+                  >{{
+                      t('profile.countAccounts', { count: socialAccounts.length })
+                    }}</v-chip
+                  >
+                </div>
+              </div>
+            </v-sheet>
+
+            <div v-if="isLoading" class="state-card d-flex align-center ga-3 mb-4">
+              <v-progress-circular indeterminate color="primary" />
+              <span>Chargement du profil...</span>
+            </div>
+
+            <v-alert
+              v-else-if="errorMessage"
+              type="error"
+              variant="tonal"
+              density="comfortable"
+              class="mb-4"
+              rounded="lg"
+            >
+              {{ errorMessage }}
+            </v-alert>
             <v-alert
               v-if="!hasData"
               type="info"
