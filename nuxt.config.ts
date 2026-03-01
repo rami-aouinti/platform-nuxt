@@ -106,6 +106,25 @@ export default defineNuxtConfig({
     ],
   },
   vite: {
+    resolve: {
+      alias: [
+        { find: 'chart.js/auto', replacement: './app/shims/chartjs-auto.ts' },
+        { find: 'sweetalert2', replacement: './app/shims/sweetalert2.ts' },
+        { find: 'vue-sweetalert2', replacement: './app/shims/vue-sweetalert2.ts' },
+        { find: /^jsvectormap$/, replacement: './app/shims/jsvectormap/index.ts' },
+        { find: /^jsvectormap\//, replacement: './app/shims/jsvectormap/' },
+        { find: /^leaflet$/, replacement: './app/shims/leaflet/index.ts' },
+        { find: /^leaflet\//, replacement: './app/shims/leaflet/' },
+        { find: 'vue2-leaflet', replacement: './app/shims/vue2-leaflet.ts' },
+        { find: /^vue-kanban$/, replacement: './app/shims/vue-kanban/index.ts' },
+        { find: /^vue-kanban\//, replacement: './app/shims/vue-kanban/' },
+        { find: /^quill$/, replacement: './app/shims/quill/index.ts' },
+        { find: /^quill\//, replacement: './app/shims/quill/' },
+        { find: /^dropzone$/, replacement: './app/shims/dropzone/index.ts' },
+        { find: 'vue-pswipe', replacement: './app/shims/vue-pswipe.ts' },
+        { find: 'vue-round-slider', replacement: './app/shims/vue-round-slider.ts' },
+      ],
+    },
     build: { sourcemap: false },
   },
   runtimeConfig: {
