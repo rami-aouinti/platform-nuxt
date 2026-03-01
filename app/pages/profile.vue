@@ -20,6 +20,11 @@ definePageMeta({
   requiresAuth: true,
 })
 
+type ToggleItem = {
+  text: string
+  enabled: boolean
+}
+
 type SocialAccount = {
   provider?: string
   username?: string
@@ -33,6 +38,18 @@ const { isAuthenticated, profile, roles, groups } = storeToRefs(auth)
 const isLoading = ref(false)
 const errorMessage = ref<string | null>(null)
 const socialAccounts = ref<SocialAccount[]>([])
+
+const accountSettings = ref<ToggleItem[]>([
+  { enabled: true, text: t('profile.settings.account.follow') },
+  { enabled: false, text: t('profile.settings.account.answers') },
+  { enabled: true, text: t('profile.settings.account.mentions') },
+])
+
+const applicationSettings = ref<ToggleItem[]>([
+  { enabled: false, text: t('profile.settings.application.launches') },
+  { enabled: true, text: t('profile.settings.application.updates') },
+  { enabled: false, text: t('profile.settings.application.newsletter') },
+])
 
 const conversationFallback = [
   { avatar: imageKalVisualsSquare, user: 'Sophie B.', message: 'Hi! I need more information..' },
@@ -142,17 +159,6 @@ const socialProviders = computed(() => {
     .filter((provider): provider is string => Boolean(provider))
 })
 
-const profileMenu = [
-  { icon: 'mdi-account', text: 'Profile' },
-  { icon: 'mdi-clipboard-text-outline', text: 'Basic Info' },
-  { icon: 'mdi-lock-outline', text: 'Change Password' },
-  { icon: 'mdi-shield-check-outline', text: '2FA' },
-  { icon: 'mdi-badge-account-outline', text: 'Accounts' },
-  { icon: 'mdi-bullhorn-outline', text: 'Notifications' },
-  { icon: 'mdi-cog-outline', text: 'Sessions' },
-  { icon: 'mdi-delete-outline', text: 'Delete Account' },
-]
-
 function formatGroupRole(group: (typeof groups.value)[number]) {
   if (typeof group.role === 'string') {
     return group.role
@@ -227,27 +233,30 @@ onMounted(loadProfileDataIfNeeded)
     </v-alert>
 
     <v-row v-else>
-      <v-col cols="12" lg="3" class="position-relative">
+      <v-col cols="12" lg="4" class="position-relative">
         <v-card class="profile-block h-100 pa-4" rounded="xl" elevation="0">
-          <v-list bg-color="transparent" class="py-0">
-            <v-list-item
-              v-for="item in profileMenu"
-              :key="item.text"
-              :active="item.text === 'Profile'"
-              rounded="lg"
-              class="mb-2"
-            >
-              <template #prepend>
-                <v-icon :icon="item.icon" class="me-3" color="primary" />
-              </template>
-              <v-list-item-title class="text-h6 font-weight-regular text-typo">{{ item.text }}</v-list-item-title>
-            </v-list-item>
-          </v-list>
+          <h3 class="text-h5 text-typo mb-4">{{ t('profile.platformSettings') }}</h3>
+
+          <p class="text-uppercase text-caption font-weight-bold text-medium-emphasis mb-3">{{ t('profile.account') }}</p>
+          <div class="d-flex flex-column ga-4 mb-6">
+            <div v-for="setting in accountSettings" :key="setting.text" class="d-flex align-center justify-space-between ga-3">
+              <v-switch v-model="setting.enabled" color="primary" hide-details inset density="comfortable" />
+              <span class="text-body-1 text-medium-emphasis">{{ setting.text }}</span>
+            </div>
+          </div>
+
+          <p class="text-uppercase text-caption font-weight-bold text-medium-emphasis mb-3">{{ t('profile.application') }}</p>
+          <div class="d-flex flex-column ga-4">
+            <div v-for="setting in applicationSettings" :key="setting.text" class="d-flex align-center justify-space-between ga-3">
+              <v-switch v-model="setting.enabled" color="primary" hide-details inset density="comfortable" />
+              <span class="text-body-1 text-medium-emphasis">{{ setting.text }}</span>
+            </div>
+          </div>
         </v-card>
         <div class="vertical-divider d-none d-lg-block" />
       </v-col>
 
-      <v-col cols="12" lg="5" class="position-relative">
+      <v-col cols="12" lg="4" class="position-relative">
         <v-card class="profile-block h-100 pa-4" rounded="xl" elevation="0">
           <h3 class="text-h5 text-typo mb-4">{{ t('profile.profileInformation') }}</h3>
           <p class="text-body-1 text-medium-emphasis mb-6">{{ profileSummary }}</p>
