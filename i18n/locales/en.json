@@ -111,6 +111,25 @@
       }
     },
     "resumes": "Resumes",
-    "createResume": "Create a resume"
+    "createResume": "Create a resume",
+    "tabs": {
+      "overview": "Profile",
+      "basicInfo": "Basic Info",
+      "changePassword": "Change Password",
+      "twoFactorAuth": "2FA",
+      "accounts": "Accounts",
+      "notifications": "Notifications",
+      "sessions": "Sessions",
+      "deleteAccount": "Delete Account"
+    },
+    "tabDescriptions": {
+      "basicInfo": "This section is dedicated to basic profile information.",
+      "changePassword": "This section is dedicated to password updates.",
+      "twoFactorAuth": "This section is dedicated to two-factor authentication.",
+      "accounts": "This section is dedicated to linked account management.",
+      "notifications": "This section is dedicated to notification preferences.",
+      "sessions": "This section is dedicated to active session management.",
+      "deleteAccount": "This section is dedicated to account deletion."
+    }
   }
 }
