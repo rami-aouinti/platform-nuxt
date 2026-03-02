@@ -84,3 +84,6 @@ jobs:
 
       - name: Check legacy migration status
         run: pnpm run legacy:migration:check
+
+      - name: Check endpoint inventory
+        run: pnpm run endpoint:inventory:check
