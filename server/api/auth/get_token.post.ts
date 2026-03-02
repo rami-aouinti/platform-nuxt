@@ -1,3 +1,25 @@
+import type { H3Event } from 'h3'
+
+function isSecureCookie(event: H3Event) {
+  const forwardedProto = getHeader(event, 'x-forwarded-proto')
+
+  if (forwardedProto) {
+    return forwardedProto.split(',')[0]?.trim().toLowerCase() === 'https'
+  }
+
+  const host = getHeader(event, 'host') ?? ''
+  return !host.includes('localhost') && !host.includes('127.0.0.1')
+}
+
+function clearLegacyClientCookie(event: H3Event, secure: boolean) {
+  deleteCookie(event, 'auth_token', {
+    path: '/',
+    sameSite: 'lax',
+    secure,
+    maxAge: 0,
+  })
+}
+
 export default defineEventHandler(async (event) => {
   const body = await readBody<{ username?: string, password?: string }>(event)
 
@@ -23,11 +45,29 @@ export default defineEventHandler(async (event) => {
 
   for (const baseURL of upstreamCandidates) {
     try {
-      return await $fetch<{ token?: string }>('/api/v1/auth/get_token', {
+      const response = await $fetch<{ token?: string }>('/api/v1/auth/get_token', {
         baseURL,
         method: 'POST',
         body,
       })
+
+      const token = response?.token?.trim()
+      const secure = isSecureCookie(event)
+
+      if (token) {
+        setCookie(event, 'auth_token', encodeURIComponent(token), {
+          path: '/',
+          httpOnly: true,
+          secure,
+          sameSite: 'lax',
+          maxAge: 60 * 60 * 8,
+        })
+      }
+      else {
+        clearLegacyClientCookie(event, secure)
+      }
+
+      return response
     }
     catch (error) {
       lastError = error

@@ -5,14 +5,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
   const authStore = useAuthStore()
 
   if (!authStore.isAuthenticated) {
-    const tokenCookie = useCookie<string | null>('auth_token')
-
-    if (tokenCookie.value) {
-      authStore.token = decodeURIComponent(tokenCookie.value)
-    }
-  }
-
-  if (!authStore.isAuthenticated) {
     return navigateTo('/login')
   }
 
