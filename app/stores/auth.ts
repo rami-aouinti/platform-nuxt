@@ -10,6 +10,8 @@ import {
 } from '~/utils/auth/state-cache'
 import { canAccessAdmin } from '~/utils/permissions/admin'
 
+const COOKIE_SESSION_TOKEN = '__cookie_session__'
+
 export const useAuthStore = defineStore('auth', () => {
   const token = ref<string | null>(null)
   const profile = ref<AuthProfile | null>(null)
@@ -65,7 +67,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function authHeaders() {
-    if (!token.value) {
+    if (!token.value || token.value === COOKIE_SESSION_TOKEN) {
       return undefined
     }
 
@@ -83,11 +85,7 @@ export const useAuthStore = defineStore('auth', () => {
       },
     })
 
-    setToken(response?.token ?? null)
-
-    if (!token.value) {
-      throw new Error('Token absent de la réponse API.')
-    }
+    setToken(response?.token ?? COOKIE_SESSION_TOKEN)
 
     await fetchProfileData()
   }
@@ -162,7 +160,13 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  function logout() {
+  async function logout() {
+    try {
+      await $fetch('/api/auth/logout', { method: 'POST' })
+    } catch {
+      // no-op: logout local reste prioritaire même si l'API échoue
+    }
+
     setToken(null)
     profile.value = null
     groups.value = []
@@ -181,8 +185,16 @@ export const useAuthStore = defineStore('auth', () => {
     const storedToken = readPersistedToken()
 
     if (!storedToken) {
-      logout()
-      initialized.value = true
+      setToken(COOKIE_SESSION_TOKEN)
+
+      try {
+        await fetchProfileData()
+      } catch {
+        await logout()
+      } finally {
+        initialized.value = true
+      }
+
       return
     }
 
@@ -205,7 +217,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       await fetchProfileData()
     } catch {
-      logout()
+      await logout()
     } finally {
       initialized.value = true
     }

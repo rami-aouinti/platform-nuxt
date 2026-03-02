@@ -10,10 +10,6 @@ function canUseSessionStorage() {
   return typeof sessionStorage !== 'undefined'
 }
 
-function canUseDocumentCookie() {
-  return typeof document !== 'undefined'
-}
-
 export function clearPersistedAuthState() {
   if (!canUseSessionStorage()) {
     return
@@ -66,18 +62,13 @@ export function readCachedAuthState(
 }
 
 export function persistToken(token: string | null) {
-  if (!canUseSessionStorage() || !canUseDocumentCookie()) {
+  if (!canUseSessionStorage()) {
     return
   }
 
-  if (token) {
-    sessionStorage.setItem(AUTH_TOKEN_STORAGE_KEY, token)
-    document.cookie = `${AUTH_TOKEN_COOKIE_KEY}=${encodeURIComponent(token)}; Path=/; SameSite=Lax`
-    return
+  if (!token) {
+    sessionStorage.removeItem(AUTH_TOKEN_STORAGE_KEY)
   }
-
-  sessionStorage.removeItem(AUTH_TOKEN_STORAGE_KEY)
-  document.cookie = `${AUTH_TOKEN_COOKIE_KEY}=; Path=/; Max-Age=0; SameSite=Lax`
 }
 
 function readPersistedTokenFromCookie(): string | null {
@@ -91,6 +82,7 @@ function readPersistedTokenFromCookie(): string | null {
 }
 
 export function readPersistedToken(): string | null {
+  // Compat temporaire: accepter l'ancien stockage client le temps de la migration.
   if (canUseSessionStorage()) {
     const sessionToken = sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)
 
