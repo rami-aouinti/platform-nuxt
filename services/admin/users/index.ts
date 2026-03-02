@@ -1,6 +1,8 @@
 import { createAdminCrudService, type Id, type PatchPayload } from '../shared/index'
 
-const USERS_BASE_PATH = '/api/v1/admin/users'
+import { adminEndpoints } from '../endpoints'
+
+const USERS_BASE_PATH = adminEndpoints.users.base
 
 export const USER_TEXT_MIN_LENGTH = 2
 export const USER_TEXT_MAX_LENGTH = 255

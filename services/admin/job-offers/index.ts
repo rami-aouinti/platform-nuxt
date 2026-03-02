@@ -11,7 +11,9 @@ import {
   type PatchPayload,
 } from '../shared/index'
 
-const JOB_OFFERS_BASE_PATH = '/api/v1/admin/job-offers'
+import { adminEndpoints } from '../endpoints'
+
+const JOB_OFFERS_BASE_PATH = adminEndpoints.jobOffers.base
 
 export interface JobOffer {
   id: Id
@@ -86,7 +88,7 @@ export function listMyJobOffers(
         total?: number
         totalItems?: number
       }
-  >(`${JOB_OFFERS_BASE_PATH}/my`, { query: normalizeListQuery(query) }).then(
+  >(adminEndpoints.jobOffers.my, { query: normalizeListQuery(query) }).then(
     (response) => normalizePaginatedResponse<JobOffer>(response),
   )
 }

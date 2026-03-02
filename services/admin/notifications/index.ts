@@ -1,6 +1,8 @@
 import { createAdminCrudService, type Id, type PatchPayload } from '../shared/index'
 
-const NOTIFICATIONS_BASE_PATH = '/api/v1/admin/notifications'
+import { adminEndpoints } from '../endpoints'
+
+const NOTIFICATIONS_BASE_PATH = adminEndpoints.notifications.base
 
 export interface Notification {
   id: Id
