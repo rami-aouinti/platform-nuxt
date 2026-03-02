@@ -27,6 +27,7 @@ type OfferForm = {
 
 const offerStore = useJobOfferStore()
 const applicationStore = useJobApplicationStore()
+const { t } = useI18n()
 
 const {
   rows,
@@ -54,17 +55,17 @@ const editing = ref<OfferForm>({
   status: 'draft',
 })
 
-const filterSections = [
+const filterSections = computed(() => [
   {
     key: 'status',
-    title: 'Statut',
+    title: t('offers.myOffers.filters.status.title'),
     items: [
-      { label: 'Brouillon', value: 'draft' },
-      { label: 'Ouverte', value: 'open' },
-      { label: 'Fermée', value: 'closed' },
+      { label: t('offers.myOffers.filters.status.draft'), value: 'draft' },
+      { label: t('offers.myOffers.filters.status.open'), value: 'open' },
+      { label: t('offers.myOffers.filters.status.closed'), value: 'closed' },
     ],
   },
-]
+])
 const mobileFilters = ref(false)
 
 const selectedRow = computed(() =>
@@ -76,8 +77,8 @@ function applicationCandidateName(
   application: NonNullable<JobOffer['jobApplications']>[number],
 ) {
   const candidate = application.candidate
-  if (!candidate || typeof candidate === 'string') return '-'
-  return candidate.firstName || candidate.username || candidate.email || '-'
+  if (!candidate || typeof candidate === 'string') return t('offers.shared.notProvided')
+  return candidate.firstName || candidate.username || candidate.email || t('offers.shared.notProvided')
 }
 
 function openEdit(offerId: string) {
@@ -132,9 +133,9 @@ async function deleteOffer(offerId: string) {
 
   const identifier = String(row.title || row.id)
   const confirmed = await dialogDelete.value?.open(
-    `Supprimer l'offre ${identifier} ?`,
+    t('offers.myOffers.delete.confirm', { identifier }),
     {
-      confirmationLabel: `Saisissez ${identifier} pour confirmer`,
+      confirmationLabel: t('offers.myOffers.delete.confirmLabel', { identifier }),
       expectedConfirmationText: identifier,
     },
   )
@@ -210,20 +211,20 @@ onMounted(loadRows)
       <section class="offers-board-page__content">
 
         <v-alert v-if="pageState === 'forbidden'" type="error" variant="tonal"
-          >403 · Accès refusé.</v-alert
+          >{{ t('offers.shared.forbidden') }}</v-alert
         >
         <v-alert
           v-else-if="pageState === 'error'"
           type="error"
           variant="tonal"
-          >{{ error || 'Erreur API.' }}</v-alert
+          >{{ error || t('offers.shared.apiError') }}</v-alert
         >
         <v-skeleton-loader
           v-else-if="pageState === 'loading'"
           type="article, article"
         />
         <v-alert v-else-if="pageState === 'empty'" type="info" variant="tonal"
-          >Aucune offre à gérer.</v-alert
+          >{{ t('offers.myOffers.empty') }}</v-alert
         >
 
         <div v-else class="offers-board-page__grid">
@@ -233,7 +234,7 @@ onMounted(loadRows)
               :key="offer.id"
               :offer="offer"
               :active="selectedOffer?.id === offer.id"
-              action-label="Modifier"
+              :action-label="t('offers.myOffers.actions.edit')"
               action-icon="mdi-pencil-outline"
               @select="selectedId = $event"
               @action="openEdit"
@@ -245,7 +246,7 @@ onMounted(loadRows)
               prepend-icon="mdi-delete-outline"
               @click="deleteOffer(selectedOffer.id)"
             >
-              Supprimer l'offre sélectionnée
+              {{ t('offers.myOffers.actions.deleteSelected') }}
             </v-btn>
           </div>
 
@@ -257,27 +258,27 @@ onMounted(loadRows)
               :salary="selectedOffer.salary"
               :description="
                 selectedRow?.description ||
-                'Mettez à jour votre description pour présenter la mission.'
+                t('offers.myOffers.details.descriptionFallback')
               "
               :highlights="[
-                'Ajuster les missions pour refléter le besoin actuel',
-                'Vérifier les prérequis et la stack technique',
-                'Mettre à jour les informations de rémunération',
+                t('offers.myOffers.details.highlights.adjustMission'),
+                t('offers.myOffers.details.highlights.verifyStack'),
+                t('offers.myOffers.details.highlights.updateCompensation'),
               ]"
               :requirements="[
-                'Expérience adaptée au poste',
-                'Bon niveau de communication',
-                'Autonomie et sens de l\'organisation',
+                t('offers.myOffers.details.requirements.experience'),
+                t('offers.myOffers.details.requirements.communication'),
+                t('offers.myOffers.details.requirements.autonomy'),
               ]"
               :perks="[
-                'Télétravail possible',
-                'Prime annuelle',
-                'Mutuelle premium',
+                t('offers.myOffers.details.perks.remote'),
+                t('offers.myOffers.details.perks.bonus'),
+                t('offers.myOffers.details.perks.healthcare'),
               ]"
             />
 
             <v-card variant="flat" rounded="lg" border>
-              <v-card-title class="text-subtitle-1">Candidatures</v-card-title>
+              <v-card-title class="text-subtitle-1">{{ t('offers.myOffers.applications.title') }}</v-card-title>
               <v-divider />
               <v-list lines="two" density="comfortable">
                 <template
@@ -297,7 +298,7 @@ onMounted(loadRows)
                       </div>
                     </template>
                     <template #subtitle>
-                      <span>Application ID: {{ application.id }}</span>
+                      <span>{{ t('offers.myOffers.applications.applicationId', { id: application.id }) }}</span>
                     </template>
                     <template #append>
                       <div class="d-flex ga-1">
@@ -308,7 +309,7 @@ onMounted(loadRows)
                           variant="text"
                           icon="mdi-check"
                           :loading="actionLoading"
-                          @click="decideApplication(String(application.id), 'accept', 'Candidature acceptée.')"
+                          @click="decideApplication(String(application.id), 'accept', t('offers.myOffers.applications.accepted'))"
                         />
                         <v-btn
                           v-if="application.status === 'pending'"
@@ -317,7 +318,7 @@ onMounted(loadRows)
                           variant="text"
                           icon="mdi-close"
                           :loading="actionLoading"
-                          @click="decideApplication(String(application.id), 'reject', 'Candidature rejetée.')"
+                          @click="decideApplication(String(application.id), 'reject', t('offers.myOffers.applications.rejected'))"
                         />
                         <v-btn
                           size="small"
@@ -325,7 +326,7 @@ onMounted(loadRows)
                           variant="text"
                           icon="mdi-undo-variant"
                           :loading="actionLoading"
-                          @click="decideApplication(String(application.id), 'withdraw', 'Candidature retirée.')"
+                          @click="decideApplication(String(application.id), 'withdraw', t('offers.myOffers.applications.withdrawn'))"
                         />
                       </div>
                     </template>
@@ -335,8 +336,8 @@ onMounted(loadRows)
 
                 <v-list-item
                   v-if="!(selectedRow?.jobApplications || []).length"
-                  title="Aucune candidature"
-                  subtitle="Cette offre n'a pas encore reçu de candidature."
+                  :title="t('offers.myOffers.applications.emptyTitle')"
+                  :subtitle="t('offers.myOffers.applications.emptySubtitle')"
                 />
               </v-list>
             </v-card>
@@ -357,7 +358,7 @@ onMounted(loadRows)
       <div>
         <OffersFiltersSidebar
           v-model="selectedFilters"
-          title="Segments"
+          :title="t('offers.myOffers.filters.sidebarTitle')"
           :sections="filterSections"
         />
       </div>
@@ -367,36 +368,36 @@ onMounted(loadRows)
 
     <v-dialog v-model="editDialog" max-width="760">
       <v-card>
-        <v-card-title>Modifier l'offre</v-card-title>
+        <v-card-title>{{ t('offers.myOffers.editDialog.title') }}</v-card-title>
         <v-card-text class="pt-4">
-          <v-text-field v-model="editing.title" label="Titre" class="mb-2" />
-          <v-text-field v-model="editing.slug" label="Slug" class="mb-2" />
+          <v-text-field v-model="editing.title" :label="t('offers.myOffers.editDialog.fields.title')" class="mb-2" />
+          <v-text-field v-model="editing.slug" :label="t('offers.myOffers.editDialog.fields.slug')" class="mb-2" />
           <v-text-field
             v-model="editing.company"
-            label="ID entreprise"
+            :label="t('offers.myOffers.editDialog.fields.companyId')"
             class="mb-2"
           />
           <v-select
             v-model="editing.status"
             :items="[
-              { title: 'Brouillon', value: 'draft' },
-              { title: 'Ouverte', value: 'open' },
-              { title: 'Fermée', value: 'closed' },
+              { title: t('offers.myOffers.filters.status.draft'), value: 'draft' },
+              { title: t('offers.myOffers.filters.status.open'), value: 'open' },
+              { title: t('offers.myOffers.filters.status.closed'), value: 'closed' },
             ]"
-            label="Statut"
+            :label="t('offers.myOffers.filters.status.title')"
             class="mb-2"
           />
           <v-textarea
             v-model="editing.description"
-            label="Description"
+            :label="t('offers.myOffers.editDialog.fields.description')"
             rows="4"
           />
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn variant="text" @click="editDialog = false">Annuler</v-btn>
+          <v-btn variant="text" @click="editDialog = false">{{ t('common.cancel') }}</v-btn>
           <v-btn color="primary" :loading="actionLoading" @click="saveOffer"
-            >Enregistrer</v-btn
+            >{{ t('offers.myOffers.editDialog.save') }}</v-btn
           >
         </v-card-actions>
       </v-card>

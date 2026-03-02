@@ -16,6 +16,7 @@ definePageMeta({
 
 const offerStore = useJobOfferStore()
 const applicationStore = useJobApplicationStore()
+const { t } = useI18n()
 
 const {
   error,
@@ -33,35 +34,35 @@ const favorites = ref<string[]>([])
 const mobileFilters = ref(false)
 const { smAndDown } = useDisplay()
 
-const filterSections = [
+const filterSections = computed(() => [
   {
     key: 'employmentType',
-    title: 'Anstellungsart',
+    title: t('offers.index.filters.employmentType.title'),
     items: [
-      { label: 'Vollzeit', value: 'full-time' },
-      { label: 'Teilzeit', value: 'part-time' },
-      { label: 'Freelance', value: 'freelance' },
+      { label: t('offers.index.filters.employmentType.fullTime'), value: 'full-time' },
+      { label: t('offers.index.filters.employmentType.partTime'), value: 'part-time' },
+      { label: t('offers.index.filters.employmentType.freelance'), value: 'freelance' },
     ],
   },
   {
     key: 'remoteMode',
-    title: 'Arbeitsmodell',
+    title: t('offers.index.filters.remoteMode.title'),
     items: [
-      { label: 'Remote', value: 'remote' },
-      { label: 'Hybrid', value: 'hybrid' },
-      { label: 'Vor Ort', value: 'onsite' },
+      { label: t('offers.index.filters.remoteMode.remote'), value: 'remote' },
+      { label: t('offers.index.filters.remoteMode.hybrid'), value: 'hybrid' },
+      { label: t('offers.index.filters.remoteMode.onsite'), value: 'onsite' },
     ],
   },
   {
     key: 'publishedWithinDays',
-    title: 'Publication',
+    title: t('offers.index.filters.publishedWithinDays.title'),
     items: [
       { label: '24h', value: '1' },
-      { label: '7 jours', value: '7' },
-      { label: '30 jours', value: '30' },
+      { label: t('offers.index.filters.publishedWithinDays.sevenDays'), value: '7' },
+      { label: t('offers.index.filters.publishedWithinDays.thirtyDays'), value: '30' },
     ],
   },
-]
+])
 
 
 async function loadRows() {
@@ -121,20 +122,20 @@ onMounted(loadRows)
       <section class="offers-board-page__content">
 
         <v-alert v-if="pageState === 'forbidden'" type="error" variant="tonal"
-          >403 · Accès refusé.</v-alert
+          >{{ t('offers.shared.forbidden') }}</v-alert
         >
         <v-alert
           v-else-if="pageState === 'error'"
           type="error"
           variant="tonal"
-          >{{ error || 'Erreur API.' }}</v-alert
+          >{{ error || t('offers.shared.apiError') }}</v-alert
         >
         <v-skeleton-loader
           v-else-if="pageState === 'loading'"
           type="article, article, article"
         />
         <v-alert v-else-if="pageState === 'empty'" type="info" variant="tonal"
-          >Aucune offre disponible.</v-alert
+          >{{ t('offers.index.empty') }}</v-alert
         >
 
         <div v-else class="offers-board-page__grid">
@@ -146,7 +147,7 @@ onMounted(loadRows)
                 :offer="offer"
                 :active="selectedOffer?.id === offer.id"
                 :favorited="favorites.includes(offer.id)"
-                action-label="Schnell bewerben"
+                :action-label="t('offers.index.actions.quickApply')"
                 action-icon="mdi-send-outline"
                 @select="selectedId = $event"
                 @favorite="toggleFavorite"
@@ -162,19 +163,19 @@ onMounted(loadRows)
             :location="selectedOffer.location"
             :salary="selectedOffer.salary"
             :highlights="[
-              'Konzeption und Umsetzung neuer Features mit Vue/Nuxt',
-              'Zusammenarbeit mit Design und Product in kurzen Iterationen',
-              'Qualitätssicherung mit Tests und Code Reviews',
+              t('offers.index.details.highlights.featureDelivery'),
+              t('offers.index.details.highlights.collaboration'),
+              t('offers.index.details.highlights.quality'),
             ]"
             :requirements="[
-              'Mindestens 3 Jahre Erfahrung in Frontend-Entwicklung',
-              'Sicherer Umgang mit TypeScript und REST APIs',
-              'Strukturierte und teamorientierte Arbeitsweise',
+              t('offers.index.details.requirements.experience'),
+              t('offers.index.details.requirements.typescript'),
+              t('offers.index.details.requirements.teamwork'),
             ]"
             :perks="[
-              'Flexible Arbeitszeiten und Homeoffice Budget',
-              'Weiterbildungsbudget und Mentoring',
-              '30 Urlaubstage und moderne Hardware',
+              t('offers.index.details.perks.flexibleHours'),
+              t('offers.index.details.perks.learningBudget'),
+              t('offers.index.details.perks.holidaysAndHardware'),
             ]"
           />
         </div>
@@ -194,7 +195,7 @@ onMounted(loadRows)
       <div>
         <OffersFiltersSidebar
           v-model="selectedFilters"
-          title="Filter"
+          :title="t('offers.index.filters.sidebarTitle')"
           :sections="filterSections"
         />
       </div>

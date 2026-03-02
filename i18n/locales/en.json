@@ -361,5 +361,173 @@
       "taskArchivedBackend": "Task archived on backend.",
       "statusUpdatedBackend": "Status updated ({status}) on backend."
     }
+  },
+  "offers": {
+    "shared": {
+      "forbidden": "403 · Access denied.",
+      "apiError": "API error.",
+      "notProvided": "-",
+      "status": {
+        "pending": "Pending",
+        "accepted": "Accepted",
+        "rejected": "Rejected",
+        "withdrawn": "Withdrawn"
+      }
+    },
+    "index": {
+      "empty": "No offers available.",
+      "actions": {
+        "quickApply": "Quick apply"
+      },
+      "filters": {
+        "sidebarTitle": "Filter",
+        "employmentType": {
+          "title": "Employment type",
+          "fullTime": "Full-time",
+          "partTime": "Part-time",
+          "freelance": "Freelance"
+        },
+        "remoteMode": {
+          "title": "Work model",
+          "remote": "Remote",
+          "hybrid": "Hybrid",
+          "onsite": "On-site"
+        },
+        "publishedWithinDays": {
+          "title": "Publication",
+          "sevenDays": "7 days",
+          "thirtyDays": "30 days"
+        }
+      },
+      "details": {
+        "highlights": {
+          "featureDelivery": "Design and delivery of new features with Vue/Nuxt",
+          "collaboration": "Collaboration with design and product in short iterations",
+          "quality": "Quality assurance with tests and code reviews"
+        },
+        "requirements": {
+          "experience": "At least 3 years of frontend experience",
+          "typescript": "Strong knowledge of TypeScript and REST APIs",
+          "teamwork": "Structured and team-oriented mindset"
+        },
+        "perks": {
+          "flexibleHours": "Flexible hours and remote-work budget",
+          "learningBudget": "Learning budget and mentoring",
+          "holidaysAndHardware": "30 days off and modern hardware"
+        }
+      }
+    },
+    "myApplications": {
+      "empty": "No applications.",
+      "actions": {
+        "withdraw": "Withdraw"
+      },
+      "filters": {
+        "sidebarTitle": "Filter",
+        "status": {
+          "title": "Status"
+        }
+      },
+      "details": {
+        "description": "Review your application status and next steps in the process.",
+        "highlights": {
+          "sent": "Application sent to recruiter",
+          "evaluated": "Profile evaluated against role criteria",
+          "feedback": "Feedback expected within 5 business days"
+        },
+        "requirements": {
+          "cv": "Up-to-date resume",
+          "portfolio": "Portfolio or references",
+          "availability": "Availability shared"
+        },
+        "perks": {
+          "realtime": "Real-time notifications",
+          "tracking": "Step tracking",
+          "history": "Centralized history"
+        }
+      }
+    },
+    "myOffers": {
+      "empty": "No offers to manage.",
+      "actions": {
+        "edit": "Edit",
+        "deleteSelected": "Delete selected offer"
+      },
+      "filters": {
+        "sidebarTitle": "Segments",
+        "status": {
+          "title": "Status",
+          "draft": "Draft",
+          "open": "Open",
+          "closed": "Closed"
+        }
+      },
+      "delete": {
+        "confirm": "Delete offer {identifier}?",
+        "confirmLabel": "Type {identifier} to confirm"
+      },
+      "details": {
+        "descriptionFallback": "Update your description to present the mission.",
+        "highlights": {
+          "adjustMission": "Adjust scope to current needs",
+          "verifyStack": "Review requirements and tech stack",
+          "updateCompensation": "Update compensation details"
+        },
+        "requirements": {
+          "experience": "Relevant experience for the role",
+          "communication": "Good communication skills",
+          "autonomy": "Autonomous and organized mindset"
+        },
+        "perks": {
+          "remote": "Remote possible",
+          "bonus": "Annual bonus",
+          "healthcare": "Premium healthcare"
+        }
+      },
+      "applications": {
+        "title": "Applications",
+        "applicationId": "Application ID: {id}",
+        "accepted": "Application accepted.",
+        "rejected": "Application rejected.",
+        "withdrawn": "Application withdrawn.",
+        "emptyTitle": "No applications",
+        "emptySubtitle": "This offer has not received any applications yet."
+      },
+      "editDialog": {
+        "title": "Edit offer",
+        "fields": {
+          "title": "Title",
+          "slug": "Slug",
+          "companyId": "Company ID",
+          "description": "Description"
+        },
+        "save": "Save"
+      }
+    },
+    "receivedApplications": {
+      "title": "Received applications",
+      "description": "Accept or reject applications on your offers.",
+      "forbiddenDescription": "You are not authorized to moderate these applications.",
+      "searchLabel": "Search",
+      "filters": {
+        "all": "All",
+        "status": "Status"
+      },
+      "emptyTitle": "No received applications",
+      "emptyMessage": "No applications match current filters.",
+      "cvProvided": "Provided",
+      "columns": {
+        "id": "ID",
+        "offer": "Offer",
+        "candidate": "Candidate",
+        "letter": "Letter",
+        "cv": "CV",
+        "status": "Status"
+      },
+      "actions": {
+        "accepted": "Application accepted.",
+        "rejected": "Application rejected."
+      }
+    }
   }
 }
