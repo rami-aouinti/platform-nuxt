@@ -43,6 +43,21 @@ const authStore = useAuthStore()
 const { isAuthenticated, profile, hasAdminAccess, rolesLoading, initialized } =
   storeToRefs(authStore)
 
+type UserNotification = {
+  id: string
+  title: string
+  message: string
+  type: string
+  readAt: string | null
+}
+
+const notifications = ref<UserNotification[]>([])
+const unreadCount = ref(0)
+const notificationsLoading = ref(false)
+
+const latestNotifications = computed(() => notifications.value.slice(0, 3))
+const hasUnreadNotifications = computed(() => unreadCount.value > 0)
+
 const localeFlags: Record<string, string> = {
   en: '/flags/en.svg',
   de: '/flags/de.svg',
@@ -91,6 +106,92 @@ function logout() {
   authStore.logout()
 }
 
+function normalizeNotifications(payload: unknown): UserNotification[] {
+  if (!Array.isArray(payload)) {
+    return []
+  }
+
+  return payload.map((entry, index) => {
+    const row = entry && typeof entry === 'object'
+      ? entry as Record<string, unknown>
+      : {}
+
+    return {
+      id: String(row.id ?? index),
+      title: String(row.title ?? ''),
+      message: String(row.message ?? ''),
+      type: String(row.type ?? ''),
+      readAt: typeof row.readAt === 'string' ? row.readAt : null,
+    }
+  })
+}
+
+function normalizeUnreadCount(payload: unknown): number {
+  if (!payload || typeof payload !== 'object') {
+    return 0
+  }
+
+  const value = Number((payload as { unread?: unknown }).unread)
+  return Number.isFinite(value) ? Math.max(0, value) : 0
+}
+
+async function loadNotifications() {
+  if (!isAuthenticated.value) {
+    notifications.value = []
+    unreadCount.value = 0
+    return
+  }
+
+  notificationsLoading.value = true
+
+  try {
+    const [notificationsResponse, unreadCountResponse] = await Promise.all([
+      $fetch('/api/v1/me/notifications'),
+      $fetch('/api/v1/me/notifications/unread-count'),
+    ])
+
+    notifications.value = normalizeNotifications(notificationsResponse)
+    unreadCount.value = normalizeUnreadCount(unreadCountResponse)
+  } finally {
+    notificationsLoading.value = false
+  }
+}
+
+async function handleNotificationMenuOpen() {
+  if (!isAuthenticated.value) {
+    return
+  }
+
+  await loadNotifications()
+
+  if (!hasUnreadNotifications.value) {
+    return
+  }
+
+  await $fetch('/api/v1/me/notifications/read-all', { method: 'PATCH' })
+  notifications.value = notifications.value.map(notification => ({
+    ...notification,
+    readAt: notification.readAt ?? new Date().toISOString(),
+  }))
+  unreadCount.value = 0
+}
+
+
+function getNotificationIcon(type: string) {
+  if (type.includes('company')) return 'mdi-domain'
+  if (type.includes('application') && type.includes('submitted')) return 'mdi-file-document-plus-outline'
+  if (type.includes('application') && type.includes('decided')) return 'mdi-check-decagram-outline'
+  return 'mdi-bell-outline'
+}
+
+function getNotificationMeta(notification: UserNotification) {
+  return notification.readAt ? 'Lu' : 'Nouveau'
+}
+
+function getNotificationPreview(message: string) {
+  return message.length > 64 ? `${message.slice(0, 64)}…` : message
+}
+
 function createActivatorProps(
   menu: HTMLAttributes,
   tooltip: HTMLAttributes,
@@ -112,6 +213,16 @@ function createActivatorProps(
     },
   }
 }
+
+watch(isAuthenticated, (value) => {
+  if (!value) {
+    notifications.value = []
+    unreadCount.value = 0
+    return
+  }
+
+  loadNotifications()
+}, { immediate: true })
 </script>
 
 <template>
@@ -158,6 +269,80 @@ function createActivatorProps(
       >
         <v-icon size="26" icon="mdi-github" />
       </UiButton>
+      <v-menu
+        location="bottom"
+        :offset="8"
+        @update:model-value="(opened) => opened && handleNotificationMenuOpen()"
+      >
+        <template #activator="{ props }">
+          <UiButton icon class="ml-1" variant="text" v-bind="props">
+            <v-badge
+              :model-value="hasUnreadNotifications"
+              :content="unreadCount"
+              color="error"
+              offset-x="3"
+              offset-y="3"
+            >
+              <v-icon icon="mdi-bell" size="26" />
+            </v-badge>
+          </UiButton>
+        </template>
+
+        <v-card class="app-bar__notifications-menu" elevation="12" rounded="xl">
+          <v-progress-linear
+            v-if="notificationsLoading"
+            indeterminate
+            color="primary"
+            height="3"
+          />
+
+          <v-list v-if="latestNotifications.length" class="py-2" bg-color="transparent">
+            <v-list-item
+              v-for="notification in latestNotifications"
+              :key="notification.id"
+              :to="`/profile/notifications/${notification.id}`"
+              class="app-bar__notification-item"
+            >
+              <template #prepend>
+                <div class="app-bar__notification-avatar">
+                  <v-icon :icon="getNotificationIcon(notification.type)" size="20" color="white" />
+                </div>
+              </template>
+
+              <v-list-item-title class="app-bar__notification-title">
+                {{ notification.title }}
+              </v-list-item-title>
+
+              <v-list-item-subtitle class="app-bar__notification-preview">
+                {{ getNotificationPreview(notification.message) }}
+              </v-list-item-subtitle>
+
+              <div class="app-bar__notification-meta">
+                <v-icon icon="mdi-clock-time-four-outline" size="14" />
+                <span>{{ getNotificationMeta(notification) }}</span>
+              </div>
+
+              <template #append>
+                <span v-if="!notification.readAt" class="app-bar__notification-dot" />
+              </template>
+            </v-list-item>
+          </v-list>
+
+          <div v-else class="text-medium-emphasis text-body-2 px-4 py-6">
+            Aucune notification
+          </div>
+
+          <v-divider />
+          <v-list bg-color="transparent" class="py-0">
+            <v-list-item
+              to="/profile/notifications"
+              class="font-weight-bold"
+              title="All"
+              append-icon="mdi-chevron-right"
+            />
+          </v-list>
+        </v-card>
+      </v-menu>
       <v-menu location="bottom">
         <template #activator="{ props: menu }">
           <v-tooltip location="bottom">
@@ -290,6 +475,56 @@ function createActivatorProps(
   object-fit: cover;
   border-radius: 2px;
   display: block;
+}
+
+.app-bar__notifications-menu {
+  width: min(420px, calc(100vw - 24px));
+  overflow: hidden;
+}
+
+.app-bar__notification-item {
+  margin: 4px 10px;
+  border-radius: 14px;
+  padding-inline: 10px;
+}
+
+.app-bar__notification-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgb(74, 85, 104), rgb(45, 55, 72));
+  display: grid;
+  place-items: center;
+  margin-right: 10px;
+}
+
+.app-bar__notification-title {
+  color: rgb(var(--v-theme-on-surface));
+  font-weight: 700;
+}
+
+.app-bar__notification-preview {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.app-bar__notification-meta {
+  margin-top: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(var(--v-theme-on-surface), 0.62);
+  font-size: 0.82rem;
+}
+
+.app-bar__notification-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background-color: rgb(var(--v-theme-primary));
+  display: inline-block;
 }
 
 @media (max-width: 960px) {
