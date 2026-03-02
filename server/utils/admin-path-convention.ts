@@ -10,6 +10,10 @@ const legacyResourceBaseByAdminResource: Record<string, string> = {
   'job-offers': '/api/job-offers',
   'job-applications': '/api/job-applications',
   notifications: '/api/notifications',
+  'user-profiles': '/api/v1/user-profiles',
+  'company-memberships': '/api/v1/company-memberships',
+  'blog-posts': '/api/v1/blog-posts',
+  'blog-comments': '/api/v1/blog-comments',
 }
 
 export function mapAdminRouteToLegacyUpstreamPath(path: string): string | null {

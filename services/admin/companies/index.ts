@@ -7,6 +7,7 @@ export interface Company {
   legalName: string
   status: 'active' | 'suspended' | 'inactive'
   mainAddress: unknown[]
+  ownerId?: Id | null
   owner: {
     id: Id
     username?: string | null
@@ -22,12 +23,14 @@ export interface CreateCompanyRequest {
   legalName: string
   status: Company['status']
   mainAddress?: unknown[]
+  ownerId?: Id
 }
 
 export interface UpdateCompanyRequest {
   legalName?: string
   status?: Company['status']
   mainAddress?: unknown[]
+  ownerId?: Id
 }
 
 export type PatchCompanyRequest = PatchPayload
