@@ -10,6 +10,7 @@ import { useRelationField } from '~/composables/admin/useRelationField'
 import type { AdminResourceSchema } from '~/types/admin-schema'
 import { getAdminResourceDescriptor } from '~/services/admin/resource-descriptors'
 import { buildSchemaColumns, buildSchemaFieldConfigs, normalizeAdminSchema } from '~/utils/admin/schema'
+import { adminEndpoints } from '~~/services/admin/endpoints'
 
 type GroupRecord = { id: string; name: string }
 type UserRecord = {
@@ -56,7 +57,7 @@ const selectedUserId = ref('')
 const groupUsersRelation = useRelationField<UserRecord>({
   fieldName: 'users',
   fieldEndpoint: '/api/v1/admin/users',
-  parentEndpoint: '/api/v1/admin/user-groups',
+  parentEndpoint: adminEndpoints.userGroups.base,
   relationEndpoint: relationId => `/api/user_group/${encodeURIComponent(String(selectedDetailGroup.value?.id ?? ''))}/user/${encodeURIComponent(relationId)}`,
   optionsQuery: {
     limit: 300,
@@ -222,7 +223,7 @@ async function submitCreateGroup() {
   creating.value = true
 
   try {
-    await $fetch('/api/v1/admin/user-groups', {
+    await $fetch(adminEndpoints.userGroups.base, {
       method: 'POST' as any,
       body: {
         name: createForm.name.trim(),
@@ -278,7 +279,7 @@ const {
   normalize,
   loadRows: async ({ page, pageSize, sortBy, search }) => {
     const [payload, countPayload] = await Promise.all([
-      $fetch('/api/v1/admin/user-groups', {
+      $fetch(adminEndpoints.userGroups.base, {
         query: {
           limit: pageSize,
           offset: Math.max(page - 1, 0) * pageSize,
@@ -288,8 +289,8 @@ const {
           search: search || undefined,
         },
       }),
-      $fetch('/api/v1/admin/user-groups/count'),
-      $fetch('/api/v1/admin/user-groups/ids'),
+      $fetch(adminEndpoints.userGroups.count),
+      $fetch(adminEndpoints.userGroups.ids),
     ])
 
     return { payload, countPayload }

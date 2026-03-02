@@ -12,6 +12,7 @@ import { getAdminEntityDefinition } from '~/services/admin/resource-descriptors'
 import { resolveAdminEndpoint } from '~/services/admin/entity-resolver'
 import { usersService } from '~/services/admin/users'
 import { buildSchemaColumns, buildSchemaFieldConfigs, normalizeAdminSchema } from '~/utils/admin/schema'
+import { adminEndpoints } from '~~/services/admin/endpoints'
 
 type UserRecord = {
   id: string
@@ -59,7 +60,7 @@ const selectedGroupId = ref('')
 
 const userGroupsRelation = useRelationField<UserGroup>({
   fieldName: 'userGroups',
-  fieldEndpoint: '/api/v1/admin/user-groups',
+  fieldEndpoint: adminEndpoints.userGroups.base,
   parentEndpoint: '/api/v1/admin/users',
   relationEndpoint: relationId => `/api/user/${encodeURIComponent(String(selectedDetailUser.value?.id ?? ''))}/group/${encodeURIComponent(relationId)}`,
   optionsQuery: {

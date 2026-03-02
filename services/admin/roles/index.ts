@@ -1,6 +1,8 @@
 import { createAdminCrudService, type Id, type PatchPayload } from '../shared/index'
 
-const ROLES_BASE_PATH = '/api/v1/admin/roles'
+import { adminEndpoints } from '../endpoints'
+
+const ROLES_BASE_PATH = adminEndpoints.roles.base
 
 export interface Role {
   id: Id

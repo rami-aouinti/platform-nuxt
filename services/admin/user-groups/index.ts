@@ -1,6 +1,8 @@
 import { createAdminCrudService, type Id, type PatchPayload } from '../shared/index'
 
-const USER_GROUPS_BASE_PATH = '/api/v1/admin/user-groups'
+import { adminEndpoints } from '../endpoints'
+
+const USER_GROUPS_BASE_PATH = adminEndpoints.userGroups.base
 
 export interface UserGroup {
   id: Id

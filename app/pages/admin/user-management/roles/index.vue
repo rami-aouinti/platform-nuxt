@@ -8,6 +8,7 @@ import { extractCollectionFromPayload } from '~/utils/admin/extractCollectionFro
 import type { AdminResourceSchema } from '~/types/admin-schema'
 import { getAdminResourceDescriptor } from '~/services/admin/resource-descriptors'
 import { buildSchemaColumns, buildSchemaFieldConfigs, normalizeAdminSchema } from '~/utils/admin/schema'
+import { adminEndpoints } from '~~/services/admin/endpoints'
 
 type RoleRecord = { id: string; [key: string]: unknown }
 
@@ -99,7 +100,7 @@ const {
       : undefined
 
     const [payload, countPayload] = await Promise.all([
-      $fetch('/api/v1/admin/roles', {
+      $fetch(adminEndpoints.roles.base, {
         query: {
           search: search || undefined,
           limit: pageSize,
@@ -107,13 +108,13 @@ const {
           order,
         },
       }),
-      $fetch('/api/v1/admin/roles/count'),
+      $fetch(adminEndpoints.roles.count),
     ])
 
     return { payload, countPayload }
   },
   saveEdit: async (row) => {
-    await $fetch(`/api/v1/admin/roles/${encodeURIComponent(String(row.id ?? ''))}`, {
+    await $fetch(`${adminEndpoints.roles.base}/${encodeURIComponent(String(row.id ?? ''))}`, {
       method: 'PATCH' as any,
       body: {
         name: String(row.name ?? '').trim(),
@@ -125,7 +126,7 @@ const {
     await loadRows()
   },
   deleteRow: async (row) => {
-    await $fetch(`/api/v1/admin/roles/${encodeURIComponent(String(row.id ?? ''))}`, {
+    await $fetch(`${adminEndpoints.roles.base}/${encodeURIComponent(String(row.id ?? ''))}`, {
       method: 'DELETE' as any,
     })
 
@@ -153,7 +154,7 @@ async function submitCreateRole() {
   creating.value = true
 
   try {
-    await $fetch('/api/v1/admin/roles', {
+    await $fetch(adminEndpoints.roles.base, {
       method: 'POST' as any,
       body: {
         name: createForm.name.trim(),
