@@ -45,7 +45,7 @@ export function useProfileCompaniesApi() {
     update: (id: Id, payload: UpdateProfileCompanyPayload) => apiRequest<ProfileCompany>('PUT', apiEndpoints.frontend.companies.companyById(id), { body: payload }),
     patch: (id: Id, payload: PatchProfileCompanyPayload) => apiRequest<ProfileCompany>('PATCH', apiEndpoints.frontend.companies.companyById(id), { body: payload }),
     delete: (id: Id) => apiRequest<unknown>('DELETE', apiEndpoints.frontend.companies.companyById(id)),
-    getSchema: (method: ProfileCompanySchemaMethod) =>
+    getSchema: (method?: ProfileCompanySchemaMethod) =>
       apiRequest<ProfileCompanySchema>('GET', apiEndpoints.frontend.companies.schemaByMethod(method)),
   }
 }

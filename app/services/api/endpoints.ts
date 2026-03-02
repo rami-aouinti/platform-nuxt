@@ -49,7 +49,9 @@ export const apiEndpoints = {
     },
     companies: {
       base: `${ME_PROFILE_BASE}/companies`,
-      schemaByMethod: (method: 'post' | 'put' | 'patch') => `${ME_PROFILE_BASE}/companies/schema/${method}`,
+      schema: `${ME_PROFILE_BASE}/companies/schema`,
+      schemaByMethod: (method?: 'post' | 'put' | 'patch') =>
+        method ? `${ME_PROFILE_BASE}/companies/schema?method=${method}` : `${ME_PROFILE_BASE}/companies/schema`,
       companyById: (id: ApiId) => `${ME_PROFILE_BASE}/companies/${id}`,
     },
     projects: {
