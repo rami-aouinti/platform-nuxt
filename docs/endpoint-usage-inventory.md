@@ -213,6 +213,8 @@ Source: scan automatique des chemins `app/**`, `services/**`, `server/api/**` + 
 | `/api/v1/candidates/:param` | `server/api/candidates/[id].get.ts` | proxy | active |
 | `/api/v1/candidates/:param` | `server/api/candidates/index.get.ts` | proxy | active |
 | `/api/v1/chat` | `app/composables/api/useChatApi.ts` | direct | active |
+| `/api/v1/catalog` | `server/api/v1/catalog/index.get.ts` | proxy | active |
+| `/api/v1/localization` | `server/api/v1/localization/index.get.ts` | proxy | active |
 | `/api/v1/companies` | `app/composables/api/useCompaniesApi.ts` | direct | deprecated |
 | `/api/v1/companies` | `app/composables/api/useCrmApi.ts` | direct | deprecated |
 | `/api/v1/companies/:companyId/members` | `services/admin/endpoints.ts` | direct | active |
@@ -228,6 +230,9 @@ Source: scan automatique des chemins `app/**`, `services/**`, `server/api/**` + 
 | `/api/v1/me/deactivate` | `app/services/profile/profile-endpoint-resolver.ts` | direct | active |
 | `/api/v1/me/delete` | `app/services/profile/profile-endpoint-resolver.ts` | direct | active |
 | `/api/v1/me/notification-settings` | `app/services/profile/profile-endpoint-resolver.ts` | direct | active |
+| `/api/v1/me/chat` | `server/api/v1/me/chat/index.get.ts` | proxy | active |
+| `/api/v1/me/companies` | `server/api/v1/me/companies/index.get.ts` | proxy | active |
+| `/api/v1/me/notifications` | `server/api/v1/me/notifications/index.get.ts` | proxy | active |
 | `/api/v1/me/password` | `app/services/profile/profile-endpoint-resolver.ts` | direct | active |
 | `/api/v1/me/profile` | `app/components/profile/tabs/BasicInfoTab.vue` | direct | active |
 | `/api/v1/me/profile` | `app/components/profile/tabs/BasicInfoTab.vue` | direct | active |
@@ -251,6 +256,10 @@ Source: scan automatique des chemins `app/**`, `services/**`, `server/api/**` + 
 | `/api/v1/me/profile/resumes/:param/educations` | `app/composables/useResumeApi.ts` | direct | active |
 | `/api/v1/me/profile/resumes/:param/experiences` | `app/composables/useResumeApi.ts` | direct | active |
 | `/api/v1/me/profile/resumes/:param/skills` | `app/composables/useResumeApi.ts` | direct | active |
+| `/api/v1/me/profile/resumes` | `server/api/v1/me/profile/resumes.get.ts` | proxy | active |
+| `/api/v1/me/profile/resumes/:param/educations` | `server/api/v1/me/profile/resumes/[resumeId]/educations.get.ts` | proxy | active |
+| `/api/v1/me/profile/resumes/:param/experiences` | `server/api/v1/me/profile/resumes/[resumeId]/experiences.get.ts` | proxy | active |
+| `/api/v1/me/profile/resumes/:param/skills` | `server/api/v1/me/profile/resumes/[resumeId]/skills.get.ts` | proxy | active |
 | `/api/v1/me/profile/roles` | `server/api/me/profile/roles.get.ts` | proxy | active |
 | `/api/v1/me/profile/roles` | `server/api/v1/me/profile/roles.get.ts` | proxy | active |
 | `/api/v1/me/resumes/:resumeId/languages` | `services/admin/endpoints.ts` | direct | active |
@@ -548,11 +557,18 @@ Source: scan automatique des chemins `app/**`, `services/**`, `server/api/**` + 
 Les domaines critiques suivants sont désormais **first-class** et doivent être couverts par des handlers dédiés sous `server/api/v1/**` :
 
 - `tools` (`health`, `version`)
+- handlers dédiés existants: `server/api/v1/tools/health.get.ts`, `server/api/v1/tools/version.get.ts`
 - `localization`
+- handler dédié existant: `server/api/v1/localization/index.get.ts`
 - `catalog`
+- handler dédié existant: `server/api/v1/catalog/index.get.ts`
 - `me/notifications`
+- handler dédié existant: `server/api/v1/me/notifications/index.get.ts`
 - `me/chat`
+- handler dédié existant: `server/api/v1/me/chat/index.get.ts`
 - `me/companies`
+- handler dédié existant: `server/api/v1/me/companies/index.get.ts`
 - `me/profile/*` (dont `companies`, `projects`, `configurations`, `password`)
+- handlers dédiés complétés: `resumes`, `resumes/:resumeId/educations`, `resumes/:resumeId/experiences`, `resumes/:resumeId/skills`
 
 Le routeur catch-all `server/api/v1/[...path].ts` reste autorisé uniquement comme filet de sécurité pour les endpoints non encore explicitement implémentés. Un warning serveur est journalisé si le fallback est utilisé sur un domaine first-class.
