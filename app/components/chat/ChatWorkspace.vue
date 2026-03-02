@@ -8,15 +8,21 @@ import {
   type ChatMessage,
   type ChatParticipant,
 } from '~/composables/api/useChatApi'
+import {
+  useFriendsApi,
+  type FriendUser,
+} from '~/composables/api/useFriendsApi'
 import { toUiErrorMessage } from '~/utils/errors/toUiErrorMessage'
 
 const route = useRoute()
 const chatApi = useChatApi()
+const friendsApi = useFriendsApi()
 const authStore = useAuthStore()
 const { profile } = storeToRefs(authStore)
 
 const loadingConversations = ref(false)
 const loadingMessages = ref(false)
+const loadingFriends = ref(false)
 const sending = ref(false)
 const deletingMessageId = ref<string | null>(null)
 
@@ -24,6 +30,8 @@ const conversations = ref<ChatConversation[]>([])
 const activeConversationId = ref<string>('')
 const messages = ref<ChatMessage[]>([])
 const draftMessage = ref('')
+const friendSearch = ref('')
+const friends = ref<FriendUser[]>([])
 const selectedFiles = ref<File[]>([])
 const fileInput = ref<HTMLInputElement | null>(null)
 const messagesContainerRef = ref<HTMLElement | null>(null)
@@ -31,6 +39,20 @@ const messagesContainerRef = ref<HTMLElement | null>(null)
 const availableReactions = ['thumbs_up', 'heart', 'surprised', 'sad']
 
 const hasConversations = computed(() => conversations.value.length > 0)
+const filteredFriends = computed(() => {
+  const query = friendSearch.value.trim().toLowerCase()
+  if (!query) return friends.value
+
+  return friends.value.filter((friend) => {
+    const fields = [friend.username, friend.firstName, friend.lastName, friend.email]
+      .filter((field): field is string => Boolean(field))
+      .map((field) => field.toLowerCase())
+
+    return fields.some((field) => field.includes(query))
+  })
+})
+
+const shouldShowFriendResults = computed(() => friendSearch.value.trim().length > 0)
 const activeConversation = computed(() =>
   conversations.value.find(
     (conversation) => conversation.id === activeConversationId.value,
@@ -60,6 +82,13 @@ function getConversationDisplayParticipants(conversation?: ChatConversation | nu
 function participantDisplayName(participant: ChatParticipant): string {
   return `${participant.firstName ?? ''} ${participant.lastName ?? ''}`.trim()
     || participant.username
+    || 'Utilisateur'
+}
+
+function friendDisplayName(friend: FriendUser): string {
+  return `${friend.firstName ?? ''} ${friend.lastName ?? ''}`.trim()
+    || friend.username
+    || friend.email
     || 'Utilisateur'
 }
 
@@ -148,6 +177,18 @@ async function loadConversations() {
   }
 }
 
+async function loadFriends() {
+  loadingFriends.value = true
+
+  try {
+    friends.value = await friendsApi.listFriends()
+  } catch (error) {
+    Notify.error(toUiErrorMessage(error, 'Impossible de charger les amis'))
+  } finally {
+    loadingFriends.value = false
+  }
+}
+
 async function loadConversationDetail(conversationId: string) {
   if (!conversationId) return
 
@@ -183,6 +224,31 @@ async function selectConversation(conversationId: string) {
 
   activeConversationId.value = conversationId
   await loadConversationDetail(conversationId)
+}
+
+async function selectFriend(friend: FriendUser) {
+  if (!friend.id) return
+
+  loadingMessages.value = true
+
+  try {
+    const conversation = await chatApi.getConversationByUser(friend.id)
+
+    if (!conversation.id) return
+
+    const exists = conversations.value.some((item) => item.id === conversation.id)
+    if (!exists) {
+      conversations.value = [conversation, ...conversations.value]
+    }
+
+    activeConversationId.value = conversation.id
+    await loadConversationDetail(conversation.id)
+    friendSearch.value = ''
+  } catch (error) {
+    Notify.error(toUiErrorMessage(error, 'Impossible de charger la conversation de cet ami'))
+  } finally {
+    loadingMessages.value = false
+  }
 }
 
 async function sendMessage() {
@@ -260,7 +326,9 @@ watch(
   },
 )
 
-onMounted(loadConversations)
+onMounted(async () => {
+  await Promise.all([loadConversations(), loadFriends()])
+})
 </script>
 
 <template>
@@ -282,6 +350,55 @@ onMounted(loadConversations)
             @click="loadConversations"
           />
         </div>
+
+        <v-text-field
+          v-model="friendSearch"
+          label="Rechercher un ami"
+          variant="outlined"
+          density="comfortable"
+          hide-details
+          class="mb-3"
+          prepend-inner-icon="mdi-account-search-outline"
+          :loading="loadingFriends"
+        />
+
+        <v-list
+          v-if="shouldShowFriendResults"
+          density="compact"
+          nav
+          class="chat-friends-results mb-3"
+        >
+          <v-list-item
+            v-for="friend in filteredFriends"
+            :key="friend.id"
+            rounded="lg"
+            @click="selectFriend(friend)"
+          >
+            <template #prepend>
+              <v-avatar
+                color="secondary"
+                variant="tonal"
+                size="32"
+                :image="friend.photo ?? undefined"
+              >
+                {{ friendDisplayName(friend).slice(0, 1).toUpperCase() || 'A' }}
+              </v-avatar>
+            </template>
+
+            <v-list-item-title class="text-body-2">
+              {{ friendDisplayName(friend) }}
+            </v-list-item-title>
+            <v-list-item-subtitle class="text-caption text-medium-emphasis">
+              {{ friend.email || friend.username || '' }}
+            </v-list-item-subtitle>
+          </v-list-item>
+
+          <v-list-item v-if="filteredFriends.length === 0" rounded="lg">
+            <v-list-item-title class="text-body-2 text-medium-emphasis">
+              Aucun ami trouvé.
+            </v-list-item-title>
+          </v-list-item>
+        </v-list>
 
         <v-skeleton-loader
           v-if="loadingConversations"
@@ -540,6 +657,11 @@ onMounted(loadConversations)
 
 .chat-conversations {
   max-height: calc(100vh - 290px);
+  overflow-y: auto;
+}
+
+.chat-friends-results {
+  max-height: 180px;
   overflow-y: auto;
 }
 
