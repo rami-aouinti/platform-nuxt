@@ -1,11 +1,22 @@
-import { createProxyEntityHandler } from '../../../../../utils/proxy-handler-factory'
+import { defineEventHandler, readBody } from 'h3'
+import { proxyAuthApiRequest } from '../../../../../utils/auth-api-proxy'
+import { normalizeAddressPayload, normalizeAddressResponse } from '../../../../../utils/profile-address-contract'
+import { validateRequiredRouteParam } from '../../../../../utils/proxy-handler-factory'
 
-export default createProxyEntityHandler({
-  paramName: 'addressId',
-  method: 'PATCH',
-  missingParamError: {
+export default defineEventHandler(async (event) => {
+  const addressId = validateRequiredRouteParam(event, 'addressId', {
     statusMessage: 'Invalid address parameter.',
     message: 'Address identifier is required.',
-  },
-  upstreamPathBuilder: addressId => `/api/v1/me/profile/addresses/${encodeURIComponent(addressId)}`,
+  })
+
+  const payload = normalizeAddressPayload(await readBody(event))
+  event.context.requestBodyOverride = payload
+
+  const response = await proxyAuthApiRequest(
+    event,
+    `/api/v1/me/profile/addresses/${encodeURIComponent(addressId)}`,
+    'PATCH',
+  )
+
+  return normalizeAddressResponse(response)
 })
