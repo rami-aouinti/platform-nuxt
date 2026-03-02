@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
-import { useDisplay } from 'vuetify'
+import * as Vuetify from 'vuetify'
 import { useAuthStore } from '~/stores/auth'
 import {
   hasAdminPermission,
@@ -12,7 +12,7 @@ const authStore = useAuthStore()
 const { isAuthenticated, rolesLoading, initialized } = storeToRefs(authStore)
 const drawerState = useState('drawer', () => true)
 
-const { mobile, lgAndUp, width } = useDisplay()
+const { mobile, lgAndUp, width } = Vuetify.useDisplay()
 const drawer = computed({
   get() {
     return drawerState.value || !mobile.value
