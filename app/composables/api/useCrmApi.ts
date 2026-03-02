@@ -215,7 +215,7 @@ export function useCrmApi() {
         ),
       ),
     listUsers: () =>
-      $fetch<CrmUser[] | { data?: CrmUser[]; items?: CrmUser[] }>('/api/user', {
+      $fetch<CrmUser[] | { data?: CrmUser[]; items?: CrmUser[] }>('/api/v1/admin/users', {
         method: 'GET',
       }),
     createTaskRequest: async (payload: CreateTaskRequestPayload) =>

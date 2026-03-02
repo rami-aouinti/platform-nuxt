@@ -49,7 +49,7 @@ const selectedGroupId = ref('')
 
 const userGroupsRelation = useRelationField<UserGroup>({
   fieldName: 'userGroups',
-  fieldEndpoint: '/api/user_group',
+  fieldEndpoint: '/api/v1/admin/user-groups',
   parentEndpoint: () => `/api/user/${encodeURIComponent(userId.value)}`,
   relationEndpoint: relationId => `/api/user/${encodeURIComponent(userId.value)}/group/${encodeURIComponent(relationId)}`,
   optionsQuery: {
