@@ -1,4 +1,4 @@
-import { proxyAuthApiWithPathFallback } from '../../utils/proxy-auth-api-with-fallback'
+import { proxyAuthApiCanonical } from '../../utils/canonical-endpoint-resolver'
 import {
   readProfileEndpointCache,
   writeProfileEndpointCache,
@@ -14,15 +14,7 @@ export default defineEventHandler(async (event) => {
     return cachedGroups
   }
 
-  const groups = await proxyAuthApiWithPathFallback(
-    event,
-    [
-      '/api/v1/me/profile/groups',
-      '/api/v1/profile/groups',
-      '/api/profile/groups',
-    ],
-    'GET',
-  )
+  const groups = await proxyAuthApiCanonical(event, 'profileGroups', 'GET')
   const normalizedGroups = normalizeProfileGroups(groups)
   await writeProfileEndpointCache(event, GROUPS_CACHE_KEY, normalizedGroups)
 
