@@ -37,10 +37,18 @@ const visibleChildrenNum = computed(() => visibleChildren.value?.length || 0)
 const isItem = computed(() => !item.children || visibleChildrenNum.value === 0)
 const title = toRef(() => item.meta?.title)
 const icon = toRef(() => item.meta?.icon)
-// @ts-expect-error unknown type miss match
-const to = computed<RouteRecordRaw>(() => ({
-  name: item.name || visibleChildren.value?.[0]?.name,
-}))
+const to = computed(() => {
+  if (typeof item.path === 'string' && item.path.length > 0 && !item.path.includes(':')) {
+    return item.path
+  }
+
+  const fallbackPath = visibleChildren.value?.find((child) => !child.path.includes(':'))?.path
+  if (fallbackPath) {
+    return fallbackPath
+  }
+
+  return undefined
+})
 const route = useRoute()
 const isActive = computed(() => {
   return route.path.startsWith(item.path)
