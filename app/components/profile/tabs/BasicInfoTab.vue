@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Notify } from '~/stores/notification'
 import { useAuthStore } from '~/stores/auth'
+import { apiEndpoints } from '~/services/api/endpoints'
 
 interface BasicInfoForm {
   firstName: string
@@ -56,7 +57,7 @@ async function loadProfile() {
   loading.value = true
 
   try {
-    const response = await $fetch<Record<string, unknown>>('/api/v1/me/profile', {
+    const response = await $fetch<Record<string, unknown>>(apiEndpoints.frontend.profile.canonical, {
       headers: { Authorization: `Bearer ${authStore.token}` },
     })
 
@@ -109,7 +110,7 @@ async function saveProfile() {
   saving.value = true
 
   try {
-    await $fetch('/api/v1/me/profile', {
+    await $fetch(apiEndpoints.frontend.profile.canonical, {
       method: 'PATCH',
       headers: { Authorization: `Bearer ${authStore.token}` },
       body: {
