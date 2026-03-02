@@ -18,3 +18,7 @@ La suppression finale démarre lorsque le KPI CI `legacy-pages-remaining` attein
 - KPI CI à 0 sur la branche principale.
 - Aucun lien interne vers `/legacy/**`.
 - Aucun test e2e/nuxt n'utilise encore des routes legacy.
+
+## Avancement des suppressions
+
+- Lot 2026-03-02: 7 pages legacy supprimées après migration + validation UX + redirection (`Dashboard`, `Pages`, `Ecommerce`, `Applications`, `Tables`, `Layout`, `Components`).
