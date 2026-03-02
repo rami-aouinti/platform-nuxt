@@ -1,0 +1,884 @@
+[
+  {
+    "endpoint": "/api/:param",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": true
+  },
+  {
+    "endpoint": "/api/api/v1/admin/role",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/api/v1/admin/role/:param",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/api/v1/admin/role/:param/inherited",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/api/v1/admin/role/count",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/api/v1/admin/role/ids",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/api/v1/admin/role/inherited",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/api/v1/admin/role/schema",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/api/v1/admin/user_group",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/api/v1/admin/user_group/:param",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/api/v1/admin/user_group/:param/user/:param",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/api/v1/admin/user_group/:param/users",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/api/v1/admin/user_group/count",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/api/v1/admin/user_group/ids",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/api/v1/admin/user_group/schema",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/api/v1/admin/users",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/api/v1/admin/users/:param",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/api/v1/admin/users/:param/group/:param",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/api/v1/admin/users/:param/groups",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/api/v1/admin/users/:param/roles",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/api/v1/admin/users/count",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/api/v1/admin/users/ids",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/api/v1/admin/users/schema",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/auth/get_token",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/auth/logout",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/candidates",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/candidates/:param",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/companies/:param",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/companies/:param/members",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/job-applications",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/job-applications/:param",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/job-applications/:param/accept",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/job-applications/:param/reject",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/job-applications/:param/withdraw",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/job-offers",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/job-offers/:param",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/job-offers/:param/apply",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/job-offers/available/:param",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/job-offers/my/:param",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/notifications",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/notifications/:param",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/notifications/:param/read",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/notifications/read-all",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/notifications/unread-count",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/people",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/profile",
+    "status": "deprecated",
+    "decision": "Fusionné",
+    "replacement": "/api/v1/me/profile",
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/profile/groups",
+    "status": "deprecated",
+    "decision": "Fusionné",
+    "replacement": "/api/v1/me/profile/groups",
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/profile/roles",
+    "status": "deprecated",
+    "decision": "Fusionné",
+    "replacement": "/api/v1/me/profile/roles",
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/user_group/:param",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": true
+  },
+  {
+    "endpoint": "/api/user_group/:param/user/:param",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": true
+  },
+  {
+    "endpoint": "/api/user_group/:param/users",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": true
+  },
+  {
+    "endpoint": "/api/user/:param",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/user/:param/group/:param",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/user/:param/groups",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/user/:param/roles",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/admin/api-keys",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/admin/api-keys/schema",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/admin/candidates",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/admin/companies",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/admin/job-applications",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/admin/job-offers",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/admin/job-offers/:param/apply",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/admin/notifications",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/admin/roles",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/admin/roles/count",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/admin/roles/schema",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/admin/user-groups",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/admin/user-groups/count",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/admin/user-groups/ids",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/admin/user-groups/schema",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/admin/users",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/admin/users/count",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/admin/users/ids",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/admin/users/schema",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/api_key/schema",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/auth/get_token",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/blog-comments",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/blog-post-links",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/blog-posts",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/blog-tags",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/calendar/events",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/candidates/:param",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/chat",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/companies",
+    "status": "deprecated",
+    "decision": "Fusionné",
+    "replacement": "/api/companies",
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/me/account",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/me/account/deactivate",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/me/deactivate",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/me/delete",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/me/notification-settings",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/me/password",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/me/profile",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/me/profile/addresses",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/me/profile/addresses/:param",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/me/profile/avatar",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/me/profile/companies",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/me/profile/groups",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/me/profile/password",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/me/profile/projects",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/me/profile/resumes",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/me/profile/resumes/:param/educations",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/me/profile/resumes/:param/experiences",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/me/profile/resumes/:param/skills",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/me/profile/roles",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/me/sessions",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/me/social-accounts",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/me/social-accounts/:param",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/me/social-accounts/link",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/me/two-factor",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/me/two-factor-auth",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/projects",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/quizzes",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/sprints",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/statistics/distributions/statuses",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/statistics/entities",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/statistics/overview",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/statistics/timeseries",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/task-requests",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/task-requests/:param/blog-posts",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/tasks",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/tasks/:param/blog-posts",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v2/me/account",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v2/me/account/deactivate",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v2/me/notification-settings",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v2/me/password",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v2/me/sessions",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v2/me/two-factor-auth",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  }
+]

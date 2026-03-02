@@ -21,7 +21,9 @@
     "legacy:pages:kpi": "node scripts/legacy-pages-kpi.mjs",
     "legacy:page-meta:check": "node scripts/check-legacy-page-meta.mjs",
     "lint:admin-paths": "node scripts/check-admin-path-convention.mjs",
-    "lint:entity-mappings": "node scripts/check-entity-mappings.mjs"
+    "lint:entity-mappings": "node scripts/check-entity-mappings.mjs",
+    "endpoint:inventory:generate": "node scripts/generate-endpoint-usage-report.mjs",
+    "endpoint:inventory:check": "node scripts/check-endpoint-inventory.mjs"
   },
   "devDependencies": {
     "@iconify-json/mdi": "^1.2.3",
