@@ -3,7 +3,7 @@
   "type": "module",
   "packageManager": "pnpm@10.29.3",
   "scripts": {
-    "build": "pnpm lint:entity-mappings && nuxt build",
+    "build": "pnpm lint:page-namespaces && pnpm lint:entity-mappings && nuxt build",
     "dev": "nuxt dev -o",
     "generate": "nuxt generate",
     "postinstall": "nuxt prepare",
@@ -24,7 +24,8 @@
     "lint:entity-mappings": "node scripts/check-entity-mappings.mjs",
     "endpoint:inventory:generate": "node scripts/generate-endpoint-usage-report.mjs",
     "endpoint:inventory:check": "node scripts/check-endpoint-inventory.mjs",
-    "lint:admin-parent-routes": "node scripts/check-admin-parent-nuxtpage-children.mjs"
+    "lint:admin-parent-routes": "node scripts/check-admin-parent-nuxtpage-children.mjs",
+    "lint:page-namespaces": "node scripts/check-page-namespace-duplicates.mjs"
   },
   "devDependencies": {
     "@iconify-json/mdi": "^1.2.3",

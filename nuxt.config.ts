@@ -29,6 +29,22 @@ const filterLegacyInternalPages = (
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   devtools: { enabled: true },
+  routeRules: {
+    '/jobs': { redirect: { to: '/offers', statusCode: 301 } },
+    '/jobs/my-offers': {
+      redirect: { to: '/offers/my-offers', statusCode: 301 },
+    },
+    '/jobs/applications': {
+      redirect: { to: '/offers/my-applications', statusCode: 301 },
+    },
+    '/administration': { redirect: { to: '/admin', statusCode: 301 } },
+    '/administration/**': {
+      redirect: {
+        to: '/admin/**',
+        statusCode: 301,
+      },
+    },
+  },
   modules: [
     '@pinia/nuxt',
     '@vueuse/nuxt',
