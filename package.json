@@ -23,7 +23,8 @@
     "lint:admin-paths": "node scripts/check-admin-path-convention.mjs",
     "lint:entity-mappings": "node scripts/check-entity-mappings.mjs",
     "endpoint:inventory:generate": "node scripts/generate-endpoint-usage-report.mjs",
-    "endpoint:inventory:check": "node scripts/check-endpoint-inventory.mjs"
+    "endpoint:inventory:check": "node scripts/check-endpoint-inventory.mjs",
+    "lint:admin-parent-routes": "node scripts/check-admin-parent-nuxtpage-children.mjs"
   },
   "devDependencies": {
     "@iconify-json/mdi": "^1.2.3",
