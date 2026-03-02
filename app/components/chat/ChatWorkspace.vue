@@ -556,6 +556,24 @@ onMounted(async () => {
                     {{ toFrenchDate(message.createdAt) }}
                   </p>
 
+                  <div class="d-flex align-center justify-space-between flex-wrap ga-1 mb-1">
+                    <v-chip
+                      size="x-small"
+                      :color="message.isRead ? 'success' : 'warning'"
+                      :prepend-icon="message.isRead ? 'mdi-check-all' : 'mdi-email-outline'"
+                      variant="tonal"
+                    >
+                      {{ message.isRead ? 'Lu' : 'Non lu' }}
+                    </v-chip>
+
+                    <p
+                      v-if="message.readAt"
+                      class="text-caption mb-0 opacity-70"
+                    >
+                      Lu à {{ toFrenchDate(message.readAt) }}
+                    </p>
+                  </div>
+
                   <div class="d-flex align-center ga-1 justify-end">
                     <v-menu location="top">
                       <template #activator="{ props }">

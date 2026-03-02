@@ -34,6 +34,8 @@ export type ChatMessage = {
   id: string
   content: string
   createdAt?: string | null
+  isRead?: boolean
+  readAt?: string | null
   senderId?: string | null
   senderName?: string | null
   senderPhoto?: string | null
@@ -172,6 +174,8 @@ function normalizeMessage(raw: Record<string, unknown>): ChatMessage {
   const senderFirstName = typeof sender.firstName === 'string' ? sender.firstName : ''
   const senderLastName = typeof sender.lastName === 'string' ? sender.lastName : ''
   const senderUsername = typeof sender.username === 'string' ? sender.username : ''
+  const isReadValue = [raw.isRead, raw.is_read]
+    .find((value): value is boolean => typeof value === 'boolean')
 
   return {
     id: String(raw.id ?? raw.messageId ?? crypto.randomUUID()),
@@ -186,6 +190,13 @@ function normalizeMessage(raw: Record<string, unknown>): ChatMessage {
         ? raw.createdAt
         : typeof raw.created_at === 'string'
           ? raw.created_at
+          : null,
+    isRead: isReadValue,
+    readAt:
+      typeof raw.readAt === 'string'
+        ? raw.readAt
+        : typeof raw.read_at === 'string'
+          ? raw.read_at
           : null,
     senderId:
       typeof raw.senderId === 'string'
