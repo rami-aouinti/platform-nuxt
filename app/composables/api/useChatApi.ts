@@ -123,6 +123,9 @@ function getLatestConversationMessage(raw: Record<string, unknown>): ChatMessage
 }
 
 function normalizeConversation(raw: Record<string, unknown>): ChatConversation {
+  const unreadCount = [raw.unreadCount, raw.unread_count, raw.unreadMessagesCount]
+    .find((value): value is number => typeof value === 'number')
+
   const participants = Array.isArray(raw.participants)
     ? raw.participants
       .filter((item): item is Record<string, unknown> => Boolean(item && typeof item === 'object'))
@@ -156,12 +159,7 @@ function normalizeConversation(raw: Record<string, unknown>): ChatConversation {
         : typeof raw.updated_at === 'string'
           ? raw.updated_at
           : latestMessage?.createdAt ?? null,
-    unreadCount:
-      typeof raw.unreadCount === 'number'
-        ? raw.unreadCount
-        : typeof raw.unread_count === 'number'
-          ? raw.unread_count
-          : null,
+    unreadCount: unreadCount ?? null,
     participants,
   }
 }
