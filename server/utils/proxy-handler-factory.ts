@@ -27,6 +27,7 @@ interface ProxyEntityHandlerOptions {
   paramName: string
   upstreamPathBuilder: (paramValue: string) => string
   method: ProxyHttpMethod
+  onSuccess?: (event: H3Event, paramValue: string) => Promise<void> | void
   missingParamError?: {
     statusMessage: string
     message: string
@@ -109,7 +110,7 @@ export function createProxyCollectionHandlerWithQuery(
 export function createProxyEntityHandler(
   options: ProxyEntityHandlerOptions,
 ): EventHandler {
-  const { paramName, upstreamPathBuilder, method, missingParamError } = options
+  const { paramName, upstreamPathBuilder, method, onSuccess, missingParamError } = options
 
   return defineEventHandler(async (event) => {
     const paramValue = validateRequiredRouteParam(
@@ -119,7 +120,11 @@ export function createProxyEntityHandler(
     )
     const path = upstreamPathBuilder(paramValue)
 
-    return await proxyRequestByMethod(event, path, method)
+    const response = await proxyRequestByMethod(event, path, method)
+
+    await onSuccess?.(event, paramValue)
+
+    return response
   })
 }
 

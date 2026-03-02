@@ -149,6 +149,22 @@ Notes:
 - Utilisez `NUXT_REDIS_URL` **ou** le triplet host/port/password.
 - Si Redis n'est pas configuré ou indisponible, le fallback est sans crash (cache ignoré).
 
+Convention de clés Redis (documentée):
+
+- **Namespace domaine**: `profile:`, `auth:`, `admin:`.
+- **Version de schéma**: `v1` est incluse dans chaque clé (`<namespace>:v1:...`) pour faciliter les migrations futures.
+- **Scopes métier**: les clés sont enrichies avec des segments de scope (`user`, `company`, `role`, `group`) via les identifiants disponibles (`x-user-id`, `x-company-id`, etc.).
+- Exemple de format: `profile:v1:auth:<hash>:user:<userId>:company:<companyId>:role:<roleId>:group:<groupId>:resource:<endpoint>`.
+
+Invalidation ciblée:
+
+- Les mutations admin `PATCH/PUT/DELETE` sur `user`, `role` et `user_group` déclenchent une invalidation Redis ciblée par scope.
+- L'invalidation est exécutée **après succès** de la mutation upstream.
+
+Observabilité cache:
+
+- Logs/metrics minimaux ajoutés côté serveur pour suivre `hit`, `miss` et `error`.
+
 ### Development
 
 Start the development server on http://localhost:3000

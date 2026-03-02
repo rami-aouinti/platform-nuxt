@@ -3,6 +3,7 @@ import type { H3Event } from 'h3'
 import {
   buildProfileCacheKey,
   getProfileCache,
+  invalidateProfileCacheScopes,
   setProfileCache,
 } from './cache/profile-cache'
 
@@ -35,4 +36,25 @@ export async function writeProfileEndpointCache(
   const cacheKey = buildProfileCacheKey(event, key)
 
   await setProfileCache(event, cacheKey, payload, ttlMs)
+}
+
+export async function invalidateProfileCacheForUser(
+  event: H3Event,
+  userId: string,
+): Promise<void> {
+  await invalidateProfileCacheScopes(event, { userId })
+}
+
+export async function invalidateProfileCacheForRole(
+  event: H3Event,
+  roleId: string,
+): Promise<void> {
+  await invalidateProfileCacheScopes(event, { roleId })
+}
+
+export async function invalidateProfileCacheForGroup(
+  event: H3Event,
+  groupId: string,
+): Promise<void> {
+  await invalidateProfileCacheScopes(event, { groupId })
 }

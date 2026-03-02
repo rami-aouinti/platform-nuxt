@@ -1,8 +1,14 @@
+import {
+  invalidateProfileCacheForUser,
+} from '../../../utils/profile-endpoint-cache'
 import { createProxyEntityHandler } from '../../../utils/proxy-handler-factory'
 
 export default createProxyEntityHandler({
   paramName: 'id',
   method: 'PATCH',
+  onSuccess: async (event, id) => {
+    await invalidateProfileCacheForUser(event, id)
+  },
   missingParamError: {
     statusMessage: 'Invalid user parameter.',
     message: 'User identifier is required.',
