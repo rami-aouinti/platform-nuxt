@@ -43,6 +43,20 @@ const authStore = useAuthStore()
 const { isAuthenticated, profile, hasAdminAccess, rolesLoading, initialized } =
   storeToRefs(authStore)
 
+type UserNotification = {
+  id: string
+  title: string
+  message: string
+  readAt: string | null
+}
+
+const notifications = ref<UserNotification[]>([])
+const unreadCount = ref(0)
+const notificationsLoading = ref(false)
+
+const latestNotifications = computed(() => notifications.value.slice(0, 3))
+const hasUnreadNotifications = computed(() => unreadCount.value > 0)
+
 const localeFlags: Record<string, string> = {
   en: '/flags/en.svg',
   de: '/flags/de.svg',
@@ -91,6 +105,75 @@ function logout() {
   authStore.logout()
 }
 
+function normalizeNotifications(payload: unknown): UserNotification[] {
+  if (!Array.isArray(payload)) {
+    return []
+  }
+
+  return payload.map((entry, index) => {
+    const row = entry && typeof entry === 'object'
+      ? entry as Record<string, unknown>
+      : {}
+
+    return {
+      id: String(row.id ?? index),
+      title: String(row.title ?? ''),
+      message: String(row.message ?? ''),
+      readAt: typeof row.readAt === 'string' ? row.readAt : null,
+    }
+  })
+}
+
+function normalizeUnreadCount(payload: unknown): number {
+  if (!payload || typeof payload !== 'object') {
+    return 0
+  }
+
+  const value = Number((payload as { unread?: unknown }).unread)
+  return Number.isFinite(value) ? Math.max(0, value) : 0
+}
+
+async function loadNotifications() {
+  if (!isAuthenticated.value) {
+    notifications.value = []
+    unreadCount.value = 0
+    return
+  }
+
+  notificationsLoading.value = true
+
+  try {
+    const [notificationsResponse, unreadCountResponse] = await Promise.all([
+      $fetch('/api/v1/me/notifications'),
+      $fetch('/api/v1/me/notifications/unread-count'),
+    ])
+
+    notifications.value = normalizeNotifications(notificationsResponse)
+    unreadCount.value = normalizeUnreadCount(unreadCountResponse)
+  } finally {
+    notificationsLoading.value = false
+  }
+}
+
+async function handleNotificationMenuOpen() {
+  if (!isAuthenticated.value) {
+    return
+  }
+
+  await loadNotifications()
+
+  if (!hasUnreadNotifications.value) {
+    return
+  }
+
+  await $fetch('/api/v1/me/notifications/read-all', { method: 'PATCH' })
+  notifications.value = notifications.value.map(notification => ({
+    ...notification,
+    readAt: notification.readAt ?? new Date().toISOString(),
+  }))
+  unreadCount.value = 0
+}
+
 function createActivatorProps(
   menu: HTMLAttributes,
   tooltip: HTMLAttributes,
@@ -112,6 +195,16 @@ function createActivatorProps(
     },
   }
 }
+
+watch(isAuthenticated, (value) => {
+  if (!value) {
+    notifications.value = []
+    unreadCount.value = 0
+    return
+  }
+
+  loadNotifications()
+}, { immediate: true })
 </script>
 
 <template>
@@ -158,6 +251,42 @@ function createActivatorProps(
       >
         <v-icon size="26" icon="mdi-github" />
       </UiButton>
+      <v-menu location="bottom" @update:model-value="(opened) => opened && handleNotificationMenuOpen()">
+        <template #activator="{ props }">
+          <UiButton icon class="ml-1" variant="text" v-bind="props">
+            <v-badge
+              :model-value="hasUnreadNotifications"
+              :content="unreadCount"
+              color="error"
+              offset-x="2"
+              offset-y="2"
+            >
+              <v-icon icon="mdi-bell" size="28" />
+            </v-badge>
+          </UiButton>
+        </template>
+
+        <v-list density="compact" min-width="360">
+          <v-progress-linear v-if="notificationsLoading" indeterminate height="2" class="mb-1" />
+          <v-list-subheader>Notifications</v-list-subheader>
+          <template v-if="latestNotifications.length">
+            <v-list-item
+              v-for="notification in latestNotifications"
+              :key="notification.id"
+              :to="`/profile/notifications/${notification.id}`"
+              :class="{ 'app-bar__notification--unread': !notification.readAt }"
+            >
+              <v-list-item-title class="font-weight-bold">{{ notification.title }}</v-list-item-title>
+              <v-list-item-subtitle>{{ notification.message.slice(0, 72) }}{{ notification.message.length > 72 ? '…' : '' }}</v-list-item-subtitle>
+            </v-list-item>
+          </template>
+          <v-list-item v-else>
+            <v-list-item-title class="text-medium-emphasis">Aucune notification</v-list-item-title>
+          </v-list-item>
+          <v-divider class="my-1" />
+          <v-list-item to="/profile/notifications" title="All" append-icon="mdi-chevron-right" />
+        </v-list>
+      </v-menu>
       <v-menu location="bottom">
         <template #activator="{ props: menu }">
           <v-tooltip location="bottom">
@@ -290,6 +419,11 @@ function createActivatorProps(
   object-fit: cover;
   border-radius: 2px;
   display: block;
+}
+
+.app-bar__notification--unread {
+  background-color: rgba(var(--v-theme-primary), 0.08);
+  border-radius: 10px;
 }
 
 @media (max-width: 960px) {
