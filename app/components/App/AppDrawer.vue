@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
+import { useDisplay } from 'vuetify'
 import { useAuthStore } from '~/stores/auth'
 import {
   hasAdminPermission,

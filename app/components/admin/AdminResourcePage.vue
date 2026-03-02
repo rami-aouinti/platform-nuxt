@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { DataTableHeader } from 'vuetify'
+import { useDisplay } from 'vuetify'
 import type { EntityDefinition, EntityFieldConfig, EntityFilterConfig } from '~/types/entities'
 
 import AdminCard from '~/components/admin/ui/AdminCard.vue'
