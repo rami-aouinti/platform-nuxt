@@ -118,7 +118,10 @@ export async function proxyAuthApiRequest(
   const authorization = resolveAuthorizationHeader(event)
   const upstreamCandidates = getUpstreamCandidates(event)
   const timeoutMs = getAuthApiTimeoutMs(event)
-  const body = ['GET', 'DELETE'].includes(method) ? undefined : await readBody(event)
+  const overrideBody = (event.context as { requestBodyOverride?: unknown }).requestBodyOverride
+  const body = ['GET', 'DELETE'].includes(method)
+    ? undefined
+    : (overrideBody ?? await readBody(event))
 
   let lastError: unknown
 

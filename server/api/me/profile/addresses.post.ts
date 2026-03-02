@@ -1,6 +1,1 @@
-import { createProxyCollectionHandler } from '../../../utils/proxy-handler-factory'
-
-export default createProxyCollectionHandler({
-  upstreamPath: '/api/v1/me/profile/addresses',
-  method: 'POST',
-})
+export { default } from '../../v1/me/profile/addresses.post'
