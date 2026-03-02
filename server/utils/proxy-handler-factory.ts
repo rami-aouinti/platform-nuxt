@@ -53,6 +53,16 @@ function normalizeCatchAllPath(pathParam: string | string[] | undefined) {
   return Array.isArray(pathParam) ? pathParam.join('/') : (pathParam ?? '')
 }
 
+const FIRST_CLASS_V1_DOMAINS = [
+  'tools',
+  'localization',
+  'catalog',
+  'me/notifications',
+  'me/chat',
+  'me/companies',
+  'me/profile',
+] as const
+
 export function validateRequiredRouteParam(
   event: H3Event,
   paramName: string,
@@ -166,6 +176,16 @@ export function createVersionedCatchAllProxyHandlerWithOptions(
         statusMessage: 'Not Found',
         message: 'Auth endpoints are handled by dedicated routes.',
       })
+    }
+
+    if (
+      version === 'v1' &&
+      FIRST_CLASS_V1_DOMAINS.some(domain => normalizedPath === domain || normalizedPath.startsWith(`${domain}/`))
+    ) {
+      console.warn(
+        `[api-routing] Fallback v1 catch-all route used for first-class domain path "${normalizedPath}". ` +
+          'Create a dedicated server/api/v1 handler for this endpoint.',
+      )
     }
 
     requireAuthenticatedRequest(event)
