@@ -22,10 +22,10 @@ definePageMeta({
   middleware: ['auth']
 })
 
-import LightTablePagination from "../Dashboard/Widgets/LightTablePagination.vue";
-import LightTableTransparent from "../Dashboard/Widgets/LightTableTransparent.vue";
-import TableInlineActions from "../Dashboard/Widgets/TableInlineActions.vue";
-import TableInlineActionsStriped from "../Dashboard/Widgets/TableInlineActionsStriped.vue";
-import CheckTogglesTable from "../Dashboard/Widgets/CheckTogglesTable.vue";
-import DarkTable from "../Dashboard/Widgets/DarkTable.vue";
+import LightTablePagination from "../legacy/Dashboard/Widgets/LightTablePagination.vue";
+import LightTableTransparent from "../legacy/Dashboard/Widgets/LightTableTransparent.vue";
+import TableInlineActions from "../legacy/Dashboard/Widgets/TableInlineActions.vue";
+import TableInlineActionsStriped from "../legacy/Dashboard/Widgets/TableInlineActionsStriped.vue";
+import CheckTogglesTable from "../legacy/Dashboard/Widgets/CheckTogglesTable.vue";
+import DarkTable from "../legacy/Dashboard/Widgets/DarkTable.vue";
 </script>
