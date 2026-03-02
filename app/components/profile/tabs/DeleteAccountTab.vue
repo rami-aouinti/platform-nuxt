@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Notify } from '~/stores/notification'
 import { useAuthStore } from '~/stores/auth'
+import { getProfileEndpointCandidates } from '~/services/profile/profile-endpoint-resolver'
 
 const authStore = useAuthStore()
 const route = useRouter()
@@ -13,8 +14,8 @@ async function runAction(action: 'deactivate' | 'delete') {
 
   loadingAction.value = action
   const endpoints = action === 'deactivate'
-    ? ['/api/v1/me/account/deactivate', '/api/v1/me/deactivate', '/api/v2/me/account/deactivate']
-    : ['/api/v1/me/account', '/api/v1/me/delete', '/api/v2/me/account']
+    ? getProfileEndpointCandidates('deactivateAccount')
+    : getProfileEndpointCandidates('deleteAccount')
 
   const method = action === 'deactivate' ? 'POST' : 'DELETE'
 

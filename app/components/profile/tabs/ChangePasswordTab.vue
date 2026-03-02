@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Notify } from '~/stores/notification'
 import { useAuthStore } from '~/stores/auth'
+import { getProfileEndpointCandidates } from '~/services/profile/profile-endpoint-resolver'
 
 const authStore = useAuthStore()
 const loading = ref(false)
@@ -32,7 +33,7 @@ async function updatePassword() {
 
   loading.value = true
 
-  const endpoints = ['/api/v1/me/profile/password', '/api/v1/me/password', '/api/v2/me/password']
+  const endpoints = getProfileEndpointCandidates('changePassword')
 
   try {
     let success = false

@@ -1,4 +1,14 @@
 import type { AdminResourceDescriptor } from '~/types/admin-resource'
+import type { EntityDefinition } from '~/types/entities'
+
+function defaultUserFields() {
+  return [
+    { key: 'username', label: 'Username', type: 'string' as const },
+    { key: 'firstName', label: 'First name', type: 'string' as const },
+    { key: 'lastName', label: 'Last name', type: 'string' as const },
+    { key: 'email', label: 'Email', type: 'string' as const },
+  ]
+}
 
 export const adminResourceDescriptors = {
   users: {
@@ -81,6 +91,65 @@ export const adminResourceDescriptors = {
   },
 } satisfies Record<string, AdminResourceDescriptor>
 
+export const adminEntityDefinitions = {
+  users: {
+    key: 'users',
+    resourceName: "l'utilisateur",
+    descriptor: adminResourceDescriptors.users,
+    schemaEndpoint: '/api/v1/admin/users/schema',
+    fields: defaultUserFields(),
+    detailFields: defaultUserFields(),
+    editableFields: defaultUserFields(),
+    permissions: adminResourceDescriptors.users.permissions,
+    actions: { canShow: true, canCreate: true, canEdit: true, canDelete: true },
+  },
+  roles: {
+    key: 'roles',
+    resourceName: 'le rôle',
+    descriptor: adminResourceDescriptors.roles,
+    schemaEndpoint: '/api/v1/admin/roles/schema',
+    fields: [{ key: 'name', label: 'Nom', type: 'string' }],
+    detailFields: [{ key: 'name', label: 'Nom', type: 'string' }],
+    editableFields: [],
+    permissions: adminResourceDescriptors.roles.permissions,
+    actions: { canShow: true },
+  },
+  groups: {
+    key: 'groups',
+    resourceName: 'le groupe',
+    descriptor: adminResourceDescriptors.groups,
+    schemaEndpoint: '/api/v1/admin/user-groups/schema',
+    fields: [{ key: 'name', label: 'Nom', type: 'string' }],
+    detailFields: [{ key: 'name', label: 'Nom', type: 'string' }],
+    editableFields: [{ key: 'name', label: 'Nom', type: 'string' }],
+    permissions: adminResourceDescriptors.groups.permissions,
+    actions: { canShow: true, canCreate: true, canEdit: true, canDelete: true },
+  },
+  apiKeys: {
+    key: 'apiKeys',
+    resourceName: "la clé d'API",
+    descriptor: adminResourceDescriptors.apiKeys,
+    schemaEndpoint: '/api/v1/admin/api-keys/schema',
+    fields: [
+      { key: 'name', label: 'Nom', type: 'string' },
+      { key: 'prefix', label: 'Préfixe', type: 'string' },
+    ],
+    detailFields: [
+      { key: 'name', label: 'Nom', type: 'string' },
+      { key: 'prefix', label: 'Préfixe', type: 'string' },
+    ],
+    editableFields: [
+      { key: 'name', label: 'Nom', type: 'string' },
+    ],
+    permissions: adminResourceDescriptors.apiKeys.permissions,
+    actions: { canShow: true, canCreate: true, canEdit: true, canDelete: true },
+  },
+} satisfies Record<string, EntityDefinition>
+
 export function getAdminResourceDescriptor(resource: keyof typeof adminResourceDescriptors): AdminResourceDescriptor {
   return adminResourceDescriptors[resource]
+}
+
+export function getAdminEntityDefinition(resource: keyof typeof adminEntityDefinitions): EntityDefinition {
+  return adminEntityDefinitions[resource]
 }

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Notify } from '~/stores/notification'
 import { useAuthStore } from '~/stores/auth'
+import { getProfileEndpointCandidates } from '~/services/profile/profile-endpoint-resolver'
 
 type SessionItem = {
   id: string
@@ -21,7 +22,7 @@ async function loadSessions() {
   }
 
   loading.value = true
-  const endpoints = ['/api/v1/me/sessions', '/api/v2/me/sessions']
+  const endpoints = getProfileEndpointCandidates('sessions')
 
   try {
     for (const endpoint of endpoints) {

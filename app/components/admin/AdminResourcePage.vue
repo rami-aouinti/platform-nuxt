@@ -1,26 +1,10 @@
 <script setup lang="ts">
 import type { DataTableHeader } from 'vuetify'
+import type { EntityDefinition, EntityFieldConfig, EntityFilterConfig } from '~/types/entities'
 
 import AdminCard from '~/components/admin/ui/AdminCard.vue'
 
 type AdminRow = Record<string, unknown>
-
-type FilterConfig = {
-  key: string
-  label: string
-  icon?: string
-  items?: { title: string; value: string }[]
-}
-
-type FieldConfig = {
-  key: string
-  label: string
-  type?: 'normal' | 'string' | 'int' | 'date' | 'image' | 'boolean' | 'object'
-  endpoint?: string
-  targetClass?: string
-  readonly?: boolean
-  patchable?: boolean
-}
 
 type RowPatchPayload = {
   rowId: string
@@ -42,9 +26,10 @@ const props = withDefaults(
     sortBy?: readonly { key: string; order?: 'asc' | 'desc' | boolean }[]
     search?: string
     filters?: Record<string, string>
-    filterConfigs?: FilterConfig[]
-    detailFields?: FieldConfig[]
-    editableFields?: FieldConfig[]
+    filterConfigs?: EntityFilterConfig[]
+    detailFields?: EntityFieldConfig[]
+    editableFields?: EntityFieldConfig[]
+    entityDefinition?: EntityDefinition
     createLabel?: string
     canCreate?: boolean
     canShow?: boolean
@@ -69,6 +54,7 @@ const props = withDefaults(
     filterConfigs: () => [],
     detailFields: () => [],
     editableFields: () => [],
+    entityDefinition: undefined,
     createLabel: 'Créer',
     canCreate: false,
     canShow: true,
@@ -115,8 +101,19 @@ const localSearch = computed({
 const canTeleportControls = computed(
   () => isMounted.value && mdAndUp.value && hasAppBarTarget.value,
 )
+const resolvedFilterConfigs = computed(() => props.entityDefinition?.filters ?? props.filterConfigs)
+const resolvedDetailFields = computed(() => props.entityDefinition?.detailFields ?? props.entityDefinition?.fields ?? props.detailFields)
+const resolvedEditableFields = computed(() => props.entityDefinition?.editableFields ?? props.entityDefinition?.fields ?? props.editableFields)
+const resolvedPermissions = computed(() => ({
+  canCreate: props.entityDefinition?.actions?.canCreate ?? props.entityDefinition?.permissions?.canCreate ?? props.canCreate,
+  canShow: props.entityDefinition?.actions?.canShow ?? props.entityDefinition?.permissions?.canShow ?? props.canShow,
+  canEdit: props.entityDefinition?.actions?.canEdit ?? props.entityDefinition?.permissions?.canEdit ?? props.canEdit,
+  canDelete: props.entityDefinition?.actions?.canDelete ?? props.entityDefinition?.permissions?.canDelete ?? props.canDelete,
+}))
+const resolvedResourceName = computed(() => props.entityDefinition?.resourceName ?? props.resourceName)
+
 const appBarGridStyle = computed(() => ({
-  gridTemplateColumns: `minmax(220px, 1.4fr) repeat(${props.filterConfigs.length}, minmax(150px, 1fr)) auto`,
+  gridTemplateColumns: `minmax(220px, 1.4fr) repeat(${resolvedFilterConfigs.value.length}, minmax(150px, 1fr)) auto`,
 }))
 
 
@@ -126,8 +123,8 @@ const dateFormatter = new Intl.DateTimeFormat('fr-FR', {
 })
 
 const fieldConfigByKey = computed(() => {
-  const configs = [...props.detailFields, ...props.editableFields]
-  return configs.reduce<Record<string, FieldConfig>>((acc, config) => {
+  const configs = [...resolvedDetailFields.value, ...resolvedEditableFields.value]
+  return configs.reduce<Record<string, EntityFieldConfig>>((acc, config) => {
     if (!acc[config.key]) {
       acc[config.key] = config
     }
@@ -162,7 +159,7 @@ function getObjectDisplayLabel(value: unknown) {
   return String(candidate.label ?? candidate.name ?? candidate.title ?? candidate.id ?? '-').trim() || '-'
 }
 
-function getDisplayValue(value: unknown, type: FieldConfig['type']) {
+function getDisplayValue(value: unknown, type: EntityFieldConfig['type']) {
   if (value == null || value === '') {
     return '-'
   }
@@ -217,7 +214,7 @@ function toNumericValue(value: unknown) {
   return Number.isNaN(numericValue) ? null : numericValue
 }
 
-function updateEditableValue(field: FieldConfig, value: unknown) {
+function updateEditableValue(field: EntityFieldConfig, value: unknown) {
   if (!editableRow.value || field.readonly || field.patchable === false) {
     return
   }
@@ -225,7 +222,7 @@ function updateEditableValue(field: FieldConfig, value: unknown) {
   editableRow.value[field.key] = value
 }
 
-function isFieldDisabled(field: FieldConfig) {
+function isFieldDisabled(field: EntityFieldConfig) {
   return field.readonly || field.patchable === false || props.mutationLoading
 }
 
@@ -346,7 +343,7 @@ async function exportToPdf() {
 }
 
 function openDetails(row: AdminRow) {
-  if (!props.canShow) {
+  if (!resolvedPermissions.value.canShow) {
     return
   }
 
@@ -356,7 +353,7 @@ function openDetails(row: AdminRow) {
 }
 
 function openEdit(row: AdminRow) {
-  if (!props.canEdit) {
+  if (!resolvedPermissions.value.canEdit) {
     return
   }
 
@@ -366,14 +363,14 @@ function openEdit(row: AdminRow) {
 }
 
 async function confirmDelete(row: AdminRow) {
-  if (!props.canDelete || props.mutationLoading) {
+  if (!resolvedPermissions.value.canDelete || props.mutationLoading) {
     return
   }
 
   const identifier = String(row.username ?? row.name ?? row.email ?? row.id ?? '').trim()
   const requiresTypedConfirmation = Boolean(identifier)
   const confirmed = await dialogDelete.value?.open(
-    `Supprimer ${props.resourceName} ${identifier || ''} ?`,
+    `Supprimer ${resolvedResourceName.value} ${identifier || ''} ?`,
     requiresTypedConfirmation
       ? {
           confirmationLabel: `Saisissez ${identifier} pour confirmer la suppression`,
@@ -412,7 +409,7 @@ onMounted(() => {
 
           <component
             :is="filter.items?.length ? 'v-select' : 'v-text-field'"
-            v-for="filter in filterConfigs"
+            v-for="filter in resolvedFilterConfigs"
             :key="filter.key"
             :model-value="filters[filter.key] || ''"
             :label="filter.label"
@@ -444,8 +441,7 @@ onMounted(() => {
               :disabled="!rows.length"
               :loading="exportingExcel"
               @click="exportToExcel"
-            >
-            </v-btn>
+            />
             <v-btn
               color="error"
               icon="mdi-file-pdf-box"
@@ -455,8 +451,7 @@ onMounted(() => {
               :disabled="!rows.length"
               :loading="exportingPdf"
               @click="exportToPdf"
-            >
-            </v-btn>
+            />
             <v-btn
               icon="mdi-refresh"
               color="primary"
@@ -465,18 +460,16 @@ onMounted(() => {
               rounded="lg"
               aria-label="Actualiser"
               @click="emit('refresh')"
-            >
-            </v-btn>
+            />
             <v-btn
-              v-if="canCreate"
+              v-if="resolvedPermissions.canCreate"
               color="primary"
               size="small"
               variant="outlined"
               icon="mdi-plus"
               rounded="lg"
               @click="emit('create')"
-            >
-            </v-btn>
+            />
           </div>
         </div>
       </teleport>
@@ -509,7 +502,7 @@ onMounted(() => {
           />
           <component
             :is="filter.items?.length ? 'v-select' : 'v-text-field'"
-            v-for="filter in filterConfigs"
+            v-for="filter in resolvedFilterConfigs"
             :key="filter.key"
             :model-value="filters[filter.key] || ''"
             :label="filter.label"
@@ -555,7 +548,7 @@ onMounted(() => {
               @click="emit('refresh')"
             />
             <v-btn
-              v-if="canCreate"
+              v-if="resolvedPermissions.canCreate"
               color="primary"
               prepend-icon="mdi-plus"
               size="small"
@@ -569,7 +562,7 @@ onMounted(() => {
 
       <template #row-actions="{ item }">
         <v-btn
-          v-if="canShow"
+          v-if="resolvedPermissions.canShow"
           size="small"
           icon="mdi-eye-outline"
           variant="text"
@@ -586,22 +579,22 @@ onMounted(() => {
           :to="`${detailRouteBase}/${encodeURIComponent(String(item.id))}`"
         />
         <v-btn
-          v-if="canEdit"
+          v-if="resolvedPermissions.canEdit"
           size="small"
           icon="mdi-pencil-outline"
           variant="text"
           color="warning"
-          :disabled="!canEdit || mutationLoading"
+          :disabled="!resolvedPermissions.canEdit || mutationLoading"
           :loading="mutationLoading"
           @click.stop="openEdit(item)"
         />
         <v-btn
-          v-if="canDelete"
+          v-if="resolvedPermissions.canDelete"
           size="small"
           icon="mdi-delete-outline"
           variant="text"
           color="error"
-          :disabled="!canDelete || mutationLoading"
+          :disabled="!resolvedPermissions.canDelete || mutationLoading"
           :loading="mutationLoading"
           @click.stop="confirmDelete(item)"
         />
@@ -667,7 +660,7 @@ onMounted(() => {
           <slot name="detail-content" :row="selectedRow">
             <v-list v-if="selectedRow" lines="two" density="comfortable">
               <v-list-item
-                v-for="field in detailFields"
+                v-for="field in resolvedDetailFields"
                 :key="field.key"
                 :title="field.label"
                 :subtitle="String(selectedRow[field.key] ?? '-')"
@@ -684,10 +677,10 @@ onMounted(() => {
 
     <v-dialog v-model="editOpen" max-width="820">
       <v-card v-if="editableRow">
-        <v-card-title>Éditer {{ resourceName }}</v-card-title>
+        <v-card-title>Éditer {{ resolvedResourceName }}</v-card-title>
         <v-card-text>
           <template
-            v-for="field in editableFields"
+            v-for="field in resolvedEditableFields"
             :key="`edit-field-${field.key}`"
           >
             <v-switch

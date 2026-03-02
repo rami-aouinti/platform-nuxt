@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Notify } from '~/stores/notification'
 import { useAuthStore } from '~/stores/auth'
+import { getProfileEndpointCandidates } from '~/services/profile/profile-endpoint-resolver'
 
 const authStore = useAuthStore()
 const loading = ref(false)
@@ -18,7 +19,7 @@ async function loadTwoFactorSettings() {
 
   loading.value = true
 
-  const endpoints = ['/api/v1/me/two-factor-auth', '/api/v1/me/two-factor', '/api/v2/me/two-factor-auth']
+  const endpoints = getProfileEndpointCandidates('twoFactor')
 
   try {
     for (const endpoint of endpoints) {
@@ -47,7 +48,7 @@ async function toggleTwoFactor() {
   }
 
   const nextValue = !setting.value.enabled
-  const endpoints = ['/api/v1/me/two-factor-auth', '/api/v1/me/two-factor', '/api/v2/me/two-factor-auth']
+  const endpoints = getProfileEndpointCandidates('twoFactor')
 
   try {
     for (const endpoint of endpoints) {
