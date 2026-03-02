@@ -361,5 +361,173 @@
       "taskArchivedBackend": "Aufgabe im Backend archiviert.",
       "statusUpdatedBackend": "Status im Backend aktualisiert ({status})."
     }
+  },
+  "offers": {
+    "shared": {
+      "forbidden": "403 · Zugriff verweigert.",
+      "apiError": "API-Fehler.",
+      "notProvided": "-",
+      "status": {
+        "pending": "Ausstehend",
+        "accepted": "Akzeptiert",
+        "rejected": "Abgelehnt",
+        "withdrawn": "Zurückgezogen"
+      }
+    },
+    "index": {
+      "empty": "Keine Angebote verfügbar.",
+      "actions": {
+        "quickApply": "Schnell bewerben"
+      },
+      "filters": {
+        "sidebarTitle": "Filter",
+        "employmentType": {
+          "title": "Anstellungsart",
+          "fullTime": "Vollzeit",
+          "partTime": "Teilzeit",
+          "freelance": "Freelance"
+        },
+        "remoteMode": {
+          "title": "Arbeitsmodell",
+          "remote": "Remote",
+          "hybrid": "Hybrid",
+          "onsite": "Vor Ort"
+        },
+        "publishedWithinDays": {
+          "title": "Veröffentlichung",
+          "sevenDays": "7 Tage",
+          "thirtyDays": "30 Tage"
+        }
+      },
+      "details": {
+        "highlights": {
+          "featureDelivery": "Konzeption und Umsetzung neuer Features mit Vue/Nuxt",
+          "collaboration": "Zusammenarbeit mit Design und Product in kurzen Iterationen",
+          "quality": "Qualitätssicherung mit Tests und Code Reviews"
+        },
+        "requirements": {
+          "experience": "Mindestens 3 Jahre Erfahrung in Frontend-Entwicklung",
+          "typescript": "Sicherer Umgang mit TypeScript und REST APIs",
+          "teamwork": "Strukturierte und teamorientierte Arbeitsweise"
+        },
+        "perks": {
+          "flexibleHours": "Flexible Arbeitszeiten und Homeoffice Budget",
+          "learningBudget": "Weiterbildungsbudget und Mentoring",
+          "holidaysAndHardware": "30 Urlaubstage und moderne Hardware"
+        }
+      }
+    },
+    "myApplications": {
+      "empty": "Keine Bewerbungen.",
+      "actions": {
+        "withdraw": "Zurückziehen"
+      },
+      "filters": {
+        "sidebarTitle": "Filtern",
+        "status": {
+          "title": "Status"
+        }
+      },
+      "details": {
+        "description": "Prüfen Sie den Status Ihrer Bewerbung und die nächsten Schritte im Prozess.",
+        "highlights": {
+          "sent": "Bewerbung an Recruiter gesendet",
+          "evaluated": "Profil nach den Kriterien der Stelle bewertet",
+          "feedback": "Rückmeldung in 5 Werktagen erwartet"
+        },
+        "requirements": {
+          "cv": "Aktueller Lebenslauf",
+          "portfolio": "Portfolio oder Referenzen",
+          "availability": "Verfügbarkeit mitgeteilt"
+        },
+        "perks": {
+          "realtime": "Echtzeit-Benachrichtigungen",
+          "tracking": "Schrittweises Tracking",
+          "history": "Zentrale Historie"
+        }
+      }
+    },
+    "myOffers": {
+      "empty": "Keine Angebote zu verwalten.",
+      "actions": {
+        "edit": "Bearbeiten",
+        "deleteSelected": "Ausgewähltes Angebot löschen"
+      },
+      "filters": {
+        "sidebarTitle": "Segmente",
+        "status": {
+          "title": "Status",
+          "draft": "Entwurf",
+          "open": "Offen",
+          "closed": "Geschlossen"
+        }
+      },
+      "delete": {
+        "confirm": "Angebot {identifier} löschen?",
+        "confirmLabel": "Geben Sie {identifier} zur Bestätigung ein"
+      },
+      "details": {
+        "descriptionFallback": "Aktualisieren Sie Ihre Beschreibung, um die Aufgabe darzustellen.",
+        "highlights": {
+          "adjustMission": "Aufgaben an den aktuellen Bedarf anpassen",
+          "verifyStack": "Anforderungen und Tech-Stack prüfen",
+          "updateCompensation": "Vergütungsinformationen aktualisieren"
+        },
+        "requirements": {
+          "experience": "Passende Erfahrung für die Position",
+          "communication": "Gute Kommunikationsfähigkeiten",
+          "autonomy": "Selbstständige und organisierte Arbeitsweise"
+        },
+        "perks": {
+          "remote": "Remote möglich",
+          "bonus": "Jährlicher Bonus",
+          "healthcare": "Premium-Krankenversicherung"
+        }
+      },
+      "applications": {
+        "title": "Bewerbungen",
+        "applicationId": "Application ID: {id}",
+        "accepted": "Bewerbung akzeptiert.",
+        "rejected": "Bewerbung abgelehnt.",
+        "withdrawn": "Bewerbung zurückgezogen.",
+        "emptyTitle": "Keine Bewerbungen",
+        "emptySubtitle": "Dieses Angebot hat noch keine Bewerbung erhalten."
+      },
+      "editDialog": {
+        "title": "Angebot bearbeiten",
+        "fields": {
+          "title": "Titel",
+          "slug": "Slug",
+          "companyId": "Unternehmens-ID",
+          "description": "Beschreibung"
+        },
+        "save": "Speichern"
+      }
+    },
+    "receivedApplications": {
+      "title": "Erhaltene Bewerbungen",
+      "description": "Bewerbungen auf Ihre Angebote annehmen oder ablehnen.",
+      "forbiddenDescription": "Sie sind nicht berechtigt, diese Bewerbungen zu moderieren.",
+      "searchLabel": "Suche",
+      "filters": {
+        "all": "Alle",
+        "status": "Status"
+      },
+      "emptyTitle": "Keine erhaltenen Bewerbungen",
+      "emptyMessage": "Keine Bewerbung entspricht den aktuellen Filtern.",
+      "cvProvided": "Vorhanden",
+      "columns": {
+        "id": "ID",
+        "offer": "Angebot",
+        "candidate": "Kandidat",
+        "letter": "Anschreiben",
+        "cv": "CV",
+        "status": "Status"
+      },
+      "actions": {
+        "accepted": "Bewerbung akzeptiert.",
+        "rejected": "Bewerbung abgelehnt."
+      }
+    }
   }
 }

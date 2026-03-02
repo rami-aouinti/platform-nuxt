@@ -1,0 +1,35 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`offers pages i18n keys > keeps i18n keys stable for received applications page 1`] = `
+[
+  "common.reload",
+  "offers.receivedApplications.actions.accepted",
+  "offers.receivedApplications.actions.rejected",
+  "offers.receivedApplications.columns.candidate",
+  "offers.receivedApplications.columns.cv",
+  "offers.receivedApplications.columns.id",
+  "offers.receivedApplications.columns.letter",
+  "offers.receivedApplications.columns.offer",
+  "offers.receivedApplications.columns.status",
+  "offers.receivedApplications.cvProvided",
+  "offers.receivedApplications.description",
+  "offers.receivedApplications.emptyMessage",
+  "offers.receivedApplications.emptyTitle",
+  "offers.receivedApplications.filters.all",
+  "offers.receivedApplications.filters.status",
+  "offers.receivedApplications.forbiddenDescription",
+  "offers.receivedApplications.searchLabel",
+  "offers.receivedApplications.title",
+  "offers.shared.apiError",
+  "offers.shared.forbidden",
+  "offers.shared.notProvided",
+  "offers.shared.status.accepted",
+  "offers.shared.status.accepted",
+  "offers.shared.status.pending",
+  "offers.shared.status.pending",
+  "offers.shared.status.rejected",
+  "offers.shared.status.rejected",
+  "offers.shared.status.withdrawn",
+  "offers.shared.status.withdrawn",
+]
+`;

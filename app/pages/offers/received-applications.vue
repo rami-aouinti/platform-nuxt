@@ -10,10 +10,11 @@ import { buildApiPlatformQuery } from '../../../services/admin/shared/index'
 import { HttpRequestError } from '../../../services/http/client'
 import { jobApplicationsService, type JobApplication } from '../../../services/admin/job-applications/index'
 import { toUiErrorMessage } from '~/utils/errors/toUiErrorMessage'
+const { t } = useI18n()
 
 definePageMeta({
   icon: 'mdi-inbox-arrow-down-outline',
-  title: 'Candidatures reçues',
+  title: 'Received Applications',
   drawerIndex: 22,
   requiresAuth: true,
   middleware: ['auth'],
@@ -31,12 +32,12 @@ const search = ref('')
 const filters = ref({ status: 'pending' })
 
 const columns: DataTableHeader[] = [
-  { title: 'ID', key: 'id' },
-  { title: 'Offre', key: 'jobOffer' },
-  { title: 'Candidat', key: 'candidate' },
-  { title: 'Lettre', key: 'coverLetter' },
-  { title: 'CV', key: 'cvUrl' },
-  { title: 'Statut', key: 'status' },
+  { title: t('offers.receivedApplications.columns.id'), key: 'id' },
+  { title: t('offers.receivedApplications.columns.offer'), key: 'jobOffer' },
+  { title: t('offers.receivedApplications.columns.candidate'), key: 'candidate' },
+  { title: t('offers.receivedApplications.columns.letter'), key: 'coverLetter' },
+  { title: t('offers.receivedApplications.columns.cv'), key: 'cvUrl' },
+  { title: t('offers.receivedApplications.columns.status'), key: 'status' },
 ]
 
 const pageState = computed(() => {
@@ -49,10 +50,10 @@ const pageState = computed(() => {
 
 
 function statusMeta(status: string) {
-  if (status === 'accepted') return { label: 'Acceptée', tone: 'success' as const }
-  if (status === 'rejected') return { label: 'Rejetée', tone: 'error' as const }
-  if (status === 'withdrawn') return { label: 'Retirée', tone: 'neutral' as const }
-  return { label: 'En attente', tone: 'warning' as const }
+  if (status === 'accepted') return { label: t('offers.shared.status.accepted'), tone: 'success' as const }
+  if (status === 'rejected') return { label: t('offers.shared.status.rejected'), tone: 'error' as const }
+  if (status === 'withdrawn') return { label: t('offers.shared.status.withdrawn'), tone: 'neutral' as const }
+  return { label: t('offers.shared.status.pending'), tone: 'warning' as const }
 }
 
 function canReview(row: Record<string, unknown>) {
@@ -115,37 +116,37 @@ onMounted(loadRows)
 
 <template>
   <AdminCard>
-    <AdminToolbar title="Candidatures reçues" description="Accepter ou rejeter les candidatures sur vos offres.">
+    <AdminToolbar :title="t('offers.receivedApplications.title')" :description="t('offers.receivedApplications.description')">
       <template #actions>
-        <v-btn variant="tonal" prepend-icon="mdi-refresh" @click="loadRows">Recharger</v-btn>
+        <v-btn variant="tonal" prepend-icon="mdi-refresh" @click="loadRows">{{ t('common.reload') }}</v-btn>
       </template>
     </AdminToolbar>
 
     <template v-if="pageState === 'forbidden'">
       <v-sheet class="pa-6 text-center" rounded="lg" border>
-        <div class="text-h6 mb-2">403 · Accès refusé</div>
-        <p class="text-medium-emphasis mb-4">Vous n'êtes pas autorisé à modérer ces candidatures.</p>
+        <div class="text-h6 mb-2">{{ t('offers.shared.forbidden') }}</div>
+        <p class="text-medium-emphasis mb-4">{{ t('offers.receivedApplications.forbiddenDescription') }}</p>
       </v-sheet>
     </template>
 
-    <AdminErrorState v-else-if="pageState === 'error'" :message="error || 'Erreur API.'" :can-retry="true" @retry="loadRows" />
+    <AdminErrorState v-else-if="pageState === 'error'" :message="error || t('offers.shared.apiError')" :can-retry="true" @retry="loadRows" />
 
     <template v-else>
       <v-row dense class="mb-2">
         <v-col cols="12" md="5">
-          <v-text-field v-model="search" label="Recherche" prepend-inner-icon="mdi-magnify" hide-details clearable />
+          <v-text-field v-model="search" :label="t('offers.receivedApplications.searchLabel')" prepend-inner-icon="mdi-magnify" hide-details clearable />
         </v-col>
         <v-col cols="12" md="4">
           <v-select
             v-model="filters.status"
             :items="[
-              { title: 'Tous', value: '' },
-              { title: 'En attente', value: 'pending' },
-              { title: 'Acceptée', value: 'accepted' },
-              { title: 'Rejetée', value: 'rejected' },
-              { title: 'Retirée', value: 'withdrawn' },
+              { title: t('offers.receivedApplications.filters.all'), value: '' },
+              { title: t('offers.shared.status.pending'), value: 'pending' },
+              { title: t('offers.shared.status.accepted'), value: 'accepted' },
+              { title: t('offers.shared.status.rejected'), value: 'rejected' },
+              { title: t('offers.shared.status.withdrawn'), value: 'withdrawn' },
             ]"
-            label="Statut"
+            :label="t('offers.receivedApplications.filters.status')"
             hide-details
           />
         </v-col>
@@ -153,8 +154,8 @@ onMounted(loadRows)
 
       <AdminEmptyState
         v-if="pageState === 'empty'"
-        title="Aucune candidature reçue"
-        message="Aucune candidature ne correspond aux filtres courants."
+        :title="t('offers.receivedApplications.emptyTitle')"
+        :message="t('offers.receivedApplications.emptyMessage')"
       />
 
       <AdminTable
@@ -173,7 +174,7 @@ onMounted(loadRows)
         </template>
 
         <template #cell:cvUrl="{ value }">
-          <span class="text-body-2">{{ value ? 'Renseigné' : '-' }}</span>
+          <span class="text-body-2">{{ value ? t('offers.receivedApplications.cvProvided') : t('offers.shared.notProvided') }}</span>
         </template>
 
         <template #cell:status="{ value }">
@@ -188,7 +189,7 @@ onMounted(loadRows)
             color="success"
             icon="mdi-check"
             :loading="actionLoading"
-            @click.stop="runAction('Candidature acceptée.', () => jobApplicationsService.accept(String(item.id)))"
+            @click.stop="runAction(t('offers.receivedApplications.actions.accepted'), () => jobApplicationsService.accept(String(item.id)))"
           />
           <v-btn
             v-if="canReview(item)"
@@ -197,7 +198,7 @@ onMounted(loadRows)
             color="error"
             icon="mdi-close"
             :loading="actionLoading"
-            @click.stop="runAction('Candidature rejetée.', () => jobApplicationsService.reject(String(item.id)))"
+            @click.stop="runAction(t('offers.receivedApplications.actions.rejected'), () => jobApplicationsService.reject(String(item.id)))"
           />
         </template>
       </AdminTable>

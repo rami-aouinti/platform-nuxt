@@ -25,7 +25,8 @@
     "endpoint:inventory:generate": "node scripts/generate-endpoint-usage-report.mjs",
     "endpoint:inventory:check": "node scripts/check-endpoint-inventory.mjs",
     "lint:admin-parent-routes": "node scripts/check-admin-parent-nuxtpage-children.mjs",
-    "lint:page-namespaces": "node scripts/check-page-namespace-duplicates.mjs"
+    "lint:page-namespaces": "node scripts/check-page-namespace-duplicates.mjs",
+    "lint:i18n-hardcoded": "node scripts/check-hardcoded-ui-text.mjs"
   },
   "devDependencies": {
     "@iconify-json/mdi": "^1.2.3",

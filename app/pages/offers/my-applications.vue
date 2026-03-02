@@ -15,6 +15,7 @@ definePageMeta({
 })
 
 const applicationStore = useJobApplicationStore()
+const { t } = useI18n()
 
 const {
   rows,
@@ -38,12 +39,12 @@ const { smAndDown } = useDisplay()
 const filterSections = computed(() => [
   {
     key: 'status',
-    title: 'Status',
+    title: t('offers.myApplications.filters.status.title'),
     items: [
-      { label: 'En attente', value: 'pending', count: statusCounters.value.pending },
-      { label: 'Acceptée', value: 'accepted', count: statusCounters.value.accepted },
-      { label: 'Rejetée', value: 'rejected', count: statusCounters.value.rejected },
-      { label: 'Retirée', value: 'withdrawn', count: statusCounters.value.withdrawn },
+      { label: t('offers.shared.status.pending'), value: 'pending', count: statusCounters.value.pending },
+      { label: t('offers.shared.status.accepted'), value: 'accepted', count: statusCounters.value.accepted },
+      { label: t('offers.shared.status.rejected'), value: 'rejected', count: statusCounters.value.rejected },
+      { label: t('offers.shared.status.withdrawn'), value: 'withdrawn', count: statusCounters.value.withdrawn },
     ],
   },
 ])
@@ -106,20 +107,20 @@ onMounted(loadRows)
       <section class="offers-board-page__content">
 
         <v-alert v-if="pageState === 'forbidden'" type="error" variant="tonal"
-          >403 · Accès refusé.</v-alert
+          >{{ t('offers.shared.forbidden') }}</v-alert
         >
         <v-alert
           v-else-if="pageState === 'error'"
           type="error"
           variant="tonal"
-          >{{ error || 'Erreur API.' }}</v-alert
+          >{{ error || t('offers.shared.apiError') }}</v-alert
         >
         <v-skeleton-loader
           v-else-if="pageState === 'loading'"
           type="article, article"
         />
         <v-alert v-else-if="pageState === 'empty'" type="info" variant="tonal"
-          >Aucune candidature.</v-alert
+          >{{ t('offers.myApplications.empty') }}</v-alert
         >
 
         <div v-else class="offers-board-page__grid">
@@ -129,7 +130,7 @@ onMounted(loadRows)
               :key="offer.id"
               :offer="offer"
               :active="selectedOffer?.id === offer.id"
-              action-label="Retirer"
+              :action-label="t('offers.myApplications.actions.withdraw')"
               action-icon="mdi-undo"
               @select="selectedId = $event"
               @action="withdraw"
@@ -142,21 +143,21 @@ onMounted(loadRows)
             :company="selectedOffer.company"
             :location="selectedOffer.location"
             :salary="selectedOffer.salary"
-            :description="'Consultez le statut de votre candidature et les prochaines étapes du process.'"
+            :description="t('offers.myApplications.details.description')"
             :highlights="[
-              'Candidature transmise au recruteur',
-              'Profil évalué selon les critères du poste',
-              'Retour attendu sous 5 jours ouvrés',
+              t('offers.myApplications.details.highlights.sent'),
+              t('offers.myApplications.details.highlights.evaluated'),
+              t('offers.myApplications.details.highlights.feedback'),
             ]"
             :requirements="[
-              'CV à jour',
-              'Portfolio ou références',
-              'Disponibilité communiquée',
+              t('offers.myApplications.details.requirements.cv'),
+              t('offers.myApplications.details.requirements.portfolio'),
+              t('offers.myApplications.details.requirements.availability'),
             ]"
             :perks="[
-              'Notifications en temps réel',
-              'Suivi des étapes',
-              'Historique centralisé',
+              t('offers.myApplications.details.perks.realtime'),
+              t('offers.myApplications.details.perks.tracking'),
+              t('offers.myApplications.details.perks.history'),
             ]"
           />
         </div>
@@ -175,7 +176,7 @@ onMounted(loadRows)
       <div>
         <OffersFiltersSidebar
           v-model="selectedFilters"
-          title="Filtrer"
+          :title="t('offers.myApplications.filters.sidebarTitle')"
           :sections="filterSections"
         />
       </div>
