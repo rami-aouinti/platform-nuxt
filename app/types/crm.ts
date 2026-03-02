@@ -46,9 +46,9 @@ export type TaskRequestType = (typeof TaskRequestType)[keyof typeof TaskRequestT
 
 export type CompanyRole = 'owner' | 'member' | string
 
-export interface Company { id: Id; name: string; legalName?: string | null; description?: string | null; role?: CompanyRole | null; photoUrl?: string | null; photo?: string | null; image?: string | null; projectsCount?: number | null; projects?: unknown[] | number | null; stats?: { projectsCount?: number | null } | null }
+export interface Company { id: Id; name: string; legalName?: string | null; description?: string | null; role?: CompanyRole | null; photoUrl?: string | null; photoMediaId?: Id | null; projectsCount?: number | null; projects?: unknown[] | number | null; stats?: { projectsCount?: number | null } | null }
 export interface User { id: Id; username?: string; firstName?: string; lastName?: string; email?: string }
-export interface Project { id: Id; name: string; description?: string | null; status: ProjectStatus; dueDate?: string | null; createdAt?: string; updatedAt?: string; photoUrl?: string | null; photo?: string | null; image?: string | null }
+export interface Project { id: Id; name: string; description?: string | null; status: ProjectStatus; dueDate?: string | null; createdAt?: string; updatedAt?: string; photoUrl?: string | null; photoMediaId?: Id | null }
 export interface Task { id: Id; projectId?: Id; title: string; description?: string | null; priority: TaskPriority; status: TaskStatus; dueDate?: string | null; assigneeId?: Id | null; createdAt?: string; updatedAt?: string; project?: { id?: Id; name?: string } | Id | null | [] }
 export interface TaskRequest { id: Id; taskId?: Id; requesterId?: Id | null; reviewerId?: Id | null; reason?: string; status: TaskRequestStatus; type: TaskRequestType; comment?: string | null; note?: string | null; requestedStatus?: TaskStatus | null; time?: string | null; createdAt?: string; updatedAt?: string; task?: { id?: Id } | Id; requester?: User | Id | null; reviewer?: User | Id | null }
 export interface Sprint { id: Id; name?: string | null; status?: string | null; goal?: string | null; startDate?: string | null; endDate?: string | null; project?: { id?: Id; name?: string } | Id | null; taskRequests?: TaskRequest[] | null; company?: { id?: Id; name?: string } | Id | null | []; active?: boolean | null }
@@ -118,6 +118,37 @@ export function toTaskPriority(value: unknown): TaskPriority {
 export function normalizeTask(task: Task): Task {
   return { ...task, status: toTaskStatus(task.status), priority: toTaskPriority(task.priority) }
 }
+
+export function normalizeCompany(company: Company & Record<string, unknown>): Company {
+  return {
+    ...company,
+    photoUrl:
+      typeof company.photoUrl === 'string'
+        ? company.photoUrl
+        : typeof company.photo === 'string'
+          ? company.photo
+          : typeof company.image === 'string'
+            ? company.image
+            : null,
+    photoMediaId: (company.photoMediaId as Id | null | undefined) ?? null,
+  }
+}
+
+export function normalizeProject(project: Project & Record<string, unknown>): Project {
+  return {
+    ...project,
+    photoUrl:
+      typeof project.photoUrl === 'string'
+        ? project.photoUrl
+        : typeof project.photo === 'string'
+          ? project.photo
+          : typeof project.image === 'string'
+            ? project.image
+            : null,
+    photoMediaId: (project.photoMediaId as Id | null | undefined) ?? null,
+  }
+}
+
 export function normalizeTaskRequest(taskRequest: TaskRequest): TaskRequest {
   return {
     ...taskRequest,

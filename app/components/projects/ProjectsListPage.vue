@@ -80,7 +80,7 @@ function mapProjectToRow(project: CrmProjectExtended): ProjectRow {
   return {
     id: project.id,
     name: project.name,
-    image: project.image || project.photo || project.photoUrl || undefined,
+    image: project.photoUrl || undefined,
     owner: owner.name,
     ownerId: owner.id,
     managerIds: mapManagers(project),

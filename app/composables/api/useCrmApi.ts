@@ -1,5 +1,3 @@
-export type { CreateSprintPayload } from '~/types/crm'
-
 import {
   type Company,
   type CompanyRole,
@@ -23,9 +21,13 @@ import {
   type UpdateTaskPayload,
   type UpdateTaskRequestPayload,
   type User,
+  normalizeCompany,
+  normalizeProject,
   normalizeTask,
   normalizeTaskRequest,
 } from '~/types/crm'
+
+export type { CreateSprintPayload } from '~/types/crm'
 
 export type CrmCompanyRole = CompanyRole
 export type CrmCompany = Company
@@ -110,33 +112,33 @@ function toTaskRequestPayload(payload: CreateTaskRequestPayload | UpdateTaskRequ
 
 export function useCrmApi() {
   return {
-    listCompanies: () => $fetch<CrmCompany[]>(companiesBase, { method: 'GET' }),
-    createCompany: (payload: CreateCompanyPayload) =>
-      $fetch<CrmCompany>(companiesBase, { method: 'POST', body: payload }),
+    listCompanies: async () => (await $fetch<(CrmCompany & Record<string, unknown>)[]>(companiesBase, { method: 'GET' })).map(normalizeCompany),
+    createCompany: async (payload: CreateCompanyPayload) =>
+      normalizeCompany(await $fetch<CrmCompany & Record<string, unknown>>(companiesBase, { method: 'POST', body: payload })),
 
-    listProjects: () => $fetch<CrmProject[]>(projectsBase, { method: 'GET' }),
-    listCompanyProjects: (companyId: string) =>
-      $fetch<CrmProject[]>(`${companiesBase}/${companyId}/projects`, {
+    listProjects: async () => (await $fetch<(CrmProject & Record<string, unknown>)[]>(projectsBase, { method: 'GET' })).map(normalizeProject),
+    listCompanyProjects: async (companyId: string) =>
+      (await $fetch<(CrmProject & Record<string, unknown>)[]>(`${companiesBase}/${companyId}/projects`, {
         method: 'GET',
-      }),
+      })).map(normalizeProject),
     listCompanyMembers: (companyId: string) =>
       $fetch<CrmCompanyMember[]>(`${companiesBase}/${companyId}/members`, {
         method: 'GET',
       }),
-    createProject: (payload: CreateProjectPayload) =>
-      $fetch<CrmProject>(projectsBase, { method: 'POST', body: payload }),
-    getProject: (id: string) =>
-      $fetch<CrmProject>(`${projectsBase}/${id}`, { method: 'GET' }),
-    updateProject: (id: string, payload: UpdateProjectPayload) =>
-      $fetch<CrmProject>(`${projectsBase}/${id}`, {
+    createProject: async (payload: CreateProjectPayload) =>
+      normalizeProject(await $fetch<CrmProject & Record<string, unknown>>(projectsBase, { method: 'POST', body: payload })),
+    getProject: async (id: string) =>
+      normalizeProject(await $fetch<CrmProject & Record<string, unknown>>(`${projectsBase}/${id}`, { method: 'GET' })),
+    updateProject: async (id: string, payload: UpdateProjectPayload) =>
+      normalizeProject(await $fetch<CrmProject & Record<string, unknown>>(`${projectsBase}/${id}`, {
         method: 'PUT',
         body: payload,
-      }),
-    patchProject: (id: string, payload: PatchProjectPayload) =>
-      $fetch<CrmProject>(`${projectsBase}/${id}`, {
+      })),
+    patchProject: async (id: string, payload: PatchProjectPayload) =>
+      normalizeProject(await $fetch<CrmProject & Record<string, unknown>>(`${projectsBase}/${id}`, {
         method: 'PATCH',
         body: payload,
-      }),
+      })),
     deleteProject: (id: string) =>
       $fetch<unknown>(`${projectsBase}/${id}`, { method: 'DELETE' }),
 

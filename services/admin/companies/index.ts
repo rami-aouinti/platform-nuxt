@@ -16,8 +16,6 @@ export interface Company {
   } | null
   photoUrl?: string | null
   photoMediaId?: Id | null
-  photo?: string | null
-  image?: string | null
 }
 
 export interface CreateCompanyRequest {
