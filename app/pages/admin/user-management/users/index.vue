@@ -7,9 +7,9 @@ import { canManageUsers, isRoot } from '~/utils/permissions/admin'
 import { useInternalEventTracking } from '~/composables/useInternalEventTracking'
 import { extractCollectionFromPayload } from '~/utils/admin/extractCollectionFromPayload'
 import type { AdminResourceSchema } from '~/types/admin-schema'
-import type { AdminResourceEndpoint } from '~/types/admin-resource'
 import { useRelationField } from '~/composables/admin/useRelationField'
-import { getAdminResourceDescriptor } from '~/services/admin/resource-descriptors'
+import { getAdminEntityDefinition } from '~/services/admin/resource-descriptors'
+import { resolveAdminEndpoint, resolveAdminListEndpoints } from '~/services/admin/entity-resolver'
 import { buildSchemaColumns, buildSchemaFieldConfigs, normalizeAdminSchema } from '~/utils/admin/schema'
 
 type UserRecord = {
@@ -35,7 +35,8 @@ definePageMeta({
 })
 
 const authStore = useAuthStore()
-const usersDescriptor = getAdminResourceDescriptor('users')
+const usersEntityDefinition = getAdminEntityDefinition('users')
+const usersDescriptor = usersEntityDefinition.descriptor
 const { roles } = storeToRefs(authStore)
 const { track } = useInternalEventTracking()
 
@@ -108,24 +109,12 @@ const fallbackDetailFields = [
   { key: 'email', label: 'Email' },
 ]
 
-function resolveResourceEndpoint(endpoint: AdminResourceEndpoint | undefined, id?: string) {
-  if (!endpoint) {
-    return null
-  }
-
-  if (typeof endpoint === 'function') {
-    return endpoint({ id })
-  }
-
-  return endpoint
-}
-
 const columns = computed<DataTableHeader[]>(() => {
   return buildSchemaColumns(userSchema.value, fallbackColumns)
 })
 
 const detailFields = computed(() => {
-  return buildSchemaFieldConfigs(userSchema.value?.editable, fallbackDetailFields)
+  return buildSchemaFieldConfigs(userSchema.value?.editable, usersEntityDefinition.detailFields ?? fallbackDetailFields)
 })
 
 const editableFields = computed(() => {
@@ -167,7 +156,7 @@ function normalize(payload: unknown): UserRecord[] {
 
 async function loadSchema() {
   try {
-    const payload = await $fetch(String(usersDescriptor.schemaEndpoint ?? '/api/v1/admin/users/schema'))
+    const payload = await $fetch(String(usersEntityDefinition.schemaEndpoint ?? usersDescriptor.schemaEndpoint ?? '/api/v1/admin/users/schema'))
     userSchema.value = normalizeAdminSchema(payload)
   } catch {
     userSchema.value = null
@@ -214,8 +203,8 @@ async function loadUserDetails(userId: string) {
 
   try {
     const [rolesPayload, groupsPayload] = await Promise.all([
-      $fetch(resolveResourceEndpoint(usersDescriptor.relationActions?.roles?.list, userId) ?? `/api/user/${encodeURIComponent(userId)}/roles`),
-      $fetch(resolveResourceEndpoint(usersDescriptor.relationActions?.groups?.list, userId) ?? `/api/user/${encodeURIComponent(userId)}/groups`),
+      $fetch(resolveAdminEndpoint(usersDescriptor.relationActions?.roles?.list, userId) ?? `/api/user/${encodeURIComponent(userId)}/roles`),
+      $fetch(resolveAdminEndpoint(usersDescriptor.relationActions?.groups?.list, userId) ?? `/api/user/${encodeURIComponent(userId)}/groups`),
     ])
 
     detailRoles.value = normalizeStringList(rolesPayload)
@@ -315,14 +304,16 @@ const {
   saveEdit,
   deleteRow,
 } = useAdminResourcePage<UserRecord, Record<string, string>>({
+  entityDefinition: usersEntityDefinition,
   initialFilters: {},
   normalize,
   buildQuery,
   loadRows: async (ctx) => {
     const query = buildQuery(ctx)
+    const { listEndpoint, countEndpoint } = resolveAdminListEndpoints(usersDescriptor.list)
     const [payload, countPayload] = await Promise.all([
-      $fetch(resolveResourceEndpoint(typeof usersDescriptor.list === 'object' ? usersDescriptor.list.endpoint : usersDescriptor.list) as string, { query }),
-      $fetch(resolveResourceEndpoint(typeof usersDescriptor.list === 'object' ? usersDescriptor.list.countEndpoint : '/api/v1/admin/users/count') as string),
+      $fetch(String(listEndpoint), { query }),
+      countEndpoint ? $fetch(String(countEndpoint)) : $fetch('/api/v1/admin/users/count'),
       $fetch('/api/v1/admin/users/ids'),
     ])
 
@@ -354,7 +345,7 @@ const {
 
     try {
       await $fetch(
-        String(resolveResourceEndpoint(usersDescriptor.patch, String(row.id ?? '')) ?? `/api/user/${encodeURIComponent(String(row.id ?? ''))}`) as any,
+        String(resolveAdminEndpoint(usersDescriptor.patch, String(row.id ?? '')) ?? `/api/user/${encodeURIComponent(String(row.id ?? ''))}`) as any,
         {
           method: 'PATCH' as any,
           body: patchBody,
@@ -379,7 +370,7 @@ const {
   deleteRow: async (row) => {
     try {
       await $fetch(
-        String(resolveResourceEndpoint(usersDescriptor.delete, String(row.id ?? '')) ?? `/api/user/${encodeURIComponent(String(row.id ?? ''))}`) as any,
+        String(resolveAdminEndpoint(usersDescriptor.delete, String(row.id ?? '')) ?? `/api/user/${encodeURIComponent(String(row.id ?? ''))}`) as any,
         {
           method: 'DELETE' as any,
         },
@@ -429,7 +420,7 @@ async function onRowPatch(payload: { rowId: string; field: string; value: boolea
   }
 
   try {
-    await $fetch(String(resolveResourceEndpoint(usersDescriptor.patch, payload.rowId) ?? `/api/user/${encodeURIComponent(payload.rowId)}`) as any, {
+    await $fetch(String(resolveAdminEndpoint(usersDescriptor.patch, payload.rowId) ?? `/api/user/${encodeURIComponent(payload.rowId)}`) as any, {
       method: 'PATCH' as any,
       body: {
         [payload.field]: payload.value,
@@ -472,7 +463,7 @@ async function submitCreateRow() {
   creating.value = true
 
   try {
-    await $fetch(String(resolveResourceEndpoint(usersDescriptor.create) ?? '/api/v1/admin/users'), {
+    await $fetch(String(resolveAdminEndpoint(usersDescriptor.create) ?? '/api/v1/admin/users'), {
       method: 'POST' as any,
       body: {
         username: createForm.username.trim(),
@@ -527,7 +518,7 @@ onMounted(async () => {
       :can-delete="canDelete"
       :mutation-loading="mutationLoading"
       :row-patch-loading-keys="rowPatchLoadingKeys"
-      resource-name="l'utilisateur"
+      :entity-definition="usersEntityDefinition"
       @update:page="page = $event"
       @update:page-size="pageSize = $event"
       @update:sort-by="sortBy = $event"

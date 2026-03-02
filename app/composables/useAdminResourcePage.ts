@@ -1,5 +1,7 @@
 import { extractCollectionFromPayload } from '~/utils/admin/extractCollectionFromPayload'
-import type { AdminResourceDescriptor, AdminResourceEndpoint, AdminResourceListEndpoint } from '~/types/admin-resource'
+import type { AdminResourceDescriptor } from '~/types/admin-resource'
+import type { EntityDefinition } from '~/types/entities'
+import { resolveAdminEndpoint, resolveAdminListEndpoints } from '~/services/admin/entity-resolver'
 
 type AdminFilters = Record<string, string>
 
@@ -19,6 +21,7 @@ type AdminResourceLoadResult = {
 
 type UseAdminResourcePageOptions<TRow, TFilters extends AdminFilters> = {
   resource?: AdminResourceDescriptor
+  entityDefinition?: EntityDefinition
   initialFilters: TFilters
   initialPage?: number
   initialPageSize?: number
@@ -30,32 +33,6 @@ type UseAdminResourcePageOptions<TRow, TFilters extends AdminFilters> = {
   deleteRow?: (row: Record<string, unknown>) => Promise<void>
   normalize?: (payload: unknown) => TRow[]
   buildQuery?: (context: AdminQueryContext<TFilters>) => Record<string, unknown>
-}
-
-function resolveEndpoint(endpoint: AdminResourceEndpoint | undefined, id?: string) {
-  if (!endpoint) {
-    return null
-  }
-
-  if (typeof endpoint === 'function') {
-    return endpoint({ id })
-  }
-
-  return endpoint
-}
-
-function resolveListEndpoints(endpoint: AdminResourceListEndpoint) {
-  if (typeof endpoint === 'string' || typeof endpoint === 'function') {
-    return {
-      listEndpoint: resolveEndpoint(endpoint),
-      countEndpoint: null,
-    }
-  }
-
-  return {
-    listEndpoint: resolveEndpoint(endpoint.endpoint),
-    countEndpoint: resolveEndpoint(endpoint.countEndpoint),
-  }
 }
 
 export function useAdminResourcePage<TRow, TFilters extends AdminFilters>(
@@ -110,7 +87,9 @@ export function useAdminResourcePage<TRow, TFilters extends AdminFilters>(
   }
 
   async function loadRows() {
-    if (!options.loadRows && !options.resource?.list) {
+    const resourceDescriptor = options.entityDefinition?.descriptor ?? options.resource
+
+    if (!options.loadRows && !resourceDescriptor?.list) {
       return
     }
 
@@ -127,7 +106,7 @@ export function useAdminResourcePage<TRow, TFilters extends AdminFilters>(
       if (options.loadRows) {
         result = resolveLoadResult(await options.loadRows(context))
       } else {
-        const { listEndpoint, countEndpoint } = resolveListEndpoints(options.resource!.list)
+        const { listEndpoint, countEndpoint } = resolveAdminListEndpoints(resourceDescriptor!.list)
         if (!listEndpoint) {
           throw new Error('List endpoint manquant pour cette ressource admin.')
         }
@@ -177,7 +156,8 @@ export function useAdminResourcePage<TRow, TFilters extends AdminFilters>(
   }
 
   async function saveEdit(row: Record<string, unknown>) {
-    if (!options.saveEdit && !options.resource?.patch) {
+    const resourceDescriptor = options.entityDefinition?.descriptor ?? options.resource
+    if (!options.saveEdit && !resourceDescriptor?.patch) {
       return
     }
 
@@ -190,7 +170,7 @@ export function useAdminResourcePage<TRow, TFilters extends AdminFilters>(
       if (options.saveEdit) {
         await options.saveEdit(row)
       } else {
-        const endpoint = resolveEndpoint(options.resource?.patch, String(row.id ?? ''))
+        const endpoint = resolveAdminEndpoint((options.entityDefinition?.descriptor ?? options.resource)?.patch, String(row.id ?? ''))
         if (endpoint) {
           await $fetch(endpoint, {
             method: 'PATCH',
@@ -204,7 +184,8 @@ export function useAdminResourcePage<TRow, TFilters extends AdminFilters>(
   }
 
   async function deleteRow(row: Record<string, unknown>) {
-    if (!options.deleteRow && !options.resource?.delete) {
+    const resourceDescriptor = options.entityDefinition?.descriptor ?? options.resource
+    if (!options.deleteRow && !resourceDescriptor?.delete) {
       return
     }
 
@@ -217,7 +198,7 @@ export function useAdminResourcePage<TRow, TFilters extends AdminFilters>(
       if (options.deleteRow) {
         await options.deleteRow(row)
       } else {
-        const endpoint = resolveEndpoint(options.resource?.delete, String(row.id ?? ''))
+        const endpoint = resolveAdminEndpoint((options.entityDefinition?.descriptor ?? options.resource)?.delete, String(row.id ?? ''))
         if (endpoint) {
           await $fetch(endpoint, {
             method: 'DELETE',

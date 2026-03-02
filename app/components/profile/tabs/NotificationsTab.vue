@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Notify } from '~/stores/notification'
 import { useAuthStore } from '~/stores/auth'
+import { getProfileEndpointCandidates } from '~/services/profile/profile-endpoint-resolver'
 
 type NotificationRow = {
   key: string
@@ -29,7 +30,7 @@ async function loadSettings() {
 
   loading.value = true
 
-  const endpoints = ['/api/v1/me/notification-settings', '/api/v2/me/notification-settings']
+  const endpoints = getProfileEndpointCandidates('notifications')
 
   try {
     for (const endpoint of endpoints) {
@@ -63,7 +64,7 @@ async function saveSettings() {
   }
 
   saving.value = true
-  const endpoints = ['/api/v1/me/notification-settings', '/api/v2/me/notification-settings']
+  const endpoints = getProfileEndpointCandidates('notifications')
 
   try {
     for (const endpoint of endpoints) {
