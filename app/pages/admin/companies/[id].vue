@@ -40,7 +40,7 @@ onMounted(loadDetail)
     <v-card rounded="xl" elevation="6" class="pa-6">
       <div class="d-flex align-center justify-space-between mb-4">
         <h1 class="text-h4 font-weight-bold">Company {{ companyId }}</h1>
-        <v-btn variant="text" to="/administration/companies">Retour</v-btn>
+        <v-btn variant="text" to="/admin/companies">Retour</v-btn>
       </div>
       <v-progress-linear v-if="loading" indeterminate class="mb-4" />
 

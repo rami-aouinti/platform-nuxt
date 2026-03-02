@@ -87,14 +87,14 @@ const sections: AdminSection[] = [
   },
   {
     title: 'Company Management',
-    to: '/administration/companies',
+    to: '/admin/companies',
     icon: 'mdi-domain',
     description: 'Gérer les entreprises et leur cycle de vie.',
     permission: 'admin',
   },
   {
     title: 'Notification Management',
-    to: '/administration/notifications',
+    to: '/admin/notifications',
     icon: 'mdi-bell-outline',
     description: 'Consulter et administrer les notifications.',
     permission: 'admin',
@@ -121,7 +121,7 @@ const sections: AdminSection[] = [
   },
   {
     title: 'Recruit Management',
-    to: '/administration/candidates',
+    to: '/admin/candidates',
     icon: 'mdi-briefcase-account-outline',
     description: 'Suivre les recrutements, candidatures et offres.',
     permission: 'admin',

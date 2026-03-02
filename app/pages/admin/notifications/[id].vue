@@ -20,7 +20,7 @@ onMounted(async () => {
     <v-card rounded="xl" elevation="6" class="pa-6">
       <div class="d-flex align-center justify-space-between mb-4">
         <h1 class="text-h4 font-weight-bold">Notification {{ notificationId }}</h1>
-        <v-btn variant="text" to="/administration/notifications">Retour</v-btn>
+        <v-btn variant="text" to="/admin/notifications">Retour</v-btn>
       </div>
       <v-card variant="tonal" class="pa-4"><pre class="text-body-2">{{ notification }}</pre></v-card>
     </v-card>
