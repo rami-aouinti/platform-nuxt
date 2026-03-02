@@ -41,6 +41,24 @@
       "low": "Low",
       "medium": "Medium",
       "high": "High"
+    },
+    "columns": {
+      "request": "Request",
+      "requester": "Requester",
+      "priority": "Priority",
+      "actions": "Actions"
+    },
+    "actions": {
+      "approve": "Approve",
+      "reject": "Reject",
+      "cancel": "Cancel"
+    },
+    "empty": "No pending task requests.",
+    "loadError": "Failed to load task requests.",
+    "retry": "Retry",
+    "fallbacks": {
+      "unknownRequester": "N/A",
+      "taskPrefix": "Task"
     }
   },
   "worldMap": {

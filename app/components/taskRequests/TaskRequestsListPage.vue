@@ -1,5 +1,10 @@
 <script setup lang="ts">
-import { useCrmApi, type CrmProject, type CrmTask, type CrmTaskRequest } from '~/composables/api/useCrmApi'
+import {
+  useCrmApi,
+  type CrmProject,
+  type CrmTask,
+  type CrmTaskRequest,
+} from '~/composables/api/useCrmApi'
 import { Notify } from '~/stores/notification'
 import { useAuthStore } from '~/stores/auth'
 import {
@@ -60,18 +65,28 @@ const currentUser = computed<TaskManagerUser>(() => ({
 }))
 
 const headers = [
-  { title: 'Demande', key: 'title' },
-  { title: 'Demandeur', key: 'requester' },
-  { title: 'Priorité', key: 'priority' },
-  { title: 'Actions', key: 'actions', sortable: false },
+  { title: t('taskRequests.columns.request'), key: 'title' },
+  { title: t('taskRequests.columns.requester'), key: 'requester' },
+  { title: t('taskRequests.columns.priority'), key: 'priority' },
+  { title: t('taskRequests.columns.actions'), key: 'actions', sortable: false },
 ]
 
 function normalizeItems<T>(value: unknown): T[] {
   if (Array.isArray(value)) return value as T[]
-  if (value && typeof value === 'object' && 'items' in value && Array.isArray((value as { items?: unknown }).items)) {
+  if (
+    value &&
+    typeof value === 'object' &&
+    'items' in value &&
+    Array.isArray((value as { items?: unknown }).items)
+  ) {
     return (value as { items: T[] }).items
   }
-  if (value && typeof value === 'object' && 'data' in value && Array.isArray((value as { data?: unknown }).data)) {
+  if (
+    value &&
+    typeof value === 'object' &&
+    'data' in value &&
+    Array.isArray((value as { data?: unknown }).data)
+  ) {
     return (value as { data: T[] }).data
   }
   return []
@@ -79,13 +94,18 @@ function normalizeItems<T>(value: unknown): T[] {
 
 function resolveTaskId(task: CrmTaskRequest['task']) {
   if (typeof task === 'string') return task
-  if (task && typeof task === 'object' && 'id' in task) return String(task.id || '')
+  if (task && typeof task === 'object' && 'id' in task)
+    return String(task.id || '')
   return ''
 }
 
 function resolveTaskProjectId(task: CrmTaskExtended) {
   if (typeof task.projectId === 'string') return task.projectId
-  if (task.project && !Array.isArray(task.project) && typeof task.project === 'object') {
+  if (
+    task.project &&
+    !Array.isArray(task.project) &&
+    typeof task.project === 'object'
+  ) {
     return String(task.project.id || '')
   }
   return ''
@@ -93,14 +113,16 @@ function resolveTaskProjectId(task: CrmTaskExtended) {
 
 function resolveAssigneeId(task: CrmTaskExtended) {
   if (typeof task.assigneeId === 'string') return task.assigneeId
-  if (task.assignee && typeof task.assignee === 'object') return task.assignee.id || null
+  if (task.assignee && typeof task.assignee === 'object')
+    return task.assignee.id || null
   if (typeof task.assignee === 'string') return task.assignee
   return null
 }
 
 function resolveOwnerId(project: CrmProjectExtended) {
   if (typeof project.ownerId === 'string') return project.ownerId
-  if (project.owner && typeof project.owner === 'object') return project.owner.id || null
+  if (project.owner && typeof project.owner === 'object')
+    return project.owner.id || null
   if (typeof project.owner === 'string') return project.owner
   return null
 }
@@ -113,7 +135,8 @@ function resolveManagerIds(project: CrmProjectExtended) {
 }
 
 function mapPriority(priority: string): TaskRequestRow['priority'] {
-  if (priority === 'high' || priority === 'critical') return t('taskRequests.priority.high')
+  if (priority === 'high' || priority === 'critical')
+    return t('taskRequests.priority.high')
   if (priority === 'medium') return t('taskRequests.priority.medium')
   return t('taskRequests.priority.low')
 }
@@ -136,7 +159,7 @@ function mapRequester(taskRequest: CrmTaskRequestExtended) {
   if (typeof taskRequest.requesterId === 'string') {
     return { name: taskRequest.requesterId, id: taskRequest.requesterId }
   }
-  return { name: 'N/A', id: '' }
+  return { name: t('taskRequests.fallbacks.unknownRequester'), id: '' }
 }
 
 async function load() {
@@ -154,7 +177,9 @@ async function load() {
     const requests = normalizeItems<CrmTaskRequestExtended>(requestsResult)
 
     const tasksById = new Map(tasks.map((task) => [task.id, task]))
-    const projectsById = new Map(projects.map((project) => [project.id, project]))
+    const projectsById = new Map(
+      projects.map((project) => [project.id, project]),
+    )
 
     rows.value = requests.map((request) => {
       const taskId = resolveTaskId(request.task)
@@ -165,7 +190,8 @@ async function load() {
 
       return {
         id: request.id,
-        title: task?.title || `Task ${taskId}`,
+        title:
+          task?.title || `${t('taskRequests.fallbacks.taskPrefix')} ${taskId}`,
         requester: requester.name,
         requesterId: requester.id,
         priority: mapPriority(task?.priority || 'low'),
@@ -188,7 +214,12 @@ async function load() {
 }
 
 function isForbiddenError(errorValue: unknown) {
-  return Boolean(errorValue && typeof errorValue === 'object' && 'status' in errorValue && errorValue.status === 403)
+  return Boolean(
+    errorValue &&
+    typeof errorValue === 'object' &&
+    'status' in errorValue &&
+    errorValue.status === 403,
+  )
 }
 
 function canAction(row: TaskRequestRow, action: TaskRequestAction) {
@@ -209,9 +240,9 @@ function nextStatus(action: TaskRequestAction): TaskRequestRow['status'] {
 
 function actionLabel(action: TaskRequestAction) {
   return {
-    approve: 'Approve',
-    reject: 'Reject',
-    cancel: 'Cancel',
+    approve: t('taskRequests.actions.approve'),
+    reject: t('taskRequests.actions.reject'),
+    cancel: t('taskRequests.actions.cancel'),
   }[action]
 }
 
@@ -228,14 +259,22 @@ async function runAction(row: TaskRequestRow, action: TaskRequestAction) {
     if (action === 'approve') await crmApi.approveTaskRequest(row.id)
     if (action === 'reject') await crmApi.rejectTaskRequest(row.id)
     if (action === 'cancel') await crmApi.cancelTaskRequest(row.id)
-    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.requestActionSimple', { action: actionLabel(action) })))
+    Notify.success(
+      String(
+        useNuxtApp().$i18n.t('notifications.ui.requestActionSimple', {
+          action: actionLabel(action),
+        }),
+      ),
+    )
   } catch (errorValue) {
     row.status = previous
     if (isForbiddenError(errorValue)) {
       Notify.error(PERMISSION_MESSAGES.forbiddenTaskRequestStatus)
       return
     }
-    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.requestProcessingFailed')))
+    Notify.error(
+      String(useNuxtApp().$i18n.t('notifications.ui.requestProcessingFailed')),
+    )
   }
 }
 
@@ -258,41 +297,85 @@ onMounted(load)
     <div class="d-flex align-center justify-space-between mb-4 ga-2 flex-wrap">
       <h1 class="text-h5">{{ t('taskRequests.title') }}</h1>
       <div class="d-flex ga-2 flex-wrap">
-        <v-btn variant="text" prepend-icon="mdi-sync" @click="load">{{ t('common.reload') }}</v-btn>
+        <v-btn variant="text" prepend-icon="mdi-sync" @click="load">{{
+          t('common.reload')
+        }}</v-btn>
       </div>
     </div>
 
     <div v-if="state === 'loading'" class="d-flex flex-column ga-3">
       <v-skeleton-loader type="table-heading, table-row-divider@3" />
-      <v-progress-circular indeterminate color="primary" size="24" class="mx-auto" />
+      <v-progress-circular
+        indeterminate
+        color="primary"
+        size="24"
+        class="mx-auto"
+      />
     </div>
 
-    <v-alert v-else-if="state === 'empty'" type="info" variant="tonal" border="start">
-      Aucune demande de tâche en attente.
+    <v-alert
+      v-else-if="state === 'empty'"
+      type="info"
+      variant="tonal"
+      border="start"
+    >
+      {{ t('taskRequests.empty') }}
     </v-alert>
 
-    <v-alert v-else-if="state === 'error'" type="error" variant="tonal" border="start">
-      Le chargement des demandes a échoué.
+    <v-alert
+      v-else-if="state === 'error'"
+      type="error"
+      variant="tonal"
+      border="start"
+    >
+      {{ t('taskRequests.loadError') }}
       <template #append>
-        <v-btn size="small" color="error" variant="outlined" @click="load">Réessayer</v-btn>
+        <v-btn size="small" color="error" variant="outlined" @click="load">{{
+          t('taskRequests.retry')
+        }}</v-btn>
       </template>
     </v-alert>
 
-    <v-data-table v-else :headers="headers" :items="rows" item-value="id" class="elevation-1" hover>
+    <v-data-table
+      v-else
+      :headers="headers"
+      :items="rows"
+      item-value="id"
+      class="elevation-1"
+      hover
+    >
       <template #item.title="{ item }">
-        <v-btn variant="text" size="small" class="px-0 text-none" @click="openRow(item)">{{ item.title }}</v-btn>
+        <v-btn
+          variant="text"
+          size="small"
+          class="px-0 text-none"
+          @click="openRow(item)"
+          >{{ item.title }}</v-btn
+        >
       </template>
       <template #item.actions="{ item }">
         <div class="d-flex ga-2 flex-wrap justify-end">
-          <template v-for="action in ['approve', 'reject', 'cancel'] as TaskRequestAction[]" :key="`${item.id}-${action}`">
-            <v-tooltip :text="canAction(item, action) ? '' : actionDeniedMessage" location="top">
+          <template
+            v-for="action in [
+              'approve',
+              'reject',
+              'cancel',
+            ] as TaskRequestAction[]"
+            :key="`${item.id}-${action}`"
+          >
+            <v-tooltip
+              :text="canAction(item, action) ? '' : actionDeniedMessage"
+              location="top"
+            >
               <template #activator="{ props: tooltipProps }">
                 <span v-bind="tooltipProps">
                   <v-btn
                     size="x-small"
                     variant="outlined"
                     :color="action === 'reject' ? 'error' : undefined"
-                    :disabled="!canAction(item, action) || item.status !== 'pending'"
+                    :disabled="
+                      !canAction(item, action) || item.status !== 'pending'
+                    "
                     @click="runAction(item, action)"
                   >
                     {{ actionLabel(action) }}

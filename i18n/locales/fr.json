@@ -41,6 +41,24 @@
       "low": "Faible",
       "medium": "Moyenne",
       "high": "Haute"
+    },
+    "columns": {
+      "request": "Demande",
+      "requester": "Demandeur",
+      "priority": "Priorité",
+      "actions": "Actions"
+    },
+    "actions": {
+      "approve": "Approuver",
+      "reject": "Rejeter",
+      "cancel": "Annuler"
+    },
+    "empty": "Aucune demande de tâche en attente.",
+    "loadError": "Le chargement des demandes a échoué.",
+    "retry": "Réessayer",
+    "fallbacks": {
+      "unknownRequester": "N/A",
+      "taskPrefix": "Tâche"
     }
   },
   "worldMap": {
@@ -236,27 +254,27 @@
       "server": "Une erreur serveur est survenue. Veuillez réessayer plus tard."
     },
     "ui": {
-      "taskTitleRequired": "Le titre de la task est requis.",
-      "taskCreated": "Task créée.",
+      "taskTitleRequired": "Le titre de la tâche est requis.",
+      "taskCreated": "Tâche créée.",
       "projectNameRequired": "Le nom du projet est requis.",
       "projectCreated": "Projet créé.",
       "sprintNameRequired": "Le nom du sprint est requis.",
-      "selectCompany": "Veuillez sélectionner une company.",
+      "selectCompany": "Veuillez sélectionner une entreprise.",
       "sprintDatesRequired": "Les dates de début et de fin sont requises.",
       "sprintEndAfterStart": "La date de fin doit être postérieure à la date de début.",
       "deleted": "Supprimé.",
-      "requestCreated": "Request créée.",
-      "requestUpdated": "Request mise à jour.",
-      "requestDeleted": "Request supprimée.",
-      "pendingStatusInfo": "Le statut pending est un état initial, aucun endpoint dédié.",
-      "taskUpdated": "Task mise à jour.",
-      "taskDeleted": "Task supprimée.",
-      "taskStatusUpdated": "Statut de la task mis à jour.",
-      "companyNameRequired": "Le nom de la company est requis.",
-      "companyCreated": "Company créée.",
-      "requestStatusUpdated": "Status de la request mis à jour.",
-      "requesterAssigned": "Requester assigné.",
-      "reviewerAssigned": "Reviewer assigné.",
+      "requestCreated": "Demande créée.",
+      "requestUpdated": "Demande mise à jour.",
+      "requestDeleted": "Demande supprimée.",
+      "pendingStatusInfo": "Le statut en attente est un état initial, aucun endpoint dédié.",
+      "taskUpdated": "Tâche mise à jour.",
+      "taskDeleted": "Tâche supprimée.",
+      "taskStatusUpdated": "Statut de la tâche mis à jour.",
+      "companyNameRequired": "Le nom de l'entreprise est requis.",
+      "companyCreated": "Entreprise créée.",
+      "requestStatusUpdated": "Statut de la demande mis à jour.",
+      "requesterAssigned": "Demandeur assigné.",
+      "reviewerAssigned": "Évaluateur assigné.",
       "offerFieldsRequired": "Titre, slug et entreprise sont obligatoires.",
       "offerUpdated": "Offre mise à jour.",
       "offerCreated": "Offre créée.",
