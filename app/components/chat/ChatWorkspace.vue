@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { storeToRefs } from 'pinia'
 import { Notify } from '~/stores/notification'
+import { useAuthStore } from '~/stores/auth'
 import {
   useChatApi,
   type ChatConversation,
@@ -7,7 +9,10 @@ import {
 } from '~/composables/api/useChatApi'
 import { toUiErrorMessage } from '~/utils/errors/toUiErrorMessage'
 
+const route = useRoute()
 const chatApi = useChatApi()
+const authStore = useAuthStore()
+const { profile } = storeToRefs(authStore)
 
 const loadingConversations = ref(false)
 const loadingMessages = ref(false)
@@ -40,6 +45,12 @@ function toFrenchDate(value?: string | null) {
 }
 
 function isMine(message: ChatMessage) {
+  const currentUserId = profile.value?.id
+
+  if (currentUserId && message.senderId) {
+    return currentUserId === message.senderId
+  }
+
   if (!message.role) return false
   return ['me', 'user', 'candidate', 'owner'].includes(message.role.toLowerCase())
 }
@@ -49,6 +60,17 @@ async function loadConversations() {
 
   try {
     conversations.value = await chatApi.listConversations()
+
+    const queryConversationId = typeof route.query.conversationId === 'string'
+      ? route.query.conversationId
+      : ''
+
+    if (queryConversationId) {
+      const exists = conversations.value.some((conversation) => conversation.id === queryConversationId)
+      if (exists) {
+        activeConversationId.value = queryConversationId
+      }
+    }
 
     if (!activeConversationId.value && conversations.value.length > 0)
       activeConversationId.value = conversations.value[0].id
@@ -65,8 +87,20 @@ async function loadConversationDetail(conversationId: string) {
   loadingMessages.value = true
 
   try {
-    const detail = await chatApi.getConversation(conversationId)
-    messages.value = detail.messages
+    const [detail, conversationMessages] = await Promise.all([
+      chatApi.getConversation(conversationId),
+      chatApi.listConversationMessages(conversationId),
+    ])
+
+    messages.value = conversationMessages.length > 0 ? conversationMessages : detail.messages
+
+    const targetConversation = conversations.value.find(
+      (conversation) => conversation.id === conversationId,
+    )
+
+    if (targetConversation && detail.title) {
+      targetConversation.title = detail.title
+    }
   } catch (error) {
     Notify.error(
       toUiErrorMessage(error, 'Impossible de charger les messages'),

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth'
+import { useChatApi, type ChatConversation } from '~/composables/api/useChatApi'
 
 import type { HTMLAttributes } from 'vue'
 
@@ -42,6 +43,7 @@ const isDark = computed({
 const authStore = useAuthStore()
 const { isAuthenticated, profile, hasAdminAccess, rolesLoading, initialized } =
   storeToRefs(authStore)
+const chatApi = useChatApi()
 
 type UserNotification = {
   id: string
@@ -57,6 +59,10 @@ const notificationsLoading = ref(false)
 
 const latestNotifications = computed(() => notifications.value.slice(0, 3))
 const hasUnreadNotifications = computed(() => unreadCount.value > 0)
+
+const inboxConversations = ref<ChatConversation[]>([])
+const inboxLoading = ref(false)
+const latestInboxConversations = computed(() => inboxConversations.value.slice(0, 3))
 
 const localeFlags: Record<string, string> = {
   en: '/flags/en.svg',
@@ -192,6 +198,52 @@ function getNotificationPreview(message: string) {
   return message.length > 64 ? `${message.slice(0, 64)}…` : message
 }
 
+
+function getInboxAvatarLabel(conversation: ChatConversation) {
+  const label = (conversation.title ?? '').trim()
+  return label.slice(0, 1).toUpperCase() || 'C'
+}
+
+function getInboxAvatarUrl(conversation: ChatConversation) {
+  const participantWithPhoto = conversation.participants?.find((participant) => Boolean(participant.photo))
+  return participantWithPhoto?.photo ?? null
+}
+
+function getInboxPreview(conversation: ChatConversation) {
+  const preview = conversation.lastMessage?.trim() ?? ''
+  return preview.length > 64 ? `${preview.slice(0, 64)}…` : preview || 'Aucun message récent.'
+}
+
+function getInboxMeta(conversation: ChatConversation) {
+  if (!conversation.updatedAt) return ''
+
+  const parsedDate = new Date(conversation.updatedAt)
+  if (Number.isNaN(parsedDate.getTime())) return ''
+
+  return new Intl.DateTimeFormat('fr-FR', {
+    day: '2-digit',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(parsedDate)
+}
+
+async function loadInboxConversations() {
+  if (!isAuthenticated.value) {
+    inboxConversations.value = []
+    return
+  }
+
+  inboxLoading.value = true
+
+  try {
+    const response = await chatApi.listConversations()
+    inboxConversations.value = response
+  } finally {
+    inboxLoading.value = false
+  }
+}
+
 function createActivatorProps(
   menu: HTMLAttributes,
   tooltip: HTMLAttributes,
@@ -218,10 +270,12 @@ watch(isAuthenticated, (value) => {
   if (!value) {
     notifications.value = []
     unreadCount.value = 0
+    inboxConversations.value = []
     return
   }
 
   loadNotifications()
+  loadInboxConversations()
 }, { immediate: true })
 </script>
 
@@ -259,16 +313,6 @@ watch(isAuthenticated, (value) => {
         true-icon="mdi-weather-night"
         class="opacity-80"
       />
-      <UiButton
-        icon
-        href="https://github.com/rami-aouinti/platform-nuxt"
-        size="sm"
-        class="ml-2"
-        target="_blank"
-        variant="text"
-      >
-        <v-icon size="26" icon="mdi-github" />
-      </UiButton>
       <v-menu
         location="bottom"
         :offset="8"
@@ -343,6 +387,90 @@ watch(isAuthenticated, (value) => {
           </v-list>
         </v-card>
       </v-menu>
+      <v-menu
+        location="bottom"
+        :offset="8"
+        @update:model-value="(opened) => opened && loadInboxConversations()"
+      >
+        <template #activator="{ props }">
+          <UiButton icon class="ml-1" variant="text" v-bind="props">
+            <v-icon icon="mdi-chat-processing-outline" size="26" />
+          </UiButton>
+        </template>
+
+        <v-card class="app-bar__notifications-menu" elevation="12" rounded="xl">
+          <v-progress-linear
+            v-if="inboxLoading"
+            indeterminate
+            color="primary"
+            height="3"
+          />
+
+          <v-list v-if="latestInboxConversations.length" class="py-2" bg-color="transparent">
+            <v-list-item
+              v-for="conversation in latestInboxConversations"
+              :key="conversation.id"
+              :to="{ path: '/chat', query: { conversationId: conversation.id } }"
+              class="app-bar__notification-item"
+            >
+              <template #prepend>
+                <v-avatar
+                  color="primary"
+                  variant="tonal"
+                  size="44"
+                  class="mr-2"
+                  :image="getInboxAvatarUrl(conversation) ?? undefined"
+                >
+                  <span v-if="!getInboxAvatarUrl(conversation)">
+                    {{ getInboxAvatarLabel(conversation) }}
+                  </span>
+                </v-avatar>
+              </template>
+
+              <v-list-item-title class="app-bar__notification-title">
+                {{ conversation.title || `Conversation #${conversation.id}` }}
+              </v-list-item-title>
+
+              <v-list-item-subtitle class="app-bar__notification-preview">
+                {{ getInboxPreview(conversation) }}
+              </v-list-item-subtitle>
+
+              <div class="app-bar__notification-meta">
+                <v-icon icon="mdi-clock-time-four-outline" size="14" />
+                <span>{{ getInboxMeta(conversation) }}</span>
+              </div>
+
+              <template #append>
+                <span v-if="conversation.unreadCount" class="app-bar__notification-dot" />
+              </template>
+            </v-list-item>
+          </v-list>
+
+          <div v-else class="text-medium-emphasis text-body-2 px-4 py-6">
+            Aucune conversation
+          </div>
+
+          <v-divider />
+          <v-list bg-color="transparent" class="py-0">
+            <v-list-item
+              to="/chat"
+              class="font-weight-bold"
+              title="All"
+              append-icon="mdi-chevron-right"
+            />
+          </v-list>
+        </v-card>
+      </v-menu>
+      <UiButton
+        icon
+        href="https://github.com/rami-aouinti/platform-nuxt"
+        size="sm"
+        class="ml-2"
+        target="_blank"
+        variant="text"
+      >
+        <v-icon size="26" icon="mdi-github" />
+      </UiButton>
       <v-menu location="bottom">
         <template #activator="{ props: menu }">
           <v-tooltip location="bottom">
