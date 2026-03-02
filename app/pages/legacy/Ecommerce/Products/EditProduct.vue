@@ -39,16 +39,14 @@
             <div class="mt-n11 mx-4 card-header position-relative z-index-2">
               <div class="d-block blur-shadow-image">
                 <img
-                  src="../../../assets/img/product-11.jpg"
+                  :src="productImage"
                   class="img-fluid shadow border-radius-lg"
                   alt=""
                 />
               </div>
               <div
                 class="colored-shadow"
-                style="
-                  backgroundimage: 'url(' ../../../assets/img/product-11.jpg ')';
-                "
+                :style="{ backgroundImage: `url(${productImage})` }"
               ></div>
             </div>
             <div class="mt-n12">
@@ -311,6 +309,7 @@ definePageMeta({
 
 import { ref } from "vue";
 import HtmlEditor from "./Widgets/HtmlEditor.vue";
+import productImage from "~/assets/img/product-11.jpg";
 const categories = ref(["Clothing", "Electronics", "Furniture", "Others", "Real Estate"]);
 const colors = ref(["Black", "Red", "Blue", "Green", "Orange"]);
 const coins = ref(["USD", "BTC", "CNY", "EUR"]);
