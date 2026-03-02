@@ -47,6 +47,7 @@ type UserNotification = {
   id: string
   title: string
   message: string
+  type: string
   readAt: string | null
 }
 
@@ -119,6 +120,7 @@ function normalizeNotifications(payload: unknown): UserNotification[] {
       id: String(row.id ?? index),
       title: String(row.title ?? ''),
       message: String(row.message ?? ''),
+      type: String(row.type ?? ''),
       readAt: typeof row.readAt === 'string' ? row.readAt : null,
     }
   })
@@ -172,6 +174,22 @@ async function handleNotificationMenuOpen() {
     readAt: notification.readAt ?? new Date().toISOString(),
   }))
   unreadCount.value = 0
+}
+
+
+function getNotificationIcon(type: string) {
+  if (type.includes('company')) return 'mdi-domain'
+  if (type.includes('application') && type.includes('submitted')) return 'mdi-file-document-plus-outline'
+  if (type.includes('application') && type.includes('decided')) return 'mdi-check-decagram-outline'
+  return 'mdi-bell-outline'
+}
+
+function getNotificationMeta(notification: UserNotification) {
+  return notification.readAt ? 'Lu' : 'Nouveau'
+}
+
+function getNotificationPreview(message: string) {
+  return message.length > 64 ? `${message.slice(0, 64)}…` : message
 }
 
 function createActivatorProps(
@@ -251,41 +269,79 @@ watch(isAuthenticated, (value) => {
       >
         <v-icon size="26" icon="mdi-github" />
       </UiButton>
-      <v-menu location="bottom" @update:model-value="(opened) => opened && handleNotificationMenuOpen()">
+      <v-menu
+        location="bottom"
+        :offset="8"
+        @update:model-value="(opened) => opened && handleNotificationMenuOpen()"
+      >
         <template #activator="{ props }">
           <UiButton icon class="ml-1" variant="text" v-bind="props">
             <v-badge
               :model-value="hasUnreadNotifications"
               :content="unreadCount"
               color="error"
-              offset-x="2"
-              offset-y="2"
+              offset-x="3"
+              offset-y="3"
             >
-              <v-icon icon="mdi-bell" size="28" />
+              <v-icon icon="mdi-bell" size="26" />
             </v-badge>
           </UiButton>
         </template>
 
-        <v-list density="compact" min-width="360">
-          <v-progress-linear v-if="notificationsLoading" indeterminate height="2" class="mb-1" />
-          <v-list-subheader>Notifications</v-list-subheader>
-          <template v-if="latestNotifications.length">
+        <v-card class="app-bar__notifications-menu" elevation="12" rounded="xl">
+          <v-progress-linear
+            v-if="notificationsLoading"
+            indeterminate
+            color="primary"
+            height="3"
+          />
+
+          <v-list v-if="latestNotifications.length" class="py-2" bg-color="transparent">
             <v-list-item
               v-for="notification in latestNotifications"
               :key="notification.id"
               :to="`/profile/notifications/${notification.id}`"
-              :class="{ 'app-bar__notification--unread': !notification.readAt }"
+              class="app-bar__notification-item"
             >
-              <v-list-item-title class="font-weight-bold">{{ notification.title }}</v-list-item-title>
-              <v-list-item-subtitle>{{ notification.message.slice(0, 72) }}{{ notification.message.length > 72 ? '…' : '' }}</v-list-item-subtitle>
+              <template #prepend>
+                <div class="app-bar__notification-avatar">
+                  <v-icon :icon="getNotificationIcon(notification.type)" size="20" color="white" />
+                </div>
+              </template>
+
+              <v-list-item-title class="app-bar__notification-title">
+                {{ notification.title }}
+              </v-list-item-title>
+
+              <v-list-item-subtitle class="app-bar__notification-preview">
+                {{ getNotificationPreview(notification.message) }}
+              </v-list-item-subtitle>
+
+              <div class="app-bar__notification-meta">
+                <v-icon icon="mdi-clock-time-four-outline" size="14" />
+                <span>{{ getNotificationMeta(notification) }}</span>
+              </div>
+
+              <template #append>
+                <span v-if="!notification.readAt" class="app-bar__notification-dot" />
+              </template>
             </v-list-item>
-          </template>
-          <v-list-item v-else>
-            <v-list-item-title class="text-medium-emphasis">Aucune notification</v-list-item-title>
-          </v-list-item>
-          <v-divider class="my-1" />
-          <v-list-item to="/profile/notifications" title="All" append-icon="mdi-chevron-right" />
-        </v-list>
+          </v-list>
+
+          <div v-else class="text-medium-emphasis text-body-2 px-4 py-6">
+            Aucune notification
+          </div>
+
+          <v-divider />
+          <v-list bg-color="transparent" class="py-0">
+            <v-list-item
+              to="/profile/notifications"
+              class="font-weight-bold"
+              title="All"
+              append-icon="mdi-chevron-right"
+            />
+          </v-list>
+        </v-card>
       </v-menu>
       <v-menu location="bottom">
         <template #activator="{ props: menu }">
@@ -421,9 +477,54 @@ watch(isAuthenticated, (value) => {
   display: block;
 }
 
-.app-bar__notification--unread {
-  background-color: rgba(var(--v-theme-primary), 0.08);
-  border-radius: 10px;
+.app-bar__notifications-menu {
+  width: min(420px, calc(100vw - 24px));
+  overflow: hidden;
+}
+
+.app-bar__notification-item {
+  margin: 4px 10px;
+  border-radius: 14px;
+  padding-inline: 10px;
+}
+
+.app-bar__notification-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgb(74, 85, 104), rgb(45, 55, 72));
+  display: grid;
+  place-items: center;
+  margin-right: 10px;
+}
+
+.app-bar__notification-title {
+  color: rgb(var(--v-theme-on-surface));
+  font-weight: 700;
+}
+
+.app-bar__notification-preview {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.app-bar__notification-meta {
+  margin-top: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(var(--v-theme-on-surface), 0.62);
+  font-size: 0.82rem;
+}
+
+.app-bar__notification-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background-color: rgb(var(--v-theme-primary));
+  display: inline-block;
 }
 
 @media (max-width: 960px) {
