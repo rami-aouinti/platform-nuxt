@@ -103,8 +103,8 @@ export function useFriendsApi() {
       return normalizeFriendRequest(response)
     },
 
-    async acceptFriendRequest(requestId: string): Promise<FriendRequest> {
-      const response = await $fetch<Record<string, unknown>>(`${basePath}/requests/${requestId}/accept`, {
+    async acceptFriendRequest(userId: string): Promise<FriendRequest> {
+      const response = await $fetch<Record<string, unknown>>(`${basePath}/requests/${userId}/accept`, {
         method: 'POST',
       })
 

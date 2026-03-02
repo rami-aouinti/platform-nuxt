@@ -138,6 +138,7 @@
       "accounts": "Comptes",
       "notifications": "Notifications",
       "sessions": "Sessions",
+      "friends": "Amis",
       "deleteAccount": "Supprimer le compte"
     },
     "tabDescriptions": {
@@ -147,7 +148,30 @@
       "accounts": "Cette section est dédiée à la gestion des comptes liés.",
       "notifications": "Cette section est dédiée aux préférences de notification.",
       "sessions": "Cette section est dédiée à la gestion des sessions actives.",
+      "friends": "Cette section est dédiée à la gestion des amis et des demandes.",
       "deleteAccount": "Cette section est dédiée à la suppression du compte."
+    },
+    "friends": {
+      "title": "Amis",
+      "refresh": "Rafraîchir",
+      "loading": "Chargement...",
+      "userIdInput": "ID utilisateur",
+      "sendRequest": "Envoyer une demande",
+      "friendsList": "Mes amis",
+      "sentRequests": "Demandes envoyées",
+      "receivedRequests": "Demandes reçues",
+      "emptyFriends": "Aucun ami pour le moment.",
+      "emptySentRequests": "Aucune demande envoyée.",
+      "emptyReceivedRequests": "Aucune demande reçue.",
+      "unknownUser": "Utilisateur inconnu",
+      "actions": {
+        "requestSent": "Demande envoyée.",
+        "requestAccepted": "Demande acceptée.",
+        "friendRemoved": "Ami supprimé."
+      },
+      "errors": {
+        "userIdRequired": "L'ID utilisateur est requis."
+      }
     },
     "resumePages": {
       "listTitle": "Mes CV",

@@ -138,6 +138,7 @@
       "accounts": "Konten",
       "notifications": "Benachrichtigungen",
       "sessions": "Sitzungen",
+      "friends": "Freunde",
       "deleteAccount": "Konto löschen"
     },
     "tabDescriptions": {
@@ -147,7 +148,30 @@
       "accounts": "Dieser Abschnitt ist der Verwaltung verknüpfter Konten gewidmet.",
       "notifications": "Dieser Abschnitt ist den Benachrichtigungseinstellungen gewidmet.",
       "sessions": "Dieser Abschnitt ist der Verwaltung aktiver Sitzungen gewidmet.",
+      "friends": "Dieser Abschnitt ist der Verwaltung von Freunden und Anfragen gewidmet.",
       "deleteAccount": "Dieser Abschnitt ist dem Löschen des Kontos gewidmet."
+    },
+    "friends": {
+      "title": "Freunde",
+      "refresh": "Aktualisieren",
+      "loading": "Wird geladen...",
+      "userIdInput": "Benutzer-ID",
+      "sendRequest": "Anfrage senden",
+      "friendsList": "Meine Freunde",
+      "sentRequests": "Gesendete Anfragen",
+      "receivedRequests": "Erhaltene Anfragen",
+      "emptyFriends": "Noch keine Freunde.",
+      "emptySentRequests": "Keine gesendeten Anfragen.",
+      "emptyReceivedRequests": "Keine erhaltenen Anfragen.",
+      "unknownUser": "Unbekannter Benutzer",
+      "actions": {
+        "requestSent": "Anfrage gesendet.",
+        "requestAccepted": "Anfrage akzeptiert.",
+        "friendRemoved": "Freund entfernt."
+      },
+      "errors": {
+        "userIdRequired": "Benutzer-ID ist erforderlich."
+      }
     },
     "resumePages": {
       "listTitle": "Meine Lebensläufe",

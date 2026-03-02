@@ -24,6 +24,7 @@ import NotificationsTab from '~/components/profile/tabs/NotificationsTab.vue'
 import SessionsTab from '~/components/profile/tabs/SessionsTab.vue'
 import DeleteAccountTab from '~/components/profile/tabs/DeleteAccountTab.vue'
 import ResumesTab from '~/components/profile/tabs/ResumesTab.vue'
+import FriendsTab from '~/components/profile/tabs/FriendsTab.vue'
 
 definePageMeta({
   icon: 'mdi-account-circle-outline',
@@ -210,6 +211,13 @@ const tabDefinitions: TabDefinition[] = [
     icon: 'mdi-note-text-outline',
     labelKey: 'profile.resumes',
     component: markRaw(ResumesTab),
+  },
+  {
+    id: 'friends',
+    icon: 'mdi-account-multiple',
+    labelKey: 'profile.tabs.friends',
+    description: t('profile.tabDescriptions.friends'),
+    component: markRaw(FriendsTab),
   },
   {
     id: 'delete-account',
