@@ -65,8 +65,20 @@ async function loadConversationDetail(conversationId: string) {
   loadingMessages.value = true
 
   try {
-    const detail = await chatApi.getConversation(conversationId)
-    messages.value = detail.messages
+    const [detail, conversationMessages] = await Promise.all([
+      chatApi.getConversation(conversationId),
+      chatApi.listConversationMessages(conversationId),
+    ])
+
+    messages.value = conversationMessages
+
+    const targetConversation = conversations.value.find(
+      (conversation) => conversation.id === conversationId,
+    )
+
+    if (targetConversation && detail.title) {
+      targetConversation.title = detail.title
+    }
   } catch (error) {
     Notify.error(
       toUiErrorMessage(error, 'Impossible de charger les messages'),

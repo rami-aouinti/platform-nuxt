@@ -27,7 +27,7 @@ export type ChatSendMessagePayload = {
 
 type CollectionResponse<T> = T[] | { data?: T[]; items?: T[]; results?: T[] }
 
-const basePath = '/api/v1/chat'
+const basePath = '/api/v1/me/chat'
 
 function normalizeCollection<T>(payload: CollectionResponse<T>): T[] {
   if (Array.isArray(payload)) return payload
@@ -38,9 +38,27 @@ function normalizeCollection<T>(payload: CollectionResponse<T>): T[] {
 }
 
 function normalizeConversation(raw: Record<string, unknown>): ChatConversation {
+  const participants = Array.isArray(raw.participants)
+    ? raw.participants.filter((item): item is Record<string, unknown> => Boolean(item && typeof item === 'object'))
+    : []
+
+  const participantsNames = participants
+    .map((participant) => {
+      const firstName = typeof participant.firstName === 'string' ? participant.firstName : ''
+      const lastName = typeof participant.lastName === 'string' ? participant.lastName : ''
+      const username = typeof participant.username === 'string' ? participant.username : ''
+      return `${firstName} ${lastName}`.trim() || username
+    })
+    .filter(Boolean)
+
   return {
     id: String(raw.id ?? raw.conversationId ?? ''),
-    title: typeof raw.title === 'string' ? raw.title : typeof raw.name === 'string' ? raw.name : 'Conversation',
+    title:
+      typeof raw.title === 'string'
+        ? raw.title
+        : typeof raw.name === 'string'
+          ? raw.name
+          : participantsNames.join(', ') || 'Conversation',
     lastMessage:
       typeof raw.lastMessage === 'string'
         ? raw.lastMessage
@@ -100,20 +118,12 @@ function normalizeMessage(raw: Record<string, unknown>): ChatMessage {
 
 function normalizeConversationDetail(payload: Record<string, unknown>): ChatConversationDetail {
   const id = String(payload.id ?? payload.conversationId ?? '')
-  const title = typeof payload.title === 'string' ? payload.title : null
-  const messagesRaw =
-    Array.isArray(payload.messages)
-      ? payload.messages
-      : Array.isArray(payload.data)
-        ? payload.data
-        : []
+  const normalizedConversation = normalizeConversation(payload)
 
   return {
     id,
-    title,
-    messages: messagesRaw
-      .filter((item): item is Record<string, unknown> => Boolean(item && typeof item === 'object'))
-      .map((message) => normalizeMessage(message)),
+    title: normalizedConversation.title,
+    messages: [],
   }
 }
 
@@ -150,6 +160,17 @@ export function useChatApi() {
       )
 
       return normalizeMessage(response)
+    },
+
+    async listConversationMessages(id: string): Promise<ChatMessage[]> {
+      const response = await $fetch<CollectionResponse<Record<string, unknown>>>(
+        `${basePath}/conversations/${id}/messages`,
+        { method: 'GET' },
+      )
+
+      return normalizeCollection(response)
+        .filter((item): item is Record<string, unknown> => Boolean(item && typeof item === 'object'))
+        .map((item) => normalizeMessage(item))
     },
   }
 }
