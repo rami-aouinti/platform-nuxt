@@ -270,6 +270,15 @@ export function useChatApi() {
       return normalizeConversationDetail(response)
     },
 
+    async getConversationByUser(userId: string): Promise<ChatConversation> {
+      const response = await $fetch<Record<string, unknown>>(
+        `${basePath}/conversations/by-user/${userId}`,
+        { method: 'GET' },
+      )
+
+      return normalizeConversation(response)
+    },
+
     async sendMessage(id: string, payload: ChatSendMessagePayload): Promise<ChatMessage> {
       const hasFiles = Array.isArray(payload.files) && payload.files.length > 0
       const hasContent = Boolean(payload.content?.trim())
