@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { DataTableHeader } from 'vuetify'
+import * as Vuetify from 'vuetify'
 import type { EntityDefinition, EntityFieldConfig, EntityFilterConfig } from '~/types/entities'
 
 import AdminCard from '~/components/admin/ui/AdminCard.vue'
@@ -89,7 +90,7 @@ const editableRow = ref<AdminRow | null>(null)
 const isMounted = ref(false)
 const hasAppBarTarget = ref(false)
 
-const { mdAndUp } = useDisplay()
+const { mdAndUp } = Vuetify.useDisplay()
 
 const dialogDelete = useTemplateRef('dialogDelete')
 
