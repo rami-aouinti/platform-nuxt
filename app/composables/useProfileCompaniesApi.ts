@@ -1,4 +1,5 @@
 import { apiRequest, normalizePaginatedResponse, type ApiListQuery, type ApiListResponse, type Id } from '~/composables/api/httpUiErrors'
+import { apiEndpoints } from '~/services/api/endpoints'
 
 export type ProfileCompany = {
   id: Id
@@ -34,17 +35,17 @@ export type ProfileCompanySchema = {
 }
 
 export function useProfileCompaniesApi() {
-  const basePath = '/api/v1/me/profile/companies'
+  const basePath = apiEndpoints.frontend.companies.base
 
   return {
     list: async (query?: ApiListQuery) =>
       normalizePaginatedResponse(await apiRequest<ApiListResponse<ProfileCompany>>('GET', basePath, { query })),
-    get: (id: Id) => apiRequest<ProfileCompany>('GET', `${basePath}/${id}`),
+    get: (id: Id) => apiRequest<ProfileCompany>('GET', apiEndpoints.frontend.companies.companyById(id)),
     create: (payload: CreateProfileCompanyPayload) => apiRequest<ProfileCompany>('POST', basePath, { body: payload }),
-    update: (id: Id, payload: UpdateProfileCompanyPayload) => apiRequest<ProfileCompany>('PUT', `${basePath}/${id}`, { body: payload }),
-    patch: (id: Id, payload: PatchProfileCompanyPayload) => apiRequest<ProfileCompany>('PATCH', `${basePath}/${id}`, { body: payload }),
-    delete: (id: Id) => apiRequest<unknown>('DELETE', `${basePath}/${id}`),
+    update: (id: Id, payload: UpdateProfileCompanyPayload) => apiRequest<ProfileCompany>('PUT', apiEndpoints.frontend.companies.companyById(id), { body: payload }),
+    patch: (id: Id, payload: PatchProfileCompanyPayload) => apiRequest<ProfileCompany>('PATCH', apiEndpoints.frontend.companies.companyById(id), { body: payload }),
+    delete: (id: Id) => apiRequest<unknown>('DELETE', apiEndpoints.frontend.companies.companyById(id)),
     getSchema: (method: ProfileCompanySchemaMethod) =>
-      apiRequest<ProfileCompanySchema>('GET', `${basePath}/schema/${method}`),
+      apiRequest<ProfileCompanySchema>('GET', apiEndpoints.frontend.companies.schemaByMethod(method)),
   }
 }

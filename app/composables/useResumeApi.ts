@@ -1,5 +1,6 @@
 import { HttpRequestError, type HttpMethod, httpRequest } from '../../services/http/client'
 import { Notify } from '~/stores/notification'
+import { apiEndpoints } from '~/services/api/endpoints'
 
 export type Id = string
 
@@ -268,22 +269,22 @@ async function withCrudNotifications<T>(messages: { success: string; errorContex
   }
 }
 
-function createCrudApi<TItem, TCreate, TUpdate, TPatch>(basePath: string) {
+function createCrudApi<TItem, TCreate, TUpdate, TPatch>(basePath: string, byId: (id: Id) => string) {
   return {
     list: (query?: ResumeListQuery) => request<PaginatedResponse<TItem>>('GET', basePath, { query }),
-    get: (id: Id) => request<TItem>('GET', `${basePath}/${id}`),
+    get: (id: Id) => request<TItem>('GET', byId(id)),
     create: (payload: TCreate, notifications?: { success: string; errorContext: string }) => notifications
       ? withCrudNotifications(notifications, () => request<TItem>('POST', basePath, { body: payload }))
       : request<TItem>('POST', basePath, { body: payload }),
     update: (id: Id, payload: TUpdate, notifications?: { success: string; errorContext: string }) => notifications
-      ? withCrudNotifications(notifications, () => request<TItem>('PUT', `${basePath}/${id}`, { body: payload }))
-      : request<TItem>('PUT', `${basePath}/${id}`, { body: payload }),
+      ? withCrudNotifications(notifications, () => request<TItem>('PUT', byId(id), { body: payload }))
+      : request<TItem>('PUT', byId(id), { body: payload }),
     patch: (id: Id, payload: TPatch, notifications?: { success: string; errorContext: string }) => notifications
-      ? withCrudNotifications(notifications, () => request<TItem>('PATCH', `${basePath}/${id}`, { body: payload }))
-      : request<TItem>('PATCH', `${basePath}/${id}`, { body: payload }),
+      ? withCrudNotifications(notifications, () => request<TItem>('PATCH', byId(id), { body: payload }))
+      : request<TItem>('PATCH', byId(id), { body: payload }),
     remove: (id: Id, notifications?: { success: string; errorContext: string }) => notifications
-      ? withCrudNotifications(notifications, () => request<unknown>('DELETE', `${basePath}/${id}`))
-      : request<unknown>('DELETE', `${basePath}/${id}`),
+      ? withCrudNotifications(notifications, () => request<unknown>('DELETE', byId(id)))
+      : request<unknown>('DELETE', byId(id)),
   }
 }
 
@@ -294,30 +295,40 @@ function omitResumeFromPayload<TPayload extends { resume?: string }>(payload: TP
 
 function createResumeComponentCrudApi<TItem, TCreate extends { resume?: string }, TUpdate extends { resume?: string }, TPatch extends { resume?: string }>(
   nestedPath: (resumeId: Id) => string,
+  nestedByIdPath: (resumeId: Id, id: Id) => string,
 ) {
   return {
     list: (resumeId: Id, query?: ResumeListQuery) => request<PaginatedResponse<TItem>>('GET', nestedPath(resumeId), { query }),
-    get: (resumeId: Id, id: Id) => request<TItem>('GET', `${nestedPath(resumeId)}/${id}`),
+    get: (resumeId: Id, id: Id) => request<TItem>('GET', nestedByIdPath(resumeId, id)),
     create: (resumeId: Id, payload: TCreate, notifications?: { success: string; errorContext: string }) => notifications
       ? withCrudNotifications(notifications, () => request<TItem>('POST', nestedPath(resumeId), { body: omitResumeFromPayload(payload) }))
       : request<TItem>('POST', nestedPath(resumeId), { body: omitResumeFromPayload(payload) }),
     update: (resumeId: Id, id: Id, payload: TUpdate, notifications?: { success: string; errorContext: string }) => notifications
-      ? withCrudNotifications(notifications, () => request<TItem>('PUT', `${nestedPath(resumeId)}/${id}`, { body: omitResumeFromPayload(payload) }))
-      : request<TItem>('PUT', `${nestedPath(resumeId)}/${id}`, { body: omitResumeFromPayload(payload) }),
+      ? withCrudNotifications(notifications, () => request<TItem>('PUT', nestedByIdPath(resumeId, id), { body: omitResumeFromPayload(payload) }))
+      : request<TItem>('PUT', nestedByIdPath(resumeId, id), { body: omitResumeFromPayload(payload) }),
     patch: (resumeId: Id, id: Id, payload: TPatch, notifications?: { success: string; errorContext: string }) => notifications
-      ? withCrudNotifications(notifications, () => request<TItem>('PATCH', `${nestedPath(resumeId)}/${id}`, { body: omitResumeFromPayload(payload) }))
-      : request<TItem>('PATCH', `${nestedPath(resumeId)}/${id}`, { body: omitResumeFromPayload(payload) }),
+      ? withCrudNotifications(notifications, () => request<TItem>('PATCH', nestedByIdPath(resumeId, id), { body: omitResumeFromPayload(payload) }))
+      : request<TItem>('PATCH', nestedByIdPath(resumeId, id), { body: omitResumeFromPayload(payload) }),
     remove: (resumeId: Id, id: Id, notifications?: { success: string; errorContext: string }) => notifications
-      ? withCrudNotifications(notifications, () => request<unknown>('DELETE', `${nestedPath(resumeId)}/${id}`))
-      : request<unknown>('DELETE', `${nestedPath(resumeId)}/${id}`),
+      ? withCrudNotifications(notifications, () => request<unknown>('DELETE', nestedByIdPath(resumeId, id)))
+      : request<unknown>('DELETE', nestedByIdPath(resumeId, id)),
   }
 }
 
 export function useResumeApi() {
-  const resumesApi = createCrudApi<Resume, CreateResumePayload, UpdateResumePayload, PatchResumePayload>('/api/v1/me/profile/resumes')
-  const experiencesApi = createResumeComponentCrudApi<ResumeExperience, CreateResumeExperiencePayload, UpdateResumeExperiencePayload, PatchResumeExperiencePayload>((resumeId) => `/api/v1/me/profile/resumes/${resumeId}/experiences`)
-  const educationApi = createResumeComponentCrudApi<ResumeEducation, CreateResumeEducationPayload, UpdateResumeEducationPayload, PatchResumeEducationPayload>((resumeId) => `/api/v1/me/profile/resumes/${resumeId}/educations`)
-  const skillsApi = createResumeComponentCrudApi<ResumeSkill, CreateResumeSkillPayload, UpdateResumeSkillPayload, PatchResumeSkillPayload>((resumeId) => `/api/v1/me/profile/resumes/${resumeId}/skills`)
+  const resumesApi = createCrudApi<Resume, CreateResumePayload, UpdateResumePayload, PatchResumePayload>(apiEndpoints.frontend.resumes.base, apiEndpoints.frontend.resumes.resumeById)
+  const experiencesApi = createResumeComponentCrudApi<ResumeExperience, CreateResumeExperiencePayload, UpdateResumeExperiencePayload, PatchResumeExperiencePayload>(
+    (resumeId) => apiEndpoints.frontend.resumes.experiences(resumeId),
+    apiEndpoints.frontend.resumes.resumeExperienceById,
+  )
+  const educationApi = createResumeComponentCrudApi<ResumeEducation, CreateResumeEducationPayload, UpdateResumeEducationPayload, PatchResumeEducationPayload>(
+    (resumeId) => apiEndpoints.frontend.resumes.educations(resumeId),
+    apiEndpoints.frontend.resumes.resumeEducationById,
+  )
+  const skillsApi = createResumeComponentCrudApi<ResumeSkill, CreateResumeSkillPayload, UpdateResumeSkillPayload, PatchResumeSkillPayload>(
+    (resumeId) => apiEndpoints.frontend.resumes.skills(resumeId),
+    apiEndpoints.frontend.resumes.resumeSkillById,
+  )
 
   return {
     getMyResumes: resumesApi.list,
