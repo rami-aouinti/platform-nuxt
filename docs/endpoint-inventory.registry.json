@@ -574,6 +574,13 @@
     "allowNonConvention": false
   },
   {
+    "endpoint": "/api/v1/catalog",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
     "endpoint": "/api/v1/chat",
     "status": "active",
     "decision": "Conservé",
@@ -588,6 +595,13 @@
     "allowNonConvention": false
   },
   {
+    "endpoint": "/api/v1/localization",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
     "endpoint": "/api/v1/me/account",
     "status": "active",
     "decision": "Conservé",
@@ -596,6 +610,20 @@
   },
   {
     "endpoint": "/api/v1/me/account/deactivate",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/me/chat",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/me/companies",
     "status": "active",
     "decision": "Conservé",
     "replacement": null,
@@ -617,6 +645,13 @@
   },
   {
     "endpoint": "/api/v1/me/notification-settings",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/me/notifications",
     "status": "active",
     "decision": "Conservé",
     "replacement": null,
@@ -659,6 +694,13 @@
   },
   {
     "endpoint": "/api/v1/me/profile/companies",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/me/profile/configurations",
     "status": "active",
     "decision": "Conservé",
     "replacement": null,
@@ -834,6 +876,20 @@
   },
   {
     "endpoint": "/api/v1/tasks/:param/blog-posts",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/tools/health",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/tools/version",
     "status": "active",
     "decision": "Conservé",
     "replacement": null,
