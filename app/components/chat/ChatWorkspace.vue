@@ -6,6 +6,7 @@ import {
   useChatApi,
   type ChatConversation,
   type ChatMessage,
+  type ChatParticipant,
 } from '~/composables/api/useChatApi'
 import { toUiErrorMessage } from '~/utils/errors/toUiErrorMessage'
 
@@ -17,11 +18,17 @@ const { profile } = storeToRefs(authStore)
 const loadingConversations = ref(false)
 const loadingMessages = ref(false)
 const sending = ref(false)
+const deletingMessageId = ref<string | null>(null)
 
 const conversations = ref<ChatConversation[]>([])
 const activeConversationId = ref<string>('')
 const messages = ref<ChatMessage[]>([])
 const draftMessage = ref('')
+const selectedFiles = ref<File[]>([])
+const fileInput = ref<HTMLInputElement | null>(null)
+const messagesContainerRef = ref<HTMLElement | null>(null)
+
+const availableReactions = ['thumbs_up', 'heart', 'surprised', 'sad']
 
 const hasConversations = computed(() => conversations.value.length > 0)
 const activeConversation = computed(() =>
@@ -44,8 +51,32 @@ function toFrenchDate(value?: string | null) {
   }).format(date)
 }
 
+function getConversationDisplayParticipants(conversation?: ChatConversation | null): ChatParticipant[] {
+  if (!conversation?.participants) return []
+  const notCurrent = conversation.participants.filter((participant) => !participant.isCurrentUser)
+  return notCurrent.length > 0 ? notCurrent : conversation.participants
+}
+
+function participantDisplayName(participant: ChatParticipant): string {
+  return `${participant.firstName ?? ''} ${participant.lastName ?? ''}`.trim()
+    || participant.username
+    || 'Utilisateur'
+}
+
+function conversationDisplayName(conversation?: ChatConversation | null): string {
+  if (!conversation) return ''
+  const names = getConversationDisplayParticipants(conversation)
+    .map((participant) => participantDisplayName(participant))
+    .filter(Boolean)
+
+  if (names.length > 0) return names.join(', ')
+  return conversation.title || `Conversation #${conversation.id}`
+}
+
 function isMine(message: ChatMessage) {
   const currentUserId = profile.value?.id
+
+  if (message.isFromCurrentUser) return true
 
   if (currentUserId && message.senderId) {
     return currentUserId === message.senderId
@@ -53,6 +84,42 @@ function isMine(message: ChatMessage) {
 
   if (!message.role) return false
   return ['me', 'user', 'candidate', 'owner'].includes(message.role.toLowerCase())
+}
+
+function triggerFilePicker() {
+  fileInput.value?.click()
+}
+
+function onFileSelection(event: Event) {
+  const target = event.target as HTMLInputElement
+  const files = Array.from(target.files ?? [])
+  if (files.length === 0) return
+
+  selectedFiles.value = [...selectedFiles.value, ...files]
+  target.value = ''
+}
+
+function removeSelectedFile(index: number) {
+  selectedFiles.value = selectedFiles.value.filter((_, fileIndex) => fileIndex !== index)
+}
+
+function reactionEmoji(reaction: string): string {
+  const map: Record<string, string> = {
+    thumbs_up: '👍',
+    heart: '❤️',
+    surprised: '😮',
+    sad: '😢',
+  }
+
+  return map[reaction] || '🙂'
+}
+
+function scrollToLatestMessage() {
+  nextTick(() => {
+    const container = messagesContainerRef.value
+    if (!container) return
+    container.scrollTop = container.scrollHeight
+  })
 }
 
 async function loadConversations() {
@@ -93,6 +160,7 @@ async function loadConversationDetail(conversationId: string) {
     ])
 
     messages.value = conversationMessages.length > 0 ? conversationMessages : detail.messages
+    scrollToLatestMessage()
 
     const targetConversation = conversations.value.find(
       (conversation) => conversation.id === conversationId,
@@ -119,28 +187,60 @@ async function selectConversation(conversationId: string) {
 
 async function sendMessage() {
   const content = draftMessage.value.trim()
-  if (!content || !activeConversationId.value || sending.value) return
+  const hasFiles = selectedFiles.value.length > 0
+  if ((!content && !hasFiles) || !activeConversationId.value || sending.value) return
 
   sending.value = true
 
   try {
-    const sent = await chatApi.sendMessage(activeConversationId.value, { content })
+    const sent = await chatApi.sendMessage(activeConversationId.value, {
+      content,
+      files: selectedFiles.value,
+    })
 
     messages.value = [...messages.value, sent]
     draftMessage.value = ''
+    selectedFiles.value = []
+    scrollToLatestMessage()
 
     const targetConversation = conversations.value.find(
       (conversation) => conversation.id === activeConversationId.value,
     )
 
     if (targetConversation) {
-      targetConversation.lastMessage = content
+      targetConversation.lastMessage = content || sent.content
       targetConversation.updatedAt = new Date().toISOString()
     }
   } catch (error) {
     Notify.error(toUiErrorMessage(error, 'Échec de l’envoi du message'))
   } finally {
     sending.value = false
+  }
+}
+
+async function reactToMessage(message: ChatMessage, reaction: string) {
+  if (!activeConversationId.value) return
+
+  try {
+    const updatedMessage = await chatApi.reactToMessage(activeConversationId.value, message.id, reaction)
+    messages.value = messages.value.map((item) => (item.id === message.id ? updatedMessage : item))
+  } catch (error) {
+    Notify.error(toUiErrorMessage(error, 'Impossible de réagir au message'))
+  }
+}
+
+async function deleteMessage(message: ChatMessage) {
+  if (!activeConversationId.value || !isMine(message) || deletingMessageId.value) return
+
+  deletingMessageId.value = message.id
+
+  try {
+    await chatApi.deleteMessage(activeConversationId.value, message.id)
+    messages.value = messages.value.filter((item) => item.id !== message.id)
+  } catch (error) {
+    Notify.error(toUiErrorMessage(error, 'Impossible de supprimer le message'))
+  } finally {
+    deletingMessageId.value = null
   }
 }
 
@@ -153,12 +253,19 @@ watch(
   { immediate: true },
 )
 
+watch(
+  () => messages.value.length,
+  () => {
+    scrollToLatestMessage()
+  },
+)
+
 onMounted(loadConversations)
 </script>
 
 <template>
   <v-row class="chat-workspace" no-gutters>
-    <v-col cols="12" md="4" lg="3" class="border-e">
+    <v-col cols="12" md="4" lg="3" class="chat-conversations-panel border-e">
       <v-sheet class="pa-4 h-100" color="surface">
         <div class="d-flex align-center justify-space-between mb-4">
           <div>
@@ -195,13 +302,18 @@ onMounted(loadConversations)
             @click="selectConversation(conversation.id)"
           >
             <template #prepend>
-              <v-avatar color="primary" variant="tonal" size="36">
-                {{ conversation.title?.slice(0, 1).toUpperCase() || 'C' }}
+              <v-avatar
+                color="primary"
+                variant="tonal"
+                size="36"
+                :image="getConversationDisplayParticipants(conversation)[0]?.photo ?? undefined"
+              >
+                {{ conversationDisplayName(conversation).slice(0, 1).toUpperCase() || 'C' }}
               </v-avatar>
             </template>
 
             <v-list-item-title class="font-weight-medium text-truncate">
-              {{ conversation.title || `Conversation #${conversation.id}` }}
+              {{ conversationDisplayName(conversation) }}
             </v-list-item-title>
             <v-list-item-subtitle class="text-truncate">
               {{ conversation.lastMessage || 'Aucun message récent.' }}
@@ -237,7 +349,7 @@ onMounted(loadConversations)
         <div class="px-4 py-3 border-b d-flex align-center justify-space-between">
           <div>
             <p class="text-subtitle-1 font-weight-bold mb-0">
-              {{ activeConversation?.title || 'Sélectionnez une conversation' }}
+              {{ conversationDisplayName(activeConversation) || 'Sélectionnez une conversation' }}
             </p>
             <p class="text-caption text-medium-emphasis mb-0">
               {{ messages.length }} message{{ messages.length > 1 ? 's' : '' }}
@@ -246,7 +358,7 @@ onMounted(loadConversations)
           <v-icon icon="mdi-forum-outline" color="primary" />
         </div>
 
-        <div class="chat-messages pa-4 flex-grow-1">
+        <div ref="messagesContainerRef" class="chat-messages pa-4 flex-grow-1">
           <v-skeleton-loader
             v-if="loadingMessages"
             type="list-item-two-line@6"
@@ -282,10 +394,76 @@ onMounted(loadConversations)
               >
                 <v-card-text class="py-2 px-3">
                   <p class="text-body-2 mb-1">{{ message.content }}</p>
-                  <p class="text-caption mb-0 opacity-70">
+
+                  <div
+                    v-if="message.attachments.length"
+                    class="d-flex flex-column ga-1 mb-2"
+                  >
+                    <a
+                      v-for="attachment in message.attachments"
+                      :key="attachment.url"
+                      :href="attachment.url"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="text-decoration-none"
+                    >
+                      <v-chip size="small" variant="tonal" prepend-icon="mdi-paperclip">
+                        {{ attachment.name || attachment.url }}
+                      </v-chip>
+                    </a>
+                  </div>
+
+                  <div
+                    v-if="message.reactions.length"
+                    class="d-flex flex-wrap ga-1 mb-2"
+                  >
+                    <v-chip
+                      v-for="reaction in message.reactions"
+                      :key="`${reaction.reaction}-${reaction.user?.id ?? 'anonymous'}-${reaction.createdAt ?? ''}`"
+                      size="x-small"
+                      variant="outlined"
+                    >
+                      {{ reactionEmoji(reaction.reaction) }}
+                      {{ reaction.user?.firstName || reaction.user?.username || '' }}
+                    </v-chip>
+                  </div>
+
+                  <p class="text-caption mb-1 opacity-70">
                     {{ message.senderName || 'Utilisateur' }} ·
                     {{ toFrenchDate(message.createdAt) }}
                   </p>
+
+                  <div class="d-flex align-center ga-1 justify-end">
+                    <v-menu location="top">
+                      <template #activator="{ props }">
+                        <v-btn
+                          v-bind="props"
+                          icon="mdi-emoticon-happy-outline"
+                          size="x-small"
+                          variant="text"
+                        />
+                      </template>
+                      <v-list density="compact">
+                        <v-list-item
+                          v-for="reaction in availableReactions"
+                          :key="reaction"
+                          @click="reactToMessage(message, reaction)"
+                        >
+                          <v-list-item-title>{{ reactionEmoji(reaction) }} {{ reaction }}</v-list-item-title>
+                        </v-list-item>
+                      </v-list>
+                    </v-menu>
+
+                    <v-btn
+                      v-if="isMine(message)"
+                      icon="mdi-delete-outline"
+                      size="x-small"
+                      variant="text"
+                      color="error"
+                      :loading="deletingMessageId === message.id"
+                      @click="deleteMessage(message)"
+                    />
+                  </div>
                 </v-card-text>
               </v-card>
             </div>
@@ -294,26 +472,53 @@ onMounted(loadConversations)
 
         <v-divider />
 
-        <div class="pa-3 d-flex ga-2 align-end">
-          <v-textarea
-            v-model="draftMessage"
-            label="Écrire un message"
-            variant="outlined"
-            rows="1"
-            auto-grow
-            hide-details
-            class="flex-grow-1"
-            :disabled="!activeConversationId || sending"
-            @keydown.enter.exact.prevent="sendMessage"
-          />
-          <v-btn
-            color="primary"
-            size="large"
-            icon="mdi-send"
-            :loading="sending"
-            :disabled="!draftMessage.trim() || !activeConversationId"
-            @click="sendMessage"
-          />
+        <div class="pa-3 d-flex flex-column ga-2">
+          <div v-if="selectedFiles.length" class="d-flex flex-wrap ga-2">
+            <v-chip
+              v-for="(file, index) in selectedFiles"
+              :key="`${file.name}-${index}`"
+              closable
+              prepend-icon="mdi-paperclip"
+              @click:close="removeSelectedFile(index)"
+            >
+              {{ file.name }}
+            </v-chip>
+          </div>
+
+          <div class="d-flex ga-2 align-end">
+            <input
+              ref="fileInput"
+              type="file"
+              multiple
+              class="d-none"
+              @change="onFileSelection"
+            >
+            <v-btn
+              icon="mdi-paperclip"
+              variant="outlined"
+              :disabled="!activeConversationId || sending"
+              @click="triggerFilePicker"
+            />
+            <v-textarea
+              v-model="draftMessage"
+              label="Écrire un message"
+              variant="outlined"
+              rows="1"
+              auto-grow
+              hide-details
+              class="flex-grow-1"
+              :disabled="!activeConversationId || sending"
+              @keydown.enter.exact.prevent="sendMessage"
+            />
+            <v-btn
+              color="primary"
+              size="large"
+              icon="mdi-send"
+              :loading="sending"
+              :disabled="(!draftMessage.trim() && selectedFiles.length === 0) || !activeConversationId"
+              @click="sendMessage"
+            />
+          </div>
         </div>
       </v-sheet>
     </v-col>
@@ -326,6 +531,11 @@ onMounted(loadConversations)
   border-radius: 20px;
   overflow: hidden;
   border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+}
+
+.chat-conversations-panel {
+  padding-right: 8px;
+  border-right: 1px solid rgba(var(--v-theme-on-surface), 0.12);
 }
 
 .chat-conversations {

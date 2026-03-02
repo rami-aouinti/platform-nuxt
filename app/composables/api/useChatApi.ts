@@ -4,6 +4,21 @@ export type ChatParticipant = {
   firstName?: string | null
   lastName?: string | null
   photo?: string | null
+  isCurrentUser?: boolean
+}
+
+export type ChatAttachment = {
+  url: string
+  name?: string | null
+  type?: string | null
+  mimeType?: string | null
+}
+
+export type ChatReaction = {
+  reaction: string
+  user?: ChatParticipant | null
+  isCurrentUser?: boolean
+  createdAt?: string | null
 }
 
 export type ChatConversation = {
@@ -23,6 +38,9 @@ export type ChatMessage = {
   senderName?: string | null
   senderPhoto?: string | null
   role?: string | null
+  isFromCurrentUser?: boolean
+  attachments: ChatAttachment[]
+  reactions: ChatReaction[]
 }
 
 export type ChatConversationDetail = {
@@ -32,7 +50,8 @@ export type ChatConversationDetail = {
 }
 
 export type ChatSendMessagePayload = {
-  content: string
+  content?: string
+  files?: File[]
 }
 
 type CollectionResponse<T> = T[] | { data?: T[]; items?: T[]; results?: T[] }
@@ -54,6 +73,29 @@ function normalizeParticipant(raw: Record<string, unknown>): ChatParticipant {
     firstName: typeof raw.firstName === 'string' ? raw.firstName : null,
     lastName: typeof raw.lastName === 'string' ? raw.lastName : null,
     photo: typeof raw.photo === 'string' ? raw.photo : null,
+    isCurrentUser: Boolean(raw.isCurrentUser),
+  }
+}
+
+function normalizeAttachment(raw: Record<string, unknown>): ChatAttachment {
+  return {
+    url: typeof raw.url === 'string' ? raw.url : '',
+    name: typeof raw.name === 'string' ? raw.name : null,
+    type: typeof raw.type === 'string' ? raw.type : null,
+    mimeType: typeof raw.mimeType === 'string' ? raw.mimeType : null,
+  }
+}
+
+function normalizeReaction(raw: Record<string, unknown>): ChatReaction {
+  const user = raw.user && typeof raw.user === 'object'
+    ? normalizeParticipant(raw.user as Record<string, unknown>)
+    : null
+
+  return {
+    reaction: typeof raw.reaction === 'string' ? raw.reaction : '',
+    user,
+    isCurrentUser: Boolean(raw.isCurrentUser),
+    createdAt: typeof raw.createdAt === 'string' ? raw.createdAt : null,
   }
 }
 
@@ -171,6 +213,19 @@ function normalizeMessage(raw: Record<string, unknown>): ChatMessage {
         : typeof raw.senderRole === 'string'
           ? raw.senderRole
           : null,
+    isFromCurrentUser: Boolean(raw.isFromCurrentUser),
+    attachments: Array.isArray(raw.attachments)
+      ? raw.attachments
+        .filter((item): item is Record<string, unknown> => Boolean(item && typeof item === 'object'))
+        .map((item) => normalizeAttachment(item))
+        .filter((item) => Boolean(item.url))
+      : [],
+    reactions: Array.isArray(raw.reactions)
+      ? raw.reactions
+        .filter((item): item is Record<string, unknown> => Boolean(item && typeof item === 'object'))
+        .map((item) => normalizeReaction(item))
+        .filter((item) => Boolean(item.reaction))
+      : [],
   }
 }
 
@@ -216,11 +271,25 @@ export function useChatApi() {
     },
 
     async sendMessage(id: string, payload: ChatSendMessagePayload): Promise<ChatMessage> {
+      const hasFiles = Array.isArray(payload.files) && payload.files.length > 0
+      const hasContent = Boolean(payload.content?.trim())
+
+      const body = hasFiles
+        ? (() => {
+            const formData = new FormData()
+            if (hasContent) formData.append('content', payload.content?.trim() ?? '')
+            payload.files?.forEach((file) => {
+              formData.append('files[]', file)
+            })
+            return formData
+          })()
+        : { content: payload.content?.trim() ?? '' }
+
       const response = await $fetch<Record<string, unknown>>(
         `${basePath}/conversations/${id}/messages`,
         {
           method: 'POST',
-          body: payload,
+          body,
         },
       )
 
@@ -242,6 +311,24 @@ export function useChatApi() {
       return normalized
         .filter((item): item is Record<string, unknown> => Boolean(item && typeof item === 'object'))
         .map((item) => normalizeMessage(item))
+    },
+
+    async deleteMessage(conversationId: string, messageId: string): Promise<void> {
+      await $fetch(`${basePath}/conversations/${conversationId}/messages/${messageId}`, {
+        method: 'DELETE',
+      })
+    },
+
+    async reactToMessage(conversationId: string, messageId: string, reaction: string): Promise<ChatMessage> {
+      const response = await $fetch<Record<string, unknown>>(
+        `${basePath}/conversations/${conversationId}/messages/${messageId}/reactions`,
+        {
+          method: 'POST',
+          body: { reaction },
+        },
+      )
+
+      return normalizeMessage(response)
     },
   }
 }
