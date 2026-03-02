@@ -248,6 +248,7 @@ Source: scan automatique des chemins `app/**`, `services/**`, `server/api/**` + 
 | `/api/v1/me/profile/avatar` | `server/api/v1/me/profile/avatar.get.ts` | proxy | active |
 | `/api/v1/me/profile/avatar` | `server/api/v1/me/profile/avatar.patch.ts` | proxy | active |
 | `/api/v1/me/profile/companies` | `app/composables/useProfileCompaniesApi.ts` | direct | active |
+| `/api/v1/me/profile/companies/schema` | `app/composables/useProfileCompaniesApi.ts` | direct | active (query optionnelle `method`) |
 | `/api/v1/me/profile/groups` | `server/api/me/profile/groups.get.ts` | proxy | active |
 | `/api/v1/me/profile/groups` | `server/api/v1/me/profile/groups.get.ts` | proxy | active |
 | `/api/v1/me/profile/password` | `app/services/profile/profile-endpoint-resolver.ts` | direct | active |
@@ -489,6 +490,7 @@ Source: scan automatique des chemins `app/**`, `services/**`, `server/api/**` + 
 | `/api/v1/me/profile/addresses/:param` | Conservé | — |
 | `/api/v1/me/profile/avatar` | Conservé | — |
 | `/api/v1/me/profile/companies` | Conservé | — |
+| `/api/v1/me/profile/companies/schema` | Conservé | — |
 | `/api/v1/me/profile/groups` | Conservé | — |
 | `/api/v1/me/profile/password` | Conservé | — |
 | `/api/v1/me/profile/projects` | Conservé | — |

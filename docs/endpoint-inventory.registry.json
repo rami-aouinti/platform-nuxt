@@ -1239,6 +1239,13 @@
     "allowNonConvention": false
   },
   {
+    "endpoint": "/api/v1/me/profile/companies/schema",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
     "endpoint": "/api/v1/me/profile/configurations",
     "status": "active",
     "decision": "Conservé (first-class explicite)",

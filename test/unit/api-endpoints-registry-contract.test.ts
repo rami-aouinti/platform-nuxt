@@ -11,6 +11,9 @@ describe('api endpoints registry contract', () => {
     expect(apiEndpoints.frontend.socialAccounts.base).toBe('/api/v1/me/social-accounts')
     expect(apiEndpoints.frontend.projects.base).toBe('/api/v1/me/profile/projects')
     expect(apiEndpoints.frontend.companies.base).toBe('/api/v1/me/profile/companies')
+    expect(apiEndpoints.frontend.companies.schema).toBe('/api/v1/me/profile/companies/schema')
+    expect(apiEndpoints.frontend.companies.schemaByMethod()).toBe('/api/v1/me/profile/companies/schema')
+    expect(apiEndpoints.frontend.companies.schemaByMethod('post')).toBe('/api/v1/me/profile/companies/schema?method=post')
     expect(apiEndpoints.frontend.companies.companyById('42')).toBe('/api/v1/me/profile/companies/42')
 
     expect(apiEndpoints.frontend.resumes.base).toBe('/api/v1/me/profile/resumes')

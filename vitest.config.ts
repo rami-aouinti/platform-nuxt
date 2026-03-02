@@ -1,7 +1,14 @@
+import { fileURLToPath } from 'node:url'
 import { defineVitestProject } from '@nuxt/test-utils/config'
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      '~/': `${fileURLToPath(new URL('./app', import.meta.url))}/`,
+      '~': fileURLToPath(new URL('./app', import.meta.url)),
+    },
+  },
   test: {
     projects: [
       {
