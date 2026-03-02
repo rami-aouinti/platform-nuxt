@@ -5,12 +5,13 @@ const items = computed(() =>
   route.matched
     ?.filter((v) => v.path === route.path)[0]
     ?.children.filter((c) => c.path)
+    .filter((c) => !c.path.includes(':'))
     .toSorted(
       (a, b) => (a.meta?.drawerIndex ?? 99) - (b.meta?.drawerIndex ?? 98),
     )
     .map((c) => ({
       title: c.meta?.title,
-      to: c.name ? c : `${route.path}/${c.path}`,
+      to: `${route.path}/${c.path}`,
       prependIcon: c.meta?.icon,
       subtitle: c.meta?.subtitle,
     })),
@@ -21,7 +22,7 @@ const items = computed(() =>
   <v-container>
     <v-row>
       <v-col v-for="item in items" :key="item.title" cols="12" sm="6" md="4">
-        <v-card :to="item.disabled ? undefined : item.to" class="stats-card v-alert--border-top" elevation="24">
+        <v-card :to="item.to" class="stats-card v-alert--border-top" elevation="24">
           <v-card-title class="d-flex align-center ga-2">
             <v-icon color="primary" :icon="item.prependIcon" />
             <span>{{ item.title }}</span>
