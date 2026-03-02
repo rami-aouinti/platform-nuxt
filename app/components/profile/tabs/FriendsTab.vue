@@ -77,8 +77,7 @@ async function acceptRequest(request: FriendRequest) {
   actionLoading.value = true
 
   try {
-    const receivedUserId = getRequestUser(request, 'received')?.id || request.id
-    await friendsApi.acceptFriendRequest(receivedUserId)
+    await friendsApi.acceptFriendRequest(request.id)
     await loadFriendsData()
     Notify.success(t('profile.friends.actions.requestAccepted'))
   } catch (error) {
