@@ -73,11 +73,12 @@ async function sendRequest() {
   }
 }
 
-async function acceptRequest(requestId: string) {
+async function acceptRequest(request: FriendRequest) {
   actionLoading.value = true
 
   try {
-    await friendsApi.acceptFriendRequest(requestId)
+    const receivedUserId = getRequestUser(request, 'received')?.id || request.id
+    await friendsApi.acceptFriendRequest(receivedUserId)
     await loadFriendsData()
     Notify.success(t('profile.friends.actions.requestAccepted'))
   } catch (error) {
@@ -191,7 +192,7 @@ onMounted(loadFriendsData)
                 color="success"
                 variant="text"
                 :disabled="actionLoading"
-                @click="acceptRequest(request.id)"
+                @click="acceptRequest(request)"
               />
             </template>
           </v-list-item>
