@@ -329,7 +329,7 @@
               ></v-switch>
             </div>
             <v-img
-              src="../../assets/img/small-logos/icon-bulb.svg"
+              :src="iconBulb"
               class="mt-6"
               width="40"
             ></v-img>
@@ -514,6 +514,7 @@ import Chart from "chart.js/auto";
 import CategoriesCard from "./Widgets/CategoriesCard.vue";
 import CategoriesCardDashboard from "./Widgets/CategoriesCardDashboard.vue";
 import Calendar from "../Dashboard/Widgets/Calendar.vue";
+import iconBulb from "~/assets/img/small-logos/icon-bulb.svg";
 const chartWidgets = ref("widgetsChart");
 const chartLine = ref("lineChart");
 const switch1 = ref(true);

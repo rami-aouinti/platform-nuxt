@@ -12,35 +12,35 @@
                 <v-col lg="5" md="6" class="text-center">
                   <v-img
                     class="w-100 border-radius-lg shadow-lg mx-auto"
-                    src="../../../assets/img/products/product-details-1.jpg"
+                    :src="imageProductDetails1"
                   >
                   </v-img>
                   <div class="mt-8 overflow-scroll">
                     <Photoswipe>
                       <img
                         class="me-2"
-                        src="../../../assets/img/products/product-details-2.jpg"
+                         :src="imageProductDetails2"
                         v-pswp="
                           imageProductDetails2
                         "
                       />
                       <img
                         class="me-2"
-                        src="../../../assets/img/products/product-details-3.jpg"
+                         :src="imageProductDetails3"
                         v-pswp="
                           imageProductDetails3
                         "
                       />
                       <img
                         class="me-2"
-                        src="../../../assets/img/products/product-details-4.jpg"
+                         :src="imageProductDetails4"
                         v-pswp="
                           imageProductDetails4
                         "
                       />
                       <img
                         class="me-2"
-                        src="../../../assets/img/products/product-details-5.jpg"
+                         :src="imageProductDetails5"
                         v-pswp="
                           imageProductDetails5
                         "
@@ -217,10 +217,11 @@ definePageMeta({
 import { ref } from "vue";
 import Photoswipe from "vue-pswipe";
 import TableProducts from "./Widgets/TableProducts.vue";
-import imageProductDetails2 from "@/assets/img/products/product-details-2.jpg";
-import imageProductDetails3 from "@/assets/img/products/product-details-3.jpg";
-import imageProductDetails4 from "@/assets/img/products/product-details-4.jpg";
-import imageProductDetails5 from "@/assets/img/products/product-details-5.jpg";
+import imageProductDetails1 from "~/assets/img/products/product-details-1.jpg";
+import imageProductDetails2 from "~/assets/img/products/product-details-2.jpg";
+import imageProductDetails3 from "~/assets/img/products/product-details-3.jpg";
+import imageProductDetails4 from "~/assets/img/products/product-details-4.jpg";
+import imageProductDetails5 from "~/assets/img/products/product-details-5.jpg";
 Vue.use(Photoswipe);
 const materials = ref(["Wood", "Aluminium", "Leather"]);
 const colors = ref(["White", "Black", "Gray"]);
