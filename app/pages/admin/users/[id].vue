@@ -5,6 +5,7 @@ import { isRoot } from '~/utils/permissions/admin'
 import { useAuthStore } from '~/stores/auth'
 import { toUiErrorMessage } from '~/utils/errors/toUiErrorMessage'
 import { useRelationField } from '~/composables/admin/useRelationField'
+import { adminEndpoints } from '~~/services/admin/endpoints'
 
 definePageMeta({
   icon: 'mdi-account-details-outline',
@@ -49,7 +50,7 @@ const selectedGroupId = ref('')
 
 const userGroupsRelation = useRelationField<UserGroup>({
   fieldName: 'userGroups',
-  fieldEndpoint: '/api/v1/admin/user-groups',
+  fieldEndpoint: adminEndpoints.userGroups.base,
   parentEndpoint: () => `/api/user/${encodeURIComponent(userId.value)}`,
   relationEndpoint: relationId => `/api/user/${encodeURIComponent(userId.value)}/group/${encodeURIComponent(relationId)}`,
   optionsQuery: {
