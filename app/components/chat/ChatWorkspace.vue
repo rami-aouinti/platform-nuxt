@@ -102,6 +102,12 @@ function conversationDisplayName(conversation?: ChatConversation | null): string
   return conversation.title || `Conversation #${conversation.id}`
 }
 
+function getUnreadCount(conversation: ChatConversation): number {
+  return typeof conversation.unreadCount === 'number' && Number.isFinite(conversation.unreadCount)
+    ? conversation.unreadCount
+    : 0
+}
+
 function isMine(message: ChatMessage) {
   const currentUserId = profile.value?.id
 
@@ -442,8 +448,8 @@ onMounted(async () => {
                   toFrenchDate(conversation.updatedAt)
                 }}</span>
                 <v-badge
-                  v-if="conversation.unreadCount"
-                  :content="conversation.unreadCount"
+                  v-if="getUnreadCount(conversation) > 0"
+                  :content="getUnreadCount(conversation)"
                   inline
                   color="primary"
                 />
