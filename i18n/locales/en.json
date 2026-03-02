@@ -138,6 +138,7 @@
       "accounts": "Accounts",
       "notifications": "Notifications",
       "sessions": "Sessions",
+      "friends": "Friends",
       "deleteAccount": "Delete Account"
     },
     "tabDescriptions": {
@@ -147,7 +148,30 @@
       "accounts": "This section is dedicated to linked account management.",
       "notifications": "This section is dedicated to notification preferences.",
       "sessions": "This section is dedicated to active session management.",
+      "friends": "This section is dedicated to friends and request management.",
       "deleteAccount": "This section is dedicated to account deletion."
+    },
+    "friends": {
+      "title": "Friends",
+      "refresh": "Refresh",
+      "loading": "Loading...",
+      "userIdInput": "User ID",
+      "sendRequest": "Send request",
+      "friendsList": "My friends",
+      "sentRequests": "Sent requests",
+      "receivedRequests": "Received requests",
+      "emptyFriends": "No friends yet.",
+      "emptySentRequests": "No sent requests.",
+      "emptyReceivedRequests": "No received requests.",
+      "unknownUser": "Unknown user",
+      "actions": {
+        "requestSent": "Request sent.",
+        "requestAccepted": "Request accepted.",
+        "friendRemoved": "Friend removed."
+      },
+      "errors": {
+        "userIdRequired": "User ID is required."
+      }
     },
     "resumePages": {
       "listTitle": "My resumes",
