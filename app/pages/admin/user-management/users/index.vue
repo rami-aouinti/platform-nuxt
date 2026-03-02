@@ -9,7 +9,8 @@ import { extractCollectionFromPayload } from '~/utils/admin/extractCollectionFro
 import type { AdminResourceSchema } from '~/types/admin-schema'
 import { useRelationField } from '~/composables/admin/useRelationField'
 import { getAdminEntityDefinition } from '~/services/admin/resource-descriptors'
-import { resolveAdminEndpoint, resolveAdminListEndpoints } from '~/services/admin/entity-resolver'
+import { resolveAdminEndpoint } from '~/services/admin/entity-resolver'
+import { usersService } from '~/services/admin/users'
 import { buildSchemaColumns, buildSchemaFieldConfigs, normalizeAdminSchema } from '~/utils/admin/schema'
 
 type UserRecord = {
@@ -310,11 +311,10 @@ const {
   buildQuery,
   loadRows: async (ctx) => {
     const query = buildQuery(ctx)
-    const { listEndpoint, countEndpoint } = resolveAdminListEndpoints(usersDescriptor.list)
     const [payload, countPayload] = await Promise.all([
-      $fetch(String(listEndpoint), { query }),
-      countEndpoint ? $fetch(String(countEndpoint)) : $fetch('/api/v1/admin/users/count'),
-      $fetch('/api/v1/admin/users/ids'),
+      usersService.list(query),
+      usersService.count(),
+      usersService.ids(),
     ])
 
     return { payload, countPayload }
@@ -344,12 +344,9 @@ const {
     }
 
     try {
-      await $fetch(
-        String(resolveAdminEndpoint(usersDescriptor.patch, String(row.id ?? '')) ?? `/api/user/${encodeURIComponent(String(row.id ?? ''))}`) as any,
-        {
-          method: 'PATCH' as any,
-          body: patchBody,
-        },
+      await usersService.patch(
+        String(row.id ?? ''),
+        patchBody,
       )
 
       Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.userUpdatedActionSuccess')))
@@ -369,11 +366,8 @@ const {
   },
   deleteRow: async (row) => {
     try {
-      await $fetch(
-        String(resolveAdminEndpoint(usersDescriptor.delete, String(row.id ?? '')) ?? `/api/user/${encodeURIComponent(String(row.id ?? ''))}`) as any,
-        {
-          method: 'DELETE' as any,
-        },
+      await usersService.remove(
+        String(row.id ?? ''),
       )
 
       Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.userDeletedActionSuccess')))
@@ -420,11 +414,8 @@ async function onRowPatch(payload: { rowId: string; field: string; value: boolea
   }
 
   try {
-    await $fetch(String(resolveAdminEndpoint(usersDescriptor.patch, payload.rowId) ?? `/api/user/${encodeURIComponent(payload.rowId)}`) as any, {
-      method: 'PATCH' as any,
-      body: {
-        [payload.field]: payload.value,
-      },
+    await usersService.patch(payload.rowId, {
+      [payload.field]: payload.value,
     })
   } catch (errorValue) {
     targetRow[payload.field] = previousValue
@@ -463,15 +454,12 @@ async function submitCreateRow() {
   creating.value = true
 
   try {
-    await $fetch(String(resolveAdminEndpoint(usersDescriptor.create) ?? '/api/v1/admin/users'), {
-      method: 'POST' as any,
-      body: {
-        username: createForm.username.trim(),
-        email: createForm.email.trim(),
-        firstName: createForm.firstName.trim() || undefined,
-        lastName: createForm.lastName.trim() || undefined,
-        password: createForm.password,
-      },
+    await usersService.create({
+      username: createForm.username.trim(),
+      email: createForm.email.trim(),
+      firstName: createForm.firstName.trim() || undefined,
+      lastName: createForm.lastName.trim() || undefined,
+      password: createForm.password,
     })
 
     Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.userCreatedActionSuccess')))
