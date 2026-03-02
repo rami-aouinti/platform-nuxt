@@ -58,7 +58,7 @@ function getCompanyDisplayName(company: CrmCompany) {
 }
 
 function getCompanyAvatar(company: CrmCompany) {
-  return company.image || company.photo || company.photoUrl || undefined
+  return company.photoUrl || undefined
 }
 
 function getRoleLabel(company: CrmCompany) {

@@ -9,6 +9,16 @@ export type AdminFieldConfig = {
   targetClass?: string
 }
 
+const MEDIA_FIELD_ALIASES: Record<string, string> = {
+  photo: 'photoUrl',
+  image: 'photoUrl',
+  storedPhotoUrl: 'photoUrl',
+}
+
+function toCanonicalFieldName(name: string) {
+  return MEDIA_FIELD_ALIASES[name] ?? name
+}
+
 function toSchemaFieldType(value: string | undefined): AdminFieldConfig['type'] {
   if (value === 'normal' || value === 'string' || value === 'int' || value === 'date' || value === 'image' || value === 'boolean' || value === 'object') {
     return value
@@ -38,8 +48,10 @@ export function normalizeSchemaField(entry: unknown): AdminSchemaField | null {
     return null
   }
 
+  const canonicalName = toCanonicalFieldName(name)
+
   return {
-    name,
+    name: canonicalName,
     type: String(row.type ?? '').trim() || undefined,
     targetClass: String(row.targetClass ?? '').trim() || undefined,
     endpoint: String(row.endpoint ?? '').trim() || undefined,
@@ -89,8 +101,8 @@ export function buildSchemaColumns(schema: AdminResourceSchema | null, fallbackC
     return fallbackColumns
   }
 
-  const displayableNames = schema.displayable.map(field => field.name)
-  const editableNames = schema.editable.map(field => field.name)
+  const displayableNames = Array.from(new Set(schema.displayable.map(field => toCanonicalFieldName(field.name))))
+  const editableNames = Array.from(new Set(schema.editable.map(field => toCanonicalFieldName(field.name))))
   const mergedNames = [...displayableNames, ...editableNames.filter(name => !displayableNames.includes(name))]
 
   const namesToRender = mergedNames.length > 0 ? mergedNames : fallbackColumns.map(column => String(column.key ?? '')).filter(Boolean)
@@ -113,7 +125,9 @@ export function buildSchemaFieldConfigs(
     return fallbackFields
   }
 
-  return schemaFields.map(field => ({
+  const dedupedFields = Array.from(new Map(schemaFields.map(field => [toCanonicalFieldName(field.name), { ...field, name: toCanonicalFieldName(field.name) }])).values())
+
+  return dedupedFields.map(field => ({
     key: field.name,
     label: toFieldLabel(field.name),
     type: toSchemaFieldType(field.type),

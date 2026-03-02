@@ -122,11 +122,11 @@ function getCompanyDisplayName(entry: CrmCompany | null) {
 
 function getCompanyAvatar(entry: CrmCompany | null) {
   if (!entry) return undefined
-  return entry.image || entry.photo || entry.photoUrl || undefined
+  return entry.photoUrl || undefined
 }
 
 function getProjectAvatar(project: CrmProjectExtended) {
-  return project.image || project.photo || project.photoUrl || undefined
+  return project.photoUrl || undefined
 }
 
 function sprintProjectName(sprint: CrmSprint) {
