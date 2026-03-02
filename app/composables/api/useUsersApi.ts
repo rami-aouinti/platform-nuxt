@@ -12,7 +12,7 @@ export type UpdateUserPayload = CreateUserPayload
 export type PatchUserPayload = Partial<UpdateUserPayload>
 
 export function useUsersApi() {
-  const basePath = '/api/user'
+  const basePath = '/api/v1/admin/users'
 
   return {
     list: async (query?: ApiListQuery) =>

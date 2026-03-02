@@ -19,7 +19,8 @@
     "legacy:no-require:check": "node scripts/check-legacy-no-require.mjs",
     "lint:fullcalendar-imports": "node scripts/check-fullcalendar-vue-imports.mjs",
     "legacy:pages:kpi": "node scripts/legacy-pages-kpi.mjs",
-    "legacy:page-meta:check": "node scripts/check-legacy-page-meta.mjs"
+    "legacy:page-meta:check": "node scripts/check-legacy-page-meta.mjs",
+    "lint:admin-paths": "node scripts/check-admin-path-convention.mjs"
   },
   "devDependencies": {
     "@iconify-json/mdi": "^1.2.3",

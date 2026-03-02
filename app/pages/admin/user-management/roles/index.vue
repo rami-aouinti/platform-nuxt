@@ -99,7 +99,7 @@ const {
       : undefined
 
     const [payload, countPayload] = await Promise.all([
-      $fetch('/api/role', {
+      $fetch('/api/v1/admin/roles', {
         query: {
           search: search || undefined,
           limit: pageSize,
@@ -107,13 +107,13 @@ const {
           order,
         },
       }),
-      $fetch('/api/role/count'),
+      $fetch('/api/v1/admin/roles/count'),
     ])
 
     return { payload, countPayload }
   },
   saveEdit: async (row) => {
-    await $fetch(`/api/role/${encodeURIComponent(String(row.id ?? ''))}`, {
+    await $fetch(`/api/v1/admin/roles/${encodeURIComponent(String(row.id ?? ''))}`, {
       method: 'PATCH' as any,
       body: {
         name: String(row.name ?? '').trim(),
@@ -125,7 +125,7 @@ const {
     await loadRows()
   },
   deleteRow: async (row) => {
-    await $fetch(`/api/role/${encodeURIComponent(String(row.id ?? ''))}`, {
+    await $fetch(`/api/v1/admin/roles/${encodeURIComponent(String(row.id ?? ''))}`, {
       method: 'DELETE' as any,
     })
 
@@ -153,7 +153,7 @@ async function submitCreateRole() {
   creating.value = true
 
   try {
-    await $fetch('/api/role', {
+    await $fetch('/api/v1/admin/roles', {
       method: 'POST' as any,
       body: {
         name: createForm.name.trim(),

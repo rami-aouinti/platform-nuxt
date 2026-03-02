@@ -57,8 +57,8 @@ const selectedGroupId = ref('')
 
 const userGroupsRelation = useRelationField<UserGroup>({
   fieldName: 'userGroups',
-  fieldEndpoint: '/api/user_group',
-  parentEndpoint: '/api/user',
+  fieldEndpoint: '/api/v1/admin/user-groups',
+  parentEndpoint: '/api/v1/admin/users',
   relationEndpoint: relationId => `/api/user/${encodeURIComponent(String(selectedDetailUser.value?.id ?? ''))}/group/${encodeURIComponent(relationId)}`,
   optionsQuery: {
     limit: 200,
@@ -167,7 +167,7 @@ function normalize(payload: unknown): UserRecord[] {
 
 async function loadSchema() {
   try {
-    const payload = await $fetch(String(usersDescriptor.schemaEndpoint ?? '/api/user/schema'))
+    const payload = await $fetch(String(usersDescriptor.schemaEndpoint ?? '/api/v1/admin/users/schema'))
     userSchema.value = normalizeAdminSchema(payload)
   } catch {
     userSchema.value = null
@@ -322,8 +322,8 @@ const {
     const query = buildQuery(ctx)
     const [payload, countPayload] = await Promise.all([
       $fetch(resolveResourceEndpoint(typeof usersDescriptor.list === 'object' ? usersDescriptor.list.endpoint : usersDescriptor.list) as string, { query }),
-      $fetch(resolveResourceEndpoint(typeof usersDescriptor.list === 'object' ? usersDescriptor.list.countEndpoint : '/api/user/count') as string),
-      $fetch('/api/user/ids'),
+      $fetch(resolveResourceEndpoint(typeof usersDescriptor.list === 'object' ? usersDescriptor.list.countEndpoint : '/api/v1/admin/users/count') as string),
+      $fetch('/api/v1/admin/users/ids'),
     ])
 
     return { payload, countPayload }
@@ -472,7 +472,7 @@ async function submitCreateRow() {
   creating.value = true
 
   try {
-    await $fetch(String(resolveResourceEndpoint(usersDescriptor.create) ?? '/api/user'), {
+    await $fetch(String(resolveResourceEndpoint(usersDescriptor.create) ?? '/api/v1/admin/users'), {
       method: 'POST' as any,
       body: {
         username: createForm.username.trim(),

@@ -55,8 +55,8 @@ const selectedUserId = ref('')
 
 const groupUsersRelation = useRelationField<UserRecord>({
   fieldName: 'users',
-  fieldEndpoint: '/api/user',
-  parentEndpoint: '/api/user_group',
+  fieldEndpoint: '/api/v1/admin/users',
+  parentEndpoint: '/api/v1/admin/user-groups',
   relationEndpoint: relationId => `/api/user_group/${encodeURIComponent(String(selectedDetailGroup.value?.id ?? ''))}/user/${encodeURIComponent(relationId)}`,
   optionsQuery: {
     limit: 300,
@@ -222,7 +222,7 @@ async function submitCreateGroup() {
   creating.value = true
 
   try {
-    await $fetch('/api/user_group', {
+    await $fetch('/api/v1/admin/user-groups', {
       method: 'POST' as any,
       body: {
         name: createForm.name.trim(),
@@ -278,7 +278,7 @@ const {
   normalize,
   loadRows: async ({ page, pageSize, sortBy, search }) => {
     const [payload, countPayload] = await Promise.all([
-      $fetch('/api/user_group', {
+      $fetch('/api/v1/admin/user-groups', {
         query: {
           limit: pageSize,
           offset: Math.max(page - 1, 0) * pageSize,
@@ -288,8 +288,8 @@ const {
           search: search || undefined,
         },
       }),
-      $fetch('/api/user_group/count'),
-      $fetch('/api/user_group/ids'),
+      $fetch('/api/v1/admin/user-groups/count'),
+      $fetch('/api/v1/admin/user-groups/ids'),
     ])
 
     return { payload, countPayload }
