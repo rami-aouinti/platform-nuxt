@@ -1,7 +1,9 @@
 import { type Id, type PatchPayload, createAdminCrudService } from '../shared/index'
 import { httpPatch, httpPost } from '../../http/client'
 
-const JOB_APPLICATIONS_BASE_PATH = '/api/v1/admin/job-applications'
+import { adminEndpoints, withPathParams } from '../endpoints'
+
+const JOB_APPLICATIONS_BASE_PATH = adminEndpoints.jobApplications.base
 
 export interface JobApplication {
   id: Id
@@ -48,15 +50,15 @@ const jobApplicationsCrudService = createAdminCrudService<
 export const jobApplicationsService = {
   ...jobApplicationsCrudService,
   apply(jobOffer: Id, payload: ApplyToJobOfferRequest = {}) {
-    return httpPost<JobApplication, ApplyToJobOfferRequest>(`/api/v1/admin/job-offers/${jobOffer}/apply`, payload)
+    return httpPost<JobApplication, ApplyToJobOfferRequest>(withPathParams(adminEndpoints.jobOffers.apply, { id: jobOffer }), payload)
   },
   accept(id: Id) {
-    return httpPatch<JobApplication, Record<string, never>>(`${JOB_APPLICATIONS_BASE_PATH}/${id}/accept`, {})
+    return httpPatch<JobApplication, Record<string, never>>(withPathParams(adminEndpoints.jobApplications.accept, { id }), {})
   },
   reject(id: Id) {
-    return httpPatch<JobApplication, Record<string, never>>(`${JOB_APPLICATIONS_BASE_PATH}/${id}/reject`, {})
+    return httpPatch<JobApplication, Record<string, never>>(withPathParams(adminEndpoints.jobApplications.reject, { id }), {})
   },
   withdraw(id: Id) {
-    return httpPatch<JobApplication, Record<string, never>>(`${JOB_APPLICATIONS_BASE_PATH}/${id}/withdraw`, {})
+    return httpPatch<JobApplication, Record<string, never>>(withPathParams(adminEndpoints.jobApplications.withdraw, { id }), {})
   },
 }

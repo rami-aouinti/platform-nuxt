@@ -6,7 +6,9 @@ import {
   type BaseUpdateApiKeyRequest,
 } from './shared'
 
-const API_KEYS_V2_BASE_PATH = '/api/v1/admin/api-keys'
+import { adminEndpoints } from '../endpoints'
+
+const API_KEYS_V2_BASE_PATH = adminEndpoints.apiKeys.v2.base
 
 export type ApiKeyV2 = BaseApiKey
 

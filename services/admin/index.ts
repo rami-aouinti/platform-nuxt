@@ -14,3 +14,5 @@ export * from './roles/index'
 export * from './shared/index'
 export * from './user-groups/index'
 export * from './users/index'
+
+export * from './endpoints'
