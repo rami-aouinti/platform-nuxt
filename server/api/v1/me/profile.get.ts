@@ -1,4 +1,4 @@
-import { proxyAuthApiGet } from '../../../utils/auth-api-proxy'
+import { proxyAuthApiCanonical } from '../../../utils/canonical-endpoint-resolver'
 import {
   readProfileEndpointCache,
   writeProfileEndpointCache,
@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
     return cachedProfile
   }
 
-  const profile = await proxyAuthApiGet(event, '/api/v1/me/profile')
+  const profile = await proxyAuthApiCanonical(event, 'profile', 'GET')
   const normalizedProfile = normalizeProfilePayload(profile)
   await writeProfileEndpointCache(event, PROFILE_CACHE_KEY, normalizedProfile)
 

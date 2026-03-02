@@ -1,4 +1,4 @@
-import { proxyAuthApiWithPathFallback } from '../../../utils/proxy-auth-api-with-fallback'
+import { proxyAuthApiCanonical } from '../../../utils/canonical-endpoint-resolver'
 import {
   readProfileEndpointCache,
   writeProfileEndpointCache,
@@ -14,11 +14,7 @@ export default defineEventHandler(async (event) => {
     return cachedRoles
   }
 
-  const roles = await proxyAuthApiWithPathFallback(
-    event,
-    ['/api/v1/me/profile/roles', '/api/v1/profile/roles', '/api/profile/roles'],
-    'GET',
-  )
+  const roles = await proxyAuthApiCanonical(event, 'profileRoles', 'GET')
   const normalizedRoles = normalizeProfileRoles(roles)
   await writeProfileEndpointCache(event, ROLES_CACHE_KEY, normalizedRoles)
 

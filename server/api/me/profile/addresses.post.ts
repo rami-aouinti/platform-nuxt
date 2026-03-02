@@ -1,5 +1,6 @@
-import { proxyAuthApiRequest } from '../../../utils/auth-api-proxy'
+import { createProxyCollectionHandler } from '../../../utils/proxy-handler-factory'
 
-export default defineEventHandler(async (event) => {
-  return await proxyAuthApiRequest(event, '/api/v1/me/profile/addresses', 'POST')
+export default createProxyCollectionHandler({
+  upstreamPath: '/api/v1/me/profile/addresses',
+  method: 'POST',
 })
