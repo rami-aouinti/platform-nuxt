@@ -542,3 +542,17 @@ Source: scan automatique des chemins `app/**`, `services/**`, `server/api/**` + 
 - Routes serveur et services front actuellement référencés par l'inventaire: **conservés**.
 - Suppression automatique conditionnée à un inventaire vide de références en CI (`endpoint:inventory:check`).
 - Documentation nettoyée: ce document devient la source d'inventaire unique.
+
+## 6) Gouvernance explicite vs fallback (`server/api/v1/[...path].ts`)
+
+Les domaines critiques suivants sont désormais **first-class** et doivent être couverts par des handlers dédiés sous `server/api/v1/**` :
+
+- `tools` (`health`, `version`)
+- `localization`
+- `catalog`
+- `me/notifications`
+- `me/chat`
+- `me/companies`
+- `me/profile/*` (dont `companies`, `projects`, `configurations`, `password`)
+
+Le routeur catch-all `server/api/v1/[...path].ts` reste autorisé uniquement comme filet de sécurité pour les endpoints non encore explicitement implémentés. Un warning serveur est journalisé si le fallback est utilisé sur un domaine first-class.

@@ -4,6 +4,7 @@ import type { Component } from 'vue'
 import { markRaw } from 'vue'
 import { useAuthStore } from '~/stores/auth'
 import { useProfileCompaniesStore } from '~/stores/profileCompanies'
+import { apiEndpoints } from '~/services/api/endpoints'
 import imageKalVisualsSquare from '~/assets/img/kal-visuals-square.jpg'
 import imageMarie from '~/assets/img/marie.jpg'
 import imageIvanaSquare from '~/assets/img/ivana-square.jpg'
@@ -406,7 +407,7 @@ async function loadProfileDataIfNeeded() {
     }
 
     const socialResponse = await $fetch<{ items?: SocialAccount[] }>(
-      '/api/v1/me/social-accounts',
+      apiEndpoints.frontend.socialAccounts.base,
       {
         headers: auth.token
           ? { Authorization: `Bearer ${auth.token}` }
@@ -476,7 +477,7 @@ async function loadProjects() {
   try {
     const projectsResponse = await $fetch<
       Record<string, unknown>[] | { items?: Record<string, unknown>[] }
-    >('/api/v1/me/profile/projects', {
+    >(apiEndpoints.frontend.projects.base, {
       headers: auth.token
         ? { Authorization: `Bearer ${auth.token}` }
         : undefined,

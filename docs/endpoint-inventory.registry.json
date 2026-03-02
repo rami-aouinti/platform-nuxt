@@ -1050,6 +1050,13 @@
     "allowNonConvention": false
   },
   {
+    "endpoint": "/api/v1/catalog",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
     "endpoint": "/api/v1/chat",
     "status": "active",
     "decision": "Conservé",
@@ -1155,6 +1162,13 @@
     "allowNonConvention": false
   },
   {
+    "endpoint": "/api/v1/me/notifications",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
     "endpoint": "/api/v1/me/password",
     "status": "active",
     "decision": "Conservé",
@@ -1191,6 +1205,13 @@
   },
   {
     "endpoint": "/api/v1/me/profile/companies",
+    "status": "active",
+    "decision": "Conservé",
+    "replacement": null,
+    "allowNonConvention": false
+  },
+  {
+    "endpoint": "/api/v1/me/profile/configurations",
     "status": "active",
     "decision": "Conservé",
     "replacement": null,
