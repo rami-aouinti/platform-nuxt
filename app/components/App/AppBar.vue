@@ -317,6 +317,7 @@ watch(isAuthenticated, (value) => {
         class="opacity-80"
       />
       <v-menu
+        v-if="isAuthenticated"
         location="bottom"
         :offset="8"
         @update:model-value="(opened) => opened && handleNotificationMenuOpen()"
@@ -391,6 +392,7 @@ watch(isAuthenticated, (value) => {
         </v-card>
       </v-menu>
       <v-menu
+        v-if="isAuthenticated"
         location="bottom"
         :offset="8"
         @update:model-value="(opened) => opened && loadInboxConversations()"
