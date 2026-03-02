@@ -149,6 +149,26 @@ function reactionEmoji(reaction: string): string {
   return map[reaction] || '🙂'
 }
 
+function attachmentLabel(attachment: ChatMessage['attachments'][number]): string {
+  return attachment.name || attachment.url || 'Pièce jointe'
+}
+
+function isImageAttachment(attachment: ChatMessage['attachments'][number]): boolean {
+  const mime = attachment.mimeType || attachment.type || ''
+  if (mime.toLowerCase().startsWith('image/')) return true
+
+  return /\.(avif|bmp|gif|ico|jpe?g|png|svg|webp)$/i.test(attachment.url)
+}
+
+function attachmentIcon(attachment: ChatMessage['attachments'][number]): string {
+  if (isImageAttachment(attachment)) return 'mdi-image-outline'
+  const mime = (attachment.mimeType || attachment.type || '').toLowerCase()
+  if (mime.includes('pdf')) return 'mdi-file-pdf-box'
+  if (mime.includes('sheet') || mime.includes('excel') || mime.includes('csv')) return 'mdi-file-excel-outline'
+  if (mime.includes('word') || mime.includes('document')) return 'mdi-file-word-outline'
+  return 'mdi-paperclip'
+}
+
 function scrollToLatestMessage() {
   nextTick(() => {
     const container = messagesContainerRef.value
@@ -468,8 +488,8 @@ onMounted(async () => {
     </v-col>
 
     <v-col cols="12" md="8" lg="9">
-      <v-sheet class="d-flex flex-column h-100">
-        <div class="px-4 py-3 border-b d-flex align-center justify-space-between">
+      <v-sheet class="chat-thread d-flex flex-column h-100">
+        <div class="chat-thread-header px-4 py-3 border-b d-flex align-center justify-space-between">
           <div>
             <p class="text-subtitle-1 font-weight-bold mb-0">
               {{ conversationDisplayName(activeConversation) || 'Sélectionnez une conversation' }}
@@ -516,11 +536,11 @@ onMounted(async () => {
                 max-width="78%"
               >
                 <v-card-text class="py-2 px-3">
-                  <p class="text-body-2 mb-1">{{ message.content }}</p>
+                  <p v-if="message.content" class="text-body-2 mb-1">{{ message.content }}</p>
 
                   <div
                     v-if="message.attachments.length"
-                    class="d-flex flex-column ga-1 mb-2"
+                    class="d-flex flex-column ga-2 mb-2"
                   >
                     <a
                       v-for="attachment in message.attachments"
@@ -530,8 +550,24 @@ onMounted(async () => {
                       rel="noopener noreferrer"
                       class="text-decoration-none"
                     >
-                      <v-chip size="small" variant="tonal" prepend-icon="mdi-paperclip">
-                        {{ attachment.name || attachment.url }}
+                      <div v-if="isImageAttachment(attachment)" class="message-image-preview">
+                        <img
+                          :src="attachment.url"
+                          :alt="attachmentLabel(attachment)"
+                          loading="lazy"
+                        >
+                        <div class="message-image-label text-caption">
+                          <v-icon size="14" icon="mdi-image-outline" class="me-1" />
+                          {{ attachmentLabel(attachment) }}
+                        </div>
+                      </div>
+                      <v-chip
+                        v-else
+                        size="small"
+                        variant="tonal"
+                        :prepend-icon="attachmentIcon(attachment)"
+                      >
+                        {{ attachmentLabel(attachment) }}
                       </v-chip>
                     </a>
                   </div>
@@ -613,7 +649,7 @@ onMounted(async () => {
 
         <v-divider />
 
-        <div class="pa-3 d-flex flex-column ga-2">
+        <div class="chat-composer pa-3 d-flex flex-column ga-2">
           <div v-if="selectedFiles.length" class="d-flex flex-wrap ga-2">
             <v-chip
               v-for="(file, index) in selectedFiles"
@@ -697,7 +733,43 @@ onMounted(async () => {
     radial-gradient(circle at 80% 80%, rgba(var(--v-theme-secondary), 0.06), transparent 40%);
 }
 
+.chat-thread {
+  background: linear-gradient(180deg, rgba(var(--v-theme-surface), 0.95), rgba(var(--v-theme-surface), 1));
+}
+
+.chat-thread-header {
+  backdrop-filter: blur(6px);
+  background: rgba(var(--v-theme-surface), 0.9);
+}
+
+.chat-composer {
+  background: rgba(var(--v-theme-surface), 0.96);
+}
+
 .message-bubble {
-  backdrop-filter: blur(2px);
+  backdrop-filter: blur(3px);
+  box-shadow: 0 8px 22px rgba(5, 8, 15, 0.1);
+}
+
+.message-image-preview {
+  width: min(220px, 60vw);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.16);
+  background: rgba(var(--v-theme-surface), 0.85);
+}
+
+.message-image-preview img {
+  display: block;
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+}
+
+.message-image-label {
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  color: rgba(var(--v-theme-on-surface), 0.76);
 }
 </style>
