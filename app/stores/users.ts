@@ -6,6 +6,8 @@ import { toUiErrorMessage } from '~/utils/errors/toUiErrorMessage'
 
 
 export const useUsersStore = defineStore('users', () => {
+  const t = (key: string, params?: Record<string, unknown>) => String(useNuxtApp().$i18n.t(key, params))
+
   const api = useUsersApi()
 
   const rows = ref<CrmUser[]>([])
@@ -81,7 +83,7 @@ export const useUsersStore = defineStore('users', () => {
     try {
       const created = await api.create(payload)
       mergeRow(created)
-      Notify.success('Utilisateur créé.')
+      Notify.success(t('notifications.users.created'))
       await refreshRowsSafe()
       return created
     } catch (errorValue) {
@@ -105,7 +107,7 @@ export const useUsersStore = defineStore('users', () => {
     try {
       const updated = await api.update(id, payload)
       mergeRow(updated)
-      Notify.success('Utilisateur mis à jour.')
+      Notify.success(t('notifications.users.updated'))
       await refreshRowsSafe()
       return updated
     } catch (errorValue) {
@@ -131,7 +133,7 @@ export const useUsersStore = defineStore('users', () => {
     try {
       const patched = await api.patch(id, payload)
       mergeRow(patched)
-      Notify.success('Utilisateur mis à jour.')
+      Notify.success(t('notifications.users.updated'))
       await refreshRowsSafe()
       return patched
     } catch (errorValue) {
@@ -156,7 +158,7 @@ export const useUsersStore = defineStore('users', () => {
 
     try {
       await api.delete(id)
-      Notify.success('Utilisateur supprimé.')
+      Notify.success(t('notifications.users.deleted'))
       await refreshRowsSafe()
     } catch (errorValue) {
       rows.value = previousRows

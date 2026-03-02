@@ -228,14 +228,14 @@ async function runAction(row: TaskRequestRow, action: TaskRequestAction) {
     if (action === 'approve') await crmApi.approveTaskRequest(row.id)
     if (action === 'reject') await crmApi.rejectTaskRequest(row.id)
     if (action === 'cancel') await crmApi.cancelTaskRequest(row.id)
-    Notify.success(`Demande ${actionLabel(action)}.`)
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.requestActionSimple', { action: actionLabel(action) })))
   } catch (errorValue) {
     row.status = previous
     if (isForbiddenError(errorValue)) {
       Notify.error(PERMISSION_MESSAGES.forbiddenTaskRequestStatus)
       return
     }
-    Notify.error('Le traitement de la demande a échoué.')
+    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.requestProcessingFailed')))
   }
 }
 

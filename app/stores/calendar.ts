@@ -6,6 +6,8 @@ import { toUiErrorMessage } from '~/utils/errors/toUiErrorMessage'
 
 
 export const useCalendarStore = defineStore('calendar', () => {
+  const t = (key: string, params?: Record<string, unknown>) => String(useNuxtApp().$i18n.t(key, params))
+
   const api = useCalendarApi()
 
   const rows = ref<CalendarEvent[]>([])
@@ -60,7 +62,7 @@ export const useCalendarStore = defineStore('calendar', () => {
     try {
       const created = await api.create(payload)
       mergeRow(created)
-      Notify.success('Événement créé avec succès.')
+      Notify.success(t('notifications.calendar.created'))
       await fetchRows()
       return created
     } catch (errorValue) {
@@ -78,7 +80,7 @@ export const useCalendarStore = defineStore('calendar', () => {
     try {
       const updated = await api.update(id, payload)
       mergeRow(updated)
-      Notify.success('Événement mis à jour.')
+      Notify.success(t('notifications.calendar.updated'))
       await fetchRows()
       return updated
     } catch (errorValue) {
@@ -97,7 +99,7 @@ export const useCalendarStore = defineStore('calendar', () => {
     try {
       const updated = await api.patch(id, payload)
       mergeRow(updated)
-      Notify.success('Événement mis à jour.')
+      Notify.success(t('notifications.calendar.updated'))
       await fetchRows()
       return updated
     } catch (errorValue) {
@@ -116,7 +118,7 @@ export const useCalendarStore = defineStore('calendar', () => {
       await api.delete(id)
       rows.value = rows.value.filter((row) => row.id !== id)
       if (item.value?.id === id) item.value = null
-      Notify.success('Événement supprimé.')
+      Notify.success(t('notifications.calendar.deleted'))
       await fetchRows()
     } catch (errorValue) {
       error.value = toUiErrorMessage(errorValue)

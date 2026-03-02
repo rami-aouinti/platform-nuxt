@@ -95,7 +95,7 @@ async function loadCompanies() {
 
 async function createCompany() {
   if (!companyForm.name.trim()) {
-    Notify.error('Le nom de la company est requis.')
+    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.companyNameRequired')))
     return
   }
 
@@ -109,7 +109,7 @@ async function createCompany() {
     companyForm.name = ''
     companyForm.description = ''
     createDialog.value = false
-    Notify.success('Company créée.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.companyCreated')))
     await loadCompanies()
   } catch (error) {
     Notify.error(getErrorMessage(error, 'Erreur création company.'))

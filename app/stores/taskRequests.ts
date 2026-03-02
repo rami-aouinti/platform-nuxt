@@ -19,6 +19,8 @@ import {
 } from '~/types/crm'
 
 export const useTaskRequestsStore = defineStore('task-requests', () => {
+  const t = (key: string, params?: Record<string, unknown>) => String(useNuxtApp().$i18n.t(key, params))
+
   const api = useTaskRequestsApi()
 
   const rows = ref<TaskRequest[]>([])
@@ -82,7 +84,7 @@ export const useTaskRequestsStore = defineStore('task-requests', () => {
     try {
       const created = await api.create(payload)
       mergeEntityRow(rows, item, created)
-      Notify.success('Demande de tâche créée.')
+      Notify.success(t('notifications.taskRequests.created'))
       await refreshRowsSafe()
       return created
     } catch (errorValue) {
@@ -105,7 +107,7 @@ export const useTaskRequestsStore = defineStore('task-requests', () => {
     try {
       const updated = await api.update(id, payload)
       mergeEntityRow(rows, item, updated)
-      Notify.success('Demande de tâche mise à jour.')
+      Notify.success(t('notifications.taskRequests.updated'))
       await refreshRowsSafe()
       return updated
     } catch (errorValue) {
@@ -129,7 +131,7 @@ export const useTaskRequestsStore = defineStore('task-requests', () => {
     try {
       const patched = await api.patch(id, payload)
       mergeEntityRow(rows, item, patched)
-      Notify.success('Demande de tâche mise à jour.')
+      Notify.success(t('notifications.taskRequests.updated'))
       await refreshRowsSafe()
       return patched
     } catch (errorValue) {
@@ -152,7 +154,7 @@ export const useTaskRequestsStore = defineStore('task-requests', () => {
 
     try {
       await api.delete(id)
-      Notify.success('Demande de tâche supprimée.')
+      Notify.success(t('notifications.taskRequests.deleted'))
       await refreshRowsSafe()
     } catch (errorValue) {
       restoreEntitySnapshot(rows, item, snapshot)
@@ -198,9 +200,9 @@ export const useTaskRequestsStore = defineStore('task-requests', () => {
   function setSort(field: string, direction: 'asc' | 'desc') { sort.value = { field, direction } }
   function setSearch(value: string) { search.value = value; pagination.value.page = 1 }
 
-  const approve = (id: Id) => runWorkflowAction(id, TaskRequestStatus.APPROVED, api.approve, 'Demande approuvée.')
-  const reject = (id: Id) => runWorkflowAction(id, TaskRequestStatus.REJECTED, api.reject, 'Demande rejetée.')
-  const cancel = (id: Id) => runWorkflowAction(id, TaskRequestStatus.CANCELED, api.cancel, 'Demande annulée.')
+  const approve = (id: Id) => runWorkflowAction(id, TaskRequestStatus.APPROVED, api.approve, t('notifications.taskRequests.approved'))
+  const reject = (id: Id) => runWorkflowAction(id, TaskRequestStatus.REJECTED, api.reject, t('notifications.taskRequests.rejected'))
+  const cancel = (id: Id) => runWorkflowAction(id, TaskRequestStatus.CANCELED, api.cancel, t('notifications.taskRequests.canceled'))
 
   return {
     rows,

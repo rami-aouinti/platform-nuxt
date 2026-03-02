@@ -56,7 +56,7 @@ async function loadRows() {
 async function withdraw(offerId: string) {
   const item = rows.value.find((row) => String(row.id) === offerId)
   if (!item || !canWithdrawApplication(item)) {
-    Notify.error('Seules les candidatures en attente peuvent être retirées.')
+    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.onlyPendingWithdraw')))
     return
   }
 
@@ -64,7 +64,7 @@ async function withdraw(offerId: string) {
 
   try {
     await applicationStore.withdraw(offerId)
-    Notify.success('Candidature retirée.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.applicationWithdrawn')))
     await loadRows()
   } catch (errorValue) {
     Notify.error(toUiErrorMessage(errorValue))

@@ -177,7 +177,7 @@ async function createTask() {
   }
 
   if (!taskForm.title.trim()) {
-    Notify.error('Le titre de la task est requis.')
+    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.taskTitleRequired')))
     return
   }
 
@@ -195,7 +195,7 @@ async function createTask() {
     taskForm.description = ''
     taskForm.priority = 'medium'
     createDialog.value = false
-    Notify.success('Task créée.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.taskCreated')))
     await loadData()
   } catch (error) {
     Notify.error(getErrorMessage(error, 'Erreur de création task.'))

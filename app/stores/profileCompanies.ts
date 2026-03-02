@@ -31,6 +31,8 @@ const fallbackSchema: ProfileCompanySchema = {
 }
 
 export const useProfileCompaniesStore = defineStore('profileCompanies', () => {
+  const t = (key: string, params?: Record<string, unknown>) => String(useNuxtApp().$i18n.t(key, params))
+
   const api = useProfileCompaniesApi()
 
   const list = ref<ProfileCompany[]>([])
@@ -55,7 +57,7 @@ export const useProfileCompaniesStore = defineStore('profileCompanies', () => {
       list.value = response.data
       return list.value
     } catch (errorValue) {
-      setErrorMessage('Impossible de charger les sociétés du profil.')
+      setErrorMessage(t('notifications.profileCompanies.loadListError'))
       throw errorValue
     } finally {
       loading.value = false
@@ -75,7 +77,7 @@ export const useProfileCompaniesStore = defineStore('profileCompanies', () => {
       }
       return company
     } catch (errorValue) {
-      setErrorMessage('Impossible de charger la société demandée.')
+      setErrorMessage(t('notifications.profileCompanies.loadItemError'))
       throw errorValue
     } finally {
       loading.value = false
@@ -90,10 +92,10 @@ export const useProfileCompaniesStore = defineStore('profileCompanies', () => {
       const created = await api.create(payload)
       list.value = [created, ...list.value]
       current.value = created
-      Notify.success('Société créée avec succès.')
+      Notify.success(t('notifications.profileCompanies.created'))
       return created
     } catch (errorValue) {
-      setErrorMessage('La création de la société a échoué.')
+      setErrorMessage(t('notifications.profileCompanies.createError'))
       Notify.error(error.value)
       throw errorValue
     } finally {
@@ -109,10 +111,10 @@ export const useProfileCompaniesStore = defineStore('profileCompanies', () => {
       const updated = await api.update(id, payload)
       list.value = list.value.map(item => item.id === id ? updated : item)
       current.value = updated
-      Notify.success('Société mise à jour.')
+      Notify.success(t('notifications.profileCompanies.updated'))
       return updated
     } catch (errorValue) {
-      setErrorMessage('La mise à jour de la société a échoué.')
+      setErrorMessage(t('notifications.profileCompanies.updateError'))
       Notify.error(error.value)
       throw errorValue
     } finally {
@@ -128,10 +130,10 @@ export const useProfileCompaniesStore = defineStore('profileCompanies', () => {
       const updated = await api.patch(id, payload)
       list.value = list.value.map(item => item.id === id ? updated : item)
       current.value = updated
-      Notify.success('Société mise à jour.')
+      Notify.success(t('notifications.profileCompanies.updated'))
       return updated
     } catch (errorValue) {
-      setErrorMessage('La mise à jour partielle de la société a échoué.')
+      setErrorMessage(t('notifications.profileCompanies.patchError'))
       Notify.error(error.value)
       throw errorValue
     } finally {
@@ -149,9 +151,9 @@ export const useProfileCompaniesStore = defineStore('profileCompanies', () => {
       if (current.value?.id === id) {
         current.value = null
       }
-      Notify.success('Société supprimée.')
+      Notify.success(t('notifications.profileCompanies.deleted'))
     } catch (errorValue) {
-      setErrorMessage('La suppression de la société a échoué.')
+      setErrorMessage(t('notifications.profileCompanies.deleteError'))
       Notify.error(error.value)
       throw errorValue
     } finally {
@@ -168,7 +170,7 @@ export const useProfileCompaniesStore = defineStore('profileCompanies', () => {
       usesSchemaFallback.value = false
       return schema.value
     } catch {
-      schemaError.value = 'Schéma indisponible: utilisation du formulaire minimal.'
+      schemaError.value = t('notifications.profileCompanies.schemaFallback')
       schema.value = fallbackSchema
       usesSchemaFallback.value = true
       return schema.value

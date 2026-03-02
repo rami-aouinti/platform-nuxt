@@ -177,7 +177,7 @@ async function attachUser() {
 
   try {
     await groupUsersRelation.addRelation(selectedUserId.value)
-    Notify.success('Utilisateur attaché avec succès.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.userAttachedSuccess')))
     selectedUserId.value = ''
     await loadGroupUsers(selectedDetailGroup.value.id)
   } catch (errorValue) {
@@ -215,7 +215,7 @@ function formatUserTitle(user: UserRecord): string {
 
 async function submitCreateGroup() {
   if (!createForm.name.trim()) {
-    Notify.error('Le nom du groupe est requis.')
+    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.groupNameRequired')))
     return
   }
 
@@ -229,7 +229,7 @@ async function submitCreateGroup() {
       },
     })
 
-    Notify.success('Groupe créé.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.groupCreated')))
     createOpen.value = false
     await loadRows()
   } catch (errorValue) {
@@ -248,7 +248,7 @@ async function detachUser(userId: string) {
 
   try {
     await groupUsersRelation.removeRelation(userId)
-    Notify.success('Utilisateur retiré du groupe.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.userRemovedFromGroup')))
     await loadGroupUsers(selectedDetailGroup.value.id)
   } catch (errorValue) {
     Notify.error(
@@ -303,7 +303,7 @@ const {
           body: { name: row.name },
         },
       )
-      Notify.success('Action réussie : groupe mis à jour.')
+      Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.groupUpdatedActionSuccess')))
       track({
         name: 'admin.user-groups.patch',
         payload: {
@@ -326,7 +326,7 @@ const {
           method: 'DELETE' as any,
         },
       )
-      Notify.success('Action réussie : groupe supprimé.')
+      Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.groupDeletedActionSuccess')))
       track({
         name: 'admin.user-groups.delete',
         payload: {

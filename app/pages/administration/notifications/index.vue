@@ -59,7 +59,7 @@ const {
 })
 
 function createRow() {
-  Notify.info('TODO: brancher l’envoi d’une notification.')
+  Notify.info(String(useNuxtApp().$i18n.t('notifications.ui.todoNotificationSend')))
 }
 
 onMounted(loadRows)

@@ -2,28 +2,48 @@ import { useNotificationStore } from '~/stores/notification'
 
 export type CrudAction = 'fetch' | 'create' | 'update' | 'patch' | 'remove'
 
+function translate(key: string, params?: Record<string, unknown>) {
+  return String(useNuxtApp().$i18n.t(key, params))
+}
+
 const actionSuccessMessage: Record<CrudAction, string> = {
-  fetch: 'chargée',
-  create: 'créée',
-  update: 'mise à jour',
-  patch: 'modifiée',
-  remove: 'supprimée',
+  fetch: 'notifications.actions.fetch',
+  create: 'notifications.actions.create',
+  update: 'notifications.actions.update',
+  patch: 'notifications.actions.patch',
+  remove: 'notifications.actions.remove',
 }
 
 export function getErrorMessage(error: unknown) {
   if (error instanceof Error) return error.message
   if (typeof error === 'string') return error
-  return 'Une erreur est survenue.'
+  return translate('notifications.errorFallback')
 }
 
 export function notifyCrudSuccess(entityLabel: string, action: CrudAction) {
-  useNotificationStore().addNotification(`${entityLabel} ${actionSuccessMessage[action]} avec succès.`, 'success')
+  useNotificationStore().addNotification(
+    translate('notifications.crudSuccess', {
+      entity: entityLabel,
+      action: translate(actionSuccessMessage[action]),
+    }),
+    'success',
+  )
 }
 
 export function notifyCrudError(entityLabel: string, action: CrudAction, error: unknown) {
-  useNotificationStore().addNotification(`Échec ${entityLabel.toLowerCase()} (${action}) : ${getErrorMessage(error)}`, 'error')
+  useNotificationStore().addNotification(
+    translate('notifications.crudError', {
+      entity: entityLabel.toLowerCase(),
+      action,
+      error: getErrorMessage(error),
+    }),
+    'error',
+  )
 }
 
 export function notifyFormValidationError(entityLabel: string) {
-  useNotificationStore().addNotification(`${entityLabel} contient des erreurs. Merci de les corriger.`, 'error')
+  useNotificationStore().addNotification(
+    translate('notifications.formValidationError', { entity: entityLabel }),
+    'error',
+  )
 }

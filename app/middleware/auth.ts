@@ -7,7 +7,7 @@ export default defineNuxtRouteMiddleware(() => {
   const { isAuthenticated } = storeToRefs(authStore)
 
   if (!isAuthenticated.value) {
-    Notify.error('You need to log in to view this page')
+    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.authRequired')))
     return navigateTo('/login')
   }
 })

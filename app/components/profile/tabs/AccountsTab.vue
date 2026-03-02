@@ -65,7 +65,7 @@ async function unlinkProvider(provider: string) {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${authStore.token}` },
     })
-    Notify.success(`${provider} déconnecté.`)
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.providerDisconnected', { provider })))
     await loadAccounts()
   } catch (error) {
     Notify.error(error)
@@ -91,7 +91,7 @@ async function linkProvider() {
       },
     })
     verificationCode.value = ''
-    Notify.success('Compte lié avec succès.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.accountLinked')))
     await loadAccounts()
   } catch (error) {
     Notify.error(error)

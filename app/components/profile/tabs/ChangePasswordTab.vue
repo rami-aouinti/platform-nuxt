@@ -54,7 +54,7 @@ async function updatePassword() {
     form.currentPassword = ''
     form.newPassword = ''
     form.confirmPassword = ''
-    Notify.success('Mot de passe mis à jour.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.passwordUpdated')))
   } catch (error) {
     Notify.error(error)
   } finally {

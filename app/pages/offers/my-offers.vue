@@ -103,7 +103,7 @@ async function loadRows() {
 
 async function saveOffer() {
   if (!editing.value.id) {
-    Notify.error('Offre invalide.')
+    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.invalidOffer')))
     return
   }
 
@@ -116,7 +116,7 @@ async function saveOffer() {
       company: editing.value.company,
       status: editing.value.status,
     })
-    Notify.success('Offre mise à jour.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.offerUpdated')))
     editDialog.value = false
     await loadRows()
   } catch (errorValue) {
@@ -145,7 +145,7 @@ async function deleteOffer(offerId: string) {
 
   try {
     await offerStore.remove(offerId)
-    Notify.success('Offre supprimée.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.offerDeleted')))
     await loadRows()
   } catch (errorValue) {
     Notify.error(toUiErrorMessage(errorValue))
@@ -164,7 +164,7 @@ async function decideApplication(
   try {
     const result = await applicationStore.transition(id, action)
     if (!result) {
-      Notify.error('Transition de statut non autorisée.')
+      Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.statusTransitionForbidden')))
       return
     }
 

@@ -302,7 +302,7 @@ async function createRequest() {
     })
     createDialog.value = false
     resetRequestForm()
-    Notify.success('Request créée.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.requestCreated')))
     await loadData()
   } catch (error) {
     Notify.error(getErrorMessage(error, 'Erreur de création de request.'))
@@ -343,7 +343,7 @@ async function updateRequest() {
     editDialog.value = false
     editedRequest.value = null
     resetRequestForm()
-    Notify.success('Request mise à jour.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.requestUpdated')))
     await loadData()
   } catch (error) {
     Notify.error(getErrorMessage(error, 'Erreur mise à jour request.'))
@@ -361,7 +361,7 @@ async function removeRequest(requestId: string) {
   requestLoading.value = true
   try {
     await crmApi.deleteTaskRequest(requestId)
-    Notify.success('Request supprimée.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.requestDeleted')))
     await loadData()
   } catch (error) {
     Notify.error(getErrorMessage(error, 'Erreur suppression request.'))
@@ -385,11 +385,11 @@ async function changeRequestStatus(
     if (status === 'rejected') await crmApi.rejectTaskRequest(request.id)
     if (status === 'cancelled') await crmApi.cancelTaskRequest(request.id)
     if (status === 'pending') {
-      Notify.info('Le statut pending est un état initial, aucun endpoint dédié.')
+      Notify.info(String(useNuxtApp().$i18n.t('notifications.ui.pendingStatusInfo')))
       requestLoading.value = false
       return
     }
-    Notify.success(`Request ${status}.`)
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.requestStatusSimple', { status })))
     await loadData()
   } catch (error) {
     Notify.error(getErrorMessage(error, 'Erreur changement statut request.'))
@@ -420,7 +420,7 @@ async function updateTask() {
   }
 
   if (!taskForm.title.trim()) {
-    Notify.error('Le titre de la task est requis.')
+    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.taskTitleRequired')))
     return
   }
 
@@ -433,7 +433,7 @@ async function updateTask() {
       dueDate: taskForm.dueDate || undefined,
     })
     taskEditDialog.value = false
-    Notify.success('Task mise à jour.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.taskUpdated')))
     await loadData()
   } catch (error) {
     Notify.error(getErrorMessage(error, 'Erreur de mise à jour task.'))
@@ -453,7 +453,7 @@ async function deleteTask() {
   taskLoading.value = true
   try {
     await crmApi.deleteTask(task.value.id)
-    Notify.success('Task supprimée.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.taskDeleted')))
     await navigateTo(projectLink.value)
   } catch (error) {
     Notify.error(getErrorMessage(error, 'Erreur de suppression task.'))
@@ -476,7 +476,7 @@ async function updateTaskStatus(action: 'start' | 'complete' | 'archive' | 'reop
     if (action === 'complete') await crmApi.completeTask(task.value.id)
     if (action === 'archive') await crmApi.archiveTask(task.value.id)
     if (action === 'reopen') await crmApi.reopenTask(task.value.id)
-    Notify.success('Statut de la task mis à jour.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.taskStatusUpdated')))
     await loadData()
   } catch (error) {
     Notify.error(getErrorMessage(error, 'Erreur changement statut task.'))

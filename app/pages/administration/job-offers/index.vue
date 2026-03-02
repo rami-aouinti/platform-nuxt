@@ -121,7 +121,7 @@ async function loadRows() {
 
 async function saveOffer() {
   if (!editing.value.title || !editing.value.slug || !editing.value.company) {
-    Notify.error('Titre, slug et entreprise sont obligatoires.')
+    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.offerFieldsRequired')))
     return
   }
 
@@ -137,7 +137,7 @@ async function saveOffer() {
         company: editing.value.company,
         status: editing.value.status,
       })
-      Notify.success('Offre mise à jour.')
+      Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.offerUpdated')))
     } else {
       await jobOffersService.create({
         title: editing.value.title,
@@ -146,7 +146,7 @@ async function saveOffer() {
         company: editing.value.company,
         status: editing.value.status,
       })
-      Notify.success('Offre créée.')
+      Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.offerCreated')))
     }
 
     editDialog.value = false
@@ -172,7 +172,7 @@ async function deleteOffer(row: Record<string, unknown>) {
 
   try {
     await jobOffersService.remove(String(row.id))
-    Notify.success('Offre supprimée.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.offerDeleted')))
     await loadRows()
   } catch (errorValue) {
     Notify.error(toUiErrorMessage(errorValue))

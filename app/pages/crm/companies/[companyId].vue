@@ -246,7 +246,7 @@ async function createProject() {
   }
 
   if (!projectForm.name.trim()) {
-    Notify.error('Le nom du projet est requis.')
+    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.projectNameRequired')))
     return
   }
 
@@ -261,7 +261,7 @@ async function createProject() {
     projectForm.name = ''
     projectForm.description = ''
     createDialog.value = false
-    Notify.success('Projet créé.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.projectCreated')))
     await loadData()
   } catch (error) {
     Notify.error(getErrorMessage(error, 'Erreur de création du projet.'))
@@ -276,22 +276,22 @@ function openProject(projectId: string) {
 
 async function createSprint() {
   if (!sprintForm.name.trim()) {
-    Notify.error('Le nom du sprint est requis.')
+    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.sprintNameRequired')))
     return
   }
 
   if (!sprintForm.company) {
-    Notify.error('Veuillez sélectionner une company.')
+    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.selectCompany')))
     return
   }
 
   if (!sprintForm.startDate || !sprintForm.endDate) {
-    Notify.error('Les dates de début et de fin sont requises.')
+    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.sprintDatesRequired')))
     return
   }
 
   if (new Date(sprintForm.endDate) < new Date(sprintForm.startDate)) {
-    Notify.error('La date de fin doit être postérieure à la date de début.')
+    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.sprintEndAfterStart')))
     return
   }
 

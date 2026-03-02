@@ -74,7 +74,7 @@ async function saveSettings() {
           headers: { Authorization: `Bearer ${authStore.token}` },
           body: { items: rows.value },
         })
-        Notify.success('Préférences de notification mises à jour.')
+        Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.notificationPreferencesUpdated')))
         return
       } catch {
         continue

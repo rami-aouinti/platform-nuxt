@@ -143,7 +143,7 @@ async function saveProfile() {
       },
     })
 
-    Notify.success('Profil utilisateur mis à jour.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.userProfileUpdated')))
     await loadUserData()
   } catch (error) {
     Notify.error(toUiErrorMessage(error))
@@ -184,7 +184,7 @@ async function attachGroup() {
   }
 
   if (!canManageGroups.value) {
-    Notify.error('Action réservée aux utilisateurs ROLE_ROOT.')
+    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.rootOnlyAction')))
     return
   }
 
@@ -193,7 +193,7 @@ async function attachGroup() {
   try {
     await userGroupsRelation.addRelation(groupId)
 
-    Notify.success('Groupe attaché à l’utilisateur.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.groupAttachedUser')))
     selectedGroupId.value = ''
     await loadUserData()
   } catch (error) {
@@ -205,7 +205,7 @@ async function attachGroup() {
 
 async function detachGroup(groupId: string) {
   if (!canManageGroups.value) {
-    Notify.error('Action réservée aux utilisateurs ROLE_ROOT.')
+    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.rootOnlyAction')))
     return
   }
 
@@ -214,7 +214,7 @@ async function detachGroup(groupId: string) {
   try {
     await userGroupsRelation.removeRelation(groupId)
 
-    Notify.success('Groupe retiré de l’utilisateur.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.groupDetachedUser')))
     await loadUserData()
   } catch (error) {
     Notify.error(toUiErrorMessage(error))

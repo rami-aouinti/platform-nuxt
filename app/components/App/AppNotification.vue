@@ -27,7 +27,7 @@ async function emptyNotifications() {
 
   const countBeforeReset = notifications.value.length
   notificationStore.$reset()
-  Notify.success('Action réussie : notifications marquées comme lues.')
+  Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.notificationsMarkedRead')))
   track({
     name: 'admin.notifications.read-all',
     payload: {

@@ -45,7 +45,7 @@ function createRequest(payload: { taskId: string; reason: string; type: TaskRequ
     },
     ...myRequests.value,
   ]
-  Notify.success('Demande créée côté backend.')
+  Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.requestCreatedBackend')))
 }
 
 async function runAction(row: TaskRequestView, action: 'approve' | 'reject' | 'cancel') {
@@ -66,7 +66,7 @@ async function runAction(row: TaskRequestView, action: 'approve' | 'reject' | 'c
 
   myRequests.value = myRequests.value.map((item) => (item.id === row.id ? { ...item, status: nextStatus } : item))
   reviewRequests.value = reviewRequests.value.map((item) => (item.id === row.id ? { ...item, status: nextStatus } : item))
-  Notify.success(`Demande ${action === 'approve' ? 'approuvée' : action === 'reject' ? 'rejetée' : 'annulée'} côté backend.`)
+  Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.requestActionBackend', { action: action === 'approve' ? useNuxtApp().$i18n.t('notifications.ui.requestActionApproved') : action === 'reject' ? useNuxtApp().$i18n.t('notifications.ui.requestActionRejected') : useNuxtApp().$i18n.t('notifications.ui.requestActionCanceled') })))
 }
 
 onMounted(() => load('success'))

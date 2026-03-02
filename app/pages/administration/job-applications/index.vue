@@ -115,12 +115,12 @@ async function loadRows() {
 
 async function applyToOffer() {
   if (!canApply.value) {
-    Notify.error('Action réservée aux candidats.')
+    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.candidateOnlyAction')))
     return
   }
 
   if (!applyOfferId.value.trim()) {
-    Notify.error('ID offre obligatoire.')
+    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.offerIdRequired')))
     return
   }
 
@@ -130,7 +130,7 @@ async function applyToOffer() {
     await jobApplicationsService.apply(applyOfferId.value.trim(), {
       coverLetter: applyCoverLetter.value.trim() || undefined,
     })
-    Notify.success('Candidature envoyée.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.applicationSent')))
     applyDialog.value = false
     applyOfferId.value = ''
     applyCoverLetter.value = ''

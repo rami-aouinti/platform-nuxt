@@ -13,6 +13,8 @@ import {
 import { TaskStatus, type CreateTaskPayload, type PatchTaskPayload, type Task, type UpdateTaskPayload } from '~/types/crm'
 
 export const useTasksStore = defineStore('tasks', () => {
+  const t = (key: string, params?: Record<string, unknown>) => String(useNuxtApp().$i18n.t(key, params))
+
   const api = useTasksApi()
 
   const rows = ref<Task[]>([])
@@ -75,7 +77,7 @@ export const useTasksStore = defineStore('tasks', () => {
     try {
       const created = await api.create(payload)
       mergeEntityRow(rows, item, created)
-      Notify.success('Tâche créée avec succès.')
+      Notify.success(t('notifications.tasks.created'))
       await refreshRowsSafe()
       return created
     } catch (errorValue) {
@@ -98,7 +100,7 @@ export const useTasksStore = defineStore('tasks', () => {
     try {
       const updated = await api.update(id, payload)
       mergeEntityRow(rows, item, updated)
-      Notify.success('Tâche mise à jour.')
+      Notify.success(t('notifications.tasks.updated'))
       await refreshRowsSafe()
       return updated
     } catch (errorValue) {
@@ -122,7 +124,7 @@ export const useTasksStore = defineStore('tasks', () => {
     try {
       const patched = await api.patch(id, payload)
       mergeEntityRow(rows, item, patched)
-      Notify.success('Tâche mise à jour.')
+      Notify.success(t('notifications.tasks.updated'))
       await refreshRowsSafe()
       return patched
     } catch (errorValue) {
@@ -145,7 +147,7 @@ export const useTasksStore = defineStore('tasks', () => {
 
     try {
       await api.delete(id)
-      Notify.success('Tâche supprimée.')
+      Notify.success(t('notifications.tasks.deleted'))
       await refreshRowsSafe()
     } catch (errorValue) {
       restoreEntitySnapshot(rows, item, snapshot)
@@ -191,10 +193,10 @@ export const useTasksStore = defineStore('tasks', () => {
   function setSort(field: string, direction: 'asc' | 'desc') { sort.value = { field, direction } }
   function setSearch(value: string) { search.value = value; pagination.value.page = 1 }
 
-  const start = (id: Id) => runWorkflowAction(id, TaskStatus.IN_PROGRESS, api.start, 'Tâche démarrée.')
-  const complete = (id: Id) => runWorkflowAction(id, TaskStatus.COMPLETED, api.complete, 'Tâche terminée.')
-  const archive = (id: Id) => runWorkflowAction(id, TaskStatus.ARCHIVED, api.archive, 'Tâche archivée.')
-  const reopen = (id: Id) => runWorkflowAction(id, TaskStatus.TODO, api.reopen, 'Tâche rouverte.')
+  const start = (id: Id) => runWorkflowAction(id, TaskStatus.IN_PROGRESS, api.start, t('notifications.tasks.started'))
+  const complete = (id: Id) => runWorkflowAction(id, TaskStatus.COMPLETED, api.complete, t('notifications.tasks.completed'))
+  const archive = (id: Id) => runWorkflowAction(id, TaskStatus.ARCHIVED, api.archive, t('notifications.tasks.archived'))
+  const reopen = (id: Id) => runWorkflowAction(id, TaskStatus.TODO, api.reopen, t('notifications.tasks.reopened'))
 
   return {
     rows,

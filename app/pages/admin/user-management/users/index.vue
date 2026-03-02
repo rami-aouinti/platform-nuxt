@@ -234,7 +234,7 @@ async function detachGroup(groupId: string) {
   detailActionLoading.value = true
   try {
     await userGroupsRelation.removeRelation(groupId)
-    Notify.success('Groupe détaché avec succès.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.groupDetachedSuccess')))
     await loadUserDetails(selectedDetailUser.value.id)
   } catch (errorValue) {
     Notify.error(
@@ -253,7 +253,7 @@ async function attachGroup() {
   detailActionLoading.value = true
   try {
     await userGroupsRelation.addRelation(selectedGroupId.value)
-    Notify.success('Groupe attaché avec succès.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.groupAttachedSuccess')))
     selectedGroupId.value = ''
     await loadUserDetails(selectedDetailUser.value.id)
   } catch (errorValue) {
@@ -322,7 +322,7 @@ const {
   saveEdit: async (row) => {
     const passwordValue = String(row.password ?? '').trim()
     if (passwordValue && passwordValue.length < 8) {
-      Notify.error('Le mot de passe est requis (8 caractères minimum).')
+      Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.passwordRequired')))
       return
     }
 
@@ -352,7 +352,7 @@ const {
         },
       )
 
-      Notify.success('Action réussie : utilisateur mis à jour.')
+      Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.userUpdatedActionSuccess')))
       track({
         name: 'admin.users.patch',
         payload: {
@@ -376,7 +376,7 @@ const {
         },
       )
 
-      Notify.success('Action réussie : utilisateur supprimé.')
+      Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.userDeletedActionSuccess')))
       track({
         name: 'admin.users.delete',
         payload: {
@@ -456,7 +456,7 @@ async function submitCreateRow() {
     !createForm.email.trim() ||
     !createForm.password.trim()
   ) {
-    Notify.error('Username, email et mot de passe sont requis.')
+    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.userFieldsRequired')))
     return
   }
 
@@ -474,7 +474,7 @@ async function submitCreateRow() {
       },
     })
 
-    Notify.success('Action réussie : utilisateur créé.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.userCreatedActionSuccess')))
     track({
       name: 'admin.users.create',
       payload: { username: createForm.username.trim() },

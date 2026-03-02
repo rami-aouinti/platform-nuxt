@@ -89,14 +89,14 @@ async function runTaskAction(task: KanbanTask, action: TaskWorkflowAction) {
 
   try {
     await fakeTaskApi(action, task)
-    Notify.success(`Action ${actionLabel(action)} appliquée.`)
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.actionApplied', { action: actionLabel(action) })))
   } catch (errorValue) {
     task.status = previous
     if (isForbiddenError(errorValue)) {
-      Notify.error('Action refusée (403). L\'état de la tâche est inchangé.')
+      Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.taskActionForbidden403')))
       return
     }
-    Notify.error('Impossible d\'appliquer l\'action sur la tâche.')
+    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.taskActionFailed')))
   }
 }
 

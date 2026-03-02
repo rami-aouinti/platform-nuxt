@@ -83,7 +83,7 @@ async function createRow() {
 
   try {
     await companiesService.create(createPayloadFromDraft())
-    Notify.success('Société créée avec succès.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.profileCompanies.created')))
     await loadRows()
   } catch (errorValue) {
     Notify.error(toUiErrorMessage(errorValue))
@@ -115,7 +115,7 @@ async function patchCompanyStatus(companyId: string, status: UpdateCompanyReques
 
   try {
     await companiesService.patch(companyId, { status })
-    Notify.success('Statut de la société mis à jour.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.companyStatusUpdated')))
     await loadRows()
   } catch (errorValue) {
     Notify.error(toUiErrorMessage(errorValue))
@@ -168,7 +168,7 @@ async function updateRow(row: Record<string, unknown>) {
       mainAddress: Array.isArray(row.mainAddress) ? row.mainAddress : [],
     })
 
-    Notify.success('Société mise à jour.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.profileCompanies.updated')))
     await loadRows()
   } catch (errorValue) {
     Notify.error(toUiErrorMessage(errorValue))
@@ -186,7 +186,7 @@ async function deleteRow(row: Record<string, unknown>) {
 
   try {
     await companiesService.remove(String(row.id ?? ''))
-    Notify.success('Société supprimée.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.profileCompanies.deleted')))
     await loadRows()
   } catch (errorValue) {
     Notify.error(toUiErrorMessage(errorValue))

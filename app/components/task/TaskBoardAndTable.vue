@@ -23,7 +23,7 @@ function load(mode: 'success' | 'error' = 'success') {
 
 function updateTaskStatus(payload: { id: string; status: TaskStatus }) {
   tasks.value = tasks.value.map((task) => (String(task.id) === payload.id ? { ...task, status: payload.status } : task))
-  Notify.success(`Statut mis à jour (${payload.status}) côté backend.`)
+  Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.statusUpdatedBackend', { status: payload.status })))
 }
 
 onMounted(() => load('success'))
