@@ -204,6 +204,11 @@ function getInboxAvatarLabel(conversation: ChatConversation) {
   return label.slice(0, 1).toUpperCase() || 'C'
 }
 
+function getInboxAvatarUrl(conversation: ChatConversation) {
+  const participantWithPhoto = conversation.participants?.find((participant) => Boolean(participant.photo))
+  return participantWithPhoto?.photo ?? null
+}
+
 function getInboxPreview(conversation: ChatConversation) {
   const preview = conversation.lastMessage?.trim() ?? ''
   return preview.length > 64 ? `${preview.slice(0, 64)}…` : preview || 'Aucun message récent.'
@@ -405,12 +410,20 @@ watch(isAuthenticated, (value) => {
             <v-list-item
               v-for="conversation in latestInboxConversations"
               :key="conversation.id"
-              to="/chat"
+              :to="{ path: '/chat', query: { conversationId: conversation.id } }"
               class="app-bar__notification-item"
             >
               <template #prepend>
-                <v-avatar color="primary" variant="tonal" size="44" class="mr-2">
-                  {{ getInboxAvatarLabel(conversation) }}
+                <v-avatar
+                  color="primary"
+                  variant="tonal"
+                  size="44"
+                  class="mr-2"
+                  :image="getInboxAvatarUrl(conversation) ?? undefined"
+                >
+                  <span v-if="!getInboxAvatarUrl(conversation)">
+                    {{ getInboxAvatarLabel(conversation) }}
+                  </span>
                 </v-avatar>
               </template>
 
