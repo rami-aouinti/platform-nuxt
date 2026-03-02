@@ -239,6 +239,9 @@ async function loadInboxConversations() {
   try {
     const response = await chatApi.listConversations()
     inboxConversations.value = response
+  } catch (error) {
+    inboxConversations.value = []
+    console.warn('Unable to load inbox conversations.', error)
   } finally {
     inboxLoading.value = false
   }
