@@ -1,11 +1,14 @@
 import { proxyAuthApiGet } from '../../../../utils/auth-api-proxy'
-import { readProfileEndpointCache, writeProfileEndpointCache } from '../../../../utils/profile-endpoint-cache'
+import {
+  readProfileEndpointCache,
+  writeProfileEndpointCache,
+} from '../../../../utils/profile-endpoint-cache'
 import { normalizeProfileRoles } from '../../../../utils/profile-response-normalizers'
 
 const ROLES_CACHE_KEY = 'v1-me-profile-roles'
 
 export default defineEventHandler(async (event) => {
-  const cachedRoles = readProfileEndpointCache(event, ROLES_CACHE_KEY)
+  const cachedRoles = await readProfileEndpointCache(event, ROLES_CACHE_KEY)
 
   if (cachedRoles) {
     return cachedRoles
@@ -13,7 +16,7 @@ export default defineEventHandler(async (event) => {
 
   const roles = await proxyAuthApiGet(event, '/api/v1/me/profile/roles')
   const normalizedRoles = normalizeProfileRoles(roles)
-  writeProfileEndpointCache(event, ROLES_CACHE_KEY, normalizedRoles)
+  await writeProfileEndpointCache(event, ROLES_CACHE_KEY, normalizedRoles)
 
   return normalizedRoles
 })

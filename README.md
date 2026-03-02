@@ -130,6 +130,25 @@ NUXT_SESSION_SECRET=your-super-long-secret-for-session-encryption
 
 Nuxt Auth Utils generates one for you when running Nuxt in development the first time if no `NUXT_SESSION_PASSWORD` is set.
 
+### Redis Cache Setup (Profile Endpoints)
+
+Le cache des endpoints `profile` côté serveur utilise Redis. Ajoutez les variables suivantes dans votre `.env`:
+
+```bash
+NUXT_PROFILE_ENDPOINT_CACHE_TTL_MS=30000
+NUXT_REDIS_URL=redis://localhost:6379
+# ou configuration détaillée
+NUXT_REDIS_HOST=localhost
+NUXT_REDIS_PORT=6379
+NUXT_REDIS_PASSWORD=""
+```
+
+Notes:
+
+- `NUXT_PROFILE_ENDPOINT_CACHE_TTL_MS` est exprimé en millisecondes.
+- Utilisez `NUXT_REDIS_URL` **ou** le triplet host/port/password.
+- Si Redis n'est pas configuré ou indisponible, le fallback est sans crash (cache ignoré).
+
 ### Development
 
 Start the development server on http://localhost:3000

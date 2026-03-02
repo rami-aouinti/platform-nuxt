@@ -1,5 +1,19 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { H3Event } from 'h3'
+
+const cacheMocks = vi.hoisted(() => ({
+  buildProfileCacheKey: vi.fn(
+    (_event: H3Event, key: string) => `profile:hash:${key}`,
+  ),
+  getProfileCache: vi.fn(),
+  setProfileCache: vi.fn(),
+}))
+
+vi.mock('../../server/utils/cache/profile-cache', () => ({
+  buildProfileCacheKey: cacheMocks.buildProfileCacheKey,
+  getProfileCache: cacheMocks.getProfileCache,
+  setProfileCache: cacheMocks.setProfileCache,
+}))
 
 import {
   readProfileEndpointCache,
@@ -7,27 +21,47 @@ import {
 } from '../../server/utils/profile-endpoint-cache'
 
 describe('profile-endpoint-cache', () => {
-  it('stores and reads cache values by authorization header', () => {
-    vi.stubGlobal('getHeader', vi.fn(() => 'Bearer token-a'))
-    vi.stubGlobal('useRuntimeConfig', vi.fn(() => ({ profileEndpointCacheTtlMs: 1000 })))
-
-    const event = {} as H3Event
-    writeProfileEndpointCache(event, 'profile', { id: '1' })
-
-    expect(readProfileEndpointCache(event, 'profile')).toEqual({ id: '1' })
+  beforeEach(() => {
+    vi.clearAllMocks()
   })
 
-  it('expires cache values after ttl', async () => {
-    vi.useFakeTimers()
-    vi.stubGlobal('getHeader', vi.fn(() => 'Bearer token-b'))
-    vi.stubGlobal('useRuntimeConfig', vi.fn(() => ({ profileEndpointCacheTtlMs: 10 })))
-
+  it('reads cache values via redis wrapper key', async () => {
+    vi.stubGlobal(
+      'useRuntimeConfig',
+      vi.fn(() => ({ profileEndpointCacheTtlMs: 1000 })),
+    )
     const event = {} as H3Event
-    writeProfileEndpointCache(event, 'roles', ['ROLE_USER'])
 
-    await vi.advanceTimersByTimeAsync(11)
+    cacheMocks.getProfileCache.mockResolvedValue({ id: '1' })
 
-    expect(readProfileEndpointCache(event, 'roles')).toBeNull()
-    vi.useRealTimers()
+    await expect(readProfileEndpointCache(event, 'profile')).resolves.toEqual({
+      id: '1',
+    })
+    expect(cacheMocks.buildProfileCacheKey).toHaveBeenCalledWith(
+      event,
+      'profile',
+    )
+    expect(cacheMocks.getProfileCache).toHaveBeenCalledWith(
+      event,
+      'profile:hash:profile',
+    )
+  })
+
+  it('writes cache values with ttl from runtime config', async () => {
+    vi.stubGlobal(
+      'useRuntimeConfig',
+      vi.fn(() => ({ profileEndpointCacheTtlMs: 10 })),
+    )
+    const event = {} as H3Event
+
+    await writeProfileEndpointCache(event, 'roles', ['ROLE_USER'])
+
+    expect(cacheMocks.buildProfileCacheKey).toHaveBeenCalledWith(event, 'roles')
+    expect(cacheMocks.setProfileCache).toHaveBeenCalledWith(
+      event,
+      'profile:hash:roles',
+      ['ROLE_USER'],
+      10,
+    )
   })
 })
