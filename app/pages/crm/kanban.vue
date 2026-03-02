@@ -169,7 +169,7 @@ async function updateRequestStatus(requestId: string, nextStatus: CrmTaskStatus)
   try {
     await crmApi.patchTaskRequestRequestedStatus(requestId, nextStatus)
 
-    Notify.success('Status de la request mis à jour.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.requestStatusUpdated')))
     await loadSprintTaskRequests()
   } catch (error) {
     request.requestedStatus = previousStatus
@@ -189,7 +189,7 @@ async function assignRequester(requestId: string, requesterId: string) {
   assigningRequester.value = requestId
   try {
     await crmApi.assignTaskRequestRequester(requestId, requesterId)
-    Notify.success('Requester assigné.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.requesterAssigned')))
     await loadSprintTaskRequests()
   } catch (error) {
     Notify.error(error instanceof Error ? error.message : 'Impossible d’assigner le requester.')
@@ -203,7 +203,7 @@ async function assignReviewer(requestId: string, reviewerId: string) {
   assigningReviewer.value = requestId
   try {
     await crmApi.assignTaskRequestReviewer(requestId, reviewerId)
-    Notify.success('Reviewer assigné.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.reviewerAssigned')))
     await loadSprintTaskRequests()
   } catch (error) {
     Notify.error(error instanceof Error ? error.message : 'Impossible d’assigner le reviewer.')

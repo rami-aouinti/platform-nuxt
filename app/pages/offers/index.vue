@@ -72,7 +72,7 @@ async function apply(offerId: string) {
   actionLoading.value = true
   try {
     await applicationStore.apply(offerId)
-    Notify.success('Candidature envoyée.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.applicationSent')))
   } catch (errorValue) {
     Notify.error(toUiErrorMessage(errorValue))
   } finally {

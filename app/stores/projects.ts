@@ -5,6 +5,8 @@ import { Notify } from '~/stores/notification'
 import type { CreateProjectPayload, PatchProjectPayload, Project, UpdateProjectPayload } from '~/types/crm'
 
 export const useProjectsStore = defineStore('projects', () => {
+  const t = (key: string, params?: Record<string, unknown>) => String(useNuxtApp().$i18n.t(key, params))
+
   const api = useProjectsApi()
 
   return createCrudEntityStore<Project, CreateProjectPayload, UpdateProjectPayload, PatchProjectPayload>({
@@ -24,10 +26,10 @@ export const useProjectsStore = defineStore('projects', () => {
     applyPatch: (entity, payload) => ({ ...entity, ...payload }),
     notifications: {
       success: {
-        create: 'Projet créé avec succès.',
-        update: 'Projet mis à jour.',
-        patch: 'Projet mis à jour.',
-        remove: 'Projet supprimé.',
+        create: t('notifications.projects.created'),
+        update: t('notifications.projects.updated'),
+        patch: t('notifications.projects.updated'),
+        remove: t('notifications.projects.deleted'),
       },
       notifySuccess: (message) => Notify.success(message),
       notifyError: (message) => Notify.error(message),

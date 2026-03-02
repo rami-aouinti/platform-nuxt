@@ -121,7 +121,7 @@ const {
       },
     })
 
-    Notify.success('Rôle mis à jour.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.roleUpdated')))
     await loadRows()
   },
   deleteRow: async (row) => {
@@ -129,7 +129,7 @@ const {
       method: 'DELETE' as any,
     })
 
-    Notify.success('Rôle supprimé.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.roleDeleted')))
     await loadRows()
   },
 })
@@ -146,7 +146,7 @@ function createRow() {
 
 async function submitCreateRole() {
   if (!createForm.name.trim()) {
-    Notify.error('Le nom du rôle est requis.')
+    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.roleNameRequired')))
     return
   }
 
@@ -161,7 +161,7 @@ async function submitCreateRole() {
       },
     })
 
-    Notify.success('Rôle créé.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.roleCreated')))
     createOpen.value = false
     await loadRows()
   } catch (errorValue) {

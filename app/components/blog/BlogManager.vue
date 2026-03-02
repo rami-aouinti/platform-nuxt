@@ -147,38 +147,38 @@ async function runCrudDemo(action: 'create' | 'get' | 'update' | 'patch' | 'dele
 
     if (action === 'create') {
       await api.create(currentCollection.value.createExample)
-      Notify.success(`${currentCollection.value.title} : création réussie.`)
+      Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.collectionCreateSuccess', { title: currentCollection.value.title })))
       await loadCurrentCollection()
       return
     }
 
     if (!selectedItemId.value) {
-      Notify.error('Aucun identifiant disponible. Recharge la liste pour sélectionner un élément.')
+      Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.noIdentifierAvailable')))
       return
     }
 
     if (action === 'get') {
       const item = await api.get(selectedItemId.value)
-      Notify.info(`Détail chargé : ${extractId(item) || 'ID inconnu'}`)
+      Notify.info(String(useNuxtApp().$i18n.t('notifications.ui.detailLoaded', { id: extractId(item) || useNuxtApp().$i18n.t('notifications.ui.idUnknown') })))
       return
     }
 
     if (action === 'update') {
       await api.update(selectedItemId.value, currentCollection.value.updateExample)
-      Notify.success('Mise à jour complète (PUT) réussie.')
+      Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.putUpdateSuccess')))
       await loadCurrentCollection()
       return
     }
 
     if (action === 'patch') {
       await api.patch(selectedItemId.value, currentCollection.value.updateExample)
-      Notify.success('Mise à jour partielle (PATCH) réussie.')
+      Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.patchUpdateSuccess')))
       await loadCurrentCollection()
       return
     }
 
     await api.delete(selectedItemId.value)
-    Notify.success('Suppression réussie.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.deleteSuccess')))
     await loadCurrentCollection()
   } catch (errorValue) {
     Notify.error(toUiErrorMessage(errorValue))
@@ -189,14 +189,14 @@ async function runCrudDemo(action: 'create' | 'get' | 'update' | 'patch' | 'dele
 
 async function loadTaskPosts() {
   if (!taskId.value.trim()) {
-    Notify.error('Renseigne un Task ID avant de charger ses blog posts.')
+    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.taskIdRequiredBeforeLoad')))
     return
   }
 
   try {
     const response = await blogApi.listTaskPosts(taskId.value.trim())
     taskPosts.value = response.data
-    Notify.success('Blog posts de la tâche chargés.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.taskBlogPostsLoaded')))
   } catch (errorValue) {
     Notify.error(toUiErrorMessage(errorValue))
   }
@@ -204,14 +204,14 @@ async function loadTaskPosts() {
 
 async function loadTaskRequestPosts() {
   if (!taskRequestId.value.trim()) {
-    Notify.error('Renseigne un Task Request ID avant de charger ses blog posts.')
+    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.taskRequestIdRequiredBeforeLoad')))
     return
   }
 
   try {
     const response = await blogApi.listTaskRequestPosts(taskRequestId.value.trim())
     taskRequestPosts.value = response.data
-    Notify.success('Blog posts de la task request chargés.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.taskRequestBlogPostsLoaded')))
   } catch (errorValue) {
     Notify.error(toUiErrorMessage(errorValue))
   }

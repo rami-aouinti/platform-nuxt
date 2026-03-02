@@ -13,6 +13,8 @@ import {
 } from '~/stores/_entity'
 
 export const useSprintsStore = defineStore('sprints', () => {
+  const t = (key: string, params?: Record<string, unknown>) => String(useNuxtApp().$i18n.t(key, params))
+
   const api = useSprintsApi()
 
   const rows = ref<CrmSprint[]>([])
@@ -76,7 +78,7 @@ export const useSprintsStore = defineStore('sprints', () => {
     try {
       const created = await api.create(payload)
       mergeEntityRow(rows, item, created)
-      Notify.success('Sprint créé.')
+      Notify.success(t('notifications.sprints.created'))
       await refreshRowsSafe()
       return created
     } catch (errorValue) {
@@ -99,7 +101,7 @@ export const useSprintsStore = defineStore('sprints', () => {
     try {
       const updated = await api.update(id, payload)
       mergeEntityRow(rows, item, updated)
-      Notify.success('Sprint mis à jour.')
+      Notify.success(t('notifications.sprints.updated'))
       await refreshRowsSafe()
       return updated
     } catch (errorValue) {
@@ -123,7 +125,7 @@ export const useSprintsStore = defineStore('sprints', () => {
     try {
       const patched = await api.patch(id, payload)
       mergeEntityRow(rows, item, patched)
-      Notify.success('Sprint mis à jour.')
+      Notify.success(t('notifications.sprints.updated'))
       await refreshRowsSafe()
       return patched
     } catch (errorValue) {
@@ -146,7 +148,7 @@ export const useSprintsStore = defineStore('sprints', () => {
 
     try {
       await api.delete(id)
-      Notify.success('Sprint supprimé.')
+      Notify.success(t('notifications.sprints.deleted'))
       await refreshRowsSafe()
     } catch (errorValue) {
       restoreEntitySnapshot(rows, item, snapshot)

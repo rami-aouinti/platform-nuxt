@@ -93,7 +93,7 @@ function createRow() {
 
 async function submitCreateRow() {
   if (!createForm.token.trim()) {
-    Notify.error('Token requis.')
+    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.tokenRequired')))
     return
   }
 

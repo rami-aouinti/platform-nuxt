@@ -126,7 +126,7 @@ export const useApiKeysStore = defineStore('api-keys', () => {
 
     try {
       const created = await runWithFallback<ApiKey>((service) => service.create(payload))
-      Notify.success('Clé API créée.')
+      Notify.success(t('notifications.apiKeys.created'))
       await refreshRowsSafe()
       return created
     } catch (errorValue) {
@@ -145,7 +145,7 @@ export const useApiKeysStore = defineStore('api-keys', () => {
     try {
       activeVersion.value = version
       const created = await resolveService(version).create(payload)
-      Notify.success(`Clé API créée (${version.toUpperCase()}).`)
+      Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.apiKeyCreatedVersion', { version: version.toUpperCase() })))
       await refreshRowsSafe()
       return created
     } catch (errorValue) {
@@ -163,7 +163,7 @@ export const useApiKeysStore = defineStore('api-keys', () => {
 
     try {
       const updated = await runWithFallback<ApiKey>((service) => service.update(id, payload))
-      Notify.success('Clé API mise à jour.')
+      Notify.success(t('notifications.apiKeys.updated'))
       await refreshRowsSafe()
       return updated
     } catch (errorValue) {
@@ -181,7 +181,7 @@ export const useApiKeysStore = defineStore('api-keys', () => {
 
     try {
       const patched = await runWithFallback<ApiKey>((service) => service.patch(id, payload))
-      Notify.success('Clé API mise à jour.')
+      Notify.success(t('notifications.apiKeys.updated'))
       await refreshRowsSafe()
       return patched
     } catch (errorValue) {
@@ -199,7 +199,7 @@ export const useApiKeysStore = defineStore('api-keys', () => {
 
     try {
       await runWithFallback((service) => service.remove(id))
-      Notify.success('Clé API supprimée.')
+      Notify.success(t('notifications.apiKeys.deleted'))
       if (item.value?.id === id) item.value = null
       await refreshRowsSafe()
     } catch (errorValue) {

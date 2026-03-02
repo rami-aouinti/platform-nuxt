@@ -131,11 +131,13 @@ function collectFieldErrors(details: unknown, parentKey?: string): Record<string
 }
 
 export function toUiApiError(errorValue: unknown): UiApiError {
+  const t = (key: string) => String(useNuxtApp().$i18n.t(key))
+
   if (!(errorValue instanceof HttpRequestError)) {
     return {
       statusCode: 0,
       type: 'unknown',
-      message: errorValue instanceof Error ? errorValue.message : 'Une erreur inconnue est survenue.',
+      message: errorValue instanceof Error ? errorValue.message : t('notifications.apiErrors.unknown'),
       fieldErrors: {},
       details: errorValue,
     }
@@ -145,7 +147,7 @@ export function toUiApiError(errorValue: unknown): UiApiError {
     return {
       statusCode: 403,
       type: 'forbidden',
-      message: 'Vous n\'avez pas les droits pour effectuer cette action.',
+      message: t('notifications.apiErrors.forbidden'),
       fieldErrors: {},
       details: errorValue.details,
     }
@@ -155,7 +157,7 @@ export function toUiApiError(errorValue: unknown): UiApiError {
     return {
       statusCode: 404,
       type: 'not-found',
-      message: 'La ressource demandée est introuvable.',
+      message: t('notifications.apiErrors.notFound'),
       fieldErrors: {},
       details: errorValue.details,
     }
@@ -165,7 +167,7 @@ export function toUiApiError(errorValue: unknown): UiApiError {
     return {
       statusCode: 422,
       type: 'validation',
-      message: 'Les données envoyées sont invalides.',
+      message: t('notifications.apiErrors.validation'),
       fieldErrors: collectFieldErrors(errorValue.details),
       details: errorValue.details,
     }
@@ -175,7 +177,7 @@ export function toUiApiError(errorValue: unknown): UiApiError {
     return {
       statusCode: errorValue.statusCode,
       type: 'server',
-      message: 'Une erreur serveur est survenue. Veuillez réessayer plus tard.',
+      message: t('notifications.apiErrors.server'),
       fieldErrors: {},
       details: errorValue.details,
     }

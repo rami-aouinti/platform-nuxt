@@ -18,7 +18,7 @@ function showDialogDelete(name: string) {
         try {
           const index = desserts.value!.findIndex((v) => v.name === name)
           desserts.value!.splice(index, 1)
-          Notify.success('Deleted')
+          Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.deleted')))
         } catch (e) {
           Notify.error(e)
         }

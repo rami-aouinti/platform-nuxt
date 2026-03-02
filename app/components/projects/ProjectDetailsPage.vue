@@ -110,13 +110,13 @@ async function editTask(task: ProjectTask) {
 
   try {
     await crmApi.patchTask(task.id, { status: task.status })
-    Notify.success(`Tâche « ${task.title} » éditée.`)
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.taskEdited', { title: task.title })))
   } catch (errorValue) {
     if (isForbiddenError(errorValue)) {
       Notify.error(PERMISSION_MESSAGES.forbiddenPatch)
       return
     }
-    Notify.error('Impossible d\'éditer la tâche.')
+    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.taskEditFailed')))
   }
 }
 
@@ -131,14 +131,14 @@ async function deleteTask(task: ProjectTask) {
 
   try {
     await crmApi.deleteTask(task.id)
-    Notify.success(`Tâche « ${task.title} » supprimée.`)
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.taskDeletedWithTitle', { title: task.title })))
   } catch (errorValue) {
     tasks.value = previous
     if (isForbiddenError(errorValue)) {
       Notify.error(PERMISSION_MESSAGES.forbiddenDelete)
       return
     }
-    Notify.error('Impossible de supprimer la tâche.')
+    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.taskDeleteFailed')))
   }
 }
 

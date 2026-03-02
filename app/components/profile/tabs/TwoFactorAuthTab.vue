@@ -59,7 +59,7 @@ async function toggleTwoFactor() {
           body: { enabled: nextValue },
         })
         setting.value.enabled = nextValue
-        Notify.success(`2FA ${nextValue ? 'activée' : 'désactivée'}.`)
+        Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.twoFactorToggled', { state: nextValue ? useNuxtApp().$i18n.t('notifications.ui.twoFactorEnabled') : useNuxtApp().$i18n.t('notifications.ui.twoFactorDisabled') })))
         return
       } catch {
         continue

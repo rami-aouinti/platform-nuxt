@@ -59,7 +59,7 @@ const {
 })
 
 function createRow() {
-  Notify.info('TODO: brancher la création de candidat.')
+  Notify.info(String(useNuxtApp().$i18n.t('notifications.ui.todoCandidateCreate')))
 }
 
 onMounted(loadRows)

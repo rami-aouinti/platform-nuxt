@@ -39,7 +39,7 @@ function saveProject(payload: { id?: string; name: string; description: string; 
     rows.value = rows.value.map((row) => (String(row.id) === payload.id
       ? { ...row, name: payload.name, description: payload.description, status: payload.status }
       : row))
-    Notify.success('Projet mis à jour côté backend.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.projectUpdatedBackend')))
     return
   }
 
@@ -55,7 +55,7 @@ function saveProject(payload: { id?: string; name: string; description: string; 
     },
     ...rows.value,
   ]
-  Notify.success('Projet créé côté backend.')
+  Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.projectCreatedBackend')))
 }
 
 onMounted(() => load('success'))

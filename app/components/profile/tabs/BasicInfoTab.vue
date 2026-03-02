@@ -126,7 +126,7 @@ async function saveProfile() {
     })
 
     await authStore.fetchProfileData()
-    Notify.success('Informations de profil mises à jour.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.profileInfoUpdated')))
   } catch (error) {
     Notify.error(error)
   } finally {

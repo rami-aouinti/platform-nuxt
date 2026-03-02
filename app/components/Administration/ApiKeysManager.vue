@@ -68,7 +68,7 @@ function ensureRoot() {
     return true
   }
 
-  Notify.error('Action réservée aux utilisateurs ROLE_ROOT.')
+  Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.rootOnlyAction')))
   return false
 }
 
@@ -156,10 +156,10 @@ async function createApiKey() {
       },
     })
 
-    Notify.success(`Action réussie : clé API ${props.version} créée.`)
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.apiKeyCreatedVersion', { version: props.version })))
     await loadInventory()
   } catch (error) {
-    Notify.error(`Action échouée : ${toUiErrorMessage(error)}`)
+    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.actionFailed', { error: toUiErrorMessage(error) })))
   } finally {
     busy.value = false
   }
@@ -175,9 +175,9 @@ async function fetchById() {
   try {
     const response = await props.service.getById(selectedId.value)
     selectedItem.value = response as BaseApiKey
-    Notify.success(`Détail récupéré pour ${selectedId.value}.`)
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.detailLoadedFor', { id: selectedId.value })))
   } catch (error) {
-    Notify.error(`Action échouée : ${toUiErrorMessage(error)}`)
+    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.actionFailed', { error: toUiErrorMessage(error) })))
   } finally {
     busy.value = false
   }
@@ -196,7 +196,7 @@ async function updateById() {
       description: updateForm.description.trim() || undefined,
     })
 
-    Notify.success(`Action réussie : clé ${selectedId.value} mise à jour (PUT).`)
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.apiKeyUpdatedPut', { id: selectedId.value })))
     track({
       name: 'admin.api-keys.put',
       payload: {
@@ -206,7 +206,7 @@ async function updateById() {
     })
     await loadInventory()
   } catch (error) {
-    Notify.error(`Action échouée : ${toUiErrorMessage(error)}`)
+    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.actionFailed', { error: toUiErrorMessage(error) })))
   } finally {
     busy.value = false
   }
@@ -239,7 +239,7 @@ async function patchById() {
       [patchForm.field]: patchForm.value,
     })
 
-    Notify.success(`Action réussie : clé ${selectedId.value} mise à jour (PATCH).`)
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.apiKeyUpdatedPatch', { id: selectedId.value })))
     track({
       name: 'admin.api-keys.patch',
       payload: {
@@ -250,7 +250,7 @@ async function patchById() {
     })
     await loadInventory()
   } catch (error) {
-    Notify.error(`Action échouée : ${toUiErrorMessage(error)}`)
+    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.actionFailed', { error: toUiErrorMessage(error) })))
   } finally {
     busy.value = false
   }
@@ -287,12 +287,12 @@ async function removeById() {
       },
     })
 
-    Notify.success(`Action réussie : clé ${idToDelete} supprimée.`)
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.apiKeyDeleted', { id: idToDelete })))
     selectedId.value = ''
     selectedItem.value = null
     await loadInventory()
   } catch (error) {
-    Notify.error(`Action échouée : ${toUiErrorMessage(error)}`)
+    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.actionFailed', { error: toUiErrorMessage(error) })))
   } finally {
     busy.value = false
   }

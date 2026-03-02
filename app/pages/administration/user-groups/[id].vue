@@ -113,7 +113,7 @@ async function saveGroup() {
       },
     })
 
-    Notify.success('Groupe mis à jour.')
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.groupUpdated')))
     await loadGroupData()
   } catch (error) {
     Notify.error(toUiErrorMessage(error))
@@ -133,7 +133,7 @@ async function attachUser() {
   }
 
   if (!canManage.value) {
-    Notify.error('Action réservée aux utilisateurs ROLE_ROOT.')
+    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.rootOnlyAction')))
     return
   }
 
@@ -152,7 +152,7 @@ async function attachUser() {
       method: 'POST' as any,
     })
 
-    Notify.success(`Utilisateur ${userValue} attaché.`)
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.userAttached', { user: userValue })))
     newUserId.value = ''
     await loadGroupData()
   } catch (error) {
@@ -164,7 +164,7 @@ async function attachUser() {
 
 async function detachUser(user: GroupUser) {
   if (!canManage.value) {
-    Notify.error('Action réservée aux utilisateurs ROLE_ROOT.')
+    Notify.error(String(useNuxtApp().$i18n.t('notifications.ui.rootOnlyAction')))
     return
   }
 
@@ -183,7 +183,7 @@ async function detachUser(user: GroupUser) {
       method: 'DELETE' as any,
     })
 
-    Notify.success(`Utilisateur ${user.username || user.id} retiré.`)
+    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.userDetached', { user: user.username || user.id })))
     await loadGroupData()
   } catch (error) {
     Notify.error(toUiErrorMessage(error))

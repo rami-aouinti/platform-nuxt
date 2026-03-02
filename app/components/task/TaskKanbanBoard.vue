@@ -36,7 +36,7 @@ async function archiveTask(task: Task) {
   }
 
   emit('updateTaskStatus', { id: String(task.id), status: TaskStatus.ARCHIVED })
-  Notify.success('Tâche archivée côté backend.')
+  Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.taskArchivedBackend')))
 }
 </script>
 
