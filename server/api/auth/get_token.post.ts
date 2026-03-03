@@ -1,5 +1,16 @@
 import type { H3Event } from 'h3'
 import { getAuthApiUpstreamCandidates } from '../../utils/auth-api-upstream'
+import {
+  LONG_LIVED_PROFILE_CACHE_TTL_MS,
+  writeProfileEndpointCache,
+} from '../../utils/profile-endpoint-cache'
+import {
+  normalizeProfileGroups,
+  normalizeProfileRoles,
+} from '../../utils/profile-response-normalizers'
+
+const GROUPS_CACHE_KEY = 'profile-groups'
+const ROLES_CACHE_KEY = 'profile-roles'
 
 function isSecureCookie(event: H3Event) {
   const forwardedProto = getHeader(event, 'x-forwarded-proto')
@@ -35,6 +46,41 @@ function clearLegacyClientCookie(event: H3Event, secure: boolean) {
   })
 }
 
+async function warmAuthGroupsAndRolesCache(event: H3Event, baseURL: string, token: string) {
+  const authorization = `Bearer ${token}`
+
+  event.node.req.headers.authorization = authorization
+
+  const [groupsResult, rolesResult] = await Promise.allSettled([
+    $fetch('/api/v1/profile/groups', {
+      baseURL,
+      headers: { Authorization: authorization },
+    }),
+    $fetch('/api/v1/profile/roles', {
+      baseURL,
+      headers: { Authorization: authorization },
+    }),
+  ])
+
+  if (groupsResult.status === 'fulfilled') {
+    await writeProfileEndpointCache(
+      event,
+      GROUPS_CACHE_KEY,
+      normalizeProfileGroups(groupsResult.value),
+      { ttlMs: LONG_LIVED_PROFILE_CACHE_TTL_MS },
+    )
+  }
+
+  if (rolesResult.status === 'fulfilled') {
+    await writeProfileEndpointCache(
+      event,
+      ROLES_CACHE_KEY,
+      normalizeProfileRoles(rolesResult.value),
+      { ttlMs: LONG_LIVED_PROFILE_CACHE_TTL_MS },
+    )
+  }
+}
+
 export default defineEventHandler(async (event) => {
   const body = await readBody<{ username?: string, password?: string }>(event)
 
@@ -68,6 +114,8 @@ export default defineEventHandler(async (event) => {
           sameSite: 'lax',
           maxAge: 60 * 60 * 8,
         })
+
+        await warmAuthGroupsAndRolesCache(event, baseURL, token)
       }
       else {
         clearLegacyClientCookie(event, secure)
