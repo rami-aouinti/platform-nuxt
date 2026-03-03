@@ -23,7 +23,7 @@ const drawer = computed({
 })
 const rail = computed(() => !drawerState.value && !mobile.value)
 const drawerPaths = [
-  '/homepage',
+  '/',
   '/about',
   '/faq',
   '/contact',

@@ -6,6 +6,6 @@ export default defineNuxtRouteMiddleware(() => {
   const { isAuthenticated } = storeToRefs(authStore)
 
   if (isAuthenticated.value) {
-    return navigateTo('/homepage')
+    return navigateTo('/')
   }
 })

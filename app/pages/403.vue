@@ -52,7 +52,7 @@ const message = computed(() => {
             {{ title }}
           </v-alert>
           <p class="mb-6">{{ message }}</p>
-          <v-btn color="primary" to="/homepage">Retour à l'accueil</v-btn>
+          <v-btn color="primary" to="/">Retour à l'accueil</v-btn>
         </v-card>
       </v-col>
     </v-row>

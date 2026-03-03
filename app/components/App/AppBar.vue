@@ -13,7 +13,7 @@ const AppBarInboxMenu = defineAsyncComponent(
 const theme = useTheme()
 const drawer = useState('drawer')
 const route = useRoute()
-withDefaults(
+const appBarProps = withDefaults(
   defineProps<{
     showDrawerToggle?: boolean
     showBrandLink?: boolean
@@ -43,7 +43,7 @@ const breadcrumbs = computed(() => {
 const isHomeRoute = computed(() => route.path === '/')
 const secondaryActionsOpened = ref(false)
 const showSecondaryActions = computed(
-  () => !isHomeRoute.value || secondaryActionsOpened.value || showSecondaryActionsOnHome,
+  () => !isHomeRoute.value || secondaryActionsOpened.value || appBarProps.showSecondaryActionsOnHome,
 )
 
 const isDark = computed({
