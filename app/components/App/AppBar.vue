@@ -334,6 +334,7 @@ watch(
 
       <component
         :is="AppBarNotificationsMenu"
+        v-if="isAuthenticated"
         :is-authenticated="isAuthenticated"
         :notifications="notifications"
         :unread-count="unreadCount"
@@ -346,6 +347,7 @@ watch(
 
       <component
         :is="AppBarInboxMenu"
+        v-if="isAuthenticated"
         :is-authenticated="isAuthenticated"
         :inbox-loading="inboxLoading"
         :inbox-conversations="inboxConversations"
@@ -364,7 +366,7 @@ watch(
       >
         <v-icon size="26" icon="mdi-github" aria-hidden="true" />
       </UiButton>
-      <v-menu location="bottom">
+      <v-menu v-if="isAuthenticated" location="bottom">
         <template #activator="{ props: menu }">
           <v-tooltip
             location="bottom"
@@ -390,13 +392,6 @@ watch(
         </template>
         <v-list>
           <v-list-item
-            v-if="!isAuthenticated"
-            :title="t('appbar.login')"
-            prepend-icon="mdi-login"
-            to="/login"
-          />
-          <v-list-item
-            v-else
             :title="t('appbar.profile')"
             prepend-icon="mdi-account"
             to="/profile"
@@ -441,6 +436,21 @@ watch(
           />
         </v-list>
       </v-menu>
+
+      <UiButton
+        v-else
+        icon
+        class="ml-1"
+        variant="text"
+        to="/login"
+        :aria-label="t('appbar.login')"
+      >
+        <v-icon
+          icon="mdi-login"
+          size="30"
+          aria-hidden="true"
+        />
+      </UiButton>
       <v-menu location="bottom end">
         <template #activator="{ props }">
           <UiButton
