@@ -1,4 +1,5 @@
 import type { H3Event } from 'h3'
+import { getAuthApiUpstreamCandidates } from '../../utils/auth-api-upstream'
 
 function isSecureCookie(event: H3Event) {
   const forwardedProto = getHeader(event, 'x-forwarded-proto')
@@ -30,16 +31,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const config = useRuntimeConfig(event)
-
-  const upstreamCandidates = [
-    config.authApiBase,
-    config.public.authApiBase,
-    'http://host.docker.internal',
-    'http://localhost',
-  ].filter((value, index, values): value is string => {
-    return Boolean(value) && values.indexOf(value) === index
-  })
+  const upstreamCandidates = getAuthApiUpstreamCandidates(event)
 
   let lastError: unknown
 

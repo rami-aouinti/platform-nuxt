@@ -1,5 +1,6 @@
 import type { H3Event } from 'h3'
 import { resolveAuthorizationHeader } from './authorization'
+import { getAuthApiUpstreamCandidates } from './auth-api-upstream'
 
 type ProxyHttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
@@ -42,15 +43,7 @@ async function parseUpstreamResponse(response: Response) {
 }
 
 function getUpstreamCandidates(event: H3Event): string[] {
-  const config = useRuntimeConfig(event)
-  const candidates = [
-    config.authApiBase,
-    config.public.authApiBase,
-    'http://host.docker.internal',
-    'http://localhost',
-  ].filter((value, index, values): value is string => {
-    return Boolean(value) && values.indexOf(value) === index
-  })
+  const candidates = getAuthApiUpstreamCandidates(event)
 
   const now = Date.now()
   const cachedBaseURL = preferredUpstream?.expiresAt && preferredUpstream.expiresAt > now
