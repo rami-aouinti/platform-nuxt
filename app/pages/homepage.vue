@@ -28,6 +28,9 @@ const quickLinks = [
     color: 'success',
   },
 ]
+
+const getQuickLinkActionLabel = (title: string) => `Ouvrir ${title}`
+const getQuickLinkAriaLabel = (title: string) => `Ouvrir la page ${title}`
 </script>
 
 <template>
@@ -79,8 +82,14 @@ const quickLinks = [
           </v-avatar>
           <h2 class="text-h6 font-weight-bold mb-2">{{ link.title }}</h2>
           <p class="text-body-2 text-medium-emphasis mb-4">{{ link.description }}</p>
-          <v-btn :color="link.color" variant="text" :to="link.to" append-icon="mdi-arrow-right">
-            Explorer
+          <v-btn
+            :color="link.color"
+            variant="text"
+            :to="link.to"
+            append-icon="mdi-arrow-right"
+            :aria-label="getQuickLinkAriaLabel(link.title)"
+          >
+            {{ getQuickLinkActionLabel(link.title) }}
           </v-btn>
         </v-card>
       </v-col>
