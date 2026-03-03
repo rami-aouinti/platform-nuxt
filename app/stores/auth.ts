@@ -106,12 +106,27 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     const headers = authHeaders()
-    const profileResponse = await $fetch<AuthProfile>(
-      apiEndpoints.frontend.profile.canonical,
-      { headers },
-    )
+    const [profileResponse, groupsResponse, rolesResponse] = await Promise.allSettled([
+      $fetch<AuthProfile>(apiEndpoints.frontend.profile.canonical, { headers }),
+      $fetch<AuthGroup[]>(apiEndpoints.frontend.profile.groups, { headers }),
+      $fetch<AuthRole[]>(apiEndpoints.frontend.profile.roles, { headers }),
+    ])
 
-    profile.value = profileResponse
+    if (profileResponse.status !== 'fulfilled') {
+      throw profileResponse.reason
+    }
+
+    profile.value = profileResponse.value
+
+    if (groupsResponse.status === 'fulfilled') {
+      groups.value = groupsResponse.value
+    }
+
+    if (rolesResponse.status === 'fulfilled') {
+      roles.value = rolesResponse.value
+    }
+
+    syncPrimaryRole()
     persistCurrentAuthState()
   }
 
