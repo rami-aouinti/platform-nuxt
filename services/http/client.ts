@@ -32,6 +32,25 @@ type StandardApiError = {
 
 
 let isUnauthorizedHandlingInProgress = false
+const UNAUTHORIZED_RETRY_FLAG = '__unauthorizedRetryAttempted'
+
+function shouldRetryUnauthorizedRequest(options: FetchOptions) {
+  const method = `${options.method ?? 'GET'}`.toUpperCase()
+
+  if (method !== 'GET' && method !== 'HEAD') {
+    return false
+  }
+
+  return !(options as FetchOptions & Record<string, unknown>)[UNAUTHORIZED_RETRY_FLAG]
+}
+
+async function retryUnauthorizedRequest(
+  request: RequestInfo,
+  options: FetchOptions,
+): Promise<unknown> {
+  ;(options as FetchOptions & Record<string, unknown>)[UNAUTHORIZED_RETRY_FLAG] = true
+  return await $fetch(request, options)
+}
 
 function extractStandardErrorPayload(context: FetchContext & { response?: Response }) {
   const payload =
@@ -159,7 +178,15 @@ const apiClient = $fetch.create({
     headers.set('Authorization', `Bearer ${token}`)
     options.headers = headers
   },
-  onResponseError(context) {
+  async onResponseError(context) {
+    if (context.response?.status === 401 && shouldRetryUnauthorizedRequest(context.options)) {
+      try {
+        return await retryUnauthorizedRequest(context.request, context.options)
+      } catch {
+        // Le second échec 401 est traité par le flux d'erreur global ci-dessous.
+      }
+    }
+
     const error = toHttpError(context)
     handleGlobalHttpError(error)
     throw error
