@@ -54,7 +54,19 @@ const quickLinks = [
           <p class="text-overline text-primary mb-1">Performance opérationnelle</p>
           <p class="text-h3 font-weight-black mb-2">+42%</p>
           <p class="text-body-2 text-medium-emphasis mb-4">Gain moyen sur le traitement des workflows.</p>
-          <v-progress-linear model-value="84" color="primary" rounded height="10" />
+          <div class="d-flex justify-space-between align-center mb-2">
+            <span id="operational-performance-progress-label" class="text-caption text-medium-emphasis">
+              Performance opérationnelle
+            </span>
+            <span id="operational-performance-progress-value" class="text-caption font-weight-bold">84 %</span>
+          </div>
+          <v-progress-linear
+            model-value="84"
+            color="primary"
+            rounded
+            height="10"
+            aria-labelledby="operational-performance-progress-label operational-performance-progress-value"
+          />
         </v-card>
       </v-col>
     </v-row>
