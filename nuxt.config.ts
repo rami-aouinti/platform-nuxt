@@ -198,7 +198,7 @@ export default defineNuxtConfig({
     },
     public: {
       authApiBase: 'https://bro-world.org',
-      mercurePublicUrl: 'http://localhost:3000/.well-known/mercure',
+      mercurePublicUrl: 'https://bro-world.org/.well-known/mercure',
     },
   },
   compatibilityDate: '2024-08-05',
