@@ -258,6 +258,8 @@ function normalizeConversationDetail(payload: Record<string, unknown>): ChatConv
 
 export function useChatApi() {
   return {
+    normalizeMessage,
+
     async listConversations(): Promise<ChatConversation[]> {
       const response = await $fetch<CollectionResponse<Record<string, unknown>>>(
         `${basePath}/conversations`,
