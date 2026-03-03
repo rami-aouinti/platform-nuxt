@@ -187,11 +187,14 @@ export default defineNuxtConfig({
     authApiBase: '',
     authApiTimeoutMs: 8000,
     mercurePublicUrl: '',
-    profileEndpointCacheTtlMs: 30000,
-    redisUrl: '',
-    redisHost: '',
-    redisPort: 6379,
-    redisPassword: '',
+    profileEndpointCacheTtlMs: Number(process.env.NUXT_PROFILE_ENDPOINT_CACHE_TTL_MS ?? 30000),
+    redisUrl: process.env.NUXT_REDIS_URL
+      || process.env.REDIS_URL
+      || process.env.bro_REDIS_URL
+      || '',
+    redisHost: process.env.NUXT_REDIS_HOST || process.env.REDIS_HOST || '',
+    redisPort: Number(process.env.NUXT_REDIS_PORT || process.env.REDIS_PORT || 6379),
+    redisPassword: process.env.NUXT_REDIS_PASSWORD || process.env.REDIS_PASSWORD || '',
     apiVersionProxy: {
       v1: '/api/v1',
       v2: '/api/v2',
