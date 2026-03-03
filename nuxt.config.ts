@@ -186,6 +186,7 @@ export default defineNuxtConfig({
     },
     authApiBase: '',
     authApiTimeoutMs: 8000,
+    mercurePublicUrl: '',
     profileEndpointCacheTtlMs: 30000,
     redisUrl: '',
     redisHost: '',
@@ -197,6 +198,7 @@ export default defineNuxtConfig({
     },
     public: {
       authApiBase: 'http://localhost',
+      mercurePublicUrl: 'http://localhost:3000/.well-known/mercure',
     },
   },
   compatibilityDate: '2024-08-05',

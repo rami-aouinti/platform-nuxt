@@ -35,6 +35,7 @@ const friends = ref<FriendUser[]>([])
 const selectedFiles = ref<File[]>([])
 const fileInput = ref<HTMLInputElement | null>(null)
 const messagesContainerRef = ref<HTMLElement | null>(null)
+const conversationEventSource = ref<EventSource | null>(null)
 
 const availableReactions = ['thumbs_up', 'heart', 'surprised', 'sad']
 
@@ -177,6 +178,76 @@ function scrollToLatestMessage() {
   })
 }
 
+function uiErrorMessage(error: unknown, fallback: string): string {
+  const resolvedMessage = toUiErrorMessage(error)
+  return resolvedMessage || fallback
+}
+
+function closeRealtimeSubscription() {
+  conversationEventSource.value?.close()
+  conversationEventSource.value = null
+}
+
+function upsertIncomingMessage(rawPayload: unknown) {
+  if (!rawPayload || typeof rawPayload !== 'object') return
+
+  const payload = rawPayload as Record<string, unknown>
+  const candidate = payload.message && typeof payload.message === 'object'
+    ? payload.message as Record<string, unknown>
+    : payload.data && typeof payload.data === 'object'
+      ? payload.data as Record<string, unknown>
+      : payload
+
+  const normalized = chatApi.normalizeMessage(candidate)
+  if (!normalized.id) return
+
+  const existingIndex = messages.value.findIndex((message) => message.id === normalized.id)
+
+  if (existingIndex >= 0) {
+    messages.value = messages.value.map((message, index) => (index === existingIndex ? normalized : message))
+    return
+  }
+
+  messages.value = [...messages.value, normalized]
+
+  const targetConversation = conversations.value.find(
+    (conversation) => conversation.id === activeConversationId.value,
+  )
+
+  if (targetConversation) {
+    targetConversation.lastMessage = normalized.content
+    targetConversation.updatedAt = normalized.createdAt ?? new Date().toISOString()
+  }
+}
+
+function startRealtimeSubscription(conversationId: string) {
+  if (!conversationId || !import.meta.client) return
+
+  closeRealtimeSubscription()
+
+  const streamUrl = `/api/v1/me/chat/conversations/${encodeURIComponent(conversationId)}/events`
+  const source = new EventSource(streamUrl, { withCredentials: true })
+
+  source.onmessage = (event) => {
+    if (!event.data) return
+
+    try {
+      const parsed = JSON.parse(event.data) as unknown
+      upsertIncomingMessage(parsed)
+    } catch {
+      // ignore non-JSON keepalive payloads
+    }
+  }
+
+  source.onerror = () => {
+    if (source.readyState === EventSource.CLOSED) {
+      closeRealtimeSubscription()
+    }
+  }
+
+  conversationEventSource.value = source
+}
+
 async function loadConversations() {
   loadingConversations.value = true
 
@@ -195,9 +266,9 @@ async function loadConversations() {
     }
 
     if (!activeConversationId.value && conversations.value.length > 0)
-      activeConversationId.value = conversations.value[0].id
+      activeConversationId.value = conversations.value[0]?.id ?? ''
   } catch (error) {
-    Notify.error(toUiErrorMessage(error, 'Impossible de charger les conversations'))
+    Notify.error(uiErrorMessage(error, 'Impossible de charger les conversations'))
   } finally {
     loadingConversations.value = false
   }
@@ -209,7 +280,7 @@ async function loadFriends() {
   try {
     friends.value = await friendsApi.listFriends()
   } catch (error) {
-    Notify.error(toUiErrorMessage(error, 'Impossible de charger les amis'))
+    Notify.error(uiErrorMessage(error, 'Impossible de charger les amis'))
   } finally {
     loadingFriends.value = false
   }
@@ -238,7 +309,7 @@ async function loadConversationDetail(conversationId: string) {
     }
   } catch (error) {
     Notify.error(
-      toUiErrorMessage(error, 'Impossible de charger les messages'),
+      uiErrorMessage(error, 'Impossible de charger les messages'),
     )
   } finally {
     loadingMessages.value = false
@@ -271,7 +342,7 @@ async function selectFriend(friend: FriendUser) {
     await loadConversationDetail(conversation.id)
     friendSearch.value = ''
   } catch (error) {
-    Notify.error(toUiErrorMessage(error, 'Impossible de charger la conversation de cet ami'))
+    Notify.error(uiErrorMessage(error, 'Impossible de charger la conversation de cet ami'))
   } finally {
     loadingMessages.value = false
   }
@@ -304,7 +375,7 @@ async function sendMessage() {
       targetConversation.updatedAt = new Date().toISOString()
     }
   } catch (error) {
-    Notify.error(toUiErrorMessage(error, 'Échec de l’envoi du message'))
+    Notify.error(uiErrorMessage(error, 'Échec de l’envoi du message'))
   } finally {
     sending.value = false
   }
@@ -317,7 +388,7 @@ async function reactToMessage(message: ChatMessage, reaction: string) {
     const updatedMessage = await chatApi.reactToMessage(activeConversationId.value, message.id, reaction)
     messages.value = messages.value.map((item) => (item.id === message.id ? updatedMessage : item))
   } catch (error) {
-    Notify.error(toUiErrorMessage(error, 'Impossible de réagir au message'))
+    Notify.error(uiErrorMessage(error, 'Impossible de réagir au message'))
   }
 }
 
@@ -330,7 +401,7 @@ async function deleteMessage(message: ChatMessage) {
     await chatApi.deleteMessage(activeConversationId.value, message.id)
     messages.value = messages.value.filter((item) => item.id !== message.id)
   } catch (error) {
-    Notify.error(toUiErrorMessage(error, 'Impossible de supprimer le message'))
+    Notify.error(uiErrorMessage(error, 'Impossible de supprimer le message'))
   } finally {
     deletingMessageId.value = null
   }
@@ -339,7 +410,12 @@ async function deleteMessage(message: ChatMessage) {
 watch(
   activeConversationId,
   async (conversationId) => {
-    if (!conversationId) return
+    if (!conversationId) {
+      closeRealtimeSubscription()
+      return
+    }
+
+    startRealtimeSubscription(conversationId)
     await loadConversationDetail(conversationId)
   },
   { immediate: true },
@@ -354,6 +430,10 @@ watch(
 
 onMounted(async () => {
   await Promise.all([loadConversations(), loadFriends()])
+})
+
+onBeforeUnmount(() => {
+  closeRealtimeSubscription()
 })
 </script>
 
