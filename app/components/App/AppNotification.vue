@@ -45,13 +45,23 @@ function toggleAll() {
 </script>
 
 <template>
-  <v-btn
-    v-tooltip="{ text: 'Notification' }"
-    :icon="notifications.length ? 'mdi-bell-badge-outline' : 'mdi-bell-outline'"
-    :rounded="0"
-    :aria-label="t('appbar.accessibility.openNotificationsPanel')"
-    @click="toggleAll"
-  />
+  <v-tooltip
+    :text="t('appbar.accessibility.openNotificationsPanel')"
+    eager
+    :activator-props="{ 'aria-describedby': undefined }"
+  >
+    <template #activator="{ props: tooltip }">
+      <v-btn
+        :icon="
+          notifications.length ? 'mdi-bell-badge-outline' : 'mdi-bell-outline'
+        "
+        :rounded="0"
+        :aria-label="t('appbar.accessibility.openNotificationsPanel')"
+        v-bind="tooltip"
+        @click="toggleAll"
+      />
+    </template>
+  </v-tooltip>
   <DialogConfirm ref="dialogReadAll" />
   <ClientOnly>
     <teleport to="body">
@@ -68,21 +78,37 @@ function toggleAll() {
               notifications.length ? 'Notification' : 'No New Notifications'
             "
           />
-          <v-btn
-            v-tooltip="{ text: 'Clear All Notifications' }"
-            size="small"
-            icon="mdi-bell-remove"
-            :aria-label="t('appbar.accessibility.clearAllNotifications')"
-            @click="emptyNotifications"
-          />
-          <v-btn
-            v-tooltip="{ text: 'Hide Notifications' }"
-            class="mr-0"
-            size="small"
-            icon="$expand"
-            :aria-label="t('appbar.accessibility.hideNotificationsPanel')"
-            @click="toggleAll"
-          />
+          <v-tooltip
+            :text="t('appbar.accessibility.clearAllNotifications')"
+            eager
+            :activator-props="{ 'aria-describedby': undefined }"
+          >
+            <template #activator="{ props: tooltip }">
+              <v-btn
+                size="small"
+                icon="mdi-bell-remove"
+                :aria-label="t('appbar.accessibility.clearAllNotifications')"
+                v-bind="tooltip"
+                @click="emptyNotifications"
+              />
+            </template>
+          </v-tooltip>
+          <v-tooltip
+            :text="t('appbar.accessibility.hideNotificationsPanel')"
+            eager
+            :activator-props="{ 'aria-describedby': undefined }"
+          >
+            <template #activator="{ props: tooltip }">
+              <v-btn
+                class="mr-0"
+                size="small"
+                icon="$expand"
+                :aria-label="t('appbar.accessibility.hideNotificationsPanel')"
+                v-bind="tooltip"
+                @click="toggleAll"
+              />
+            </template>
+          </v-tooltip>
         </v-toolbar>
         <v-slide-y-reverse-transition
           tag="div"

@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
+import { mergeProps } from 'vue'
 import { useAuthStore } from '~/stores/auth'
 import { useChatApi, type ChatConversation } from '~/composables/api/useChatApi'
-
-import type { HTMLAttributes } from 'vue'
 
 const theme = useTheme()
 const drawer = useState('drawer')
@@ -256,28 +255,6 @@ async function loadInboxConversations() {
     console.warn('Unable to load inbox conversations.', error)
   } finally {
     inboxLoading.value = false
-  }
-}
-
-function createActivatorProps(
-  menu: HTMLAttributes,
-  tooltip: HTMLAttributes,
-): HTMLAttributes {
-  const menuOnClick = menu.onClick
-  const tooltipOnClick = tooltip.onClick
-
-  return {
-    ...menu,
-    ...tooltip,
-    onClick(event: Event) {
-      if (typeof menuOnClick === 'function') {
-        menuOnClick(event as PointerEvent)
-      }
-
-      if (typeof tooltipOnClick === 'function') {
-        tooltipOnClick(event as PointerEvent)
-      }
-    },
   }
 }
 
@@ -538,11 +515,15 @@ watch(
       </UiButton>
       <v-menu location="bottom">
         <template #activator="{ props: menu }">
-          <v-tooltip location="bottom">
+          <v-tooltip
+            location="bottom"
+            eager
+            :activator-props="{ 'aria-describedby': undefined }"
+          >
             <template #activator="{ props: tooltip }">
               <UiButton
                 icon
-                v-bind="createActivatorProps(menu, tooltip)"
+                v-bind="mergeProps(menu, tooltip)"
                 class="ml-1"
                 variant="text"
                 :aria-label="t('appbar.accessibility.openUserMenu')"
