@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Host: bro-world-space.com
+Sitemap: https://bro-world-space.com/sitemap.xml
