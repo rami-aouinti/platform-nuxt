@@ -531,7 +531,8 @@ watch(
         class="ml-2"
         target="_blank"
         variant="text"
-        :aria-label="t('appbar.accessibility.openGithub')"
+        :aria-label="`${t('appbar.accessibility.openGithub')} (öffnet in neuem Tab)`"
+        :title="`${t('appbar.accessibility.openGithub')} (öffnet in neuem Tab)`"
       >
         <v-icon size="26" icon="mdi-github" aria-hidden="true" />
       </UiButton>
