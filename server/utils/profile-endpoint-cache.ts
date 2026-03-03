@@ -9,6 +9,47 @@ import {
 
 const PROFILE_CACHE_TTL_MS = 30_000
 
+function normalizeQuerySuffix(querySuffix?: string): string {
+  if (!querySuffix) {
+    return ''
+  }
+
+  const rawQuery = querySuffix.startsWith('?') ? querySuffix.slice(1) : querySuffix
+
+  if (!rawQuery) {
+    return ''
+  }
+
+  const sortedEntries = [...new URLSearchParams(rawQuery).entries()].sort(
+    ([leftKey, leftValue], [rightKey, rightValue]) => {
+      if (leftKey === rightKey) {
+        return leftValue.localeCompare(rightValue)
+      }
+
+      return leftKey.localeCompare(rightKey)
+    },
+  )
+
+  if (sortedEntries.length === 0) {
+    return ''
+  }
+
+  const normalized = new URLSearchParams()
+
+  for (const [key, value] of sortedEntries) {
+    normalized.append(key, value)
+  }
+
+  const suffix = normalized.toString()
+  return suffix ? `?${suffix}` : ''
+}
+
+export function buildProfileResourceCacheKey(resource: string, querySuffix?: string): string {
+  const normalizedSuffix = normalizeQuerySuffix(querySuffix)
+
+  return normalizedSuffix ? `${resource}${normalizedSuffix}` : resource
+}
+
 function getCacheTtlMs(event: H3Event): number {
   const ttl = Number(useRuntimeConfig(event).profileEndpointCacheTtlMs)
 
