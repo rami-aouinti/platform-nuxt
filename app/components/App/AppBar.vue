@@ -519,6 +519,12 @@ watch(isAuthenticated, (value) => {
           />
           <v-list-item
             v-if="isAuthenticated"
+            :title="t('appbar.applications')"
+            prepend-icon="mdi-apps"
+            to="/applications"
+          />
+          <v-list-item
+            v-if="isAuthenticated"
             :title="t('appbar.quiz')"
             prepend-icon="mdi-help-circle-outline"
             to="/quiz"
