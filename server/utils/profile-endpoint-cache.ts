@@ -9,6 +9,7 @@ import {
 } from './cache/profile-cache'
 
 const PROFILE_CACHE_TTL_MS = 30_000
+export const LONG_LIVED_PROFILE_CACHE_TTL_MS = 2 * 60 * 60 * 1000
 
 function normalizeQuerySuffix(querySuffix?: string): string {
   if (!querySuffix) {
@@ -51,7 +52,11 @@ export function buildProfileResourceCacheKey(resource: string, querySuffix?: str
   return normalizedSuffix ? `${resource}${normalizedSuffix}` : resource
 }
 
-function getCacheTtlMs(event: H3Event): number {
+function getCacheTtlMs(event: H3Event, overrideTtlMs?: number): number {
+  if (Number.isFinite(overrideTtlMs) && Number(overrideTtlMs) > 0) {
+    return Number(overrideTtlMs)
+  }
+
   const ttl = Number(useRuntimeConfig(event).profileEndpointCacheTtlMs)
 
   if (!Number.isFinite(ttl) || ttl <= 0) {
@@ -73,8 +78,9 @@ export async function writeProfileEndpointCache(
   event: H3Event,
   key: string,
   payload: unknown,
+  options?: { ttlMs?: number },
 ): Promise<void> {
-  const ttlMs = getCacheTtlMs(event)
+  const ttlMs = getCacheTtlMs(event, options?.ttlMs)
   const cacheKey = buildProfileCacheKey(event, key)
 
   await setProfileCache(event, cacheKey, payload, ttlMs)
@@ -101,6 +107,27 @@ export async function invalidateProfileCacheForGroup(
   await invalidateProfileCacheScopes(event, { groupId })
 }
 
+
+
+const SOCIAL_DATA_MUTATION_RESOURCE_PREFIXES = [
+  'profile-friends',
+  'profile-friends-requests-received',
+  'profile-friends-requests-sent',
+  'v1-me-chat',
+  'v1-me-notifications',
+  'v1-me-notifications-unread-count',
+  'v1-me-notification',
+] as const
+
+export async function invalidateSocialDataCaches(
+  event: H3Event,
+  scopes: { userId?: string, roleId?: string, groupId?: string } = {},
+): Promise<void> {
+  await invalidateProfileCacheResources(event, {
+    resources: [...SOCIAL_DATA_MUTATION_RESOURCE_PREFIXES],
+    scopes,
+  })
+}
 
 const PROFILE_MUTATION_RESOURCE_PREFIXES = [
   'profile',
