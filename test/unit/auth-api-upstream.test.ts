@@ -7,9 +7,6 @@ async function loadModule() {
 }
 
 describe('getAuthApiUpstreamCandidates', () => {
-  const originalNodeEnv = process.env.NODE_ENV
-  const originalLocalFallback = process.env.NUXT_AUTH_API_ALLOW_LOCAL_FALLBACK
-
   beforeEach(() => {
     vi.unstubAllGlobals()
     vi.stubGlobal('useRuntimeConfig', vi.fn(() => ({
@@ -21,46 +18,27 @@ describe('getAuthApiUpstreamCandidates', () => {
   })
 
   afterEach(() => {
-    process.env.NODE_ENV = originalNodeEnv
-    process.env.NUXT_AUTH_API_ALLOW_LOCAL_FALLBACK = originalLocalFallback
     vi.unstubAllGlobals()
   })
 
-  it('excludes localhost fallbacks in production by default', async () => {
-    process.env.NODE_ENV = 'production'
-    delete process.env.NUXT_AUTH_API_ALLOW_LOCAL_FALLBACK
-
+  it('returns only bro-world auth API candidates (no localhost fallback)', async () => {
     const { getAuthApiUpstreamCandidates } = await loadModule()
     const candidates = getAuthApiUpstreamCandidates({} as H3Event)
 
     expect(candidates).toEqual(['https://bro-world.org'])
   })
 
-  it('includes localhost fallbacks outside production', async () => {
-    process.env.NODE_ENV = 'development'
-    delete process.env.NUXT_AUTH_API_ALLOW_LOCAL_FALLBACK
+  it('keeps order and deduplicates auth API bases', async () => {
+    vi.stubGlobal('useRuntimeConfig', vi.fn(() => ({
+      authApiBase: 'https://bro-world.org',
+      public: {
+        authApiBase: 'https://api.bro-world.org',
+      },
+    })))
 
     const { getAuthApiUpstreamCandidates } = await loadModule()
     const candidates = getAuthApiUpstreamCandidates({} as H3Event)
 
-    expect(candidates).toEqual([
-      'https://bro-world.org',
-      'http://host.docker.internal',
-      'http://localhost',
-    ])
-  })
-
-  it('allows forcing localhost fallback in production via env flag', async () => {
-    process.env.NODE_ENV = 'production'
-    process.env.NUXT_AUTH_API_ALLOW_LOCAL_FALLBACK = '1'
-
-    const { getAuthApiUpstreamCandidates } = await loadModule()
-    const candidates = getAuthApiUpstreamCandidates({} as H3Event)
-
-    expect(candidates).toEqual([
-      'https://bro-world.org',
-      'http://host.docker.internal',
-      'http://localhost',
-    ])
+    expect(candidates).toEqual(['https://bro-world.org', 'https://api.bro-world.org'])
   })
 })
