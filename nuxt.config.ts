@@ -29,6 +29,16 @@ const filterLegacyInternalPages = (
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   devtools: { enabled: true },
+  app: {
+    head: {
+      meta: [
+        {
+          name: 'description',
+          content: 'Bro World platform',
+        },
+      ],
+    },
+  },
   routeRules: {
     '/jobs': { redirect: { to: '/offers', statusCode: 301 } },
     '/jobs/my-offers': {
