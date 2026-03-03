@@ -197,7 +197,7 @@ export default defineNuxtConfig({
       v2: '/api/v2',
     },
     public: {
-      authApiBase: 'http://localhost',
+      authApiBase: 'https://bro-world.org',
       mercurePublicUrl: 'http://localhost:3000/.well-known/mercure',
     },
   },
