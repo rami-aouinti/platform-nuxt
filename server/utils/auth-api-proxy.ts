@@ -117,6 +117,7 @@ export async function proxyAuthApiRequest(
     : (overrideBody ?? await readBody(event))
 
   let lastError: unknown
+  let lastUnauthorizedError: unknown = null
 
   for (const baseURL of upstreamCandidates) {
     const targetURL = `${baseURL.replace(/\/$/, '')}${path}`
@@ -146,11 +147,13 @@ export async function proxyAuthApiRequest(
       )
 
       if (response.status === 401) {
-        throw createError({
+        lastUnauthorizedError = createError({
           statusCode: 401,
           statusMessage: 'Unauthorized.',
           message: 'Upstream auth API rejected the Authorization header.',
         })
+
+        continue
       }
 
       if (response.status === 403) {
@@ -199,6 +202,10 @@ export async function proxyAuthApiRequest(
         lastError = error
       }
     }
+  }
+
+  if (lastUnauthorizedError) {
+    throw lastUnauthorizedError
   }
 
   const errorMessage = lastError instanceof Error ? lastError.message : 'fetch failed'
