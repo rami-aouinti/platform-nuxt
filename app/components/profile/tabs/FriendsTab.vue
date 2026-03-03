@@ -1,16 +1,18 @@
 <script setup lang="ts">
-import { Notify } from '~/stores/notification'
+import { storeToRefs } from 'pinia'
 import type { FriendRequest, FriendUser } from '~/composables/api/useFriendsApi'
-import { useFriendsApi } from '~/composables/api/useFriendsApi'
+import { useProfileFriendsStore } from '~/stores/profileFriends'
 
 const { t } = useI18n()
-const friendsApi = useFriendsApi()
+const profileFriendsStore = useProfileFriendsStore()
+const {
+  rows: friends,
+  sentRequests,
+  receivedRequests,
+  loading,
+  actionLoading,
+} = storeToRefs(profileFriendsStore)
 
-const friends = ref<FriendUser[]>([])
-const sentRequests = ref<FriendRequest[]>([])
-const receivedRequests = ref<FriendRequest[]>([])
-const loading = ref(false)
-const actionLoading = ref(false)
 const userIdToInvite = ref('')
 
 function getUserDisplay(user?: FriendUser | null) {
@@ -32,73 +34,26 @@ function getRequestUser(request: FriendRequest, mode: 'received' | 'sent') {
 }
 
 async function loadFriendsData() {
-  loading.value = true
-
-  try {
-    const [friendsResult, sentResult, receivedResult] = await Promise.all([
-      friendsApi.listFriends(),
-      friendsApi.listSentRequests(),
-      friendsApi.listReceivedRequests(),
-    ])
-
-    friends.value = friendsResult
-    sentRequests.value = sentResult
-    receivedRequests.value = receivedResult
-  } catch (error) {
-    Notify.error(error)
-  } finally {
-    loading.value = false
-  }
+  await profileFriendsStore.fetchRows()
 }
 
 async function sendRequest() {
   const userId = userIdToInvite.value.trim()
 
   if (!userId) {
-    Notify.error(t('profile.friends.errors.userIdRequired'))
     return
   }
 
-  actionLoading.value = true
-
-  try {
-    await friendsApi.sendFriendRequest(userId)
-    userIdToInvite.value = ''
-    await loadFriendsData()
-    Notify.success(t('profile.friends.actions.requestSent'))
-  } catch (error) {
-    Notify.error(error)
-  } finally {
-    actionLoading.value = false
-  }
+  await profileFriendsStore.create({ userId })
+  userIdToInvite.value = ''
 }
 
 async function acceptRequest(request: FriendRequest) {
-  actionLoading.value = true
-
-  try {
-    await friendsApi.acceptFriendRequest(request.id)
-    await loadFriendsData()
-    Notify.success(t('profile.friends.actions.requestAccepted'))
-  } catch (error) {
-    Notify.error(error)
-  } finally {
-    actionLoading.value = false
-  }
+  await profileFriendsStore.update(request.id)
 }
 
 async function removeFriend(userId: string) {
-  actionLoading.value = true
-
-  try {
-    await friendsApi.deleteFriend(userId)
-    await loadFriendsData()
-    Notify.success(t('profile.friends.actions.friendRemoved'))
-  } catch (error) {
-    Notify.error(error)
-  } finally {
-    actionLoading.value = false
-  }
+  await profileFriendsStore.remove(userId)
 }
 
 onMounted(loadFriendsData)
@@ -171,7 +126,7 @@ onMounted(loadFriendsData)
         <v-list v-if="sentRequests.length" density="comfortable" class="bg-transparent pa-0">
           <v-list-item v-for="request in sentRequests" :key="request.id" class="px-0">
             <template #title>
-              {{ getUserDisplay(getRequestUser(request, 'sent')) }}
+              {{ getRequestUser(request, 'sent') ? getUserDisplay(getRequestUser(request, 'sent')) : '-' }}
             </template>
           </v-list-item>
         </v-list>
@@ -183,7 +138,7 @@ onMounted(loadFriendsData)
         <v-list v-if="receivedRequests.length" density="comfortable" class="bg-transparent pa-0">
           <v-list-item v-for="request in receivedRequests" :key="request.id" class="px-0">
             <template #title>
-              {{ getUserDisplay(getRequestUser(request, 'received')) }}
+              {{ getRequestUser(request, 'received') ? getUserDisplay(getRequestUser(request, 'received')) : '-' }}
             </template>
             <template #append>
               <v-btn

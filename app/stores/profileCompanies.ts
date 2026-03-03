@@ -7,6 +7,8 @@ import type {
   UpdateProfileCompanyPayload,
 } from '~/composables/useProfileCompaniesApi'
 import { useProfileCompaniesApi } from '~/composables/useProfileCompaniesApi'
+import { resolvePaginatedTotal } from '~/composables/api/httpUiErrors'
+import { createCrudEntityStore } from '~/stores/_factories/createCrudEntityStore'
 import { Notify } from '~/stores/notification'
 
 const fallbackSchema: ProfileCompanySchema = {
@@ -35,131 +37,45 @@ export const useProfileCompaniesStore = defineStore('profileCompanies', () => {
 
   const api = useProfileCompaniesApi()
 
-  const list = ref<ProfileCompany[]>([])
-  const current = ref<ProfileCompany | null>(null)
-  const loading = ref(false)
-  const error = ref<string | null>(null)
+  const crudStore = createCrudEntityStore<ProfileCompany, CreateProfileCompanyPayload, UpdateProfileCompanyPayload, PatchProfileCompanyPayload>({
+    fetchRows: async (query) => {
+      const response = await api.list(query)
+      return {
+        data: response.data,
+        total: resolvePaginatedTotal(response.meta?.total, response.data.length),
+      }
+    },
+    fetchItem: (id) => api.get(id),
+    create: (payload) => api.create(payload),
+    update: (id, payload) => api.update(id, payload),
+    patch: (id, payload) => api.patch(id, payload),
+    remove: async (id) => { await api.delete(id) },
+    applyUpdate: (entity, payload) => ({ ...entity, ...payload }),
+    applyPatch: (entity, payload) => ({ ...entity, ...payload }),
+    notifications: {
+      success: {
+        create: t('notifications.profileCompanies.created'),
+        update: t('notifications.profileCompanies.updated'),
+        patch: t('notifications.profileCompanies.updated'),
+        remove: t('notifications.profileCompanies.deleted'),
+      },
+      error: {
+        fetchRows: t('notifications.profileCompanies.loadListError'),
+        fetchItem: t('notifications.profileCompanies.loadItemError'),
+        create: t('notifications.profileCompanies.createError'),
+        update: t('notifications.profileCompanies.updateError'),
+        patch: t('notifications.profileCompanies.patchError'),
+        remove: t('notifications.profileCompanies.deleteError'),
+      },
+      notifySuccess: (message) => Notify.success(message),
+      notifyError: (message) => Notify.error(message),
+    },
+  })
+
   const schema = ref<ProfileCompanySchema | null>(null)
   const schemaLoading = ref(false)
   const schemaError = ref<string | null>(null)
   const usesSchemaFallback = ref(false)
-
-  function setErrorMessage(message: string | null) {
-    error.value = message
-  }
-
-  async function fetchList() {
-    loading.value = true
-    setErrorMessage(null)
-
-    try {
-      const response = await api.list()
-      list.value = response.data
-      return list.value
-    } catch (errorValue) {
-      setErrorMessage(t('notifications.profileCompanies.loadListError'))
-      throw errorValue
-    } finally {
-      loading.value = false
-    }
-  }
-
-  async function fetchOne(id: string) {
-    loading.value = true
-    setErrorMessage(null)
-
-    try {
-      const company = await api.get(id)
-      current.value = company
-      const exists = list.value.some(item => item.id === id)
-      if (!exists) {
-        list.value = [company, ...list.value]
-      }
-      return company
-    } catch (errorValue) {
-      setErrorMessage(t('notifications.profileCompanies.loadItemError'))
-      throw errorValue
-    } finally {
-      loading.value = false
-    }
-  }
-
-  async function create(payload: CreateProfileCompanyPayload) {
-    loading.value = true
-    setErrorMessage(null)
-
-    try {
-      const created = await api.create(payload)
-      list.value = [created, ...list.value]
-      current.value = created
-      Notify.success(t('notifications.profileCompanies.created'))
-      return created
-    } catch (errorValue) {
-      setErrorMessage(t('notifications.profileCompanies.createError'))
-      Notify.error(error.value)
-      throw errorValue
-    } finally {
-      loading.value = false
-    }
-  }
-
-  async function update(id: string, payload: UpdateProfileCompanyPayload) {
-    loading.value = true
-    setErrorMessage(null)
-
-    try {
-      const updated = await api.update(id, payload)
-      list.value = list.value.map(item => item.id === id ? updated : item)
-      current.value = updated
-      Notify.success(t('notifications.profileCompanies.updated'))
-      return updated
-    } catch (errorValue) {
-      setErrorMessage(t('notifications.profileCompanies.updateError'))
-      Notify.error(error.value)
-      throw errorValue
-    } finally {
-      loading.value = false
-    }
-  }
-
-  async function patch(id: string, payload: PatchProfileCompanyPayload) {
-    loading.value = true
-    setErrorMessage(null)
-
-    try {
-      const updated = await api.patch(id, payload)
-      list.value = list.value.map(item => item.id === id ? updated : item)
-      current.value = updated
-      Notify.success(t('notifications.profileCompanies.updated'))
-      return updated
-    } catch (errorValue) {
-      setErrorMessage(t('notifications.profileCompanies.patchError'))
-      Notify.error(error.value)
-      throw errorValue
-    } finally {
-      loading.value = false
-    }
-  }
-
-  async function remove(id: string) {
-    loading.value = true
-    setErrorMessage(null)
-
-    try {
-      await api.delete(id)
-      list.value = list.value.filter(item => item.id !== id)
-      if (current.value?.id === id) {
-        current.value = null
-      }
-      Notify.success(t('notifications.profileCompanies.deleted'))
-    } catch (errorValue) {
-      setErrorMessage(t('notifications.profileCompanies.deleteError'))
-      Notify.error(error.value)
-      throw errorValue
-    } finally {
-      loading.value = false
-    }
-  }
 
   async function fetchSchema(method: ProfileCompanySchemaMethod) {
     schemaLoading.value = true
@@ -180,20 +96,15 @@ export const useProfileCompaniesStore = defineStore('profileCompanies', () => {
   }
 
   return {
-    list,
-    current,
-    loading,
-    error,
+    ...crudStore,
+    list: crudStore.rows,
+    current: crudStore.item,
+    fetchList: crudStore.fetchRows,
+    fetchOne: crudStore.fetchItem,
     schema,
     schemaLoading,
     schemaError,
     usesSchemaFallback,
-    fetchList,
-    fetchOne,
-    create,
-    update,
-    patch,
-    remove,
     fetchSchema,
   }
 })
