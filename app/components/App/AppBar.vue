@@ -1,8 +1,14 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
-import { mergeProps } from 'vue'
+import { defineAsyncComponent, mergeProps } from 'vue'
 import { useAuthStore } from '~/stores/auth'
-import { useChatApi, type ChatConversation } from '~/composables/api/useChatApi'
+
+const AppBarNotificationsMenu = defineAsyncComponent(
+  () => import('~/components/App/AppBarNotificationsMenu.vue'),
+)
+const AppBarInboxMenu = defineAsyncComponent(
+  () => import('~/components/App/AppBarInboxMenu.vue'),
+)
 
 const theme = useTheme()
 const drawer = useState('drawer')
@@ -31,6 +37,13 @@ const breadcrumbs = computed(() => {
       to: r.path,
     }))
 })
+
+const isHomeRoute = computed(() => route.path === '/')
+const secondaryActionsOpened = ref(false)
+const showSecondaryActions = computed(
+  () => !isHomeRoute.value || secondaryActionsOpened.value,
+)
+
 const isDark = computed({
   get() {
     return theme.current.value.dark
@@ -47,7 +60,6 @@ const themeToggleAriaLabel = computed(() =>
 const authStore = useAuthStore()
 const { isAuthenticated, profile, hasAdminAccess, rolesLoading, initialized } =
   storeToRefs(authStore)
-const chatApi = useChatApi()
 
 type UserNotification = {
   id: string
@@ -61,14 +73,15 @@ const notifications = ref<UserNotification[]>([])
 const unreadCount = ref(0)
 const notificationsLoading = ref(false)
 
-const latestNotifications = computed(() => notifications.value.slice(0, 3))
 const hasUnreadNotifications = computed(() => unreadCount.value > 0)
+
+type ChatConversation = import('~/composables/api/useChatApi').ChatConversation
 
 const inboxConversations = ref<ChatConversation[]>([])
 const inboxLoading = ref(false)
-const latestInboxConversations = computed(() =>
-  inboxConversations.value.slice(0, 3),
-)
+const chatApi = shallowRef<{
+  listConversations: () => Promise<ChatConversation[]>
+} | null>(null)
 
 const localeFlags: Record<string, string> = {
   en: '/flags/en.svg',
@@ -86,10 +99,12 @@ const languageOptions = computed(() =>
       }
     }
 
+    const code = String(entry.code)
+
     return {
-      code: entry.code,
-      name: entry.name ?? entry.code.toUpperCase(),
-      flag: localeFlags[entry.code] ?? '/flags/en.svg',
+      code,
+      name: entry.name ?? code.toUpperCase(),
+      flag: localeFlags[code] ?? '/flags/en.svg',
     }
   }),
 )
@@ -189,54 +204,13 @@ async function handleNotificationMenuOpen() {
   unreadCount.value = 0
 }
 
-function getNotificationIcon(type: string) {
-  if (type.includes('company')) return 'mdi-domain'
-  if (type.includes('application') && type.includes('submitted'))
-    return 'mdi-file-document-plus-outline'
-  if (type.includes('application') && type.includes('decided'))
-    return 'mdi-check-decagram-outline'
-  return 'mdi-bell-outline'
-}
+async function getChatApi() {
+  if (!chatApi.value) {
+    const { useChatApi } = await import('~/composables/api/useChatApi')
+    chatApi.value = useChatApi()
+  }
 
-function getNotificationMeta(notification: UserNotification) {
-  return notification.readAt ? 'Lu' : 'Nouveau'
-}
-
-function getNotificationPreview(message: string) {
-  return message.length > 64 ? `${message.slice(0, 64)}…` : message
-}
-
-function getInboxAvatarLabel(conversation: ChatConversation) {
-  const label = (conversation.title ?? '').trim()
-  return label.slice(0, 1).toUpperCase() || 'C'
-}
-
-function getInboxAvatarUrl(conversation: ChatConversation) {
-  const participantWithPhoto = conversation.participants?.find((participant) =>
-    Boolean(participant.photo),
-  )
-  return participantWithPhoto?.photo ?? null
-}
-
-function getInboxPreview(conversation: ChatConversation) {
-  const preview = conversation.lastMessage?.trim() ?? ''
-  return preview.length > 64
-    ? `${preview.slice(0, 64)}…`
-    : preview || 'Aucun message récent.'
-}
-
-function getInboxMeta(conversation: ChatConversation) {
-  if (!conversation.updatedAt) return ''
-
-  const parsedDate = new Date(conversation.updatedAt)
-  if (Number.isNaN(parsedDate.getTime())) return ''
-
-  return new Intl.DateTimeFormat('fr-FR', {
-    day: '2-digit',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(parsedDate)
+  return chatApi.value
 }
 
 async function loadInboxConversations() {
@@ -248,8 +222,8 @@ async function loadInboxConversations() {
   inboxLoading.value = true
 
   try {
-    const response = await chatApi.listConversations()
-    inboxConversations.value = response
+    const api = await getChatApi()
+    inboxConversations.value = await api.listConversations()
   } catch (error) {
     inboxConversations.value = []
     console.warn('Unable to load inbox conversations.', error)
@@ -269,7 +243,6 @@ watch(
     }
 
     loadNotifications()
-    loadInboxConversations()
   },
   { immediate: true },
 )
@@ -302,7 +275,21 @@ watch(
     <v-spacer />
     <div id="app-bar" class="app-bar__portal" />
     <v-spacer />
-    <div class="app-bar__right-actions d-flex align-center">
+
+    <UiButton
+      v-if="isHomeRoute && !showSecondaryActions"
+      variant="text"
+      class="mr-2"
+      :aria-label="t('appbar.accessibility.openUserMenu')"
+      @click="secondaryActionsOpened = true"
+    >
+      <v-icon icon="mdi-dots-horizontal" size="24" aria-hidden="true" />
+    </UiButton>
+
+    <div
+      v-if="showSecondaryActions"
+      class="app-bar__right-actions d-flex align-center"
+    >
       <v-switch
         v-model="isDark"
         :aria-label="themeToggleAriaLabel"
@@ -314,193 +301,27 @@ watch(
         true-icon="mdi-weather-night"
         class="opacity-80"
       />
-      <v-menu
-        v-if="isAuthenticated"
-        location="bottom"
-        :offset="8"
-        @update:model-value="(opened) => opened && handleNotificationMenuOpen()"
-      >
-        <template #activator="{ props }">
-          <UiButton
-            icon
-            class="ml-1"
-            variant="text"
-            :aria-label="t('appbar.accessibility.openNotifications')"
-            v-bind="props"
-          >
-            <v-badge
-              :model-value="hasUnreadNotifications"
-              :content="unreadCount"
-              color="error"
-              offset-x="3"
-              offset-y="3"
-            >
-              <v-icon icon="mdi-bell" size="26" aria-hidden="true" />
-            </v-badge>
-          </UiButton>
-        </template>
 
-        <v-card class="app-bar__notifications-menu" elevation="12" rounded="xl">
-          <v-progress-linear
-            v-if="notificationsLoading"
-            indeterminate
-            color="primary"
-            height="3"
-          />
+      <component
+        :is="AppBarNotificationsMenu"
+        :is-authenticated="isAuthenticated"
+        :notifications="notifications"
+        :unread-count="unreadCount"
+        :notifications-loading="notificationsLoading"
+        :open-notifications-aria-label="
+          t('appbar.accessibility.openNotifications')
+        "
+        @open="handleNotificationMenuOpen"
+      />
 
-          <v-list
-            v-if="latestNotifications.length"
-            class="py-2"
-            bg-color="transparent"
-          >
-            <v-list-item
-              v-for="notification in latestNotifications"
-              :key="notification.id"
-              :to="`/profile/notifications/${notification.id}`"
-              class="app-bar__notification-item"
-            >
-              <template #prepend>
-                <div class="app-bar__notification-avatar">
-                  <v-icon
-                    :icon="getNotificationIcon(notification.type)"
-                    size="20"
-                    color="white"
-                  />
-                </div>
-              </template>
-
-              <v-list-item-title class="app-bar__notification-title">
-                {{ notification.title }}
-              </v-list-item-title>
-
-              <v-list-item-subtitle class="app-bar__notification-preview">
-                {{ getNotificationPreview(notification.message) }}
-              </v-list-item-subtitle>
-
-              <div class="app-bar__notification-meta">
-                <v-icon icon="mdi-clock-time-four-outline" size="14" />
-                <span>{{ getNotificationMeta(notification) }}</span>
-              </div>
-
-              <template #append>
-                <span
-                  v-if="!notification.readAt"
-                  class="app-bar__notification-dot"
-                />
-              </template>
-            </v-list-item>
-          </v-list>
-
-          <div v-else class="text-medium-emphasis text-body-2 px-4 py-6">
-            Aucune notification
-          </div>
-
-          <v-divider />
-          <v-list bg-color="transparent" class="py-0">
-            <v-list-item
-              to="/profile/notifications"
-              class="font-weight-bold"
-              title="All"
-              append-icon="mdi-chevron-right"
-            />
-          </v-list>
-        </v-card>
-      </v-menu>
-      <v-menu
-        v-if="isAuthenticated"
-        location="bottom"
-        :offset="8"
-        @update:model-value="(opened) => opened && loadInboxConversations()"
-      >
-        <template #activator="{ props }">
-          <UiButton
-            icon
-            class="ml-1"
-            variant="text"
-            :aria-label="t('appbar.accessibility.openChat')"
-            v-bind="props"
-          >
-            <v-icon
-              icon="mdi-chat-processing-outline"
-              size="26"
-              aria-hidden="true"
-            />
-          </UiButton>
-        </template>
-
-        <v-card class="app-bar__notifications-menu" elevation="12" rounded="xl">
-          <v-progress-linear
-            v-if="inboxLoading"
-            indeterminate
-            color="primary"
-            height="3"
-          />
-
-          <v-list
-            v-if="latestInboxConversations.length"
-            class="py-2"
-            bg-color="transparent"
-          >
-            <v-list-item
-              v-for="conversation in latestInboxConversations"
-              :key="conversation.id"
-              :to="{
-                path: '/chat',
-                query: { conversationId: conversation.id },
-              }"
-              class="app-bar__notification-item"
-            >
-              <template #prepend>
-                <v-avatar
-                  color="primary"
-                  variant="tonal"
-                  size="44"
-                  class="mr-2"
-                  :image="getInboxAvatarUrl(conversation) ?? undefined"
-                >
-                  <span v-if="!getInboxAvatarUrl(conversation)">
-                    {{ getInboxAvatarLabel(conversation) }}
-                  </span>
-                </v-avatar>
-              </template>
-
-              <v-list-item-title class="app-bar__notification-title">
-                {{ conversation.title || `Conversation #${conversation.id}` }}
-              </v-list-item-title>
-
-              <v-list-item-subtitle class="app-bar__notification-preview">
-                {{ getInboxPreview(conversation) }}
-              </v-list-item-subtitle>
-
-              <div class="app-bar__notification-meta">
-                <v-icon icon="mdi-clock-time-four-outline" size="14" />
-                <span>{{ getInboxMeta(conversation) }}</span>
-              </div>
-
-              <template #append>
-                <span
-                  v-if="conversation.unreadCount"
-                  class="app-bar__notification-dot"
-                />
-              </template>
-            </v-list-item>
-          </v-list>
-
-          <div v-else class="text-medium-emphasis text-body-2 px-4 py-6">
-            Aucune conversation
-          </div>
-
-          <v-divider />
-          <v-list bg-color="transparent" class="py-0">
-            <v-list-item
-              to="/chat"
-              class="font-weight-bold"
-              title="All"
-              append-icon="mdi-chevron-right"
-            />
-          </v-list>
-        </v-card>
-      </v-menu>
+      <component
+        :is="AppBarInboxMenu"
+        :is-authenticated="isAuthenticated"
+        :inbox-loading="inboxLoading"
+        :inbox-conversations="inboxConversations"
+        :open-chat-aria-label="t('appbar.accessibility.openChat')"
+        @open="loadInboxConversations"
+      />
       <UiButton
         icon
         href="https://github.com/rami-aouinti/platform-nuxt"
@@ -659,56 +480,6 @@ watch(
   object-fit: cover;
   border-radius: 2px;
   display: block;
-}
-
-.app-bar__notifications-menu {
-  width: min(420px, calc(100vw - 24px));
-  overflow: hidden;
-}
-
-.app-bar__notification-item {
-  margin: 4px 10px;
-  border-radius: 14px;
-  padding-inline: 10px;
-}
-
-.app-bar__notification-avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, rgb(74, 85, 104), rgb(45, 55, 72));
-  display: grid;
-  place-items: center;
-  margin-right: 10px;
-}
-
-.app-bar__notification-title {
-  color: rgb(var(--v-theme-on-surface));
-  font-weight: 700;
-}
-
-.app-bar__notification-preview {
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.app-bar__notification-meta {
-  margin-top: 4px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: rgba(var(--v-theme-on-surface), 0.62);
-  font-size: 0.82rem;
-}
-
-.app-bar__notification-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background-color: rgb(var(--v-theme-primary));
-  display: inline-block;
 }
 
 @media (max-width: 960px) {
