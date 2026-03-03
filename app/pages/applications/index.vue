@@ -1,142 +1,152 @@
 <script setup lang="ts">
-import logoSlack from '@/assets/img/small-logos/logo-slack.svg'
-import logoSpotify from '@/assets/img/small-logos/logo-spotify.svg'
-import logoXd from '@/assets/img/small-logos/logo-xd.svg'
-import logoAsana from '@/assets/img/small-logos/logo-asana.svg'
-import logoInvision from '@/assets/img/small-logos/logo-invision.svg'
-import logoAtlassian from '@/assets/img/small-logos/logo-atlassian.svg'
-import team1 from '@/assets/img/team-1.jpg'
-import team2 from '@/assets/img/team-2.jpg'
-import team3 from '@/assets/img/team-3.jpg'
-import team4 from '@/assets/img/team-4.jpg'
-import team5 from '@/assets/img/team-5.jpg'
+import { Notify } from '~/stores/notification'
+import { useProfileApplicationsApi, type ProfileApplication } from '~/composables/api/useProfileApplicationsApi'
 
 definePageMeta({
   title: 'Applications',
   icon: 'mdi-apps',
-  drawerIndex: 5,
   requiresAuth: true,
   layout: 'default',
   middleware: ['auth'],
 })
 
-type ApplicationCard = {
-  image: string
-  title: string
-  description: string
-  participants: number
-  dueDate: string
-  avatars: string[]
+const applicationsApi = useProfileApplicationsApi()
+const loading = ref(false)
+const togglingId = ref<string | null>(null)
+const applications = ref<ProfileApplication[]>([])
+
+const availableApplications = computed(() =>
+  applications.value.filter((application) => application.enabled),
+)
+
+async function loadApplications() {
+  loading.value = true
+
+  try {
+    applications.value = await applicationsApi.list()
+  }
+  catch (error) {
+    Notify.error(error)
+  }
+  finally {
+    loading.value = false
+  }
 }
 
-const applications: ApplicationCard[] = [
-  {
-    image: logoSlack,
-    title: 'Slack Bot',
-    description:
-      "If everything I did failed - which it doesn't, I think that it actually succeeds.",
-    participants: 5,
-    dueDate: '02.03.22',
-    avatars: [team1, team2, team3, team4, team3],
-  },
-  {
-    image: logoSpotify,
-    title: 'Premium support',
-    description:
-      "Pink is obviously a better color. Everyone's born confident, and everything's taken away from you.",
-    participants: 3,
-    dueDate: '22.11.21',
-    avatars: [team4, team3, team2],
-  },
-  {
-    image: logoXd,
-    title: 'Design tools',
-    description:
-      "Constantly growing. We're constantly making mistakes from which we learn and improve.",
-    participants: 4,
-    dueDate: '06.03.20',
-    avatars: [team4, team3, team5, team2],
-  },
-  {
-    image: logoAsana,
-    title: 'Looking great',
-    description:
-      'You have the opportunity to play this game of life you need to appreciate every moment.',
-    participants: 6,
-    dueDate: '14.03.24',
-    avatars: [team5, team4, team2, team3, team5, team2],
-  },
-  {
-    image: logoInvision,
-    title: 'Developer first',
-    description:
-      'For standing out. But the time is now to be okay to be the greatest you.',
-    participants: 4,
-    dueDate: '16.01.22',
-    avatars: [team5, team4, team5, team2],
-  },
-  {
-    image: logoAtlassian,
-    title: 'Product Development',
-    description:
-      'We strive to embrace and drive change in our industry. We are happy to work at such a project.',
-    participants: 4,
-    dueDate: '24.01.22',
-    avatars: [team5, team2, team5, team4],
-  },
-]
+async function toggleApplication(application: ProfileApplication) {
+  if (!application.enabled) {
+    return
+  }
+
+  togglingId.value = application.id
+
+  try {
+    const updated = application.active
+      ? await applicationsApi.deactivate(application.id)
+      : await applicationsApi.activate(application.id)
+
+    const index = applications.value.findIndex((item) => item.id === application.id)
+
+    if (index >= 0) {
+      applications.value[index] = {
+        ...applications.value[index],
+        active: updated.active,
+      }
+    }
+  }
+  catch (error) {
+    Notify.error(error)
+  }
+  finally {
+    togglingId.value = null
+  }
+}
+
+onMounted(loadApplications)
 </script>
 
 <template>
   <v-container fluid class="pa-6 bg-grey-lighten-4 min-h-screen">
-    <v-row>
+    <div class="d-flex justify-space-between align-center mb-6">
+      <div>
+        <h1 class="text-h4 font-weight-bold mb-1">Applications</h1>
+        <p class="text-body-2 text-medium-emphasis mb-0">
+          Activez ou désactivez les applications disponibles pour votre profil.
+        </p>
+      </div>
+      <v-btn
+        prepend-icon="mdi-refresh"
+        variant="text"
+        :loading="loading"
+        @click="loadApplications"
+      >
+        Recharger
+      </v-btn>
+    </div>
+
+    <v-row v-if="loading && !applications.length">
+      <v-col v-for="index in 6" :key="`skeleton-${index}`" cols="12" md="6" lg="4">
+        <v-skeleton-loader type="card" class="rounded-xl" />
+      </v-col>
+    </v-row>
+
+    <v-alert
+      v-else-if="!availableApplications.length"
+      type="info"
+      variant="tonal"
+      border="start"
+      icon="mdi-information-outline"
+    >
+      Aucune application disponible pour le moment.
+    </v-alert>
+
+    <v-row v-else>
       <v-col
-        v-for="application in applications"
-        :key="application.title"
+        v-for="application in availableApplications"
+        :key="application.id"
         cols="12"
         md="6"
         lg="4"
       >
         <v-card rounded="xl" elevation="4" class="h-100 pa-6">
-          <div class="d-flex align-start">
-            <v-avatar size="72" rounded="xl" color="grey-darken-4" class="mt-n10">
-              <v-img :src="application.image" width="48" height="48" />
+          <div class="d-flex align-start ga-4">
+            <v-avatar size="72" rounded="xl" color="grey-darken-4">
+              <v-img
+                v-if="application.logo"
+                :src="application.logo"
+                :alt="`Logo ${application.name}`"
+                width="48"
+                height="48"
+              />
+              <span v-else class="text-caption font-weight-bold">{{ application.name.slice(0, 2).toUpperCase() }}</span>
             </v-avatar>
 
-            <div class="ms-4 flex-grow-1">
-              <h2 class="text-h5 font-weight-bold text-primary mb-2">{{ application.title }}</h2>
-              <div class="d-flex align-center ga-1">
-                <v-avatar
-                  v-for="(avatar, index) in application.avatars"
-                  :key="`${application.title}-${index}`"
-                  size="28"
-                  class="border-sm border-white"
-                  :style="index ? 'margin-left: -8px;' : ''"
-                >
-                  <v-img :src="avatar" :alt="`Participant ${index + 1}`" cover />
-                </v-avatar>
-              </div>
-            </div>
-
-            <v-btn icon variant="text" color="grey" aria-label="Actions">
-              <v-icon icon="mdi-dots-vertical" />
-            </v-btn>
-          </div>
-
-          <p class="text-body-1 text-medium-emphasis mt-6 mb-6">{{ application.description }}</p>
-
-          <v-divider class="mb-4" />
-
-          <div class="d-flex justify-space-between">
-            <div>
-              <p class="text-h6 font-weight-bold mb-0">{{ application.participants }}</p>
-              <p class="text-body-2 text-medium-emphasis mb-0">Participants</p>
-            </div>
-            <div class="text-end">
-              <p class="text-h6 font-weight-bold mb-0">{{ application.dueDate }}</p>
-              <p class="text-body-2 text-medium-emphasis mb-0">Due date</p>
+            <div class="flex-grow-1">
+              <h2 class="text-h5 font-weight-bold mb-1">{{ application.name }}</h2>
+              <v-chip
+                :color="application.active ? 'success' : 'grey'"
+                size="small"
+                variant="tonal"
+              >
+                {{ application.active ? 'Active' : 'Inactive' }}
+              </v-chip>
             </div>
           </div>
+
+          <p class="text-body-1 text-medium-emphasis mt-4 mb-6">
+            {{ application.description || 'Aucune description.' }}
+          </p>
+
+          <v-btn
+            block
+            :color="application.active ? 'warning' : 'primary'"
+            :variant="application.active ? 'outlined' : 'flat'"
+            :loading="togglingId === application.id"
+            :disabled="loading"
+            @click="toggleApplication(application)"
+          >
+            {{ application.active ? 'Désactiver' : 'Activer' }}
+          </v-btn>
         </v-card>
       </v-col>
     </v-row>
