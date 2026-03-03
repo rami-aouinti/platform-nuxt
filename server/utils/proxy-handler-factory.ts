@@ -11,6 +11,7 @@ import { proxyAuthApiGet, proxyAuthApiRequest } from './auth-api-proxy'
 import { buildQuerySuffix } from './query-string'
 import { requireAuthenticatedRequest } from './require-auth'
 import { buildQuerySuffixFromQuery } from './upstream-query'
+import { invalidateSocialDataCaches } from './profile-endpoint-cache'
 
 type ProxyHttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
@@ -52,6 +53,17 @@ function isSupportedMethod(method: string): method is ProxyHttpMethod {
 
 function normalizeCatchAllPath(pathParam: string | string[] | undefined) {
   return Array.isArray(pathParam) ? pathParam.join('/') : (pathParam ?? '')
+}
+
+function isSocialDataMutationPath(path: string): boolean {
+  return (
+    path === 'me/friends' ||
+    path.startsWith('me/friends/') ||
+    path === 'me/notifications' ||
+    path.startsWith('me/notifications/') ||
+    path === 'me/chat' ||
+    path.startsWith('me/chat/')
+  )
 }
 
 const FIRST_CLASS_V1_DOMAINS = [
@@ -202,7 +214,12 @@ export function createVersionedCatchAllProxyHandlerWithOptions(
       ? upstreamVersionPrefix.slice(0, -1)
       : upstreamVersionPrefix
     const upstreamPath = `${normalizedPrefix}/${normalizedPath}${suffix}`
+    const response = await proxyAuthApiRequest(event, upstreamPath, method)
 
-    return await proxyAuthApiRequest(event, upstreamPath, method)
+    if (version === 'v1' && method !== 'GET' && isSocialDataMutationPath(normalizedPath)) {
+      await invalidateSocialDataCaches(event)
+    }
+
+    return response
   })
 }

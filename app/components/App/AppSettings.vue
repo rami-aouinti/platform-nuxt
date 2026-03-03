@@ -37,7 +37,6 @@ const menuShow = ref(false)
         location="top"
         :text="t('settings.themePalette')"
         eager
-        :activator-props="{ 'aria-describedby': undefined }"
       >
         <template #activator="{ props: tooltip }">
           <v-btn

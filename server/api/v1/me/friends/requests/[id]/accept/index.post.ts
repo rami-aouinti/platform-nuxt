@@ -1,3 +1,4 @@
+import { invalidateSocialDataCaches } from '../../../../../../../utils/profile-endpoint-cache'
 import { createProxyEntityHandler } from '../../../../../../../utils/proxy-handler-factory'
 
 export default createProxyEntityHandler({
@@ -8,4 +9,7 @@ export default createProxyEntityHandler({
     message: 'Request identifier is required.',
   },
   upstreamPathBuilder: id => `/api/v1/me/friends/requests/${encodeURIComponent(id)}/accept`,
+  onSuccess: async (event) => {
+    await invalidateSocialDataCaches(event)
+  },
 })

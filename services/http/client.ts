@@ -30,6 +30,9 @@ type StandardApiError = {
   errors?: unknown
 }
 
+
+let isUnauthorizedHandlingInProgress = false
+
 function extractStandardErrorPayload(context: FetchContext & { response?: Response }) {
   const payload =
     (context.error as { data?: unknown } | undefined)?.data ?? context.response?._data
@@ -88,7 +91,21 @@ function handleGlobalHttpError(error: HttpRequestError) {
   const authStore = useAuthStore()
 
   if (error.statusCode === 401) {
-    authStore.logout()
+    if (!authStore.token) {
+      void navigateTo('/login')
+      return
+    }
+
+    if (isUnauthorizedHandlingInProgress) {
+      return
+    }
+
+    isUnauthorizedHandlingInProgress = true
+
+    void authStore.logout().finally(() => {
+      isUnauthorizedHandlingInProgress = false
+    })
+
     Notify.error('Session expirée. Veuillez vous reconnecter.')
     void navigateTo('/login')
     return

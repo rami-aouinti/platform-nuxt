@@ -2,6 +2,10 @@
 import VercelAnalyticsPlaceholder
   from "~/components/layout/analytics/VercelAnalyticsPlaceholder";
 import SpeedInsightsPlaceholder from "~/components/layout/analytics/SpeedInsightsPlaceholder";
+
+const route = useRoute();
+const isFloatingAppBar = computed(() => route.meta.appBarFloating !== false);
+
 const LazyAnalytics = defineAsyncComponent({
   loader: async () => {
     if (import.meta.server) {
@@ -28,14 +32,17 @@ const LazySpeedInsights = defineAsyncComponent({
 
 </script>
 <template>
-  <div class="default-layout">
+  <div
+    class="default-layout"
+    :class="{ 'default-layout--floating': isFloatingAppBar }"
+  >
     <AppBar
       :show-drawer-toggle="false"
       :show-breadcrumbs="false"
-      :floating="true"
+      :floating="isFloatingAppBar"
       show-brand-link
     />
-    <v-main>
+    <v-main class="default-layout__main">
       <slot />
     </v-main>
     <AppFooter />
@@ -53,13 +60,25 @@ const LazySpeedInsights = defineAsyncComponent({
 </template>
 
 <style scoped>
-.default-layout-main {
-  padding-top: 0;
-  padding-bottom: 0;
-  margin-top: 64px;
-  margin-bottom: 32px;
-  height: calc(100vh - 64px - 32px);
-  overflow-y: auto;
-  transition-property: padding;
+.default-layout {
+  --default-layout-app-bar-offset: 64px;
+}
+
+.default-layout--floating {
+  --default-layout-app-bar-offset: 84px;
+}
+
+.default-layout__main {
+  padding-top: var(--default-layout-app-bar-offset);
+}
+
+@media (max-width: 960px) {
+  .default-layout {
+    --default-layout-app-bar-offset: 56px;
+  }
+
+  .default-layout--floating {
+    --default-layout-app-bar-offset: 72px;
+  }
 }
 </style>

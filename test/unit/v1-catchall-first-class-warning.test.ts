@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { H3Event } from 'h3'
 import { createVersionedCatchAllProxyHandler } from '../../server/utils/proxy-handler-factory'
 import { proxyAuthApiRequest } from '../../server/utils/auth-api-proxy'
+import { invalidateSocialDataCaches } from '../../server/utils/profile-endpoint-cache'
 
 vi.mock('../../server/utils/auth-api-proxy', () => ({
   proxyAuthApiRequest: vi.fn(),
@@ -10,6 +11,10 @@ vi.mock('../../server/utils/auth-api-proxy', () => ({
 
 vi.mock('../../server/utils/require-auth', () => ({
   requireAuthenticatedRequest: vi.fn(),
+}))
+
+vi.mock('../../server/utils/profile-endpoint-cache', () => ({
+  invalidateSocialDataCaches: vi.fn(),
 }))
 
 describe('v1 catch-all first-class warning', () => {
@@ -32,5 +37,19 @@ describe('v1 catch-all first-class warning', () => {
     )
 
     warnSpy.mockRestore()
+  })
+
+  it('invalidates social caches for v1 social mutations routed via catch-all', async () => {
+    vi.mocked(proxyAuthApiRequest).mockResolvedValueOnce({ ok: true })
+
+    const handler = createVersionedCatchAllProxyHandler('v1')
+    const event = {
+      context: { params: { path: 'me/chat/conversations' } },
+      node: { req: { method: 'POST' } },
+    } as unknown as H3Event
+
+    await handler(event)
+
+    expect(invalidateSocialDataCaches).toHaveBeenCalledWith(event)
   })
 })
