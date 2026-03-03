@@ -15,7 +15,9 @@ vi.mock('../../server/utils/cache/profile-cache', () => ({
   setProfileCache: cacheMocks.setProfileCache,
 }))
 
+// eslint-disable-next-line import/first
 import {
+  buildProfileResourceCacheKey,
   readProfileEndpointCache,
   writeProfileEndpointCache,
 } from '../../server/utils/profile-endpoint-cache'
@@ -62,6 +64,21 @@ describe('profile-endpoint-cache', () => {
       'profile:hash:roles',
       ['ROLE_USER'],
       10,
+    )
+  })
+
+  it('builds stable resource cache keys for unsorted query strings', () => {
+    const keyA = buildProfileResourceCacheKey('profile-companies', '?page=2&limit=10')
+    const keyB = buildProfileResourceCacheKey('profile-companies', '?limit=10&page=2')
+
+    expect(keyA).toBe('profile-companies?limit=10&page=2')
+    expect(keyB).toBe(keyA)
+  })
+
+  it('builds deterministic keys for profile resources', () => {
+    expect(buildProfileResourceCacheKey('profile-friends')).toBe('profile-friends')
+    expect(buildProfileResourceCacheKey('profile-applications', '?status=pending')).toBe(
+      'profile-applications?status=pending',
     )
   })
 })

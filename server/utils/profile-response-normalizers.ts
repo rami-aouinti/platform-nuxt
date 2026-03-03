@@ -73,3 +73,31 @@ export function normalizeProfilePayload(payload: unknown): NormalizedAuthProfile
     roles: normalizeProfileRoles(source.roles),
   }
 }
+
+
+function sortObjectKeys(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(item => sortObjectKeys(item))
+  }
+
+  if (!value || typeof value !== 'object') {
+    return value
+  }
+
+  const record = value as Record<string, unknown>
+  const normalized: Record<string, unknown> = {}
+
+  for (const key of Object.keys(record).sort((left, right) => left.localeCompare(right))) {
+    normalized[key] = sortObjectKeys(record[key])
+  }
+
+  return normalized
+}
+
+export function normalizeDeterministicPayload<T>(payload: T): T {
+  return sortObjectKeys(payload) as T
+}
+
+export function normalizeProfileCollectionPayload(payload: unknown): unknown {
+  return normalizeDeterministicPayload(payload)
+}
