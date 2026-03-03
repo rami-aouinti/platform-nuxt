@@ -5,6 +5,7 @@ import SpeedInsightsPlaceholder from "~/components/layout/analytics/SpeedInsight
 
 const route = useRoute();
 const isFloatingAppBar = computed(() => route.meta.appBarFloating !== false);
+const showSecondaryActionsOnHome = computed(() => route.meta.appBarShowSecondaryActions === true);
 
 const LazyAnalytics = defineAsyncComponent({
   loader: async () => {
@@ -40,6 +41,7 @@ const LazySpeedInsights = defineAsyncComponent({
       :show-drawer-toggle="false"
       :show-breadcrumbs="false"
       :floating="isFloatingAppBar"
+      :show-secondary-actions-on-home="showSecondaryActionsOnHome"
       show-brand-link
     />
     <v-main class="default-layout__main">
