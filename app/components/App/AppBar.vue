@@ -289,7 +289,11 @@ watch(isAuthenticated, (value) => {
       'app-bar--floating': floating,
     }"
   >
-    <v-app-bar-nav-icon v-if="showDrawerToggle" @click="drawer = !drawer" />
+    <v-app-bar-nav-icon
+      v-if="showDrawerToggle"
+      :aria-label="t('appbar.accessibility.openNavigation')"
+      @click="drawer = !drawer"
+    />
     <NuxtLink v-if="showBrandLink" to="/" class="app-bar__brand">
       <v-icon
         icon="custom:vitify-nuxt"
@@ -323,7 +327,13 @@ watch(isAuthenticated, (value) => {
         @update:model-value="(opened) => opened && handleNotificationMenuOpen()"
       >
         <template #activator="{ props }">
-          <UiButton icon class="ml-1" variant="text" v-bind="props">
+          <UiButton
+            icon
+            class="ml-1"
+            variant="text"
+            :aria-label="t('appbar.accessibility.openNotifications')"
+            v-bind="props"
+          >
             <v-badge
               :model-value="hasUnreadNotifications"
               :content="unreadCount"
@@ -331,7 +341,7 @@ watch(isAuthenticated, (value) => {
               offset-x="3"
               offset-y="3"
             >
-              <v-icon icon="mdi-bell" size="26" />
+              <v-icon icon="mdi-bell" size="26" aria-hidden="true" />
             </v-badge>
           </UiButton>
         </template>
@@ -398,8 +408,14 @@ watch(isAuthenticated, (value) => {
         @update:model-value="(opened) => opened && loadInboxConversations()"
       >
         <template #activator="{ props }">
-          <UiButton icon class="ml-1" variant="text" v-bind="props">
-            <v-icon icon="mdi-chat-processing-outline" size="26" />
+          <UiButton
+            icon
+            class="ml-1"
+            variant="text"
+            :aria-label="t('appbar.accessibility.openChat')"
+            v-bind="props"
+          >
+            <v-icon icon="mdi-chat-processing-outline" size="26" aria-hidden="true" />
           </UiButton>
         </template>
 
@@ -473,8 +489,9 @@ watch(isAuthenticated, (value) => {
         class="ml-2"
         target="_blank"
         variant="text"
+        :aria-label="t('appbar.accessibility.openGithub')"
       >
-        <v-icon size="26" icon="mdi-github" />
+        <v-icon size="26" icon="mdi-github" aria-hidden="true" />
       </UiButton>
       <v-menu location="bottom">
         <template #activator="{ props: menu }">
@@ -485,8 +502,9 @@ watch(isAuthenticated, (value) => {
                 v-bind="createActivatorProps(menu, tooltip)"
                 class="ml-1"
                 variant="text"
+                :aria-label="t('appbar.accessibility.openUserMenu')"
               >
-                <v-icon icon="mdi-account-circle" size="36" />
+                <v-icon icon="mdi-account-circle" size="36" aria-hidden="true" />
               </UiButton>
             </template>
             <span>{{ userDisplayName }}</span>
@@ -550,7 +568,7 @@ watch(isAuthenticated, (value) => {
           <UiButton
             variant="text"
             class="mr-2"
-            aria-label="Language"
+            :aria-label="t('appbar.accessibility.openLanguageMenu')"
             v-bind="props"
           >
             <img

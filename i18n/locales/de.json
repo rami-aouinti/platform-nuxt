@@ -7,7 +7,18 @@
     "applications": "Anwendungen",
     "quiz": "Quiz",
     "administration": "Verwaltung",
-    "logout": "Abmelden"
+    "logout": "Abmelden",
+    "accessibility": {
+      "openNavigation": "Navigation öffnen",
+      "openNotifications": "Benachrichtigungen öffnen",
+      "openChat": "Chat öffnen",
+      "openGithub": "GitHub-Repository öffnen",
+      "openUserMenu": "Benutzermenü öffnen",
+      "openLanguageMenu": "Sprachauswahl öffnen",
+      "openNotificationsPanel": "Benachrichtigungsbereich öffnen",
+      "clearAllNotifications": "Alle Benachrichtigungen als gelesen markieren",
+      "hideNotificationsPanel": "Benachrichtigungsbereich ausblenden"
+    }
   },
   "auth": {
     "signIn": "Anmelden",
@@ -66,7 +77,8 @@
     "unavailable": "Weltkarte im Legacy-Modus nicht verfügbar"
   },
   "settings": {
-    "themePalette": "Themenpalette"
+    "themePalette": "Themenpalette",
+    "openThemePalette": "Theme-Farben öffnen"
   },
   "dialogConfirm": {
     "typeToConfirm": "Geben Sie \"{value}\" zur Bestätigung ein",

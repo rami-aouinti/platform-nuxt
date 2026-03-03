@@ -7,7 +7,18 @@
     "applications": "Applications",
     "quiz": "Quiz",
     "administration": "Administration",
-    "logout": "Déconnexion"
+    "logout": "Déconnexion",
+    "accessibility": {
+      "openNavigation": "Ouvrir la navigation",
+      "openNotifications": "Ouvrir les notifications",
+      "openChat": "Ouvrir le chat",
+      "openGithub": "Ouvrir le dépôt GitHub",
+      "openUserMenu": "Ouvrir le menu utilisateur",
+      "openLanguageMenu": "Ouvrir le menu des langues",
+      "openNotificationsPanel": "Ouvrir le panneau de notifications",
+      "clearAllNotifications": "Marquer toutes les notifications comme lues",
+      "hideNotificationsPanel": "Masquer le panneau de notifications"
+    }
   },
   "auth": {
     "signIn": "Connexion",
@@ -66,7 +77,8 @@
     "unavailable": "Carte du monde indisponible en mode legacy"
   },
   "settings": {
-    "themePalette": "Palette du thème"
+    "themePalette": "Palette du thème",
+    "openThemePalette": "Ouvrir les couleurs du thème"
   },
   "dialogConfirm": {
     "typeToConfirm": "Tapez \"{value}\" pour confirmer",
