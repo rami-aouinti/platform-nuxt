@@ -1,6 +1,7 @@
 import type { H3Event } from 'h3'
 import { createHash } from 'node:crypto'
 import Redis from 'ioredis'
+import { resolveAuthorizationHeader } from '../authorization'
 
 type ProfileCacheValue = {
   payload: unknown
@@ -51,7 +52,7 @@ function normalizeScopeValue(value: string | null | undefined): string {
 }
 
 function getCacheScope(event: H3Event): CacheScope {
-  const authorization = getHeader(event, 'authorization') ?? 'anonymous'
+  const authorization = resolveAuthorizationHeader(event) ?? 'anonymous'
   const authHash = createHash('sha256').update(authorization).digest('hex')
 
   return {

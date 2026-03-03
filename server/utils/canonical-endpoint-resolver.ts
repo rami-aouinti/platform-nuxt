@@ -18,6 +18,30 @@ function logDeprecatedAliasUsage(resource: CanonicalResourceKey, alias: string) 
   )
 }
 
+function shouldFallbackToLegacyAlias(
+  resource: CanonicalResourceKey,
+  endpoint: string,
+  error: unknown,
+): boolean {
+  if (!isError(error) || !error.statusCode) {
+    return false
+  }
+
+  if (error.statusCode === 404) {
+    return true
+  }
+
+  const canonicalEndpoint = API_CANONICAL_ENDPOINT_MAP[resource].canonical
+  const isCanonicalAttempt = endpoint === canonicalEndpoint
+
+  if (!isCanonicalAttempt) {
+    return false
+  }
+
+  const isProfileSubresource = resource === 'profileGroups' || resource === 'profileRoles'
+  return isProfileSubresource && error.statusCode === 401
+}
+
 export async function proxyAuthApiCanonical(
   event: H3Event,
   resource: CanonicalResourceKey,
@@ -39,7 +63,7 @@ export async function proxyAuthApiCanonical(
     catch (error) {
       lastError = error
 
-      if (!isError(error) || error.statusCode !== 404) {
+      if (!shouldFallbackToLegacyAlias(resource, endpoint, error)) {
         throw error
       }
     }
