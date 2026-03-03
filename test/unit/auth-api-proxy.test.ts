@@ -118,6 +118,55 @@ describe('auth-api-proxy', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
+  it('retries next upstream when first candidate returns 401 and second succeeds', async () => {
+    installH3RuntimeMocks()
+
+    const fetchMock = vi.fn(async (url: string) => {
+      if (url.startsWith('http://primary')) {
+        return new Response(JSON.stringify({ message: 'Unauthorized' }), {
+          status: 401,
+          statusText: 'Unauthorized',
+          headers: { 'content-type': 'application/json' },
+        })
+      }
+
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      })
+    })
+
+    vi.stubGlobal('fetch', fetchMock)
+
+    const { proxyAuthApiGet } = await loadProxyModule()
+
+    await expect(proxyAuthApiGet({ context: {} } as H3Event, '/api/v1/profile')).resolves.toEqual({ ok: true })
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
+  it('returns 401 when all upstream candidates reject authorization', async () => {
+    installH3RuntimeMocks()
+
+    const fetchMock = vi.fn(async () => {
+      return new Response(JSON.stringify({ message: 'Unauthorized' }), {
+        status: 401,
+        statusText: 'Unauthorized',
+        headers: { 'content-type': 'application/json' },
+      })
+    })
+
+    vi.stubGlobal('fetch', fetchMock)
+
+    const { proxyAuthApiGet } = await loadProxyModule()
+
+    await expect(proxyAuthApiGet({ context: {} } as H3Event, '/api/v1/profile')).rejects.toMatchObject({
+      statusCode: 401,
+      message: 'Upstream auth API rejected the Authorization header.',
+    })
+
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
   it('falls back on upstream 5xx errors and reuses successful upstream on next request', async () => {
     installH3RuntimeMocks()
 
