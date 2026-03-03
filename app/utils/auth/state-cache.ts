@@ -68,7 +68,10 @@ export function persistToken(token: string | null) {
 
   if (!token) {
     sessionStorage.removeItem(AUTH_TOKEN_STORAGE_KEY)
+    return
   }
+
+  sessionStorage.setItem(AUTH_TOKEN_STORAGE_KEY, token)
 }
 
 function readPersistedTokenFromCookie(): string | null {
