@@ -17,7 +17,9 @@
       "openLanguageMenu": "Ouvrir le menu des langues",
       "openNotificationsPanel": "Ouvrir le panneau de notifications",
       "clearAllNotifications": "Marquer toutes les notifications comme lues",
-      "hideNotificationsPanel": "Masquer le panneau de notifications"
+      "hideNotificationsPanel": "Masquer le panneau de notifications",
+      "toggleDarkTheme": "Basculer vers le thème sombre",
+      "toggleLightTheme": "Basculer vers le thème clair"
     }
   },
   "auth": {
