@@ -6,7 +6,7 @@
       height="72"
     >
       <NuxtLink
-        to="/homepage"
+        to="/"
         class="landing-layout__brand text-decoration-none"
       >
         Bro World

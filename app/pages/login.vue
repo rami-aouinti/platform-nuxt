@@ -35,7 +35,7 @@ async function login() {
   try {
     await authStore.login(form.username, form.password)
     form.password = ''
-    await navigateTo('/homepage')
+    await navigateTo('/')
   } catch (error) {
     const message = error instanceof Error ? error.message : ''
     errorMessage.value = message
