@@ -7,17 +7,22 @@ const cacheMocks = vi.hoisted(() => ({
   ),
   getProfileCache: vi.fn(),
   setProfileCache: vi.fn(),
+  invalidateProfileCacheScopes: vi.fn(),
+  invalidateProfileCacheResources: vi.fn(),
 }))
 
 vi.mock('../../server/utils/cache/profile-cache', () => ({
   buildProfileCacheKey: cacheMocks.buildProfileCacheKey,
   getProfileCache: cacheMocks.getProfileCache,
   setProfileCache: cacheMocks.setProfileCache,
+  invalidateProfileCacheScopes: cacheMocks.invalidateProfileCacheScopes,
+  invalidateProfileCacheResources: cacheMocks.invalidateProfileCacheResources,
 }))
 
 // eslint-disable-next-line import/first
 import {
   buildProfileResourceCacheKey,
+  invalidateProfileMutationCaches,
   readProfileEndpointCache,
   writeProfileEndpointCache,
 } from '../../server/utils/profile-endpoint-cache'
@@ -79,6 +84,28 @@ describe('profile-endpoint-cache', () => {
     expect(buildProfileResourceCacheKey('profile-friends')).toBe('profile-friends')
     expect(buildProfileResourceCacheKey('profile-applications', '?status=pending')).toBe(
       'profile-applications?status=pending',
+    )
+  })
+
+  it('invalidates scoped and cross-resource profile mutation keys', async () => {
+    const event = {} as H3Event
+
+    await invalidateProfileMutationCaches(event, { userId: 'user-42' })
+
+    expect(cacheMocks.invalidateProfileCacheScopes).toHaveBeenCalledWith(event, { userId: 'user-42' })
+    expect(cacheMocks.invalidateProfileCacheResources).toHaveBeenCalledWith(
+      event,
+      expect.objectContaining({
+        scopes: { userId: 'user-42' },
+        resources: expect.arrayContaining([
+          'profile',
+          'profile-groups',
+          'profile-roles',
+          'profile-companies',
+          'profile-friends',
+          'profile-applications',
+        ]),
+      }),
     )
   })
 })

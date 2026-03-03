@@ -3,6 +3,7 @@ import type { H3Event } from 'h3'
 import {
   buildProfileCacheKey,
   getProfileCache,
+  invalidateProfileCacheResources,
   invalidateProfileCacheScopes,
   setProfileCache,
 } from './cache/profile-cache'
@@ -98,4 +99,38 @@ export async function invalidateProfileCacheForGroup(
   groupId: string,
 ): Promise<void> {
   await invalidateProfileCacheScopes(event, { groupId })
+}
+
+
+const PROFILE_MUTATION_RESOURCE_PREFIXES = [
+  'profile',
+  'me-profile',
+  'v1-profile',
+  'v1-me-profile',
+  'profile-groups',
+  'me-profile-groups',
+  'v1-profile-groups',
+  'v1-me-profile-groups',
+  'profile-roles',
+  'me-profile-roles',
+  'v1-profile-roles',
+  'v1-me-profile-roles',
+  'profile-companies',
+  'profile-friends',
+  'profile-friends-requests-received',
+  'profile-friends-requests-sent',
+  'profile-applications',
+  'profile-application',
+] as const
+
+export async function invalidateProfileMutationCaches(
+  event: H3Event,
+  scopes: { userId?: string, roleId?: string, groupId?: string },
+): Promise<void> {
+  await invalidateProfileCacheScopes(event, scopes)
+
+  await invalidateProfileCacheResources(event, {
+    resources: [...PROFILE_MUTATION_RESOURCE_PREFIXES],
+    scopes,
+  })
 }

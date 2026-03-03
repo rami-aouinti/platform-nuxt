@@ -17,6 +17,7 @@ type ProxyHttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 interface ProxyCollectionHandlerOptions {
   upstreamPath: string
   method: ProxyHttpMethod
+  onSuccess?: (event: H3Event) => Promise<void> | void
 }
 
 interface ProxyCollectionHandlerWithQueryOptions {
@@ -99,10 +100,14 @@ function proxyRequestByMethod(
 export function createProxyCollectionHandler(
   options: ProxyCollectionHandlerOptions,
 ): EventHandler {
-  const { upstreamPath, method } = options
+  const { upstreamPath, method, onSuccess } = options
 
   return defineEventHandler(async (event) => {
-    return await proxyRequestByMethod(event, upstreamPath, method)
+    const response = await proxyRequestByMethod(event, upstreamPath, method)
+
+    await onSuccess?.(event)
+
+    return response
   })
 }
 
