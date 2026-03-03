@@ -1,4 +1,5 @@
 import type { AuthGroup, AuthProfile, AuthRole } from '~/types/auth'
+import { apiEndpoints } from '~/services/api/endpoints'
 import {
   clearPersistedAuthState,
   persistAuthState,
@@ -108,9 +109,9 @@ export const useAuthStore = defineStore('auth', () => {
       try {
         const [profileResponse, groupsResponse, rolesResponse] =
           await Promise.all([
-            $fetch<AuthProfile>('/api/profile', { headers }),
-            $fetch<AuthGroup[]>('/api/profile/groups', { headers }),
-            $fetch<AuthRole[]>('/api/profile/roles', { headers }),
+            $fetch<AuthProfile>(apiEndpoints.frontend.profile.canonical, { headers }),
+            $fetch<AuthGroup[]>(apiEndpoints.frontend.profile.groups, { headers }),
+            $fetch<AuthRole[]>(apiEndpoints.frontend.profile.roles, { headers }),
           ])
 
         profile.value = profileResponse
@@ -145,7 +146,7 @@ export const useAuthStore = defineStore('auth', () => {
     rolesError.value = null
 
     try {
-      const rolesResponse = await $fetch<AuthRole[]>('/api/profile/roles', {
+      const rolesResponse = await $fetch<AuthRole[]>(apiEndpoints.frontend.profile.roles, {
         headers: authHeaders(),
       })
       roles.value = rolesResponse
@@ -185,15 +186,8 @@ export const useAuthStore = defineStore('auth', () => {
     const storedToken = readPersistedToken()
 
     if (!storedToken) {
-      setToken(COOKIE_SESSION_TOKEN)
-
-      try {
-        await fetchProfileData()
-      } catch {
-        await logout()
-      } finally {
-        initialized.value = true
-      }
+      setToken(null)
+      initialized.value = true
 
       return
     }
