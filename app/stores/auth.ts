@@ -13,6 +13,14 @@ import { canAccessAdmin } from '~/utils/permissions/admin'
 
 const COOKIE_SESSION_TOKEN = '__cookie_session__'
 
+function normalizeBearerToken(rawToken: string | null | undefined) {
+  if (!rawToken) {
+    return null
+  }
+
+  return rawToken.replace(/^Bearer\s+/i, '').trim()
+}
+
 export const useAuthStore = defineStore('auth', () => {
   const token = ref<string | null>(null)
   const profile = ref<AuthProfile | null>(null)
@@ -63,8 +71,9 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function setToken(newToken: string | null) {
-    token.value = newToken
-    persistToken(newToken)
+    const normalizedToken = normalizeBearerToken(newToken)
+    token.value = normalizedToken
+    persistToken(normalizedToken)
   }
 
   function authHeaders() {
