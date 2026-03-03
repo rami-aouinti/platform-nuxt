@@ -3,14 +3,18 @@ import { apiEndpoints } from '~/services/api/endpoints'
 
 export type ProfileCompany = {
   id: Id
-  name: string
+  name?: string
+  legalName?: string
+  photoUrl?: string | null
+  status?: string | null
   role?: string | null
   description?: string | null
   [key: string]: unknown
 }
 
 export type CreateProfileCompanyPayload = {
-  name: string
+  name?: string
+  legalName?: string
   role?: string | null
   description?: string | null
   [key: string]: unknown

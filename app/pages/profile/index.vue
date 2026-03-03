@@ -79,6 +79,7 @@ const createCompanyForm = ref({
   description: '',
 })
 const creatingCompany = ref(false)
+const showCreateCompanyModal = ref(false)
 
 const companySchemaFields = computed(() => {
   const schemaProperties = companySchema.value?.properties ?? {}
@@ -447,7 +448,9 @@ async function loadCompanySchema() {
 }
 
 async function createCompany() {
-  if (!createCompanyForm.value.name.trim()) {
+  const normalizedName = createCompanyForm.value.name.trim()
+
+  if (!normalizedName) {
     return
   }
 
@@ -455,7 +458,8 @@ async function createCompany() {
 
   try {
     await profileCompaniesStore.create({
-      name: createCompanyForm.value.name.trim(),
+      name: normalizedName,
+      legalName: normalizedName,
       ...(createCompanyForm.value.role.trim()
         ? { role: createCompanyForm.value.role.trim() }
         : {}),
@@ -469,6 +473,7 @@ async function createCompany() {
       role: '',
       description: '',
     }
+    showCreateCompanyModal.value = false
   } finally {
     creatingCompany.value = false
   }
@@ -825,69 +830,90 @@ onMounted(async () => {
                 {{ companySchemaError }}
               </v-alert>
 
-              <v-card variant="outlined" rounded="lg" class="pa-4 mb-6">
-                <div class="d-flex justify-space-between align-center mb-3">
-                  <p class="text-h6 mb-0">Ajouter une société</p>
-                  <v-chip
-                    v-if="usesSchemaFallback"
-                    size="small"
-                    color="warning"
-                    variant="tonal"
-                    >Fallback</v-chip
-                  >
-                </div>
-
-                <v-row>
-                  <v-col cols="12" md="6">
-                    <v-text-field
-                      v-model="createCompanyForm.name"
-                      :label="
-                        getCompanyFieldMeta('name')?.label ||
-                        'Nom de la société'
-                      "
-                      :required="getCompanyFieldMeta('name')?.required"
-                      :disabled="creatingCompany || companySchemaLoading"
-                      density="comfortable"
-                      variant="outlined"
-                    />
-                  </v-col>
-                  <v-col cols="12" md="6">
-                    <v-text-field
-                      v-model="createCompanyForm.role"
-                      :label="getCompanyFieldMeta('role')?.label || 'Rôle'"
-                      :required="getCompanyFieldMeta('role')?.required"
-                      :disabled="creatingCompany || companySchemaLoading"
-                      density="comfortable"
-                      variant="outlined"
-                    />
-                  </v-col>
-                  <v-col cols="12">
-                    <v-textarea
-                      v-model="createCompanyForm.description"
-                      :label="
-                        getCompanyFieldMeta('description')?.label ||
-                        'Description'
-                      "
-                      :required="getCompanyFieldMeta('description')?.required"
-                      :disabled="creatingCompany || companySchemaLoading"
-                      density="comfortable"
-                      variant="outlined"
-                      rows="3"
-                    />
-                  </v-col>
-                </v-row>
-
-                <div class="d-flex justify-end">
+              <div class="d-flex justify-space-between align-center mb-6">
+                <v-chip
+                  v-if="usesSchemaFallback"
+                  size="small"
+                  color="warning"
+                  variant="tonal"
+                >Fallback</v-chip>
+                <div class="ms-auto">
                   <v-btn
                     color="primary"
-                    :loading="creatingCompany"
-                    :disabled="!createCompanyForm.name.trim()"
-                    @click="createCompany"
+                    prepend-icon="mdi-plus"
+                    @click="showCreateCompanyModal = true"
                   >
-                    Créer la société
+                    Add company
                   </v-btn>
                 </div>
-              </v-card>
+              </div>
+
+              <v-dialog
+                v-model="showCreateCompanyModal"
+                max-width="720"
+              >
+                <v-card rounded="lg">
+                  <v-card-title class="d-flex align-center justify-space-between">
+                    <span>Créer une company</span>
+                    <v-btn icon="mdi-close" variant="text" @click="showCreateCompanyModal = false" />
+                  </v-card-title>
+
+                  <v-card-text>
+                    <v-row>
+                      <v-col cols="12" md="6">
+                        <v-text-field
+                          v-model="createCompanyForm.name"
+                          :label="
+                            getCompanyFieldMeta('name')?.label ||
+                            'Nom de la société'
+                          "
+                          :required="getCompanyFieldMeta('name')?.required"
+                          :disabled="creatingCompany || companySchemaLoading"
+                          density="comfortable"
+                          variant="outlined"
+                        />
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-text-field
+                          v-model="createCompanyForm.role"
+                          :label="getCompanyFieldMeta('role')?.label || 'Rôle'"
+                          :required="getCompanyFieldMeta('role')?.required"
+                          :disabled="creatingCompany || companySchemaLoading"
+                          density="comfortable"
+                          variant="outlined"
+                        />
+                      </v-col>
+                      <v-col cols="12">
+                        <v-textarea
+                          v-model="createCompanyForm.description"
+                          :label="
+                            getCompanyFieldMeta('description')?.label ||
+                            'Description'
+                          "
+                          :required="getCompanyFieldMeta('description')?.required"
+                          :disabled="creatingCompany || companySchemaLoading"
+                          density="comfortable"
+                          variant="outlined"
+                          rows="3"
+                        />
+                      </v-col>
+                    </v-row>
+                  </v-card-text>
+
+                  <v-card-actions class="px-6 pb-6">
+                    <v-spacer />
+                    <v-btn variant="text" @click="showCreateCompanyModal = false">Annuler</v-btn>
+                    <v-btn
+                      color="primary"
+                      :loading="creatingCompany"
+                      :disabled="!createCompanyForm.name.trim()"
+                      @click="createCompany"
+                    >
+                      Créer la société
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
 
               <div v-if="companiesLoading" class="d-flex align-center ga-3">
                 <v-progress-circular indeterminate color="primary" />
@@ -925,9 +951,9 @@ onMounted(async () => {
                   xl="4"
                 >
                   <v-card variant="tonal" rounded="lg" class="h-100 pa-4">
-                    <p class="text-h6 text-typo mb-1">{{ company.name }}</p>
+                    <p class="text-h6 text-typo mb-1">{{ company.name || company.legalName || 'Company sans nom' }}</p>
                     <p class="text-body-2 text-medium-emphasis mb-3">
-                      {{ company.role || 'Rôle non défini' }}
+                      {{ company.role || company.status || 'Rôle non défini' }}
                     </p>
                     <p class="text-body-2 text-medium-emphasis mb-0">
                       {{
