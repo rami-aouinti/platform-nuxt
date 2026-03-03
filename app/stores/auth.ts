@@ -97,7 +97,22 @@ export const useAuthStore = defineStore('auth', () => {
 
     setToken(response?.token ?? COOKIE_SESSION_TOKEN)
 
-    await fetchProfileData()
+    await fetchAuthenticationProfile()
+  }
+
+  async function fetchAuthenticationProfile() {
+    if (!token.value) {
+      return
+    }
+
+    const headers = authHeaders()
+    const profileResponse = await $fetch<AuthProfile>(
+      apiEndpoints.frontend.profile.canonical,
+      { headers },
+    )
+
+    profile.value = profileResponse
+    persistCurrentAuthState()
   }
 
   async function fetchProfileData() {
@@ -116,20 +131,30 @@ export const useAuthStore = defineStore('auth', () => {
 
     profileRequest.value = (async () => {
       try {
-        const [profileResponse, groupsResponse, rolesResponse] =
-          await Promise.all([
-            $fetch<AuthProfile>(apiEndpoints.frontend.profile.canonical, { headers }),
-            $fetch<AuthGroup[]>(apiEndpoints.frontend.profile.groups, { headers }),
-            $fetch<AuthRole[]>(apiEndpoints.frontend.profile.roles, { headers }),
-          ])
+        const profileResponse = await $fetch<AuthProfile>(
+          apiEndpoints.frontend.profile.canonical,
+          { headers },
+        )
+
+        const [groupsResponse, rolesResponse] = await Promise.allSettled([
+          $fetch<AuthGroup[]>(apiEndpoints.frontend.profile.groups, { headers }),
+          $fetch<AuthRole[]>(apiEndpoints.frontend.profile.roles, { headers }),
+        ])
 
         profile.value = profileResponse
-        groups.value = groupsResponse
-        roles.value = rolesResponse
+
+        if (groupsResponse.status === 'fulfilled') {
+          groups.value = groupsResponse.value
+        }
+
+        if (rolesResponse.status === 'fulfilled') {
+          roles.value = rolesResponse.value
+        }
+
         syncPrimaryRole()
         persistCurrentAuthState()
       } catch (error) {
-        rolesError.value = 'Impossible de charger les rôles utilisateur.'
+        rolesError.value = 'Impossible de charger le profil utilisateur.'
         throw error
       } finally {
         rolesLoading.value = false
@@ -218,7 +243,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     try {
-      await fetchProfileData()
+      await fetchAuthenticationProfile()
     } catch {
       await logout()
     } finally {
@@ -238,6 +263,7 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     hasAdminAccess,
     login,
+    fetchAuthenticationProfile,
     fetchProfileData,
     ensureRolesLoaded,
     logout,
