@@ -7,7 +7,18 @@
     "applications": "Applications",
     "quiz": "Quiz",
     "administration": "Administration",
-    "logout": "Logout"
+    "logout": "Logout",
+    "accessibility": {
+      "openNavigation": "Open navigation",
+      "openNotifications": "Open notifications",
+      "openChat": "Open chat",
+      "openGithub": "Open GitHub repository",
+      "openUserMenu": "Open user menu",
+      "openLanguageMenu": "Open language menu",
+      "openNotificationsPanel": "Open notifications panel",
+      "clearAllNotifications": "Mark all notifications as read",
+      "hideNotificationsPanel": "Hide notifications panel"
+    }
   },
   "auth": {
     "signIn": "Sign in",
@@ -66,7 +77,8 @@
     "unavailable": "World map unavailable in legacy mode"
   },
   "settings": {
-    "themePalette": "Theme palette"
+    "themePalette": "Theme palette",
+    "openThemePalette": "Open theme colors"
   },
   "dialogConfirm": {
     "typeToConfirm": "Type \"{value}\" to confirm",

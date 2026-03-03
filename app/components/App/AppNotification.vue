@@ -3,6 +3,7 @@ import { storeToRefs } from 'pinia'
 import { Notify, useNotificationStore } from '~/stores/notification'
 import { useInternalEventTracking } from '~/composables/useInternalEventTracking'
 
+const { t } = useI18n()
 const notificationStore = useNotificationStore()
 const { notifications } = storeToRefs(notificationStore)
 const notificationsShown = computed(() =>
@@ -48,6 +49,7 @@ function toggleAll() {
     v-tooltip="{ text: 'Notification' }"
     :icon="notifications.length ? 'mdi-bell-badge-outline' : 'mdi-bell-outline'"
     :rounded="0"
+    :aria-label="t('appbar.accessibility.openNotificationsPanel')"
     @click="toggleAll"
   />
   <DialogConfirm ref="dialogReadAll" />
@@ -70,6 +72,7 @@ function toggleAll() {
             v-tooltip="{ text: 'Clear All Notifications' }"
             size="small"
             icon="mdi-bell-remove"
+            :aria-label="t('appbar.accessibility.clearAllNotifications')"
             @click="emptyNotifications"
           />
           <v-btn
@@ -77,6 +80,7 @@ function toggleAll() {
             class="mr-0"
             size="small"
             icon="$expand"
+            :aria-label="t('appbar.accessibility.hideNotificationsPanel')"
             @click="toggleAll"
           />
         </v-toolbar>

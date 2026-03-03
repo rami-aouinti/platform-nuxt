@@ -39,6 +39,7 @@ const menuShow = ref(false)
             icon="mdi-palette-outline"
             v-bind="mergeProps(menu, tooltip)"
             :rounded="0"
+            :aria-label="t('settings.openThemePalette')"
           />
         </template>
       </v-tooltip>
