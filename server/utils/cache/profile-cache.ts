@@ -23,6 +23,14 @@ type CacheScope = {
 
 type ProfileCacheNamespace = 'profile' | 'auth' | 'admin'
 
+type ProfileCacheRuntimeStatus = {
+  enabled: boolean
+  mode: 'url' | 'host-port' | 'disabled'
+  ttlMs: number
+  fallbackBehavior: 'no-cache'
+  reason?: string
+}
+
 const KEY_SCHEMA_VERSION = 'v1'
 
 let redisClient: Redis | null = null
@@ -65,6 +73,43 @@ function logCacheMetric(type: keyof typeof cacheMetrics, details: string) {
   }
 
   console.info(`${prefix} metric=${type} count=${cacheMetrics[type]} ${details}`)
+}
+
+export function resolveProfileCacheRuntimeStatus(config: {
+  profileEndpointCacheTtlMs?: number | string
+  redisUrl?: string
+  redisHost?: string
+}): ProfileCacheRuntimeStatus {
+  const ttlMs = Number(config.profileEndpointCacheTtlMs)
+  const hasValidTtl = Number.isFinite(ttlMs) && ttlMs > 0
+  const hasRedisUrl = Boolean(config.redisUrl?.trim())
+  const hasRedisHost = Boolean(config.redisHost?.trim())
+
+  if (!hasValidTtl) {
+    return {
+      enabled: false,
+      mode: 'disabled',
+      ttlMs,
+      fallbackBehavior: 'no-cache',
+      reason: 'ttl_non_positive_or_invalid',
+    }
+  }
+
+  if (hasRedisUrl) {
+    return { enabled: true, mode: 'url', ttlMs, fallbackBehavior: 'no-cache' }
+  }
+
+  if (hasRedisHost) {
+    return { enabled: true, mode: 'host-port', ttlMs, fallbackBehavior: 'no-cache' }
+  }
+
+  return {
+    enabled: false,
+    mode: 'disabled',
+    ttlMs,
+    fallbackBehavior: 'no-cache',
+    reason: 'missing_redis_connection',
+  }
 }
 
 function resolveRedisOptions(event: H3Event): RedisConnectionOptions {
