@@ -17,7 +17,9 @@
       "openLanguageMenu": "Open language menu",
       "openNotificationsPanel": "Open notifications panel",
       "clearAllNotifications": "Mark all notifications as read",
-      "hideNotificationsPanel": "Hide notifications panel"
+      "hideNotificationsPanel": "Hide notifications panel",
+      "toggleDarkTheme": "Toggle dark theme",
+      "toggleLightTheme": "Toggle light theme"
     }
   },
   "auth": {

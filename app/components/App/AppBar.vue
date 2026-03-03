@@ -40,6 +40,11 @@ const isDark = computed({
     theme.change(v ? 'dark' : 'light')
   },
 })
+const themeToggleAriaLabel = computed(() =>
+  isDark.value
+    ? t('appbar.accessibility.toggleLightTheme')
+    : t('appbar.accessibility.toggleDarkTheme'),
+)
 const authStore = useAuthStore()
 const { isAuthenticated, profile, hasAdminAccess, rolesLoading, initialized } =
   storeToRefs(authStore)
@@ -62,7 +67,9 @@ const hasUnreadNotifications = computed(() => unreadCount.value > 0)
 
 const inboxConversations = ref<ChatConversation[]>([])
 const inboxLoading = ref(false)
-const latestInboxConversations = computed(() => inboxConversations.value.slice(0, 3))
+const latestInboxConversations = computed(() =>
+  inboxConversations.value.slice(0, 3),
+)
 
 const localeFlags: Record<string, string> = {
   en: '/flags/en.svg',
@@ -118,9 +125,10 @@ function normalizeNotifications(payload: unknown): UserNotification[] {
   }
 
   return payload.map((entry, index) => {
-    const row = entry && typeof entry === 'object'
-      ? entry as Record<string, unknown>
-      : {}
+    const row =
+      entry && typeof entry === 'object'
+        ? (entry as Record<string, unknown>)
+        : {}
 
     return {
       id: String(row.id ?? index),
@@ -175,18 +183,19 @@ async function handleNotificationMenuOpen() {
   }
 
   await $fetch('/api/v1/me/notifications/read-all', { method: 'PATCH' })
-  notifications.value = notifications.value.map(notification => ({
+  notifications.value = notifications.value.map((notification) => ({
     ...notification,
     readAt: notification.readAt ?? new Date().toISOString(),
   }))
   unreadCount.value = 0
 }
 
-
 function getNotificationIcon(type: string) {
   if (type.includes('company')) return 'mdi-domain'
-  if (type.includes('application') && type.includes('submitted')) return 'mdi-file-document-plus-outline'
-  if (type.includes('application') && type.includes('decided')) return 'mdi-check-decagram-outline'
+  if (type.includes('application') && type.includes('submitted'))
+    return 'mdi-file-document-plus-outline'
+  if (type.includes('application') && type.includes('decided'))
+    return 'mdi-check-decagram-outline'
   return 'mdi-bell-outline'
 }
 
@@ -198,20 +207,23 @@ function getNotificationPreview(message: string) {
   return message.length > 64 ? `${message.slice(0, 64)}…` : message
 }
 
-
 function getInboxAvatarLabel(conversation: ChatConversation) {
   const label = (conversation.title ?? '').trim()
   return label.slice(0, 1).toUpperCase() || 'C'
 }
 
 function getInboxAvatarUrl(conversation: ChatConversation) {
-  const participantWithPhoto = conversation.participants?.find((participant) => Boolean(participant.photo))
+  const participantWithPhoto = conversation.participants?.find((participant) =>
+    Boolean(participant.photo),
+  )
   return participantWithPhoto?.photo ?? null
 }
 
 function getInboxPreview(conversation: ChatConversation) {
   const preview = conversation.lastMessage?.trim() ?? ''
-  return preview.length > 64 ? `${preview.slice(0, 64)}…` : preview || 'Aucun message récent.'
+  return preview.length > 64
+    ? `${preview.slice(0, 64)}…`
+    : preview || 'Aucun message récent.'
 }
 
 function getInboxMeta(conversation: ChatConversation) {
@@ -269,17 +281,21 @@ function createActivatorProps(
   }
 }
 
-watch(isAuthenticated, (value) => {
-  if (!value) {
-    notifications.value = []
-    unreadCount.value = 0
-    inboxConversations.value = []
-    return
-  }
+watch(
+  isAuthenticated,
+  (value) => {
+    if (!value) {
+      notifications.value = []
+      unreadCount.value = 0
+      inboxConversations.value = []
+      return
+    }
 
-  loadNotifications()
-  loadInboxConversations()
-}, { immediate: true })
+    loadNotifications()
+    loadInboxConversations()
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
@@ -312,6 +328,7 @@ watch(isAuthenticated, (value) => {
     <div class="app-bar__right-actions d-flex align-center">
       <v-switch
         v-model="isDark"
+        :aria-label="themeToggleAriaLabel"
         color=""
         hide-details
         density="compact"
@@ -354,7 +371,11 @@ watch(isAuthenticated, (value) => {
             height="3"
           />
 
-          <v-list v-if="latestNotifications.length" class="py-2" bg-color="transparent">
+          <v-list
+            v-if="latestNotifications.length"
+            class="py-2"
+            bg-color="transparent"
+          >
             <v-list-item
               v-for="notification in latestNotifications"
               :key="notification.id"
@@ -363,7 +384,11 @@ watch(isAuthenticated, (value) => {
             >
               <template #prepend>
                 <div class="app-bar__notification-avatar">
-                  <v-icon :icon="getNotificationIcon(notification.type)" size="20" color="white" />
+                  <v-icon
+                    :icon="getNotificationIcon(notification.type)"
+                    size="20"
+                    color="white"
+                  />
                 </div>
               </template>
 
@@ -381,7 +406,10 @@ watch(isAuthenticated, (value) => {
               </div>
 
               <template #append>
-                <span v-if="!notification.readAt" class="app-bar__notification-dot" />
+                <span
+                  v-if="!notification.readAt"
+                  class="app-bar__notification-dot"
+                />
               </template>
             </v-list-item>
           </v-list>
@@ -415,7 +443,11 @@ watch(isAuthenticated, (value) => {
             :aria-label="t('appbar.accessibility.openChat')"
             v-bind="props"
           >
-            <v-icon icon="mdi-chat-processing-outline" size="26" aria-hidden="true" />
+            <v-icon
+              icon="mdi-chat-processing-outline"
+              size="26"
+              aria-hidden="true"
+            />
           </UiButton>
         </template>
 
@@ -427,11 +459,18 @@ watch(isAuthenticated, (value) => {
             height="3"
           />
 
-          <v-list v-if="latestInboxConversations.length" class="py-2" bg-color="transparent">
+          <v-list
+            v-if="latestInboxConversations.length"
+            class="py-2"
+            bg-color="transparent"
+          >
             <v-list-item
               v-for="conversation in latestInboxConversations"
               :key="conversation.id"
-              :to="{ path: '/chat', query: { conversationId: conversation.id } }"
+              :to="{
+                path: '/chat',
+                query: { conversationId: conversation.id },
+              }"
               class="app-bar__notification-item"
             >
               <template #prepend>
@@ -462,7 +501,10 @@ watch(isAuthenticated, (value) => {
               </div>
 
               <template #append>
-                <span v-if="conversation.unreadCount" class="app-bar__notification-dot" />
+                <span
+                  v-if="conversation.unreadCount"
+                  class="app-bar__notification-dot"
+                />
               </template>
             </v-list-item>
           </v-list>
@@ -504,7 +546,11 @@ watch(isAuthenticated, (value) => {
                 variant="text"
                 :aria-label="t('appbar.accessibility.openUserMenu')"
               >
-                <v-icon icon="mdi-account-circle" size="36" aria-hidden="true" />
+                <v-icon
+                  icon="mdi-account-circle"
+                  size="36"
+                  aria-hidden="true"
+                />
               </UiButton>
             </template>
             <span>{{ userDisplayName }}</span>

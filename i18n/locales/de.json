@@ -17,7 +17,9 @@
       "openLanguageMenu": "Sprachauswahl öffnen",
       "openNotificationsPanel": "Benachrichtigungsbereich öffnen",
       "clearAllNotifications": "Alle Benachrichtigungen als gelesen markieren",
-      "hideNotificationsPanel": "Benachrichtigungsbereich ausblenden"
+      "hideNotificationsPanel": "Benachrichtigungsbereich ausblenden",
+      "toggleDarkTheme": "Dunkles Design umschalten",
+      "toggleLightTheme": "Helles Design umschalten"
     }
   },
   "auth": {
