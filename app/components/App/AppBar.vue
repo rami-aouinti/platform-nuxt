@@ -518,7 +518,6 @@ watch(
           <v-tooltip
             location="bottom"
             eager
-            :activator-props="{ 'aria-describedby': undefined }"
           >
             <template #activator="{ props: tooltip }">
               <UiButton

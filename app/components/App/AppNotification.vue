@@ -48,7 +48,6 @@ function toggleAll() {
   <v-tooltip
     :text="t('appbar.accessibility.openNotificationsPanel')"
     eager
-    :activator-props="{ 'aria-describedby': undefined }"
   >
     <template #activator="{ props: tooltip }">
       <v-btn
@@ -81,7 +80,6 @@ function toggleAll() {
           <v-tooltip
             :text="t('appbar.accessibility.clearAllNotifications')"
             eager
-            :activator-props="{ 'aria-describedby': undefined }"
           >
             <template #activator="{ props: tooltip }">
               <v-btn
@@ -96,7 +94,6 @@ function toggleAll() {
           <v-tooltip
             :text="t('appbar.accessibility.hideNotificationsPanel')"
             eager
-            :activator-props="{ 'aria-describedby': undefined }"
           >
             <template #activator="{ props: tooltip }">
               <v-btn
