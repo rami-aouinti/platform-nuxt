@@ -252,3 +252,50 @@ export async function invalidateProfileCacheScopes(
     logCacheMetric('error', `op=invalidate error=${String(error)}`)
   }
 }
+
+export async function invalidateProfileCacheResources(
+  event: H3Event,
+  options: {
+    resources: string[]
+    scopes?: {
+      userId?: string
+      roleId?: string
+      groupId?: string
+    }
+  },
+): Promise<void> {
+  const client = getRedisClient(event)
+
+  if (!client) {
+    return
+  }
+
+  const resources = [...new Set(options.resources.map(resource => resource.trim()).filter(Boolean))]
+
+  if (resources.length === 0) {
+    return
+  }
+
+  const userScope = options.scopes?.userId
+    ? `user:${normalizeScopeValue(options.scopes.userId)}`
+    : 'user:*'
+  const roleScope = options.scopes?.roleId
+    ? `role:${normalizeScopeValue(options.scopes.roleId)}`
+    : 'role:*'
+  const groupScope = options.scopes?.groupId
+    ? `group:${normalizeScopeValue(options.scopes.groupId)}`
+    : 'group:*'
+
+  const patterns = resources.map(resource =>
+    `profile:${KEY_SCHEMA_VERSION}:*:${userScope}:*:${roleScope}:${groupScope}:resource:${resource}*`,
+  )
+
+  try {
+    for (const pattern of patterns) {
+      const deleted = await deleteByPattern(client, pattern)
+      console.info(`[profile-cache] invalidation pattern=${pattern} deleted=${deleted}`)
+    }
+  } catch (error) {
+    logCacheMetric('error', `op=invalidate_resources error=${String(error)}`)
+  }
+}
