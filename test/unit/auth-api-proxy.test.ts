@@ -84,7 +84,7 @@ describe('auth-api-proxy', () => {
     vi.stubGlobal('fetch', fetchMock)
 
     const { proxyAuthApiGet } = await loadProxyModule()
-    const promise = proxyAuthApiGet({} as H3Event, '/api/v1/profile')
+    const promise = proxyAuthApiGet({ context: {} } as H3Event, '/api/v1/profile')
 
     await vi.advanceTimersByTimeAsync(30)
     const payload = await promise
@@ -110,7 +110,7 @@ describe('auth-api-proxy', () => {
 
     const { proxyAuthApiGet } = await loadProxyModule()
 
-    await expect(proxyAuthApiGet({} as H3Event, '/api/v1/profile')).rejects.toMatchObject({
+    await expect(proxyAuthApiGet({ context: {} } as H3Event, '/api/v1/profile')).rejects.toMatchObject({
       statusCode: 400,
       message: 'invalid request',
     })
@@ -136,11 +136,11 @@ describe('auth-api-proxy', () => {
 
     const { proxyAuthApiGet } = await loadProxyModule()
 
-    await expect(proxyAuthApiGet({} as H3Event, '/api/v1/profile')).resolves.toEqual({ ok: true })
+    await expect(proxyAuthApiGet({ context: {} } as H3Event, '/api/v1/profile')).resolves.toEqual({ ok: true })
 
     fetchMock.mockClear()
 
-    await expect(proxyAuthApiGet({} as H3Event, '/api/v1/profile')).resolves.toEqual({ ok: true })
+    await expect(proxyAuthApiGet({ context: {} } as H3Event, '/api/v1/profile')).resolves.toEqual({ ok: true })
 
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock.mock.calls[0]?.[0]).toContain('http://secondary')
