@@ -3,34 +3,31 @@ definePageMeta({
   icon: 'mdi-home',
   title: 'Home',
   drawerIndex: 0,
+  layout: 'landing',
 })
 
-const quickLinks = [
-  {
-    title: 'À propos',
-    description: 'Découvrez notre vision, nos valeurs et nos engagements.',
-    icon: 'mdi-information-outline',
-    to: '/about',
-    color: 'primary',
-  },
-  {
-    title: 'FAQ',
-    description: 'Retrouvez les réponses aux questions les plus fréquentes.',
-    icon: 'mdi-frequently-asked-questions',
-    to: '/faq',
-    color: 'info',
-  },
-  {
-    title: 'Contact',
-    description: 'Échangeons sur votre besoin et obtenez une démo personnalisée.',
-    icon: 'mdi-card-account-mail-outline',
-    to: '/contact',
-    color: 'success',
-  },
-]
+const LazyHomeSecondaryLinks = defineAsyncComponent(
+  () => import('~/components/home/HomeSecondaryLinks.vue'),
+)
 
-const getQuickLinkActionLabel = (title: string) => `Ouvrir ${title}`
-const getQuickLinkAriaLabel = (title: string) => `Ouvrir la page ${title}`
+const showSecondaryContent = ref(false)
+
+const renderSecondaryContent = () => {
+  showSecondaryContent.value = true
+}
+
+onMounted(() => {
+  const revealOnInteraction = () => {
+    renderSecondaryContent()
+    window.removeEventListener('pointerdown', revealOnInteraction)
+    window.removeEventListener('keydown', revealOnInteraction)
+    window.removeEventListener('scroll', revealOnInteraction)
+  }
+
+  window.addEventListener('pointerdown', revealOnInteraction, { passive: true, once: true })
+  window.addEventListener('keydown', revealOnInteraction, { once: true })
+  window.addEventListener('scroll', revealOnInteraction, { passive: true, once: true })
+})
 </script>
 
 <template>
@@ -49,6 +46,15 @@ const getQuickLinkAriaLabel = (title: string) => `Ouvrir la page ${title}`
           </v-btn>
           <v-btn variant="outlined" size="large" to="/about" prepend-icon="mdi-information-outline">
             En savoir plus
+          </v-btn>
+          <v-btn
+            variant="text"
+            size="large"
+            color="secondary"
+            append-icon="mdi-arrow-down"
+            @click="renderSecondaryContent"
+          >
+            Explorer plus
           </v-btn>
         </div>
       </v-col>
@@ -74,43 +80,19 @@ const getQuickLinkAriaLabel = (title: string) => `Ouvrir la page ${title}`
       </v-col>
     </v-row>
 
-    <v-row>
-      <v-col v-for="link in quickLinks" :key="link.title" cols="12" md="4">
-        <v-card rounded="xl" class="h-100 pa-5 quick-link-card" elevation="4">
-          <v-avatar :color="`${link.color}-lighten-5`" size="48" class="mb-4">
-            <v-icon :icon="link.icon" :color="link.color" />
-          </v-avatar>
-          <h2 class="text-h6 font-weight-bold mb-2">{{ link.title }}</h2>
-          <p class="text-body-2 text-medium-emphasis mb-4">{{ link.description }}</p>
-          <v-btn
-            :color="link.color"
-            variant="text"
-            :to="link.to"
-            append-icon="mdi-arrow-right"
-            :aria-label="getQuickLinkAriaLabel(link.title)"
-          >
-            {{ getQuickLinkActionLabel(link.title) }}
-          </v-btn>
-        </v-card>
-      </v-col>
-    </v-row>
+    <component
+      :is="LazyHomeSecondaryLinks"
+      v-if="showSecondaryContent"
+    />
   </v-container>
 </template>
 
 <style scoped>
 .home-page {
-  min-height: calc(100vh - 64px);
+  min-height: calc(100vh - 72px);
 }
 
 .stat-card {
   background: linear-gradient(160deg, rgb(var(--v-theme-surface)), rgb(var(--v-theme-primary), 0.06));
-}
-
-.quick-link-card {
-  transition: transform 0.2s ease;
-}
-
-.quick-link-card:hover {
-  transform: translateY(-4px);
 }
 </style>
