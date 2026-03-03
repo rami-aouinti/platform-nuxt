@@ -12,6 +12,20 @@ function isSecureCookie(event: H3Event) {
   return !host.includes('localhost') && !host.includes('127.0.0.1')
 }
 
+
+function normalizeBearerToken(rawToken: string | undefined) {
+  if (!rawToken) {
+    return undefined
+  }
+
+  const trimmed = rawToken.trim()
+  if (!trimmed) {
+    return undefined
+  }
+
+  return trimmed.replace(/^Bearer\s+/i, '')
+}
+
 function clearLegacyClientCookie(event: H3Event, secure: boolean) {
   deleteCookie(event, 'auth_token', {
     path: '/',
@@ -43,7 +57,7 @@ export default defineEventHandler(async (event) => {
         body,
       })
 
-      const token = response?.token?.trim()
+      const token = normalizeBearerToken(response?.token)
       const secure = isSecureCookie(event)
 
       if (token) {
@@ -59,7 +73,7 @@ export default defineEventHandler(async (event) => {
         clearLegacyClientCookie(event, secure)
       }
 
-      return response
+      return token ? { ...response, token } : response
     }
     catch (error) {
       lastError = error
