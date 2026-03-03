@@ -4,23 +4,74 @@ provide(
   THEME_KEY,
   computed(() => (theme.current.value.dark ? 'dark' : undefined)),
 )
+
 const route = useRoute()
-const title = computed(() => {
-  return route.meta?.title || route.matched[0]?.meta?.title || ''
+const requestUrl = useRequestURL()
+const runtimeConfig = useRuntimeConfig()
+const { locale } = useI18n()
+
+const defaultTitle = 'Bro World'
+const defaultDescription = 'Bro World platform'
+const defaultKeywords = 'bro world, jobs, recruitment, crm'
+const defaultOgImage = '/social-image.png'
+const siteName = 'Bro World'
+const publicSiteUrl = runtimeConfig.public.authApiBase || requestUrl.origin
+
+const resolvedSeoMeta = computed(() => {
+  const title =
+    String(route.meta?.title || route.matched[0]?.meta?.title || '').trim() ||
+    defaultTitle
+
+  return {
+    title,
+    description:
+      String(route.meta?.description || '').trim() || defaultDescription,
+    keywords: String(route.meta?.keywords || '').trim() || defaultKeywords,
+    image: String(route.meta?.image || '').trim() || defaultOgImage,
+  }
 })
-useHead({
-  title,
-  titleTemplate: (t) => (t ? `${t} | BroWorld` : 'BroWorld'),
-  htmlAttrs: { lang: 'en' },
-  link: [{ rel: 'icon', href: '/favicon.ico' }],
+
+const canonicalUrl = computed(() => {
+  const path = route.fullPath || '/'
+  return new URL(path, publicSiteUrl).toString()
 })
-useSeoMeta({
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
-  description: 'Vuetify 3 + Nuxt 3, Opinionated Admin Starter Template',
-  ogImage: '/social-image.png',
-  twitterImage: '/social-image.png',
+
+const themeColor = computed(() =>
+  theme.current.value.dark ? '#121212' : '#ffffff',
+)
+
+const seoMetaPayload = computed(() => ({
+  title: resolvedSeoMeta.value.title,
+  description: resolvedSeoMeta.value.description,
+  author: 'rami.aouinti@gmail.com',
+  ogTitle: resolvedSeoMeta.value.title,
+  ogDescription: resolvedSeoMeta.value.description,
+  ogType: 'website',
+  ogUrl: canonicalUrl.value,
+  ogImage: resolvedSeoMeta.value.image,
+  twitterTitle: resolvedSeoMeta.value.title,
+  twitterDescription: resolvedSeoMeta.value.description,
+  twitterImage: resolvedSeoMeta.value.image,
   twitterCard: 'summary_large_image',
+  keywords: resolvedSeoMeta.value.keywords,
+  themeColor: themeColor.value,
+  robots: 'index, follow',
+  viewport: 'width=device-width, initial-scale=1, maximum-scale=5',
+  ogLocale: locale.value,
+  ogSiteName: siteName,
+}))
+
+useHead({
+  title: computed(() => resolvedSeoMeta.value.title),
+  titleTemplate: (t) => (t ? `${t} | ${siteName}` : siteName),
+  htmlAttrs: { lang: computed(() => locale.value) },
+  link: [
+    { rel: 'icon', href: '/favicon.ico' },
+    { rel: 'canonical', href: computed(() => canonicalUrl.value) },
+  ],
 })
+
+useSeoMeta(() => seoMetaPayload.value)
 </script>
 
 <template>
