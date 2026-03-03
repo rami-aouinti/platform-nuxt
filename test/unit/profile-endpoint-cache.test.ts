@@ -23,6 +23,7 @@ vi.mock('../../server/utils/cache/profile-cache', () => ({
 import {
   buildProfileResourceCacheKey,
   invalidateProfileMutationCaches,
+  invalidateSocialDataCaches,
   readProfileEndpointCache,
   writeProfileEndpointCache,
 } from '../../server/utils/profile-endpoint-cache'
@@ -72,6 +73,24 @@ describe('profile-endpoint-cache', () => {
     )
   })
 
+
+  it('writes cache values with explicit ttl override when provided', async () => {
+    vi.stubGlobal(
+      'useRuntimeConfig',
+      vi.fn(() => ({ profileEndpointCacheTtlMs: 10 })),
+    )
+    const event = {} as H3Event
+
+    await writeProfileEndpointCache(event, 'roles', ['ROLE_USER'], { ttlMs: 7_200_000 })
+
+    expect(cacheMocks.setProfileCache).toHaveBeenCalledWith(
+      event,
+      'profile:hash:roles',
+      ['ROLE_USER'],
+      7_200_000,
+    )
+  })
+
   it('builds stable resource cache keys for unsorted query strings', () => {
     const keyA = buildProfileResourceCacheKey('profile-companies', '?page=2&limit=10')
     const keyB = buildProfileResourceCacheKey('profile-companies', '?limit=10&page=2')
@@ -84,6 +103,24 @@ describe('profile-endpoint-cache', () => {
     expect(buildProfileResourceCacheKey('profile-friends')).toBe('profile-friends')
     expect(buildProfileResourceCacheKey('profile-applications', '?status=pending')).toBe(
       'profile-applications?status=pending',
+    )
+  })
+
+
+  it('invalidates social data resource prefixes', async () => {
+    const event = {} as H3Event
+
+    await invalidateSocialDataCaches(event)
+
+    expect(cacheMocks.invalidateProfileCacheResources).toHaveBeenCalledWith(
+      event,
+      expect.objectContaining({
+        resources: expect.arrayContaining([
+          'profile-friends',
+          'v1-me-chat',
+          'v1-me-notifications',
+        ]),
+      }),
     )
   })
 

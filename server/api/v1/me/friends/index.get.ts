@@ -1,6 +1,7 @@
 import { proxyAuthApiGet } from '../../../../utils/auth-api-proxy'
 import {
   buildProfileResourceCacheKey,
+  LONG_LIVED_PROFILE_CACHE_TTL_MS,
   readProfileEndpointCache,
   writeProfileEndpointCache,
 } from '../../../../utils/profile-endpoint-cache'
@@ -21,7 +22,9 @@ export default defineEventHandler(async (event) => {
   const friends = await proxyAuthApiGet(event, `/api/v1/me/friends${suffix}`)
   const normalizedFriends = normalizeProfileCollectionPayload(friends)
 
-  await writeProfileEndpointCache(event, cacheKey, normalizedFriends)
+  await writeProfileEndpointCache(event, cacheKey, normalizedFriends, {
+    ttlMs: LONG_LIVED_PROFILE_CACHE_TTL_MS,
+  })
 
   return normalizedFriends
 })

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mutationCacheMocks = vi.hoisted(() => ({
   invalidateProfileMutationCaches: vi.fn(),
+  invalidateSocialDataCaches: vi.fn(),
 }))
 
 const proxyFactoryMocks = vi.hoisted(() => ({
@@ -25,6 +26,7 @@ const proxyFactoryMocks = vi.hoisted(() => ({
 
 vi.mock('../../server/utils/profile-endpoint-cache', () => ({
   invalidateProfileMutationCaches: mutationCacheMocks.invalidateProfileMutationCaches,
+  invalidateSocialDataCaches: mutationCacheMocks.invalidateSocialDataCaches,
 }))
 
 vi.mock('../../server/utils/proxy-handler-factory', () => ({
@@ -90,6 +92,21 @@ describe('profile mutation handlers cache invalidation', () => {
     expect(mutationCacheMocks.invalidateProfileMutationCaches).toHaveBeenCalledWith(
       event,
       { groupId: 'creator-group' },
+    )
+  })
+
+  it.each([
+    '../../server/api/v1/me/friends/requests/[userId]/index.post',
+    '../../server/api/v1/me/friends/requests/[id]/accept/index.post',
+    '../../server/api/v1/me/friends/[userId].delete',
+    '../../server/api/v1/me/notifications/read-all.patch',
+  ])('invalidates social data caches for %s', async (modulePath) => {
+    const handler = (await import(modulePath)).default
+
+    await handler({} as never)
+
+    expect(mutationCacheMocks.invalidateSocialDataCaches).toHaveBeenCalledWith(
+      expect.anything(),
     )
   })
 })
