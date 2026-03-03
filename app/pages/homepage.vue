@@ -3,6 +3,7 @@ definePageMeta({
   icon: 'mdi-home',
   title: 'Home',
   drawerIndex: 0,
+  appBarFloating: false,
 })
 
 const quickLinks = [
@@ -36,7 +37,7 @@ const getQuickLinkAriaLabel = (title: string) => `Ouvrir la page ${title}`
 <template>
   <v-container fluid class="home-page pa-6 pa-md-10">
     <v-row class="mb-8" align="center">
-      <v-col cols="12" md="8" lg="7">
+      <v-col cols="12" md="8" lg="7" class="hero-content">
         <v-chip color="primary" variant="tonal" class="mb-4">Bienvenue</v-chip>
         <h1 class="text-h3 text-md-h2 font-weight-bold mb-4">Une UI moderne pour piloter votre activité</h1>
         <p class="text-body-1 text-medium-emphasis mb-6">
@@ -52,7 +53,7 @@ const getQuickLinkAriaLabel = (title: string) => `Ouvrir la page ${title}`
           </v-btn>
         </div>
       </v-col>
-      <v-col cols="12" md="4" lg="5">
+      <v-col cols="12" md="4" lg="5" class="hero-stat-col">
         <v-card rounded="xl" elevation="10" class="pa-6 stat-card">
           <p class="text-overline text-primary mb-1">Performance opérationnelle</p>
           <p class="text-h3 font-weight-black mb-2">+42%</p>
@@ -102,8 +103,28 @@ const getQuickLinkAriaLabel = (title: string) => `Ouvrir la page ${title}`
   min-height: calc(100vh - 64px);
 }
 
+.hero-content {
+  min-height: 360px;
+}
+
+.hero-stat-col {
+  min-height: 280px;
+}
+
 .stat-card {
+  min-height: 280px;
   background: linear-gradient(160deg, rgb(var(--v-theme-surface)), rgb(var(--v-theme-primary), 0.06));
+}
+
+@media (min-width: 960px) {
+  .hero-content {
+    min-height: 420px;
+  }
+
+  .hero-stat-col,
+  .stat-card {
+    min-height: 320px;
+  }
 }
 
 .quick-link-card {
