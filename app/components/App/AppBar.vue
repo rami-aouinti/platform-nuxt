@@ -19,12 +19,14 @@ withDefaults(
     showBrandLink?: boolean
     showBreadcrumbs?: boolean
     floating?: boolean
+    showSecondaryActionsOnHome?: boolean
   }>(),
   {
     showDrawerToggle: true,
     showBrandLink: false,
     showBreadcrumbs: true,
     floating: false,
+    showSecondaryActionsOnHome: false,
   },
 )
 const { t, locale, locales, setLocale } = useI18n()
@@ -41,7 +43,7 @@ const breadcrumbs = computed(() => {
 const isHomeRoute = computed(() => route.path === '/')
 const secondaryActionsOpened = ref(false)
 const showSecondaryActions = computed(
-  () => !isHomeRoute.value || secondaryActionsOpened.value,
+  () => !isHomeRoute.value || secondaryActionsOpened.value || showSecondaryActionsOnHome,
 )
 
 const isDark = computed({
@@ -163,6 +165,33 @@ function normalizeUnreadCount(payload: unknown): number {
   return Number.isFinite(value) ? Math.max(0, value) : 0
 }
 
+function isHttp401(error: unknown): boolean {
+  if (!error || typeof error !== 'object') {
+    return false
+  }
+
+  const statusCode = (error as { statusCode?: unknown }).statusCode
+  const status = (error as { status?: unknown }).status
+
+  return statusCode === 401 || status === 401
+}
+
+async function fetchWith401Retry<T>(request: () => Promise<T>, maxAttempts = 3): Promise<T> {
+  let attempt = 0
+
+  while (true) {
+    try {
+      return await request()
+    } catch (error) {
+      attempt += 1
+
+      if (!isHttp401(error) || attempt >= maxAttempts) {
+        throw error
+      }
+    }
+  }
+}
+
 async function loadNotifications() {
   if (!isAuthenticated.value) {
     notifications.value = []
@@ -174,8 +203,8 @@ async function loadNotifications() {
 
   try {
     const [notificationsResponse, unreadCountResponse] = await Promise.all([
-      $fetch('/api/v1/me/notifications'),
-      $fetch('/api/v1/me/notifications/unread-count'),
+      fetchWith401Retry(() => $fetch('/api/v1/me/notifications')),
+      fetchWith401Retry(() => $fetch('/api/v1/me/notifications/unread-count')),
     ])
 
     notifications.value = normalizeNotifications(notificationsResponse)
@@ -196,7 +225,9 @@ async function handleNotificationMenuOpen() {
     return
   }
 
-  await $fetch('/api/v1/me/notifications/read-all', { method: 'PATCH' })
+  await fetchWith401Retry(() =>
+    $fetch('/api/v1/me/notifications/read-all', { method: 'PATCH' }),
+  )
   notifications.value = notifications.value.map((notification) => ({
     ...notification,
     readAt: notification.readAt ?? new Date().toISOString(),
@@ -223,7 +254,7 @@ async function loadInboxConversations() {
 
   try {
     const api = await getChatApi()
-    inboxConversations.value = await api.listConversations()
+    inboxConversations.value = await fetchWith401Retry(() => api.listConversations())
   } catch (error) {
     inboxConversations.value = []
     console.warn('Unable to load inbox conversations.', error)
@@ -242,7 +273,6 @@ watch(
       return
     }
 
-    loadNotifications()
   },
   { immediate: true },
 )
