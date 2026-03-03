@@ -33,7 +33,12 @@ const menuShow = ref(false)
     offset="15"
   >
     <template #activator="{ props: menu }">
-      <v-tooltip location="top" :text="t('settings.themePalette')">
+      <v-tooltip
+        location="top"
+        :text="t('settings.themePalette')"
+        eager
+        :activator-props="{ 'aria-describedby': undefined }"
+      >
         <template #activator="{ props: tooltip }">
           <v-btn
             icon="mdi-palette-outline"
