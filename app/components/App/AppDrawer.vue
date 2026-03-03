@@ -28,6 +28,7 @@ const drawerPaths = [
   '/faq',
   '/contact',
   '/dashboard',
+  '/applications',
   '/admin',
   '/offers',
   '/offers/my-offers',
