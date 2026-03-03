@@ -2,9 +2,7 @@
 definePageMeta({
   icon: 'mdi-home',
   title: 'Home',
-  drawerIndex: 0,
-  layout: 'landing',
-  appBarFloating: false
+  drawerIndex: 0
 })
 
 const LazyHomeSecondaryLinks = defineAsyncComponent(

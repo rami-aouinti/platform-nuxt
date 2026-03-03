@@ -40,7 +40,7 @@ const breadcrumbs = computed(() => {
     }))
 })
 
-const isHomeRoute = computed(() => route.path === '/')
+const isHomeRoute = computed(() => route.path === '/homepage')
 const secondaryActionsOpened = ref(false)
 const showSecondaryActions = computed(
   () => !isHomeRoute.value || secondaryActionsOpened.value || appBarProps.showSecondaryActionsOnHome,
