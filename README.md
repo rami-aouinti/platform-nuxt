@@ -137,6 +137,9 @@ Le cache des endpoints `profile` côté serveur utilise Redis. Ajoutez les varia
 ```bash
 NUXT_PROFILE_ENDPOINT_CACHE_TTL_MS=30000
 NUXT_REDIS_URL=redis://localhost:6379
+# compatible Vercel integrations
+REDIS_URL=redis://localhost:6379
+bro_REDIS_URL=redis://localhost:6379
 # ou configuration détaillée
 NUXT_REDIS_HOST=localhost
 NUXT_REDIS_PORT=6379
@@ -146,7 +149,8 @@ NUXT_REDIS_PASSWORD=""
 Notes:
 
 - `NUXT_PROFILE_ENDPOINT_CACHE_TTL_MS` est exprimé en millisecondes.
-- Utilisez `NUXT_REDIS_URL` **ou** le triplet host/port/password.
+- Priorité URL: `NUXT_REDIS_URL`, puis `REDIS_URL`, puis `bro_REDIS_URL` (Vercel Marketplace).
+- Utilisez sinon le triplet host/port/password via `NUXT_REDIS_*` ou `REDIS_*`.
 - Si Redis n'est pas configuré ou indisponible, le fallback est sans crash (cache ignoré).
 
 Convention de clés Redis (documentée):
