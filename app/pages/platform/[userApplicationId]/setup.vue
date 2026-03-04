@@ -28,6 +28,8 @@ const loading = ref(false)
 const plugins = ref<PlatformPlugin[]>([])
 const pluginActionLoadingId = ref<string | null>(null)
 const selectedPluginId = ref<string | null>(null)
+const pluginInfoDialog = ref<PlatformPlugin | null>(null)
+const pluginSetupDialog = ref<PlatformPlugin | null>(null)
 
 const application = computed(
   () =>
@@ -115,38 +117,13 @@ onMounted(async () => {
 
 <template>
   <v-container fluid class="pa-6 min-h-screen">
-    <v-btn
-      variant="text"
-      prepend-icon="mdi-arrow-left"
-      to="/platform"
-      class="mb-4"
-    >
-      Retour
-    </v-btn>
-
-    <v-card rounded="xl" elevation="2" class="pa-6 mb-6">
-      <div class="d-flex align-start ga-4">
-        <v-avatar size="72" rounded="lg">
-          <v-img
-            v-if="application?.logo"
-            :src="application.logo"
-            :alt="`Logo ${application.name}`"
-          />
-          <span v-else class="text-subtitle-2 font-weight-bold">
-            {{ application?.name?.slice(0, 2).toUpperCase() || 'PL' }}
-          </span>
-        </v-avatar>
-
-        <div>
-          <h1 class="text-h5 font-weight-bold mb-2">
-            {{ application?.name || 'Platform' }}
-          </h1>
-          <p class="text-body-2 text-medium-emphasis mb-0">
-            {{ application?.description || 'Aucune description.' }}
-          </p>
-        </div>
-      </div>
-    </v-card>
+    <client-only>
+      <teleport to="#app-bar">
+        <v-btn variant="text" prepend-icon="mdi-arrow-left" to="/platform" class="mr-2">
+          Retour
+        </v-btn>
+      </teleport>
+    </client-only>
 
     <v-row v-if="loading">
       <v-col v-for="index in 3" :key="`plugin-layout-skeleton-${index}`" cols="12" md="4">
@@ -161,6 +138,29 @@ onMounted(async () => {
     <v-row v-else class="ga-md-0 ga-4">
       <v-col cols="12" md="4">
         <v-card rounded="xl" elevation="2" class="plugin-layout-card pa-6 h-100">
+          <div class="d-flex align-start ga-3 mb-4">
+            <v-avatar size="56" rounded="lg">
+              <v-img
+                v-if="application?.logo"
+                :src="application.logo"
+                :alt="`Logo ${application.name}`"
+              />
+              <span v-else class="text-subtitle-2 font-weight-bold">
+                {{ application?.name?.slice(0, 2).toUpperCase() || 'PL' }}
+              </span>
+            </v-avatar>
+            <div>
+              <h1 class="text-h6 font-weight-bold mb-1">
+                {{ application?.name || 'Platform' }}
+              </h1>
+              <p class="text-body-2 text-medium-emphasis mb-0">
+                {{ application?.description || 'Aucune description.' }}
+              </p>
+            </div>
+          </div>
+
+          <v-divider class="mb-4" />
+
           <h2 class="text-h6 font-weight-bold mb-2">
             {{ selectedPlugin?.name || 'Plugin' }}
           </h2>
@@ -180,10 +180,20 @@ onMounted(async () => {
 
       <v-col cols="12" md="4">
         <v-card rounded="xl" elevation="2" class="plugin-layout-card pa-6 h-100">
-          <h2 class="text-h6 font-weight-bold mb-2">Configuration du plugin</h2>
+          <h2 class="text-h6 font-weight-bold mb-2">Configuration du platform</h2>
           <p class="text-body-2 text-medium-emphasis mb-4">
-            Configuration de: <strong>{{ selectedPlugin?.name || '-' }}</strong>
+            Paramètres globaux de: <strong>{{ application?.name || 'votre platform' }}</strong>
           </p>
+
+          <p class="text-body-2 text-medium-emphasis mb-3">
+            Activez des options générales pour adapter l'expérience à votre organisation.
+          </p>
+
+          <v-list density="compact" class="bg-transparent pa-0 mb-4">
+            <v-list-item prepend-icon="mdi-theme-light-dark" title="Thème dynamique" subtitle="Ajuste automatiquement les couleurs selon le contexte" />
+            <v-list-item prepend-icon="mdi-shield-check" title="Sécurité renforcée" subtitle="Validation supplémentaire sur les actions sensibles" />
+            <v-list-item prepend-icon="mdi-rocket-launch" title="Mode performance" subtitle="Optimise le chargement des modules principaux" />
+          </v-list>
 
           <v-alert
             v-if="!selectedPlugin"
@@ -191,7 +201,7 @@ onMounted(async () => {
             variant="tonal"
             border="start"
           >
-            Sélectionnez un plugin pour commencer.
+            Sélectionnez un plugin pour ouvrir son setup détaillé.
           </v-alert>
 
           <v-alert
@@ -209,7 +219,7 @@ onMounted(async () => {
             block
             :to="`/platform/${userApplicationId}/${selectedPlugin.id}/setup`"
           >
-            Ouvrir la configuration avancée
+            Ouvrir le setup avancé
           </v-btn>
         </v-card>
       </v-col>
@@ -248,33 +258,104 @@ onMounted(async () => {
               </v-list-item-subtitle>
 
               <template #append>
-                <v-btn
-                  v-if="plugin.enabled !== true"
-                  size="small"
-                  color="primary"
-                  variant="flat"
-                  :loading="pluginActionLoadingId === plugin.id"
-                  @click.stop="installPlugin(plugin.id)"
-                >
-                  Installer
-                </v-btn>
+                <div class="d-flex align-center ga-2">
+                  <v-btn
+                    size="small"
+                    variant="text"
+                    color="info"
+                    @click.stop="pluginInfoDialog = plugin"
+                  >
+                    Info
+                  </v-btn>
 
-                <v-btn
-                  v-else
-                  size="small"
-                  color="warning"
-                  variant="outlined"
-                  :loading="pluginActionLoadingId === plugin.id"
-                  @click.stop="uninstallPlugin(plugin.id)"
-                >
-                  Désinstaller
-                </v-btn>
+                  <v-btn
+                    size="small"
+                    variant="outlined"
+                    color="primary"
+                    @click.stop="pluginSetupDialog = plugin"
+                  >
+                    Setup
+                  </v-btn>
+
+                  <v-btn
+                    v-if="plugin.enabled !== true"
+                    size="small"
+                    color="primary"
+                    variant="flat"
+                    :loading="pluginActionLoadingId === plugin.id"
+                    @click.stop="installPlugin(plugin.id)"
+                  >
+                    Installer
+                  </v-btn>
+
+                  <v-btn
+                    v-else
+                    size="small"
+                    color="warning"
+                    variant="outlined"
+                    :loading="pluginActionLoadingId === plugin.id"
+                    @click.stop="uninstallPlugin(plugin.id)"
+                  >
+                    Désinstaller
+                  </v-btn>
+                </div>
               </template>
             </v-list-item>
           </v-list>
         </v-card>
       </v-col>
     </v-row>
+
+    <v-dialog
+      :model-value="Boolean(pluginInfoDialog)"
+      max-width="560"
+      @update:model-value="(isOpen) => !isOpen && (pluginInfoDialog = null)"
+    >
+      <v-card rounded="xl">
+        <v-card-title class="text-h6">
+          Infos plugin — {{ pluginInfoDialog?.name }}
+        </v-card-title>
+        <v-card-text>
+          {{ pluginInfoDialog?.description || 'Aucune description disponible pour ce plugin.' }}
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="pluginInfoDialog = null">Fermer</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog
+      :model-value="Boolean(pluginSetupDialog)"
+      max-width="640"
+      @update:model-value="(isOpen) => !isOpen && (pluginSetupDialog = null)"
+    >
+      <v-card rounded="xl">
+        <v-card-title class="text-h6">
+          Setup plugin — {{ pluginSetupDialog?.name }}
+        </v-card-title>
+        <v-card-text>
+          <p class="mb-3">
+            Configuration rapide du plugin <strong>{{ pluginSetupDialog?.name }}</strong>.
+          </p>
+          <v-alert
+            v-if="pluginSetupDialog && !pluginSetupDialog.enabled"
+            type="warning"
+            variant="tonal"
+            border="start"
+          >
+            Ce plugin n'est pas encore installé. Installez-le avant de sauvegarder la configuration.
+          </v-alert>
+          <v-text-field label="Nom d'affichage" variant="outlined" density="comfortable" hide-details="auto" class="mb-3" />
+          <v-switch label="Activer au démarrage" color="primary" hide-details />
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="pluginSetupDialog = null">Annuler</v-btn>
+          <v-btn color="primary" @click="pluginSetupDialog = null">Enregistrer</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
