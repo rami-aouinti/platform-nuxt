@@ -3,11 +3,16 @@ import { apiRequest, normalizePaginatedResponse, type ApiListResponse } from './
 export type PlatformApplication = {
   id: string
   userApplicationId: string | null
+  applicationId: string | null
+  applicationName: string | null
+  applicationKeyName: string | null
   name: string
+  keyName: string | null
   logo: string | null
   description: string | null
   active: boolean
-  enabled: boolean | null
+  public: boolean
+  owner: boolean
 }
 
 type ApplicationsResponse = {
@@ -21,15 +26,31 @@ function normalizeApplication(entry: Partial<PlatformApplication>): PlatformAppl
     userApplicationId:
       typeof entry.userApplicationId === 'string' && entry.userApplicationId.length > 0
         ? entry.userApplicationId
+        : typeof entry.id === 'string' && entry.id.length > 0
+          ? entry.id
+          : null,
+    applicationId:
+      typeof entry.applicationId === 'string' && entry.applicationId.length > 0
+        ? entry.applicationId
+        : null,
+    applicationName:
+      typeof entry.applicationName === 'string' && entry.applicationName.length > 0
+        ? entry.applicationName
+        : null,
+    applicationKeyName:
+      typeof entry.applicationKeyName === 'string' && entry.applicationKeyName.length > 0
+        ? entry.applicationKeyName
+        : null,
+    keyName:
+      typeof entry.keyName === 'string' && entry.keyName.length > 0
+        ? entry.keyName
         : null,
     name: String(entry.name ?? 'Application'),
     logo: typeof entry.logo === 'string' ? entry.logo : null,
     description: typeof entry.description === 'string' ? entry.description : null,
     active: Boolean(entry.active),
-    enabled:
-      entry.enabled === null || entry.enabled === undefined
-        ? null
-        : Boolean(entry.enabled),
+    public: Boolean(entry.public),
+    owner: Boolean(entry.owner),
   }
 }
 
@@ -41,7 +62,16 @@ function normalizeList(payload: ApiListResponse<PlatformApplication> | Applicati
 
 export function usePlatformApplicationsApi() {
   return {
-    listAll: async () => {
+    listUserApplications: async () => {
+      const payload = await apiRequest<ApiListResponse<PlatformApplication> | ApplicationsResponse>(
+        'GET',
+        '/api/v1/user-applications',
+      )
+
+      return normalizeList(payload)
+    },
+
+    listCatalogApplications: async () => {
       const payload = await apiRequest<ApiListResponse<PlatformApplication> | ApplicationsResponse>(
         'GET',
         '/api/v1/applications',
@@ -49,20 +79,37 @@ export function usePlatformApplicationsApi() {
 
       return normalizeList(payload)
     },
-    listProfile: async () => {
-      const payload = await apiRequest<ApiListResponse<PlatformApplication> | ApplicationsResponse>(
-        'GET',
-        '/api/v1/profile/applications',
+
+    createUserApplication: async (applicationId: string) => {
+      const payload = await apiRequest<PlatformApplication>(
+        'POST',
+        `/api/v1/profile/user-applications/${applicationId}`,
       )
 
-      return normalizeList(payload)
+      return normalizeApplication(payload)
     },
-    attach: async (id: string) =>
-      normalizeApplication(
-        await apiRequest<PlatformApplication>('POST', `/api/v1/profile/applications/${id}/attach`),
-      ),
-    detach: async (id: string) => {
-      await apiRequest<unknown>('DELETE', `/api/v1/profile/applications/${id}/detach`)
+
+    updateUserApplicationMetadata: async (
+      id: string,
+      payload: { name?: string; logo?: File | null },
+    ) => {
+      const formData = new FormData()
+
+      if (payload.name && payload.name.trim().length > 0) {
+        formData.append('name', payload.name.trim())
+      }
+
+      if (payload.logo) {
+        formData.append('logo', payload.logo)
+      }
+
+      const response = await apiRequest<PlatformApplication>(
+        'PATCH',
+        `/api/v1/profile/user-applications/${id}`,
+        { body: formData },
+      )
+
+      return normalizeApplication(response)
     },
   }
 }

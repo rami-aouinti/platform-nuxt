@@ -32,6 +32,16 @@ function normalizePlugin(entry: Partial<PlatformPlugin>): PlatformPlugin {
 
 export function usePlatformPluginsApi() {
   return {
+    listAll: async () => {
+      const payload = await apiRequest<ApiListResponse<PlatformPlugin> | PluginsResponse>(
+        'GET',
+        '/api/v1/plugins',
+      )
+
+      return normalizePaginatedResponse(payload as ApiListResponse<PlatformPlugin>).data.map(
+        normalizePlugin,
+      )
+    },
     listByUserApplication: async (userApplicationId: string) => {
       const payload = await apiRequest<ApiListResponse<PlatformPlugin> | PluginsResponse>(
         'GET',
@@ -46,7 +56,7 @@ export function usePlatformPluginsApi() {
       normalizePlugin(
         await apiRequest<PlatformPlugin>(
           'POST',
-          `/api/v1/profile/applications/${userApplicationId}/plugins/${pluginId}/attach`,
+          `/api/v1/profile/user-applications/${userApplicationId}/plugins/${pluginId}/attach`,
         ),
       ),
     detach: async (userApplicationId: string, pluginId: string) => {
