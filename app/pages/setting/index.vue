@@ -25,6 +25,7 @@ import SessionsTab from '~/components/profile/tabs/SessionsTab.vue'
 import DeleteAccountTab from '~/components/profile/tabs/DeleteAccountTab.vue'
 import ResumesTab from '~/components/profile/tabs/ResumesTab.vue'
 import FriendsTab from '~/components/profile/tabs/FriendsTab.vue'
+import MediaTab from '~/components/profile/tabs/MediaTab.vue'
 
 definePageMeta({
   icon: 'mdi-account-circle-outline',
@@ -219,6 +220,13 @@ const tabDefinitions: TabDefinition[] = [
     labelKey: 'profile.tabs.friends',
     description: t('profile.tabDescriptions.friends'),
     component: markRaw(FriendsTab),
+  },
+  {
+    id: 'media',
+    icon: 'mdi-folder-multiple-image',
+    labelKey: 'profile.tabs.media',
+    description: t('profile.tabDescriptions.media'),
+    component: markRaw(MediaTab),
   },
   {
     id: 'delete-account',

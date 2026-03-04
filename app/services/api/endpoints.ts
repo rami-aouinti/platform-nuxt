@@ -54,6 +54,13 @@ export const apiEndpoints = {
         method ? `${ME_PROFILE_BASE}/companies/schema?method=${method}` : `${ME_PROFILE_BASE}/companies/schema`,
       companyById: (id: ApiId) => `${ME_PROFILE_BASE}/companies/${id}`,
     },
+    media: {
+      folders: `${ME_BASE}/media/folders`,
+      folderById: (id: ApiId) => `${ME_BASE}/media/folders/${id}`,
+      uploadFile: `${ME_BASE}/media/files/upload`,
+      fileById: (id: ApiId) => `${ME_BASE}/media/files/${id}`,
+      renameFileById: (id: ApiId) => `${ME_BASE}/media/files/${id}/rename`,
+    },
     projects: {
       base: `${ME_PROFILE_BASE}/projects`,
       projectById: (id: ApiId) => `${ME_PROFILE_BASE}/projects/${id}`,
