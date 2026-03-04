@@ -962,7 +962,13 @@ onMounted(async () => {
                       md="6"
                       xl="4"
                     >
-                      <v-card variant="tonal" rounded="lg" class="h-100 pa-4">
+                      <v-card
+                        variant="tonal"
+                        rounded="lg"
+                        class="company-card h-100 pa-4"
+                        :to="`/company/${company.id}/dashboard`"
+                        link
+                      >
                         <p class="text-h6 text-typo mb-1">{{ company.name || company.legalName || 'Company sans nom' }}</p>
                         <p class="text-body-2 text-medium-emphasis mb-3">
                           {{ company.role || company.status || 'Rôle non défini' }}
@@ -1078,3 +1084,23 @@ onMounted(async () => {
     </v-row>
   </v-container>
 </template>
+
+<style scoped>
+.company-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.company-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgb(15 23 42 / 12%);
+}
+
+.company-card:active {
+  transform: translateY(0);
+}
+
+.company-card:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: 2px;
+}
+</style>
