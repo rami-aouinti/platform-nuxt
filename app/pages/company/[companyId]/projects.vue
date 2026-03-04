@@ -56,6 +56,14 @@ function getProjectPath(project: CompanyProjectSummary) {
   return `/company/${companyId.value}/${project.id}/dashboard`
 }
 
+function getProjectImage(project: CompanyProjectSummary) {
+  return project.photoUrl || project.photo || project.image || ''
+}
+
+function getProjectDescription(project: CompanyProjectSummary) {
+  return project.description || 'Aucune description fournie pour ce projet.'
+}
+
 function resetCreateProjectForm() {
   newProject.name = ''
   newProject.description = ''
@@ -141,19 +149,47 @@ async function submitCreateProject() {
       Aucun projet trouvé pour cette société.
     </v-alert>
 
-    <div v-else class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+    <div v-else class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
       <NuxtLink
         v-for="project in projects"
         :key="project.id"
         :to="getProjectPath(project)"
-        class="block rounded-lg border border-gray-200 p-4 transition hover:border-primary-400 hover:bg-primary-50/40 dark:border-gray-700 dark:hover:border-primary-400 dark:hover:bg-slate-800"
+        class="block text-decoration-none"
       >
-        <p class="text-base font-semibold text-gray-900 dark:text-white mb-1">
-          {{ getProjectLabel(project) }}
-        </p>
-        <p class="text-sm text-gray-500 dark:text-gray-400">
-          Statut : {{ project.status || '-' }}
-        </p>
+        <v-card
+          rounded="lg"
+          class="h-100 border border-gray-200 transition-all hover:-translate-y-1 hover:border-primary dark:border-gray-700"
+        >
+          <div class="d-flex align-center ga-3 px-4 pt-4">
+            <v-avatar size="44" rounded="lg" color="surface-variant">
+              <v-img
+                v-if="getProjectImage(project)"
+                :src="getProjectImage(project)"
+                :alt="getProjectLabel(project)"
+                cover
+              />
+              <span v-else class="text-caption font-weight-bold">{{ getProjectLabel(project).charAt(0) }}</span>
+            </v-avatar>
+
+            <div class="min-w-0 flex-1">
+              <p class="text-subtitle-1 font-weight-bold text-high-emphasis mb-1 truncate">
+                {{ getProjectLabel(project) }}
+              </p>
+              <v-chip size="small" color="primary" variant="tonal">{{ project.status || '-' }}</v-chip>
+            </div>
+          </div>
+
+          <v-card-text class="pt-3">
+            <p class="text-body-2 text-medium-emphasis mb-3 min-h-[44px] line-clamp-2">
+              {{ getProjectDescription(project) }}
+            </p>
+
+            <div class="d-flex flex-column ga-1 text-caption text-medium-emphasis">
+              <span><strong>ID:</strong> {{ project.id || '-' }}</span>
+              <span><strong>Owner(s):</strong> {{ Array.isArray(project.owner) ? project.owner.length : 0 }}</span>
+            </div>
+          </v-card-text>
+        </v-card>
       </NuxtLink>
     </div>
 
