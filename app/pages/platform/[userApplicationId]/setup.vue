@@ -27,6 +27,7 @@ const { applications } = storeToRefs(platformApplicationsStore)
 const loading = ref(false)
 const plugins = ref<PlatformPlugin[]>([])
 const pluginActionLoadingId = ref<string | null>(null)
+const selectedPluginId = ref<string | null>(null)
 
 const application = computed(
   () =>
@@ -35,13 +36,29 @@ const application = computed(
     ) ?? null,
 )
 
+const selectedPlugin = computed(
+  () => plugins.value.find((plugin) => plugin.id === selectedPluginId.value) ?? null,
+)
+
 async function fetchPlugins() {
   loading.value = true
 
   try {
-    plugins.value = await pluginsApi.listByUserApplication(
-      userApplicationId.value,
+    plugins.value = await pluginsApi.listByUserApplication(userApplicationId.value)
+
+    if (!plugins.value.length) {
+      selectedPluginId.value = null
+      return
+    }
+
+    const selectedStillExists = plugins.value.some(
+      (plugin) => plugin.id === selectedPluginId.value,
     )
+
+    if (!selectedStillExists) {
+      const firstEnabledPlugin = plugins.value.find((plugin) => plugin.enabled)
+      selectedPluginId.value = firstEnabledPlugin?.id ?? plugins.value[0].id
+    }
   } catch (error) {
     Notify.error(error)
   } finally {
@@ -64,6 +81,7 @@ async function installPlugin(pluginId: string) {
       }
     }
 
+    selectedPluginId.value = pluginId
     Notify.success('Plugin installé avec succès')
   } catch (error) {
     Notify.error(error)
@@ -131,95 +149,129 @@ onMounted(async () => {
     </v-card>
 
     <v-row v-if="loading">
-      <v-col
-        v-for="index in 3"
-        :key="`plugin-skeleton-${index}`"
-        cols="12"
-        md="6"
-        lg="4"
-      >
+      <v-col v-for="index in 3" :key="`plugin-layout-skeleton-${index}`" cols="12" md="4">
         <v-skeleton-loader type="card" class="rounded-xl" />
       </v-col>
     </v-row>
 
-    <v-alert
-      v-else-if="!plugins.length"
-      type="info"
-      variant="tonal"
-      border="start"
-    >
+    <v-alert v-else-if="!plugins.length" type="info" variant="tonal" border="start">
       Aucun plugin disponible pour cette application.
     </v-alert>
 
-    <v-row v-else>
-      <v-col v-for="plugin in plugins" :key="plugin.id" cols="12" md="6" lg="4">
-        <v-card
-          rounded="xl"
-          elevation="4"
-          class="platform-plugin-card pa-6 h-100"
-        >
-          <div class="d-flex align-start ga-4">
-            <v-avatar size="56" rounded="lg">
-              <v-img
-                v-if="plugin.logo"
-                :src="plugin.logo"
-                :alt="`Logo ${plugin.name}`"
-              />
-              <span v-else class="text-caption font-weight-bold">
-                {{ plugin.name.slice(0, 2).toUpperCase() }}
-              </span>
-            </v-avatar>
-
-            <div class="flex-grow-1">
-              <h2 class="text-h6 font-weight-bold mb-1">{{ plugin.name }}</h2>
-              <v-chip
-                :color="plugin.enabled ? 'success' : 'grey'"
-                size="small"
-                variant="tonal"
-              >
-                {{ plugin.enabled ? 'Installé' : 'Non installé' }}
-              </v-chip>
-            </div>
-          </div>
-
-          <p
-            class="platform-plugin-card__description text-body-2 text-medium-emphasis mt-4 mb-6"
-          >
-            {{ plugin.description || 'Aucune description.' }}
+    <v-row v-else class="ga-md-0 ga-4">
+      <v-col cols="12" md="4">
+        <v-card rounded="xl" elevation="2" class="plugin-layout-card pa-6 h-100">
+          <h2 class="text-h6 font-weight-bold mb-2">
+            {{ selectedPlugin?.name || 'Plugin' }}
+          </h2>
+          <p class="text-body-2 text-medium-emphasis mb-4">
+            {{ selectedPlugin?.description || 'Sélectionnez un plugin à droite.' }}
           </p>
 
-          <v-btn
-            v-if="plugin.enabled !== true"
-            block
-            color="primary"
-            :loading="pluginActionLoadingId === plugin.id"
-            :disabled="loading"
-            @click="installPlugin(plugin.id)"
+          <v-chip
+            :color="selectedPlugin?.enabled ? 'success' : 'grey'"
+            size="small"
+            variant="tonal"
           >
-            Installer
+            {{ selectedPlugin?.enabled ? 'Installé' : 'Non installé' }}
+          </v-chip>
+        </v-card>
+      </v-col>
+
+      <v-col cols="12" md="4">
+        <v-card rounded="xl" elevation="2" class="plugin-layout-card pa-6 h-100">
+          <h2 class="text-h6 font-weight-bold mb-2">Configuration du plugin</h2>
+          <p class="text-body-2 text-medium-emphasis mb-4">
+            Configuration de: <strong>{{ selectedPlugin?.name || '-' }}</strong>
+          </p>
+
+          <v-alert
+            v-if="!selectedPlugin"
+            type="info"
+            variant="tonal"
+            border="start"
+          >
+            Sélectionnez un plugin pour commencer.
+          </v-alert>
+
+          <v-alert
+            v-else-if="!selectedPlugin.enabled"
+            type="warning"
+            variant="tonal"
+            border="start"
+          >
+            Installez ce plugin avant de le configurer.
+          </v-alert>
+
+          <v-btn
+            v-else
+            color="primary"
+            block
+            :to="`/platform/${userApplicationId}/${selectedPlugin.id}/setup`"
+          >
+            Ouvrir la configuration avancée
           </v-btn>
+        </v-card>
+      </v-col>
 
-          <div v-else class="d-flex ga-3">
-            <v-btn
-              color="warning"
-              variant="outlined"
-              class="flex-grow-1"
-              :loading="pluginActionLoadingId === plugin.id"
-              :disabled="loading"
-              @click="uninstallPlugin(plugin.id)"
-            >
-              Désinstaller
-            </v-btn>
+      <v-col cols="12" md="4">
+        <v-card rounded="xl" elevation="2" class="plugin-layout-card pa-4 h-100">
+          <h2 class="text-h6 font-weight-bold px-2 mb-3">Liste des plugins</h2>
 
-            <v-btn
-              color="primary"
-              variant="tonal"
-              class="flex-grow-1"
-              :to="`/platform/${userApplicationId}/${plugin.id}/setup`"
+          <v-list density="comfortable" lines="two" class="bg-transparent pa-0">
+            <v-list-item
+              v-for="plugin in plugins"
+              :key="plugin.id"
+              rounded="lg"
+              class="mb-2 plugin-list-item"
+              :class="{ 'plugin-list-item--active': selectedPluginId === plugin.id }"
+              @click="selectedPluginId = plugin.id"
             >
-              Setup
-            </v-btn>
-          </div>
+              <template #prepend>
+                <v-avatar size="40" rounded="lg" class="mr-3">
+                  <v-img
+                    v-if="plugin.logo"
+                    :src="plugin.logo"
+                    :alt="`Logo ${plugin.name}`"
+                  />
+                  <span v-else class="text-caption font-weight-bold">
+                    {{ plugin.name.slice(0, 2).toUpperCase() }}
+                  </span>
+                </v-avatar>
+              </template>
+
+              <v-list-item-title class="font-weight-medium">
+                {{ plugin.name }}
+              </v-list-item-title>
+              <v-list-item-subtitle>
+                {{ plugin.enabled ? 'Installé' : 'Non installé' }}
+              </v-list-item-subtitle>
+
+              <template #append>
+                <v-btn
+                  v-if="plugin.enabled !== true"
+                  size="small"
+                  color="primary"
+                  variant="flat"
+                  :loading="pluginActionLoadingId === plugin.id"
+                  @click.stop="installPlugin(plugin.id)"
+                >
+                  Installer
+                </v-btn>
+
+                <v-btn
+                  v-else
+                  size="small"
+                  color="warning"
+                  variant="outlined"
+                  :loading="pluginActionLoadingId === plugin.id"
+                  @click.stop="uninstallPlugin(plugin.id)"
+                >
+                  Désinstaller
+                </v-btn>
+              </template>
+            </v-list-item>
+          </v-list>
         </v-card>
       </v-col>
     </v-row>
@@ -227,12 +279,12 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.platform-plugin-card {
+.plugin-layout-card {
   border: 1px solid rgb(var(--v-theme-primary), 0.14);
   background:
     radial-gradient(
       circle at top right,
-      rgb(var(--v-theme-primary), 0.14),
+      rgb(var(--v-theme-primary), 0.12),
       transparent 58%
     ),
     linear-gradient(
@@ -240,23 +292,14 @@ onMounted(async () => {
       rgb(var(--v-theme-surface), 1),
       rgb(var(--v-theme-surface-bright), 1)
     );
-  transition:
-    transform 0.22s ease,
-    box-shadow 0.22s ease,
-    border-color 0.22s ease;
 }
 
-.platform-plugin-card:hover {
-  transform: translateY(-4px);
-  border-color: rgb(var(--v-theme-primary), 0.32);
-  box-shadow: 0 14px 28px rgb(12 17 29 / 14%);
+.plugin-list-item {
+  border: 1px solid transparent;
 }
 
-.platform-plugin-card__description {
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
+.plugin-list-item--active {
+  background: rgb(var(--v-theme-primary), 0.12);
+  border-color: rgb(var(--v-theme-primary), 0.26);
 }
 </style>
