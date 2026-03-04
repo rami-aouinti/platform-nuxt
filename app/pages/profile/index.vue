@@ -579,7 +579,7 @@ onMounted(async () => {
             <v-sheet rounded="xl">
               <div
                 class="d-flex flex-column flex-md-row align-md-center justify-space-between ga-4"
-                style="padding: 15px; margin: 15px"
+                style="padding: 15px;"
               >
                 <div class="d-flex align-center ga-4">
                   <UiAvatar
@@ -648,7 +648,7 @@ onMounted(async () => {
               Aucune donnée de profil disponible.
             </v-alert>
 
-            <v-row>
+            <v-row class="mt-6" v-if="hasData">
               <v-col cols="12" lg="6" class="position-relative">
                 <v-card
                   class="profile-block h-100 pa-4"
@@ -768,7 +768,7 @@ onMounted(async () => {
                 <div class="vertical-divider d-none d-lg-block" />
               </v-col>
 
-              <v-col cols="12" lg="6">
+              <v-col cols="12" lg="6" class="position-relative">
                 <v-card
                   class="profile-block h-100 pa-4"
                   rounded="xl"
@@ -806,250 +806,252 @@ onMounted(async () => {
                   </div>
                 </v-card>
               </v-col>
-            </v-row>
 
-            <v-card
-              v-if="hasData"
-              class="profile-block mt-6 pa-4 pa-md-6"
-              rounded="xl"
-              elevation="0"
-            >
-              <h3 class="text-h4 text-typo mb-1">Mes companies</h3>
-              <p class="text-h6 text-medium-emphasis mb-4">
-                Vos entreprises associées
-              </p>
+              <v-col cols="12" lg="6" class="position-relative">
+                <v-card
+                  v-if="hasData"
+                  class="profile-block h-100 pa-4"
+                  rounded="xl"
+                  elevation="0"
+                >
+                  <h3 class="text-h4 text-typo mb-1">Mes companies</h3>
+                  <p class="text-h6 text-medium-emphasis mb-4">
+                    Vos entreprises associées
+                  </p>
 
-              <v-alert
-                v-if="companySchemaError"
-                type="warning"
-                variant="tonal"
-                density="comfortable"
-                rounded="lg"
-                class="mb-4"
-              >
-                {{ companySchemaError }}
-              </v-alert>
-
-              <div class="d-flex justify-space-between align-center mb-6">
-                <v-chip
-                  v-if="usesSchemaFallback"
-                  size="small"
-                  color="warning"
-                  variant="tonal"
-                >Fallback</v-chip>
-                <div class="ms-auto">
-                  <v-btn
-                    color="primary"
-                    prepend-icon="mdi-plus"
-                    @click="showCreateCompanyModal = true"
+                  <v-alert
+                    v-if="companySchemaError"
+                    type="warning"
+                    variant="tonal"
+                    density="comfortable"
+                    rounded="lg"
+                    class="mb-4"
                   >
-                    Add company
-                  </v-btn>
-                </div>
-              </div>
+                    {{ companySchemaError }}
+                  </v-alert>
 
-              <v-dialog
-                v-model="showCreateCompanyModal"
-                max-width="720"
-              >
-                <v-card rounded="lg">
-                  <v-card-title class="d-flex align-center justify-space-between">
-                    <span>Créer une company</span>
-                    <v-btn icon="mdi-close" variant="text" @click="showCreateCompanyModal = false" />
-                  </v-card-title>
+                  <div class="d-flex justify-space-between align-center mb-6">
+                    <v-chip
+                      v-if="usesSchemaFallback"
+                      size="small"
+                      color="warning"
+                      variant="tonal"
+                    >Fallback</v-chip>
+                    <div class="ms-auto">
+                      <v-btn
+                        color="primary"
+                        prepend-icon="mdi-plus"
+                        @click="showCreateCompanyModal = true"
+                      >
+                        Add company
+                      </v-btn>
+                    </div>
+                  </div>
 
-                  <v-card-text>
-                    <v-row>
-                      <v-col cols="12" md="6">
-                        <v-text-field
-                          v-model="createCompanyForm.name"
-                          :label="
+                  <v-dialog
+                    v-model="showCreateCompanyModal"
+                    max-width="720"
+                  >
+                    <v-card rounded="lg">
+                      <v-card-title class="d-flex align-center justify-space-between">
+                        <span>Créer une company</span>
+                        <v-btn icon="mdi-close" variant="text" @click="showCreateCompanyModal = false" />
+                      </v-card-title>
+
+                      <v-card-text>
+                        <v-row>
+                          <v-col cols="12" md="6">
+                            <v-text-field
+                              v-model="createCompanyForm.name"
+                              :label="
                             getCompanyFieldMeta('name')?.label ||
                             'Nom de la société'
                           "
-                          :required="getCompanyFieldMeta('name')?.required"
-                          :disabled="creatingCompany || companySchemaLoading"
-                          density="comfortable"
-                          variant="outlined"
-                        />
-                      </v-col>
-                      <v-col cols="12" md="6">
-                        <v-text-field
-                          v-model="createCompanyForm.role"
-                          :label="getCompanyFieldMeta('role')?.label || 'Rôle'"
-                          :required="getCompanyFieldMeta('role')?.required"
-                          :disabled="creatingCompany || companySchemaLoading"
-                          density="comfortable"
-                          variant="outlined"
-                        />
-                      </v-col>
-                      <v-col cols="12">
-                        <v-textarea
-                          v-model="createCompanyForm.description"
-                          :label="
+                              :required="getCompanyFieldMeta('name')?.required"
+                              :disabled="creatingCompany || companySchemaLoading"
+                              density="comfortable"
+                              variant="outlined"
+                            />
+                          </v-col>
+                          <v-col cols="12" md="6">
+                            <v-text-field
+                              v-model="createCompanyForm.role"
+                              :label="getCompanyFieldMeta('role')?.label || 'Rôle'"
+                              :required="getCompanyFieldMeta('role')?.required"
+                              :disabled="creatingCompany || companySchemaLoading"
+                              density="comfortable"
+                              variant="outlined"
+                            />
+                          </v-col>
+                          <v-col cols="12">
+                            <v-textarea
+                              v-model="createCompanyForm.description"
+                              :label="
                             getCompanyFieldMeta('description')?.label ||
                             'Description'
                           "
-                          :required="getCompanyFieldMeta('description')?.required"
-                          :disabled="creatingCompany || companySchemaLoading"
-                          density="comfortable"
-                          variant="outlined"
-                          rows="3"
-                        />
-                      </v-col>
-                    </v-row>
-                  </v-card-text>
+                              :required="getCompanyFieldMeta('description')?.required"
+                              :disabled="creatingCompany || companySchemaLoading"
+                              density="comfortable"
+                              variant="outlined"
+                              rows="3"
+                            />
+                          </v-col>
+                        </v-row>
+                      </v-card-text>
 
-                  <v-card-actions class="px-6 pb-6">
-                    <v-spacer />
-                    <v-btn variant="text" @click="showCreateCompanyModal = false">Annuler</v-btn>
-                    <v-btn
-                      color="primary"
-                      :loading="creatingCompany"
-                      :disabled="!createCompanyForm.name.trim()"
-                      @click="createCompany"
-                    >
-                      Créer la société
-                    </v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
-
-              <div v-if="companiesLoading" class="d-flex align-center ga-3">
-                <v-progress-circular indeterminate color="primary" />
-                <span>Chargement des companies...</span>
-              </div>
-
-              <v-alert
-                v-else-if="companiesError"
-                type="error"
-                variant="tonal"
-                density="comfortable"
-                rounded="lg"
-                class="mb-4"
-              >
-                {{ companiesError }}
-              </v-alert>
-
-              <v-alert
-                v-else-if="companies.length === 0"
-                type="info"
-                variant="tonal"
-                density="comfortable"
-                rounded="lg"
-                class="mb-4"
-              >
-                Aucune company associée à ce profil.
-              </v-alert>
-
-              <v-row v-else class="mb-2">
-                <v-col
-                  v-for="company in companies"
-                  :key="company.id"
-                  cols="12"
-                  md="6"
-                  xl="4"
-                >
-                  <v-card variant="tonal" rounded="lg" class="h-100 pa-4">
-                    <p class="text-h6 text-typo mb-1">{{ company.name || company.legalName || 'Company sans nom' }}</p>
-                    <p class="text-body-2 text-medium-emphasis mb-3">
-                      {{ company.role || company.status || 'Rôle non défini' }}
-                    </p>
-                    <p class="text-body-2 text-medium-emphasis mb-0">
-                      {{
-                        company.description || 'Aucune description disponible.'
-                      }}
-                    </p>
-                  </v-card>
-                </v-col>
-              </v-row>
-
-              <v-divider class="my-6" />
-
-              <h3 class="text-h4 text-typo mb-1">
-                {{ t('profile.projects') }}
-              </h3>
-              <p class="text-h6 text-medium-emphasis mb-6">
-                Architects design houses
-              </p>
-
-              <div v-if="projectsLoading" class="d-flex align-center ga-3">
-                <v-progress-circular indeterminate color="primary" />
-                <span>Chargement des projects...</span>
-              </div>
-
-              <v-alert
-                v-else-if="projectsError"
-                type="error"
-                variant="tonal"
-                density="comfortable"
-                rounded="lg"
-                class="mb-4"
-              >
-                {{ projectsError }}
-              </v-alert>
-
-              <v-alert
-                v-else-if="decoratedProjects.length === 0"
-                type="info"
-                variant="tonal"
-                density="comfortable"
-                rounded="lg"
-                class="mb-4"
-              >
-                Aucun project associé à ce profil.
-              </v-alert>
-
-              <v-row v-else>
-                <v-col
-                  v-for="project in decoratedProjects"
-                  :key="project.id"
-                  cols="12"
-                  md="6"
-                  xl="3"
-                >
-                  <div class="project-card h-100">
-                    <v-img
-                      :src="project.image"
-                      height="190"
-                      cover
-                      class="rounded-xl mb-4"
-                    />
-                    <p class="text-body-1 text-medium-emphasis mb-1">
-                      {{ project.title }}
-                    </p>
-                    <p class="text-h4 text-typo font-weight-bold mb-3">
-                      {{ project.style || '-' }}
-                    </p>
-                    <p class="text-body-1 text-medium-emphasis mb-5">
-                      {{
-                        project.description || 'Aucune description disponible.'
-                      }}
-                    </p>
-
-                    <div class="d-flex align-center justify-space-between">
-                      <v-btn
-                        color="pink"
-                        variant="outlined"
-                        rounded="pill"
-                        class="project-btn"
-                        >{{ t('profile.viewProject') }}</v-btn
-                      >
-                      <div class="avatar-group d-flex">
-                        <v-avatar
-                          v-for="avatar in project.avatars"
-                          :key="avatar"
-                          size="32"
-                          class="ms-n2 border border-white"
+                      <v-card-actions class="px-6 pb-6">
+                        <v-spacer />
+                        <v-btn variant="text" @click="showCreateCompanyModal = false">Annuler</v-btn>
+                        <v-btn
+                          color="primary"
+                          :loading="creatingCompany"
+                          :disabled="!createCompanyForm.name.trim()"
+                          @click="createCompany"
                         >
-                          <v-img :src="avatar" alt="Project member" />
-                        </v-avatar>
-                      </div>
-                    </div>
+                          Créer la société
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+
+                  <div v-if="companiesLoading" class="d-flex align-center ga-3">
+                    <v-progress-circular indeterminate color="primary" />
+                    <span>Chargement des companies...</span>
                   </div>
-                </v-col>
-              </v-row>
-            </v-card>
+
+                  <v-alert
+                    v-else-if="companiesError"
+                    type="error"
+                    variant="tonal"
+                    density="comfortable"
+                    rounded="lg"
+                    class="mb-4"
+                  >
+                    {{ companiesError }}
+                  </v-alert>
+
+                  <v-alert
+                    v-else-if="companies.length === 0"
+                    type="info"
+                    variant="tonal"
+                    density="comfortable"
+                    rounded="lg"
+                    class="mb-4"
+                  >
+                    Aucune company associée à ce profil.
+                  </v-alert>
+
+                  <v-row v-else class="mb-2">
+                    <v-col
+                      v-for="company in companies"
+                      :key="company.id"
+                      cols="12"
+                      md="6"
+                      xl="4"
+                    >
+                      <v-card variant="tonal" rounded="lg" class="h-100 pa-4">
+                        <p class="text-h6 text-typo mb-1">{{ company.name || company.legalName || 'Company sans nom' }}</p>
+                        <p class="text-body-2 text-medium-emphasis mb-3">
+                          {{ company.role || company.status || 'Rôle non défini' }}
+                        </p>
+                        <p class="text-body-2 text-medium-emphasis mb-0">
+                          {{
+                            company.description || 'Aucune description disponible.'
+                          }}
+                        </p>
+                      </v-card>
+                    </v-col>
+                  </v-row>
+
+                  <v-divider class="my-6" />
+
+                  <h3 class="text-h4 text-typo mb-1">
+                    {{ t('profile.projects') }}
+                  </h3>
+                  <p class="text-h6 text-medium-emphasis mb-6">
+                    Architects design houses
+                  </p>
+
+                  <div v-if="projectsLoading" class="d-flex align-center ga-3">
+                    <v-progress-circular indeterminate color="primary" />
+                    <span>Chargement des projects...</span>
+                  </div>
+
+                  <v-alert
+                    v-else-if="projectsError"
+                    type="error"
+                    variant="tonal"
+                    density="comfortable"
+                    rounded="lg"
+                    class="mb-4"
+                  >
+                    {{ projectsError }}
+                  </v-alert>
+
+                  <v-alert
+                    v-else-if="decoratedProjects.length === 0"
+                    type="info"
+                    variant="tonal"
+                    density="comfortable"
+                    rounded="lg"
+                    class="mb-4"
+                  >
+                    Aucun project associé à ce profil.
+                  </v-alert>
+
+                  <v-row v-else>
+                    <v-col
+                      v-for="project in decoratedProjects"
+                      :key="project.id"
+                      cols="12"
+                      md="6"
+                      xl="3"
+                    >
+                      <div class="project-card h-100">
+                        <v-img
+                          :src="project.image"
+                          height="190"
+                          cover
+                          class="rounded-xl mb-4"
+                        />
+                        <p class="text-body-1 text-medium-emphasis mb-1">
+                          {{ project.title }}
+                        </p>
+                        <p class="text-h4 text-typo font-weight-bold mb-3">
+                          {{ project.style || '-' }}
+                        </p>
+                        <p class="text-body-1 text-medium-emphasis mb-5">
+                          {{
+                            project.description || 'Aucune description disponible.'
+                          }}
+                        </p>
+
+                        <div class="d-flex align-center justify-space-between">
+                          <v-btn
+                            color="pink"
+                            variant="outlined"
+                            rounded="pill"
+                            class="project-btn"
+                          >{{ t('profile.viewProject') }}</v-btn
+                          >
+                          <div class="avatar-group d-flex">
+                            <v-avatar
+                              v-for="avatar in project.avatars"
+                              :key="avatar"
+                              size="32"
+                              class="ms-n2 border border-white"
+                            >
+                              <v-img :src="avatar" alt="Project member" />
+                            </v-avatar>
+                          </div>
+                        </div>
+                      </div>
+                    </v-col>
+                  </v-row>
+                </v-card>
+              </v-col>
+            </v-row>
           </v-window-item>
 
           <v-window-item
