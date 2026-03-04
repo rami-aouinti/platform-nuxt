@@ -268,11 +268,7 @@ async function initCalendar() {
     initialView: 'dayGridMonth',
     locale: 'fr',
     height: '72vh',
-    headerToolbar: {
-      left: 'prev,next today',
-      center: 'title',
-      right: 'dayGridMonth,timeGridWeek,timeGridDay',
-    },
+    headerToolbar: false,
     editable: true,
     eventDurationEditable: true,
     eventStartEditable: true,
@@ -413,7 +409,6 @@ onBeforeUnmount(() => {
 
       <v-col cols="12" md="9">
         <v-card>
-          <v-card-title class="text-h6">Calendrier</v-card-title>
           <v-card-text>
             <div ref="calendarRoot" />
           </v-card-text>
