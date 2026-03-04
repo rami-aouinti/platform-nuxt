@@ -343,8 +343,13 @@ onMounted(() => {
       </v-col>
     </v-row>
 
-    <v-dialog v-model="creationDialog" width="95vw" max-width="1400" persistent>
-      <v-card rounded="xl">
+    <v-dialog
+      v-model="creationDialog"
+      persistent
+      fullscreen
+      scrollable
+    >
+      <v-card class="creation-dialog-card">
         <v-card-title class="d-flex align-center justify-space-between">
           <span class="text-h6">New Platform</span>
           <v-btn
@@ -356,7 +361,11 @@ onMounted(() => {
 
         <v-divider />
 
-        <v-stepper v-model="creationStep" alt-labels class="elevation-0">
+        <v-stepper
+          v-model="creationStep"
+          alt-labels
+          class="elevation-0 creation-dialog-stepper"
+        >
           <v-stepper-header>
             <v-stepper-item :value="1" title="Application" />
             <v-divider />
@@ -621,6 +630,7 @@ onMounted(() => {
 
 <style scoped>
 .platform-card {
+  min-height: 260px;
   border: 1px solid rgb(var(--v-theme-primary), 0.16);
   background:
     radial-gradient(
@@ -647,7 +657,7 @@ onMounted(() => {
 }
 
 .platform-card--create {
-  min-height: 260px;
+  min-height: 230px;
   cursor: pointer;
   border-style: dashed;
   border-width: 2px;
@@ -670,5 +680,20 @@ onMounted(() => {
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   line-clamp: 2;
+}
+
+.creation-dialog-card {
+  height: 100vh;
+  border-radius: 0;
+}
+
+.creation-dialog-stepper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+:deep(.creation-dialog-stepper .v-stepper-window) {
+  overflow-y: auto;
 }
 </style>

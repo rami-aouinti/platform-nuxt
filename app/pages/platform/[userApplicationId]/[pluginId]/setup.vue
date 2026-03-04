@@ -8,7 +8,9 @@ definePageMeta({
 })
 
 const route = useRoute()
-const userApplicationId = computed(() => String(route.params.userApplicationId ?? ''))
+const userApplicationId = computed(() =>
+  String(route.params.userApplicationId ?? ''),
+)
 const pluginId = computed(() => String(route.params.pluginId ?? ''))
 </script>
 
