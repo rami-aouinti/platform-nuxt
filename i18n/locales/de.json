@@ -155,7 +155,8 @@
       "notifications": "Benachrichtigungen",
       "sessions": "Sitzungen",
       "friends": "Freunde",
-      "deleteAccount": "Konto löschen"
+      "deleteAccount": "Konto löschen",
+      "media": "Medien"
     },
     "tabDescriptions": {
       "basicInfo": "Dieser Abschnitt ist den grundlegenden Profilinformationen gewidmet.",
@@ -165,7 +166,8 @@
       "notifications": "Dieser Abschnitt ist den Benachrichtigungseinstellungen gewidmet.",
       "sessions": "Dieser Abschnitt ist der Verwaltung aktiver Sitzungen gewidmet.",
       "friends": "Dieser Abschnitt ist der Verwaltung von Freunden und Anfragen gewidmet.",
-      "deleteAccount": "Dieser Abschnitt ist dem Löschen des Kontos gewidmet."
+      "deleteAccount": "Dieser Abschnitt ist dem Löschen des Kontos gewidmet.",
+      "media": "Durchsuchen Sie Ihre Ordner und Dateien, laden Sie neue Dateien hoch und verwalten Sie Ihre persönliche Bibliothek."
     },
     "friends": {
       "title": "Freunde",
@@ -213,6 +215,28 @@
       "skills": "Fähigkeiten",
       "cancel": "Abbrechen",
       "add": "Hinzufügen"
+    },
+    "media": {
+      "title": "Medien-Explorer",
+      "createFolder": "Ordner erstellen",
+      "uploadFile": "Datei hochladen",
+      "parentFolder": "Übergeordneter Ordner",
+      "name": "Name",
+      "type": "Typ",
+      "size": "Größe",
+      "actions": "Aktionen",
+      "folder": "Ordner",
+      "file": "Datei",
+      "preview": "Vorschau",
+      "delete": "Löschen",
+      "empty": "Dieser Ordner ist leer.",
+      "folderName": "Ordnername",
+      "create": "Erstellen",
+      "folderCreated": "Ordner erfolgreich erstellt.",
+      "fileUploaded": "Datei erfolgreich hochgeladen.",
+      "deleted": "Element erfolgreich gelöscht.",
+      "deleteConfirm": "\"{name}\" löschen?",
+      "deleteFolderWithChildrenWarning": "Dieser Ordner enthält Elemente. \"{name}\" und den gesamten Inhalt löschen?"
     }
   },
   "notifications": {
