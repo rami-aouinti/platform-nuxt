@@ -59,7 +59,11 @@ const calendarOptions = ref({
   selectable: true,
   initialDate: "2020-12-01",
   editable: true,
-  headerToolbar: false,
+  headerToolbar: {
+    left: 'prev,next today',
+    center: 'title',
+    right: 'dayGridMonth,timeGridWeek,timeGridDay',
+  },
   events: [{
     title: "Call with Dave",
     start: "2020-11-18",

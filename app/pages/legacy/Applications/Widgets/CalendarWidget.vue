@@ -22,10 +22,9 @@ const calendarOptions = ref({
   initialDate: "2021-11-08",
   editable: true,
   headerToolbar: {
-    start: "title",
-    // will normally be on the left. if RTL, will be on the right
-    center: "",
-    end: "today prev,next" // will normally be on the right. if RTL, will be on the left
+    left: 'prev,next today',
+    center: 'title',
+    right: 'dayGridMonth,timeGridWeek,timeGridDay',
   },
   events: [{
     title: "Call with Dave",

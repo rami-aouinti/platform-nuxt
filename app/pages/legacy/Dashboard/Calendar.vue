@@ -263,7 +263,11 @@ const calendarOptions = ref({
   plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
   initialView: "dayGridMonth",
   contentHeight: "auto",
-  headerToolbar: false,
+  headerToolbar: {
+    left: 'prev,next today',
+    center: 'title',
+    right: 'dayGridMonth,timeGridWeek,timeGridDay',
+  },
   selectable: true,
   selectMirror: true,
   dateClick: this.onDateClick,

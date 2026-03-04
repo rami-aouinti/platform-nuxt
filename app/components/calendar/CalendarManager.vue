@@ -266,9 +266,13 @@ async function initCalendar() {
 
   calendarInstance.value = new Calendar(calendarRoot.value, {
     initialView: 'dayGridMonth',
-    locale: 'fr',
+    locale: 'en',
     height: '72vh',
-    headerToolbar: false,
+    headerToolbar: {
+      left: 'prev,next today',
+      center: 'title',
+      right: 'dayGridMonth,timeGridWeek,timeGridDay',
+    },
     editable: true,
     eventDurationEditable: true,
     eventStartEditable: true,
