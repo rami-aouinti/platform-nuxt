@@ -1,0 +1,38 @@
+:root {
+  --md-app-bar-height: 64px;
+  --md-app-bar-height-floating: 84px;
+  --md-app-bar-height-tablet: 64px;
+  --md-app-bar-height-floating-tablet: 80px;
+  --md-app-bar-height-mobile: 56px;
+  --md-app-bar-height-floating-mobile: 72px;
+}
+
+@media (max-width: 1279px) {
+  :root {
+    --md-app-bar-height: var(--md-app-bar-height-tablet);
+    --md-app-bar-height-floating: var(--md-app-bar-height-floating-tablet);
+  }
+}
+
+@media (max-width: 959px) {
+  :root {
+    --md-app-bar-height: var(--md-app-bar-height-mobile);
+    --md-app-bar-height-floating: var(--md-app-bar-height-floating-mobile);
+  }
+}
+
+.md-main-offset {
+  padding-top: var(--md-app-bar-height);
+}
+
+.md-main-offset--floating {
+  padding-top: var(--md-app-bar-height-floating);
+}
+
+.md-main-offset-margin {
+  margin-top: var(--md-app-bar-height);
+}
+
+.md-main-offset-height {
+  height: calc(100vh - var(--md-app-bar-height));
+}

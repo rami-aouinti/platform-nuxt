@@ -1,42 +1,39 @@
 <script setup lang="ts">
-import VercelAnalyticsPlaceholder
-  from "~/components/layout/analytics/VercelAnalyticsPlaceholder";
-import SpeedInsightsPlaceholder from "~/components/layout/analytics/SpeedInsightsPlaceholder";
+import VercelAnalyticsPlaceholder from '~/components/layout/analytics/VercelAnalyticsPlaceholder'
+import SpeedInsightsPlaceholder from '~/components/layout/analytics/SpeedInsightsPlaceholder'
 
-const route = useRoute();
-const isFloatingAppBar = computed(() => route.meta.appBarFloating !== false);
-const showSecondaryActionsOnHome = computed(() => route.meta.appBarShowSecondaryActions === true);
+const route = useRoute()
+const isFloatingAppBar = computed(() => route.meta.appBarFloating !== false)
+const showSecondaryActionsOnHome = computed(
+  () => route.meta.appBarShowSecondaryActions === true,
+)
 
 const LazyAnalytics = defineAsyncComponent({
   loader: async () => {
     if (import.meta.server) {
-      return VercelAnalyticsPlaceholder;
+      return VercelAnalyticsPlaceholder
     }
 
-    const module = await import("@vercel/analytics/vue");
-    return module.Analytics;
+    const module = await import('@vercel/analytics/vue')
+    return module.Analytics
   },
   suspensible: false,
-});
+})
 
 const LazySpeedInsights = defineAsyncComponent({
   loader: async () => {
     if (import.meta.server) {
-      return SpeedInsightsPlaceholder;
+      return SpeedInsightsPlaceholder
     }
 
-    const module = await import("@vercel/speed-insights/nuxt");
-    return module.SpeedInsights;
+    const module = await import('@vercel/speed-insights/nuxt')
+    return module.SpeedInsights
   },
   suspensible: false,
-});
-
+})
 </script>
 <template>
-  <div
-    class="default-layout"
-    :class="{ 'default-layout--floating': isFloatingAppBar }"
-  >
+  <div class="default-layout">
     <AppBar
       :show-drawer-toggle="false"
       :show-breadcrumbs="false"
@@ -44,43 +41,16 @@ const LazySpeedInsights = defineAsyncComponent({
       :show-secondary-actions-on-home="showSecondaryActionsOnHome"
       show-brand-link
     />
-    <v-main class="default-layout__main">
+    <v-main
+      class="default-layout__main"
+      :class="isFloatingAppBar ? 'md-main-offset--floating' : 'md-main-offset'"
+    >
       <slot />
     </v-main>
     <AppFooter />
     <ClientOnly>
-      <component
-        :is="LazyAnalytics"
-        v-if="shouldRenderAnalytics"
-      />
-      <component
-        :is="LazySpeedInsights"
-        v-if="shouldRenderSpeedInsights"
-      />
+      <component :is="LazyAnalytics" v-if="shouldRenderAnalytics" />
+      <component :is="LazySpeedInsights" v-if="shouldRenderSpeedInsights" />
     </ClientOnly>
   </div>
 </template>
-
-<style scoped>
-.default-layout {
-  --default-layout-app-bar-offset: 64px;
-}
-
-.default-layout--floating {
-  --default-layout-app-bar-offset: 84px;
-}
-
-.default-layout__main {
-  padding-top: var(--default-layout-app-bar-offset);
-}
-
-@media (max-width: 960px) {
-  .default-layout {
-    --default-layout-app-bar-offset: 56px;
-  }
-
-  .default-layout--floating {
-    --default-layout-app-bar-offset: 72px;
-  }
-}
-</style>
