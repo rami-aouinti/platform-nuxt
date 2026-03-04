@@ -102,6 +102,11 @@ const deletingId = ref<string | null>(null)
 const isDialogOpen = ref(false)
 const editingId = ref<string | null>(null)
 
+const formatter = new Intl.DateTimeFormat('fr-FR', {
+  dateStyle: 'short',
+  timeStyle: 'short',
+})
+
 const calendarRoot = ref<HTMLElement | null>(null)
 const calendarInstance = ref<FullCalendarInstance | null>(null)
 
@@ -117,14 +122,6 @@ const form = reactive<CalendarEventPayload>({
   visibility: 'private',
 })
 
-const headers = [
-  { title: 'Titre', key: 'title' },
-  { title: 'Début', key: 'startAt' },
-  { title: 'Fin', key: 'endAt' },
-  { title: 'Statut', key: 'status' },
-  { title: 'Actions', key: 'actions', sortable: false },
-]
-
 const calendarEventSource = computed<FullCalendarEventInput[]>(() => events.value.map((eventItem) => ({
   id: eventItem.id,
   title: eventItem.title,
@@ -136,6 +133,26 @@ const calendarEventSource = computed<FullCalendarEventInput[]>(() => events.valu
   textColor: eventItem.textColor ?? undefined,
   extendedProps: { status: eventItem.status },
 })))
+
+const todaysEvents = computed(() => {
+  const now = new Date()
+  const startOfDay = new Date(now)
+  startOfDay.setHours(0, 0, 0, 0)
+
+  const endOfDay = new Date(now)
+  endOfDay.setHours(23, 59, 59, 999)
+
+  return events.value.filter((eventItem) => {
+    const startAt = new Date(eventItem.startAt)
+    return startAt >= startOfDay && startAt <= endOfDay
+  })
+})
+
+function formatEventDate(value: string) {
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime())) return value
+  return formatter.format(parsed)
+}
 
 function syncCalendarEvents() {
   if (!calendarInstance.value) return
@@ -288,36 +305,61 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <v-card>
-    <v-card-title class="d-flex justify-space-between align-center">
-      <span>Calendar</span>
-      <v-btn color="primary" @click="openCreateDialog">Nouvel événement</v-btn>
-    </v-card-title>
-
-    <v-alert v-if="errorMessage" type="error" variant="tonal" class="mx-4 mb-2">
+  <div>
+    <v-alert v-if="errorMessage" type="error" variant="tonal" class="mb-4">
       {{ errorMessage }}
     </v-alert>
 
-    <v-card-text>
-      <div ref="calendarRoot" class="mb-6" />
+    <v-row>
+      <v-col cols="12" md="3">
+        <v-card class="mb-4">
+          <v-card-title class="text-h6">Actions</v-card-title>
+          <v-card-text>
+            <v-btn block color="primary" @click="openCreateDialog">Créer un nouvel événement</v-btn>
+          </v-card-text>
+        </v-card>
 
-      <v-data-table :headers="headers" :items="events" :loading="loading" item-value="id">
-        <template #item.actions="{ item }">
-          <div class="d-flex ga-2">
-            <v-btn size="small" variant="tonal" @click="openEditDialog(item)">Éditer</v-btn>
-            <v-btn
-              size="small"
-              color="error"
-              variant="tonal"
-              :loading="deletingId === item.id"
-              @click="deleteEvent(item.id)"
-            >
-              Supprimer
-            </v-btn>
-          </div>
-        </template>
-      </v-data-table>
-    </v-card-text>
+        <v-card>
+          <v-card-title class="text-h6">Événements d'aujourd'hui</v-card-title>
+          <v-card-text>
+            <v-progress-linear v-if="loading" indeterminate color="primary" class="mb-4" />
+
+            <v-list v-else-if="todaysEvents.length" lines="two" density="comfortable">
+              <v-list-item v-for="eventItem in todaysEvents" :key="eventItem.id" class="px-0">
+                <v-list-item-title>{{ eventItem.title }}</v-list-item-title>
+                <v-list-item-subtitle>{{ formatEventDate(eventItem.startAt) }}</v-list-item-subtitle>
+
+                <template #append>
+                  <div class="d-flex ga-2">
+                    <v-btn size="x-small" variant="tonal" @click="openEditDialog(eventItem)">Éditer</v-btn>
+                    <v-btn
+                      size="x-small"
+                      color="error"
+                      variant="tonal"
+                      :loading="deletingId === eventItem.id"
+                      @click="deleteEvent(eventItem.id)"
+                    >
+                      Supprimer
+                    </v-btn>
+                  </div>
+                </template>
+              </v-list-item>
+            </v-list>
+
+            <p v-else class="text-medium-emphasis mb-0">Aucun événement prévu aujourd'hui.</p>
+          </v-card-text>
+        </v-card>
+      </v-col>
+
+      <v-col cols="12" md="9">
+        <v-card>
+          <v-card-title class="text-h6">Calendrier</v-card-title>
+          <v-card-text>
+            <div ref="calendarRoot" />
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
 
     <v-dialog v-model="isDialogOpen" max-width="720">
       <v-card>
@@ -359,5 +401,5 @@ onBeforeUnmount(() => {
         </v-card-actions>
       </v-card>
     </v-dialog>
-  </v-card>
+  </div>
 </template>
