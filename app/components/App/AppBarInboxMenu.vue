@@ -79,7 +79,7 @@ function getInboxMeta(conversation: ChatConversation) {
       </UiButton>
     </template>
 
-    <v-card class="app-bar__notifications-menu" elevation="12" rounded="xl">
+    <v-card class="app-bar__notifications-menu" elevation="14" rounded="xl">
       <v-progress-linear
         v-if="inboxLoading"
         indeterminate
@@ -145,9 +145,8 @@ function getInboxMeta(conversation: ChatConversation) {
       <v-list bg-color="transparent" class="py-0">
         <v-list-item
           to="/chat"
-          class="font-weight-bold"
-          title="All"
-          append-icon="mdi-chevron-right"
+          class="app-bar__menu-footer-link"
+          title="Display All"
         />
       </v-list>
     </v-card>
@@ -158,12 +157,24 @@ function getInboxMeta(conversation: ChatConversation) {
 .app-bar__notifications-menu {
   width: min(420px, calc(100vw - 24px));
   overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at top right, rgba(99, 102, 241, 0.2), transparent 60%),
+    rgba(21, 21, 27, 0.94);
+  backdrop-filter: blur(12px);
 }
 
 .app-bar__notification-item {
-  margin: 4px 10px;
-  border-radius: 14px;
-  padding-inline: 10px;
+  margin: 6px 10px;
+  border-radius: 16px;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  transition: background-color 0.18s ease, border-color 0.18s ease;
+}
+
+.app-bar__notification-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.07);
 }
 
 .app-bar__notification-title {
@@ -193,5 +204,17 @@ function getInboxMeta(conversation: ChatConversation) {
   border-radius: 999px;
   background-color: rgb(var(--v-theme-primary));
   display: inline-block;
+}
+
+.app-bar__menu-footer-link {
+  text-align: center;
+  justify-content: center;
+  min-height: 50px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+:deep(.app-bar__menu-footer-link .v-list-item__content) {
+  text-align: center;
 }
 </style>
