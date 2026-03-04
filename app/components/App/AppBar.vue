@@ -398,6 +398,11 @@ watch(
             to="/profile"
           />
           <v-list-item
+            :title="t('appbar.settings')"
+            prepend-icon="mdi-cog-outline"
+            to="/setting"
+          />
+          <v-list-item
             v-if="isAuthenticated"
             :title="t('appbar.crm')"
             prepend-icon="mdi-account-group-outline"

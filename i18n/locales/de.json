@@ -2,6 +2,7 @@
   "appbar": {
     "login": "Anmelden",
     "profile": "Profil",
+    "settings": "Einstellungen",
     "crm": "CRM",
     "calendar": "Kalender",
     "applications": "Anwendungen",
