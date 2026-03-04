@@ -10,6 +10,15 @@ const membership = ref<CompanyMembership | null>(null)
 const loading = ref(false)
 const error = ref<string | null>(null)
 
+const showAddUserDialog = ref(false)
+const addingUser = ref(false)
+const addUserError = ref<string | null>(null)
+const newMember = reactive({
+  email: '',
+  role: 'member',
+  status: 'invited',
+})
+
 const companyId = computed(() => {
   const param = route.params.companyId
   return Array.isArray(param) ? (param[0] ?? '') : (param ?? '')
@@ -42,11 +51,59 @@ async function loadMembership() {
 }
 
 watch(companyId, loadMembership, { immediate: true })
+
+function resetAddUserForm() {
+  newMember.email = ''
+  newMember.role = 'member'
+  newMember.status = 'invited'
+  addUserError.value = null
+}
+
+function openAddUserDialog() {
+  resetAddUserForm()
+  showAddUserDialog.value = true
+}
+
+async function submitAddUser() {
+  if (!companyId.value) {
+    addUserError.value = 'Identifiant de company invalide.'
+    return
+  }
+
+  if (!newMember.email.trim()) {
+    addUserError.value = "L'email est requis."
+    return
+  }
+
+  addingUser.value = true
+  addUserError.value = null
+
+  try {
+    await workspaceApi.addCompanyMember(companyId.value, {
+      email: newMember.email.trim(),
+      role: newMember.role.trim() || 'member',
+      status: newMember.status.trim() || 'invited',
+    })
+
+    showAddUserDialog.value = false
+    await loadMembership()
+  } catch (errorValue) {
+    addUserError.value = errorValue instanceof Error ? errorValue.message : "Impossible d'ajouter le membre."
+  } finally {
+    addingUser.value = false
+  }
+}
 </script>
 
 <template>
   <CompanyWorkspaceLayout active-page="teams">
-    <h1 class="text-h4 mb-4">Company teams</h1>
+    <div class="mb-4 flex items-center justify-between gap-3">
+      <h1 class="text-h4 mb-0">Company teams</h1>
+
+      <v-btn color="primary" prepend-icon="mdi-account-plus" @click="openAddUserDialog">
+        Add user
+      </v-btn>
+    </div>
 
     <div v-if="loading" class="d-flex align-center ga-3">
       <v-progress-circular indeterminate color="primary" />
@@ -101,5 +158,42 @@ watch(companyId, loadMembership, { immediate: true })
         </v-row>
       </v-card-text>
     </v-card>
+
+    <v-dialog v-model="showAddUserDialog" max-width="520">
+      <v-card rounded="lg">
+        <v-card-title class="text-h6">Add user</v-card-title>
+
+        <v-card-text>
+          <v-alert
+            v-if="addUserError"
+            type="error"
+            variant="tonal"
+            density="comfortable"
+            rounded="lg"
+            class="mb-4"
+          >
+            {{ addUserError }}
+          </v-alert>
+
+          <v-text-field
+            v-model="newMember.email"
+            label="Email"
+            type="email"
+            variant="outlined"
+            density="comfortable"
+            class="mb-3"
+          />
+
+          <v-text-field v-model="newMember.role" label="Role" variant="outlined" density="comfortable" class="mb-3" />
+
+          <v-text-field v-model="newMember.status" label="Status" variant="outlined" density="comfortable" />
+        </v-card-text>
+
+        <v-card-actions class="justify-end">
+          <v-btn variant="text" :disabled="addingUser" @click="showAddUserDialog = false">Cancel</v-btn>
+          <v-btn color="primary" :loading="addingUser" @click="submitAddUser">Invite</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </CompanyWorkspaceLayout>
 </template>
