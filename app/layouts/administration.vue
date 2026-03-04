@@ -2,7 +2,9 @@
   <div class="administration-layout">
     <AppDrawer />
     <AppBar />
-    <v-main class="administration-layout-main">
+    <v-main
+      class="administration-layout-main md-main-offset-margin md-main-offset-height"
+    >
       <v-container fluid class="pa-4">
         <slot />
       </v-container>
@@ -13,8 +15,6 @@
 <style scoped>
 .administration-layout-main {
   padding-top: 0;
-  margin-top: 64px;
-  height: calc(100vh - 64px);
   overflow-y: auto;
 }
 </style>
