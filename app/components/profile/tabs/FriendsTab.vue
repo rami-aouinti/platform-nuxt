@@ -33,6 +33,21 @@ function getRequestUser(request: FriendRequest, mode: 'received' | 'sent') {
   return request.toUser ?? request.user ?? null
 }
 
+function getUserInitials(user?: FriendUser | null) {
+  if (!user) return '?'
+
+  const initials = [user.firstName, user.lastName]
+    .filter(Boolean)
+    .map((name) => String(name).trim().charAt(0).toUpperCase())
+    .join('')
+
+  if (initials) return initials.slice(0, 2)
+  if (user.username) return user.username.trim().charAt(0).toUpperCase()
+  if (user.email) return user.email.trim().charAt(0).toUpperCase()
+
+  return '?'
+}
+
 async function loadFriendsData() {
   await profileFriendsStore.fetchRows()
 }
@@ -60,7 +75,7 @@ onMounted(loadFriendsData)
 </script>
 
 <template>
-  <v-card class="profile-block pa-4 pa-md-6" rounded="xl" elevation="0">
+  <v-card class="profile-block friends-card pa-4 pa-md-6" rounded="xl" elevation="0">
     <div class="d-flex align-center justify-space-between flex-wrap ga-3 mb-6">
       <h3 class="text-h4 text-typo mb-0">{{ t('profile.friends.title') }}</h3>
       <v-btn
@@ -99,11 +114,17 @@ onMounted(loadFriendsData)
       <span>{{ t('profile.friends.loading') }}</span>
     </div>
 
-    <v-row v-else>
+    <v-row v-else class="friends-columns-row">
       <v-col cols="12" md="4">
         <h4 class="text-h6 mb-3">{{ t('profile.friends.friendsList') }}</h4>
-        <v-list v-if="friends.length" density="comfortable" class="bg-transparent pa-0">
-          <v-list-item v-for="friend in friends" :key="friend.id" class="px-0">
+        <v-list v-if="friends.length" density="comfortable" class="bg-transparent pa-0 d-flex flex-column ga-2">
+          <v-list-item v-for="friend in friends" :key="friend.id" class="friend-item px-3 py-2" rounded="lg">
+            <template #prepend>
+              <v-avatar size="42" class="mr-3">
+                <v-img v-if="friend.photo" :src="friend.photo" :alt="getUserDisplay(friend)" cover />
+                <span v-else class="text-subtitle-2 font-weight-bold">{{ getUserInitials(friend) }}</span>
+              </v-avatar>
+            </template>
             <template #title>
               {{ getUserDisplay(friend) }}
             </template>
@@ -123,8 +144,19 @@ onMounted(loadFriendsData)
 
       <v-col cols="12" md="4">
         <h4 class="text-h6 mb-3">{{ t('profile.friends.sentRequests') }}</h4>
-        <v-list v-if="sentRequests.length" density="comfortable" class="bg-transparent pa-0">
-          <v-list-item v-for="request in sentRequests" :key="request.id" class="px-0">
+        <v-list v-if="sentRequests.length" density="comfortable" class="bg-transparent pa-0 d-flex flex-column ga-2">
+          <v-list-item v-for="request in sentRequests" :key="request.id" class="friend-item px-3 py-2" rounded="lg">
+            <template #prepend>
+              <v-avatar size="42" class="mr-3">
+                <v-img
+                  v-if="getRequestUser(request, 'sent')?.photo"
+                  :src="getRequestUser(request, 'sent')?.photo || undefined"
+                  :alt="getUserDisplay(getRequestUser(request, 'sent'))"
+                  cover
+                />
+                <span v-else class="text-subtitle-2 font-weight-bold">{{ getUserInitials(getRequestUser(request, 'sent')) }}</span>
+              </v-avatar>
+            </template>
             <template #title>
               {{ getRequestUser(request, 'sent') ? getUserDisplay(getRequestUser(request, 'sent')) : '-' }}
             </template>
@@ -135,8 +167,19 @@ onMounted(loadFriendsData)
 
       <v-col cols="12" md="4">
         <h4 class="text-h6 mb-3">{{ t('profile.friends.receivedRequests') }}</h4>
-        <v-list v-if="receivedRequests.length" density="comfortable" class="bg-transparent pa-0">
-          <v-list-item v-for="request in receivedRequests" :key="request.id" class="px-0">
+        <v-list v-if="receivedRequests.length" density="comfortable" class="bg-transparent pa-0 d-flex flex-column ga-2">
+          <v-list-item v-for="request in receivedRequests" :key="request.id" class="friend-item px-3 py-2" rounded="lg">
+            <template #prepend>
+              <v-avatar size="42" class="mr-3">
+                <v-img
+                  v-if="getRequestUser(request, 'received')?.photo"
+                  :src="getRequestUser(request, 'received')?.photo || undefined"
+                  :alt="getUserDisplay(getRequestUser(request, 'received'))"
+                  cover
+                />
+                <span v-else class="text-subtitle-2 font-weight-bold">{{ getUserInitials(getRequestUser(request, 'received')) }}</span>
+              </v-avatar>
+            </template>
             <template #title>
               {{ getRequestUser(request, 'received') ? getUserDisplay(getRequestUser(request, 'received')) : '-' }}
             </template>
@@ -156,3 +199,27 @@ onMounted(loadFriendsData)
     </v-row>
   </v-card>
 </template>
+
+<style scoped>
+.friends-card {
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  backdrop-filter: blur(10px);
+}
+
+.friends-columns-row > :deep(.v-col) {
+  position: relative;
+}
+
+.friend-item {
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+  border-radius: 14px;
+  background: rgba(var(--v-theme-on-surface), 0.02);
+  transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+}
+
+.friend-item:hover {
+  border-color: rgba(var(--v-theme-primary), 0.5);
+  background: rgba(var(--v-theme-primary), 0.08);
+  transform: translateY(-1px);
+}
+</style>
