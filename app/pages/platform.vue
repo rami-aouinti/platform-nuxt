@@ -167,7 +167,7 @@ async function saveUserApplicationEdit() {
     )
     Notify.success('Application mise à jour')
     editDialog.value = false
-    await platformApplicationsStore.fetchApplications()
+    await platformApplicationsStore.fetchApplications({ force: true })
   } catch (error) {
     Notify.error(error)
   } finally {
@@ -187,7 +187,7 @@ async function deleteUserApplication(application: PlatformApplication) {
   try {
     await applicationsApi.deleteUserApplication(application.id)
     Notify.success('Application supprimée')
-    await platformApplicationsStore.fetchApplications()
+    await platformApplicationsStore.fetchApplications({ force: true })
   } catch (error) {
     Notify.error(error)
   } finally {
@@ -224,7 +224,7 @@ async function togglePlugin(plugin: PlatformPlugin) {
 async function finishCreation() {
   creationDialog.value = false
   resetCreationState()
-  await platformApplicationsStore.fetchApplications()
+  await platformApplicationsStore.fetchApplications({ force: true })
 }
 
 onMounted(() => {
