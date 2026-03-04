@@ -2,6 +2,7 @@
   "appbar": {
     "login": "Login",
     "profile": "Profile",
+    "settings": "Settings",
     "crm": "CRM",
     "calendar": "Calendar",
     "applications": "Applications",
