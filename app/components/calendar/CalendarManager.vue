@@ -36,6 +36,11 @@ interface FullCalendarEventChangeArg {
   revert: () => void
 }
 
+interface FullCalendarDateClickArg {
+  dateStr: string
+  allDay: boolean
+}
+
 type FullCalendarCtor = new (
   element: HTMLElement,
   options: {
@@ -50,6 +55,7 @@ type FullCalendarCtor = new (
     eventClick?: (arg: { event: { id: string } }) => void
     eventDrop?: (arg: FullCalendarEventChangeArg) => void
     eventResize?: (arg: FullCalendarEventChangeArg) => void
+    dateClick?: (arg: FullCalendarDateClickArg) => void
   },
 ) => FullCalendarInstance
 
@@ -121,6 +127,28 @@ const form = reactive<CalendarEventPayload>({
   status: 'confirmed',
   visibility: 'private',
 })
+
+const isFormValid = computed(() => Boolean(form.title.trim()) && Boolean(form.startAt) && Boolean(form.endAt))
+
+function toDateTimeLocalInput(value: string) {
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime())) return ''
+
+  const pad = (part: number) => String(part).padStart(2, '0')
+  const year = parsed.getFullYear()
+  const month = pad(parsed.getMonth() + 1)
+  const day = pad(parsed.getDate())
+  const hours = pad(parsed.getHours())
+  const minutes = pad(parsed.getMinutes())
+
+  return `${year}-${month}-${day}T${hours}:${minutes}`
+}
+
+function toIsoDateTime(value: string) {
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime())) return value
+  return parsed.toISOString()
+}
 
 const calendarEventSource = computed<FullCalendarEventInput[]>(() => events.value.map((eventItem) => ({
   id: eventItem.id,
@@ -197,13 +225,30 @@ function openCreateDialog() {
   isDialogOpen.value = true
 }
 
+function toDateAtHour(value: string, hour: number) {
+  const baseDate = value.length === 10 ? new Date(`${value}T00:00`) : new Date(value)
+  if (Number.isNaN(baseDate.getTime())) return ''
+  baseDate.setHours(hour, 0, 0, 0)
+  return toDateTimeLocalInput(baseDate.toISOString())
+}
+
+function openCreateDialogForDay(dateValue: string) {
+  openCreateDialog()
+
+  const startAt = toDateAtHour(dateValue, 9)
+  const endAt = toDateAtHour(dateValue, 10)
+
+  if (startAt) form.startAt = startAt
+  if (endAt) form.endAt = endAt
+}
+
 function openEditDialog(eventItem: CalendarEvent) {
   editingId.value = eventItem.id
   form.title = eventItem.title
   form.description = eventItem.description ?? ''
   form.location = eventItem.location ?? ''
-  form.startAt = eventItem.startAt
-  form.endAt = eventItem.endAt
+  form.startAt = toDateTimeLocalInput(eventItem.startAt)
+  form.endAt = toDateTimeLocalInput(eventItem.endAt)
   form.isAllDay = Boolean(eventItem.isAllDay)
   form.timezone = eventItem.timezone ?? 'Europe/Paris'
   form.status = eventItem.status ?? 'confirmed'
@@ -222,7 +267,7 @@ async function initCalendar() {
   calendarInstance.value = new Calendar(calendarRoot.value, {
     initialView: 'dayGridMonth',
     locale: 'fr',
-    height: 'auto',
+    height: '72vh',
     headerToolbar: {
       left: 'prev,next today',
       center: 'title',
@@ -238,6 +283,9 @@ async function initCalendar() {
     },
     eventDrop: handleEventDateChange,
     eventResize: handleEventDateChange,
+    dateClick: ({ dateStr }) => {
+      openCreateDialogForDay(dateStr)
+    },
   })
 
   calendarInstance.value.render()
@@ -253,14 +301,26 @@ async function loadEvents() {
 }
 
 async function saveEvent() {
+  if (!isFormValid.value) {
+    errorMessage.value = 'Le titre, la date de début et la date de fin sont obligatoires.'
+    return
+  }
+
   saving.value = true
   errorMessage.value = ''
 
+  const payload: CalendarEventPayload = {
+    ...form,
+    title: form.title.trim(),
+    startAt: toIsoDateTime(form.startAt),
+    endAt: toIsoDateTime(form.endAt),
+  }
+
   try {
     if (editingId.value) {
-      await calendarStore.update(editingId.value, form)
+      await calendarStore.update(editingId.value, payload)
     } else {
-      await calendarStore.create(form)
+      await calendarStore.create(payload)
     }
 
     isDialogOpen.value = false
@@ -373,10 +433,10 @@ onBeforeUnmount(() => {
               <v-textarea v-model="form.description" label="Description" />
             </v-col>
             <v-col cols="12" md="6">
-              <v-text-field v-model="form.startAt" label="Début (ISO)" />
+              <v-text-field v-model="form.startAt" type="datetime-local" label="Début" required />
             </v-col>
             <v-col cols="12" md="6">
-              <v-text-field v-model="form.endAt" label="Fin (ISO)" />
+              <v-text-field v-model="form.endAt" type="datetime-local" label="Fin" required />
             </v-col>
             <v-col cols="12" md="6">
               <v-text-field v-model="form.location" label="Lieu" />
@@ -397,7 +457,7 @@ onBeforeUnmount(() => {
         </v-card-text>
         <v-card-actions class="justify-end">
           <v-btn variant="text" @click="isDialogOpen = false">Annuler</v-btn>
-          <v-btn color="primary" :loading="saving" @click="saveEvent">Enregistrer</v-btn>
+          <v-btn color="primary" :loading="saving" :disabled="!isFormValid" @click="saveEvent">Enregistrer</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
