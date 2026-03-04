@@ -43,8 +43,10 @@ const requestColumns = [
 
 const tasks = computed(() => groupedByTask.value.map((group) => group.task))
 
-const selectedTask = computed(() =>
-  tasks.value.find((task) => String(task.id) === selectedTaskId.value) || null,
+const selectedTask = computed(
+  () =>
+    tasks.value.find((task) => String(task.id) === selectedTaskId.value) ||
+    null,
 )
 
 const taskRequests = computed<CrmTaskRequest[]>(() => {
@@ -79,13 +81,18 @@ const requestsByStatus = computed(() => {
 })
 
 function getUserLabel(user: CrmUser) {
-  const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ').trim()
+  const fullName = [user.firstName, user.lastName]
+    .filter(Boolean)
+    .join(' ')
+    .trim()
   if (fullName) return `${fullName} (${user.username ?? user.email ?? user.id})`
   return user.username ?? user.email ?? String(user.id)
 }
 
-
-function userIdFromRef(value: CrmTaskRequest['requester'] | CrmTaskRequest['reviewer'], fallback?: string | null) {
+function userIdFromRef(
+  value: CrmTaskRequest['requester'] | CrmTaskRequest['reviewer'],
+  fallback?: string | null,
+) {
   if (typeof value === 'string') return value
   if (value && typeof value === 'object' && value.id) return String(value.id)
   return fallback ?? ''
@@ -105,7 +112,11 @@ async function loadUsers() {
     await usersStore.fetchRows({ silent: true })
     users.value = [...usersStore.rows]
   } catch (error) {
-    Notify.error(error instanceof Error ? error.message : 'Erreur chargement des utilisateurs.')
+    Notify.error(
+      error instanceof Error
+        ? error.message
+        : 'Erreur chargement des utilisateurs.',
+    )
   } finally {
     usersLoading.value = false
   }
@@ -158,7 +169,10 @@ function onRequestDragEnd() {
   draggedRequestId.value = ''
 }
 
-async function updateRequestStatus(requestId: string, nextStatus: CrmTaskStatus) {
+async function updateRequestStatus(
+  requestId: string,
+  nextStatus: CrmTaskStatus,
+) {
   const request = taskRequests.value.find((item) => item.id === requestId)
   if (!request || request.requestedStatus === nextStatus) return
 
@@ -169,7 +183,9 @@ async function updateRequestStatus(requestId: string, nextStatus: CrmTaskStatus)
   try {
     await crmApi.patchTaskRequestRequestedStatus(requestId, nextStatus)
 
-    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.requestStatusUpdated')))
+    Notify.success(
+      String(useNuxtApp().$i18n.t('notifications.ui.requestStatusUpdated')),
+    )
     await loadSprintTaskRequests()
   } catch (error) {
     request.requestedStatus = previousStatus
@@ -189,10 +205,16 @@ async function assignRequester(requestId: string, requesterId: string) {
   assigningRequester.value = requestId
   try {
     await crmApi.assignTaskRequestRequester(requestId, requesterId)
-    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.requesterAssigned')))
+    Notify.success(
+      String(useNuxtApp().$i18n.t('notifications.ui.requesterAssigned')),
+    )
     await loadSprintTaskRequests()
   } catch (error) {
-    Notify.error(error instanceof Error ? error.message : 'Impossible d’assigner le requester.')
+    Notify.error(
+      error instanceof Error
+        ? error.message
+        : 'Impossible d’assigner le requester.',
+    )
   } finally {
     assigningRequester.value = ''
   }
@@ -203,10 +225,16 @@ async function assignReviewer(requestId: string, reviewerId: string) {
   assigningReviewer.value = requestId
   try {
     await crmApi.assignTaskRequestReviewer(requestId, reviewerId)
-    Notify.success(String(useNuxtApp().$i18n.t('notifications.ui.reviewerAssigned')))
+    Notify.success(
+      String(useNuxtApp().$i18n.t('notifications.ui.reviewerAssigned')),
+    )
     await loadSprintTaskRequests()
   } catch (error) {
-    Notify.error(error instanceof Error ? error.message : 'Impossible d’assigner le reviewer.')
+    Notify.error(
+      error instanceof Error
+        ? error.message
+        : 'Impossible d’assigner le reviewer.',
+    )
   } finally {
     assigningReviewer.value = ''
   }
@@ -250,7 +278,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <v-container fluid class="kanban-page">
+  <v-container fluid class="kanban-page md-theme-page-bg">
     <div class="d-flex align-center justify-space-between mb-4 flex-wrap ga-2">
       <div>
         <h1 class="text-h5">CRM Kanban</h1>
@@ -335,10 +363,16 @@ onMounted(async () => {
             @click="selectedTaskId = String(task.id)"
           >
             <v-card-item>
-              <v-card-title class="text-subtitle-2">{{ task.title }}</v-card-title>
+              <v-card-title class="text-subtitle-2">{{
+                task.title
+              }}</v-card-title>
               <v-card-subtitle>
-                <v-chip size="x-small" variant="tonal" class="mr-1">{{ task.priority }}</v-chip>
-                <v-chip size="x-small" variant="outlined">{{ task.status }}</v-chip>
+                <v-chip size="x-small" variant="tonal" class="mr-1">{{
+                  task.priority
+                }}</v-chip>
+                <v-chip size="x-small" variant="outlined">{{
+                  task.status
+                }}</v-chip>
               </v-card-subtitle>
             </v-card-item>
           </v-card>
@@ -385,8 +419,12 @@ onMounted(async () => {
               @dragend="onRequestDragEnd"
             >
               <v-card-item>
-                <v-card-title class="text-subtitle-2">{{ getRequestTitle(request) }}</v-card-title>
-                <v-card-subtitle class="d-flex align-center justify-space-between ga-2">
+                <v-card-title class="text-subtitle-2">{{
+                  getRequestTitle(request)
+                }}</v-card-title>
+                <v-card-subtitle
+                  class="d-flex align-center justify-space-between ga-2"
+                >
                   <span class="text-caption">{{ request.type }}</span>
                   <v-progress-circular
                     v-if="changingRequestStatus === request.id"
@@ -398,12 +436,22 @@ onMounted(async () => {
               </v-card-item>
               <v-card-text class="pt-0">
                 <div class="d-flex align-center justify-space-between">
-                  <span class="text-caption text-medium-emphasis">{{ request.id.slice(0, 8) }}</span>
+                  <span class="text-caption text-medium-emphasis">{{
+                    request.id.slice(0, 8)
+                  }}</span>
                   <div class="d-flex ga-1">
-                    <v-chip size="x-small" :color="statusChipColor(request.requestedStatus)" variant="tonal">
+                    <v-chip
+                      size="x-small"
+                      :color="statusChipColor(request.requestedStatus)"
+                      variant="tonal"
+                    >
                       {{ request.requestedStatus || 'todo' }}
                     </v-chip>
-                    <v-chip size="x-small" :color="requestStatusChipColor(request.status)" variant="outlined">
+                    <v-chip
+                      size="x-small"
+                      :color="requestStatusChipColor(request.status)"
+                      variant="outlined"
+                    >
                       {{ request.status }}
                     </v-chip>
                   </div>
@@ -414,13 +462,18 @@ onMounted(async () => {
                     :items="userOptions"
                     item-title="label"
                     item-value="id"
-                    :model-value="userIdFromRef(request.requester, request.requesterId)"
+                    :model-value="
+                      userIdFromRef(request.requester, request.requesterId)
+                    "
                     label="Requester"
                     density="compact"
                     variant="outlined"
                     hide-details
                     :loading="assigningRequester === request.id"
-                    @update:model-value="(value) => assignRequester(request.id, String(value || ''))"
+                    @update:model-value="
+                      (value) =>
+                        assignRequester(request.id, String(value || ''))
+                    "
                   />
                 </div>
 
@@ -429,13 +482,17 @@ onMounted(async () => {
                     :items="userOptions"
                     item-title="label"
                     item-value="id"
-                    :model-value="userIdFromRef(request.reviewer, request.reviewerId)"
+                    :model-value="
+                      userIdFromRef(request.reviewer, request.reviewerId)
+                    "
                     label="Reviewer"
                     density="compact"
                     variant="outlined"
                     hide-details
                     :loading="assigningReviewer === request.id"
-                    @update:model-value="(value) => assignReviewer(request.id, String(value || ''))"
+                    @update:model-value="
+                      (value) => assignReviewer(request.id, String(value || ''))
+                    "
                   />
                 </div>
               </v-card-text>
@@ -463,10 +520,6 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.kanban-page {
-  background: linear-gradient(180deg, rgb(var(--v-theme-surface)) 0%, rgb(var(--v-theme-background)) 100%);
-}
-
 .kanban-grid {
   display: grid;
   grid-template-columns: repeat(5, minmax(260px, 1fr));
@@ -487,13 +540,15 @@ onMounted(async () => {
 .task-card,
 .request-card {
   border-radius: 12px;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .task-card:hover,
 .request-card:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 16px rgb(var(--v-theme-shadow) / 14%);
 }
 
 .request-card {
@@ -502,7 +557,7 @@ onMounted(async () => {
 
 .task-card--active {
   border-color: rgb(var(--v-theme-primary));
-  box-shadow: 0 0 0 1px rgba(var(--v-theme-primary), 0.25);
+  box-shadow: 0 0 0 1px rgb(var(--v-theme-primary) / 25%);
 }
 
 @media (max-width: 1900px) {
