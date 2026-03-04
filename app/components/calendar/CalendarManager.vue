@@ -438,20 +438,33 @@ onBeforeUnmount(() => {
             <v-col cols="12" md="6">
               <v-text-field v-model="form.endAt" type="datetime-local" label="Fin" required />
             </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field v-model="form.location" label="Lieu" />
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field v-model="form.timezone" label="Timezone" />
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field v-model="form.status" label="Statut" />
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field v-model="form.visibility" label="Visibilité" />
-            </v-col>
             <v-col cols="12">
-              <v-switch v-model="form.isAllDay" label="Toute la journée" />
+              <v-expansion-panels variant="accordion">
+                <v-expansion-panel>
+                  <v-expansion-panel-title>
+                    Options avancées
+                  </v-expansion-panel-title>
+                  <v-expansion-panel-text>
+                    <v-row>
+                      <v-col cols="12" md="6">
+                        <v-text-field v-model="form.location" label="Lieu" />
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-text-field v-model="form.timezone" label="Timezone" />
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-text-field v-model="form.status" label="Statut" />
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-text-field v-model="form.visibility" label="Visibilité" />
+                      </v-col>
+                      <v-col cols="12">
+                        <v-switch v-model="form.isAllDay" label="Toute la journée" />
+                      </v-col>
+                    </v-row>
+                  </v-expansion-panel-text>
+                </v-expansion-panel>
+              </v-expansion-panels>
             </v-col>
           </v-row>
         </v-card-text>
