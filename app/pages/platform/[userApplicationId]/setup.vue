@@ -24,7 +24,7 @@ const plugins = ref<PlatformPlugin[]>([])
 const pluginActionLoadingId = ref<string | null>(null)
 
 const application = computed(() =>
-  applications.value.find(item => item.id === userApplicationId.value) ?? null,
+  applications.value.find(item => item.userApplicationId === userApplicationId.value) ?? null,
 )
 
 async function fetchPlugins() {

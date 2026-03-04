@@ -102,7 +102,8 @@ onMounted(() => {
               color="primary"
               variant="tonal"
               class="flex-grow-1"
-              :to="`/platform/${application.id}/setup`"
+              :to="`/platform/${application.userApplicationId}/setup`"
+              :disabled="!application.userApplicationId"
             >
               Open
             </v-btn>

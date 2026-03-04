@@ -2,6 +2,7 @@ import { apiRequest, normalizePaginatedResponse, type ApiListResponse } from './
 
 export type PlatformApplication = {
   id: string
+  userApplicationId: string | null
   name: string
   logo: string | null
   description: string | null
@@ -17,6 +18,10 @@ type ApplicationsResponse = {
 function normalizeApplication(entry: Partial<PlatformApplication>): PlatformApplication {
   return {
     id: String(entry.id ?? ''),
+    userApplicationId:
+      typeof entry.userApplicationId === 'string' && entry.userApplicationId.length > 0
+        ? entry.userApplicationId
+        : null,
     name: String(entry.name ?? 'Application'),
     logo: typeof entry.logo === 'string' ? entry.logo : null,
     description: typeof entry.description === 'string' ? entry.description : null,

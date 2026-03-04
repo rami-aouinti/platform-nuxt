@@ -16,12 +16,14 @@ function mergeApplications(
     if (!profileApplication) {
       return {
         ...application,
+        userApplicationId: null,
         enabled: null,
       }
     }
 
     return {
       ...application,
+      userApplicationId: profileApplication.userApplicationId,
       enabled: profileApplication.enabled,
       active: profileApplication.active,
     }
@@ -64,6 +66,7 @@ export const usePlatformApplicationsStore = defineStore('platformApplications', 
       if (index >= 0) {
         applications.value[index] = {
           ...applications.value[index],
+          userApplicationId: updated.userApplicationId,
           enabled: updated.enabled,
           active: updated.active,
         }
