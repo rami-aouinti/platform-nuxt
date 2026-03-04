@@ -46,25 +46,29 @@ const menuItems = computed(() => [
 </script>
 
 <template>
-  <div class="grid gap-6 md:grid-cols-[220px_1fr]">
-    <aside class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-slate-900">
-      <nav class="flex flex-col gap-2">
-        <NuxtLink
-          v-for="item in menuItems"
-          :key="item.page"
-          :to="item.to"
-          class="rounded-md px-3 py-2 text-sm font-medium transition-colors"
-          :class="item.page === props.activePage
-            ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-200'
-            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-slate-800 dark:hover:text-white'"
-        >
-          {{ item.label }}
-        </NuxtLink>
-      </nav>
-    </aside>
+  <v-row class="px-4">
+    <v-col cols="12" lg="3">
+      <v-card rounded="xl" elevation="0" class="pa-4">
+        <v-list nav density="compact" class="pa-0">
+          <v-list-item
+            v-for="item in menuItems"
+            :key="item.page"
+            :to="item.to"
+            rounded="lg"
+            class="mb-2"
+            :active="item.page === props.activePage"
+            color="primary"
+          >
+            <v-list-item-title>{{ item.label }}</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-card>
+    </v-col>
 
-    <section class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-slate-900">
-      <slot />
-    </section>
-  </div>
+    <v-col cols="12" lg="9">
+      <v-card rounded="xl" elevation="0" class="pa-6">
+        <slot />
+      </v-card>
+    </v-col>
+  </v-row>
 </template>
