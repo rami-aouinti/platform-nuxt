@@ -36,6 +36,11 @@ interface FullCalendarEventChangeArg {
   revert: () => void
 }
 
+interface FullCalendarDateClickArg {
+  dateStr: string
+  allDay: boolean
+}
+
 type FullCalendarCtor = new (
   element: HTMLElement,
   options: {
@@ -50,6 +55,7 @@ type FullCalendarCtor = new (
     eventClick?: (arg: { event: { id: string } }) => void
     eventDrop?: (arg: FullCalendarEventChangeArg) => void
     eventResize?: (arg: FullCalendarEventChangeArg) => void
+    dateClick?: (arg: FullCalendarDateClickArg) => void
   },
 ) => FullCalendarInstance
 
@@ -219,6 +225,23 @@ function openCreateDialog() {
   isDialogOpen.value = true
 }
 
+function toDateAtHour(value: string, hour: number) {
+  const baseDate = value.length === 10 ? new Date(`${value}T00:00`) : new Date(value)
+  if (Number.isNaN(baseDate.getTime())) return ''
+  baseDate.setHours(hour, 0, 0, 0)
+  return toDateTimeLocalInput(baseDate.toISOString())
+}
+
+function openCreateDialogForDay(dateValue: string) {
+  openCreateDialog()
+
+  const startAt = toDateAtHour(dateValue, 9)
+  const endAt = toDateAtHour(dateValue, 10)
+
+  if (startAt) form.startAt = startAt
+  if (endAt) form.endAt = endAt
+}
+
 function openEditDialog(eventItem: CalendarEvent) {
   editingId.value = eventItem.id
   form.title = eventItem.title
@@ -244,7 +267,7 @@ async function initCalendar() {
   calendarInstance.value = new Calendar(calendarRoot.value, {
     initialView: 'dayGridMonth',
     locale: 'fr',
-    height: 'auto',
+    height: '72vh',
     headerToolbar: {
       left: 'prev,next today',
       center: 'title',
@@ -260,6 +283,9 @@ async function initCalendar() {
     },
     eventDrop: handleEventDateChange,
     eventResize: handleEventDateChange,
+    dateClick: ({ dateStr }) => {
+      openCreateDialogForDay(dateStr)
+    },
   })
 
   calendarInstance.value.render()
