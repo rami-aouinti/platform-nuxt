@@ -627,7 +627,6 @@ onMounted(() => {
 
 <style scoped>
 .platform-card {
-  min-height: 220px;
   border: 1px solid rgb(var(--v-theme-primary), 0.16);
   background:
     radial-gradient(
@@ -654,7 +653,6 @@ onMounted(() => {
 }
 
 .platform-card--create {
-  min-height: 220px;
   cursor: pointer;
   border-style: dashed;
   border-width: 2px;
