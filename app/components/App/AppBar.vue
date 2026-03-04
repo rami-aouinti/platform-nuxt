@@ -43,7 +43,10 @@ const breadcrumbs = computed(() => {
 const isHomeRoute = computed(() => route.path === '/homepage')
 const secondaryActionsOpened = ref(false)
 const showSecondaryActions = computed(
-  () => !isHomeRoute.value || secondaryActionsOpened.value || appBarProps.showSecondaryActionsOnHome,
+  () =>
+    !isHomeRoute.value ||
+    secondaryActionsOpened.value ||
+    appBarProps.showSecondaryActionsOnHome,
 )
 
 const isDark = computed({
@@ -96,7 +99,7 @@ const languageOptions = computed(() =>
     if (typeof entry === 'string') {
       return {
         code: entry,
-        name: entry.toUpperCase(),
+        name: String(entry).toUpperCase(),
         flag: localeFlags[entry] ?? '/flags/en.svg',
       }
     }
@@ -117,6 +120,12 @@ const currentLanguageFlag = computed(() => {
   )
   return selected?.flag ?? '/flags/en.svg'
 })
+
+const centeredNavigationLinks = [
+  { label: 'Platform', to: '/platform' },
+  { label: 'About', to: '/about' },
+  { label: 'Contact', to: '/contact' },
+]
 
 const userDisplayName = computed(() => {
   const currentProfile = profile.value
@@ -176,7 +185,10 @@ function isHttp401(error: unknown): boolean {
   return statusCode === 401 || status === 401
 }
 
-async function fetchWith401Retry<T>(request: () => Promise<T>, maxAttempts = 3): Promise<T> {
+async function fetchWith401Retry<T>(
+  request: () => Promise<T>,
+  maxAttempts = 3,
+): Promise<T> {
   let attempt = 0
 
   while (true) {
@@ -254,7 +266,9 @@ async function loadInboxConversations() {
 
   try {
     const api = await getChatApi()
-    inboxConversations.value = await fetchWith401Retry(() => api.listConversations())
+    inboxConversations.value = await fetchWith401Retry(() =>
+      api.listConversations(),
+    )
   } catch (error) {
     inboxConversations.value = []
     console.warn('Unable to load inbox conversations.', error)
@@ -272,7 +286,6 @@ watch(
       inboxConversations.value = []
       return
     }
-
   },
   { immediate: true },
 )
@@ -302,7 +315,17 @@ watch(
       </span>
     </NuxtLink>
     <v-breadcrumbs v-if="showBreadcrumbs" :items="breadcrumbs" />
-    <v-spacer />
+    <div class="app-bar__center-links d-none d-md-flex align-center ga-1">
+      <UiButton
+        v-for="link in centeredNavigationLinks"
+        :key="link.to"
+        :to="link.to"
+        variant="text"
+        size="sm"
+      >
+        {{ link.label }}
+      </UiButton>
+    </div>
     <div id="app-bar" class="app-bar__portal" />
     <v-spacer />
 
@@ -320,30 +343,22 @@ watch(
       v-if="showSecondaryActions"
       class="app-bar__right-actions d-flex align-center"
     >
-      <v-switch
-        v-model="isDark"
-        :aria-label="themeToggleAriaLabel"
-        color=""
-        hide-details
-        density="compact"
-        inset
-        false-icon="mdi-white-balance-sunny"
-        true-icon="mdi-weather-night"
-        class="opacity-80"
-      />
-
-      <component
-        :is="AppBarNotificationsMenu"
+      <UiButton
         v-if="isAuthenticated"
-        :is-authenticated="isAuthenticated"
-        :notifications="notifications"
-        :unread-count="unreadCount"
-        :notifications-loading="notificationsLoading"
-        :open-notifications-aria-label="
-          t('appbar.accessibility.openNotifications')
-        "
-        @open="handleNotificationMenuOpen"
-      />
+        icon
+        to="/calendar"
+        size="sm"
+        class="ml-2"
+        variant="text"
+        :aria-label="t('appbar.calendar')"
+        :title="t('appbar.calendar')"
+      >
+        <v-icon
+          size="26"
+          icon="mdi-calendar-month-outline"
+          aria-hidden="true"
+        />
+      </UiButton>
 
       <component
         :is="AppBarInboxMenu"
@@ -354,24 +369,10 @@ watch(
         :open-chat-aria-label="t('appbar.accessibility.openChat')"
         @open="loadInboxConversations"
       />
-      <UiButton
-        icon
-        href="https://github.com/rami-aouinti/platform-nuxt"
-        size="sm"
-        class="ml-2"
-        target="_blank"
-        variant="text"
-        :aria-label="`${t('appbar.accessibility.openGithub')} (öffnet in neuem Tab)`"
-        :title="`${t('appbar.accessibility.openGithub')} (öffnet in neuem Tab)`"
-      >
-        <v-icon size="26" icon="mdi-github" aria-hidden="true" />
-      </UiButton>
+
       <v-menu v-if="isAuthenticated" location="bottom">
         <template #activator="{ props: menu }">
-          <v-tooltip
-            location="bottom"
-            eager
-          >
+          <v-tooltip location="bottom" eager>
             <template #activator="{ props: tooltip }">
               <UiButton
                 icon
@@ -437,20 +438,19 @@ watch(
         </v-list>
       </v-menu>
 
-      <UiButton
-        v-else
-        icon
-        class="ml-1"
-        variant="text"
-        to="/login"
-        :aria-label="t('appbar.login')"
-      >
-        <v-icon
-          icon="mdi-login"
-          size="30"
-          aria-hidden="true"
-        />
-      </UiButton>
+      <component
+        :is="AppBarNotificationsMenu"
+        v-if="isAuthenticated"
+        :is-authenticated="isAuthenticated"
+        :notifications="notifications"
+        :unread-count="unreadCount"
+        :notifications-loading="notificationsLoading"
+        :open-notifications-aria-label="
+          t('appbar.accessibility.openNotifications')
+        "
+        @open="handleNotificationMenuOpen"
+      />
+
       <v-menu location="bottom end">
         <template #activator="{ props }">
           <UiButton
@@ -473,7 +473,7 @@ watch(
             :key="language.code"
             :active="language.code === locale"
             :aria-label="language.name"
-            @click="setLocale(language.code)"
+            @click="setLocale(language.code as typeof locale.value)"
           >
             <v-list-item-title>
               <img :src="language.flag" alt="" class="app-bar__language-flag" />
@@ -481,6 +481,29 @@ watch(
           </v-list-item>
         </v-list>
       </v-menu>
+
+      <v-switch
+        v-model="isDark"
+        :aria-label="themeToggleAriaLabel"
+        color=""
+        hide-details
+        density="compact"
+        inset
+        false-icon="mdi-white-balance-sunny"
+        true-icon="mdi-weather-night"
+        class="opacity-80"
+      />
+
+      <UiButton
+        v-if="!isAuthenticated"
+        icon
+        class="ml-1"
+        variant="text"
+        to="/login"
+        :aria-label="t('appbar.login')"
+      >
+        <v-icon icon="mdi-login" size="30" aria-hidden="true" />
+      </UiButton>
     </div>
   </v-app-bar>
 </template>
@@ -495,6 +518,14 @@ watch(
 }
 
 .app-bar__right-actions {
+  flex-shrink: 0;
+}
+
+.app-bar__center-links {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   flex-shrink: 0;
 }
 
