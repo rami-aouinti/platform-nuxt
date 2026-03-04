@@ -155,7 +155,8 @@
       "notifications": "Notifications",
       "sessions": "Sessions",
       "friends": "Amis",
-      "deleteAccount": "Supprimer le compte"
+      "deleteAccount": "Supprimer le compte",
+      "media": "Médias"
     },
     "tabDescriptions": {
       "basicInfo": "Cette section est dédiée aux informations de base du profil.",
@@ -165,7 +166,8 @@
       "notifications": "Cette section est dédiée aux préférences de notification.",
       "sessions": "Cette section est dédiée à la gestion des sessions actives.",
       "friends": "Cette section est dédiée à la gestion des amis et des demandes.",
-      "deleteAccount": "Cette section est dédiée à la suppression du compte."
+      "deleteAccount": "Cette section est dédiée à la suppression du compte.",
+      "media": "Parcourez vos dossiers et fichiers, téléversez de nouveaux fichiers et gérez votre bibliothèque personnelle."
     },
     "friends": {
       "title": "Amis",
@@ -213,6 +215,28 @@
       "skills": "Compétences",
       "cancel": "Annuler",
       "add": "Ajouter"
+    },
+    "media": {
+      "title": "Explorateur de médias",
+      "createFolder": "Créer un dossier",
+      "uploadFile": "Téléverser un fichier",
+      "parentFolder": "Dossier parent",
+      "name": "Nom",
+      "type": "Type",
+      "size": "Taille",
+      "actions": "Actions",
+      "folder": "Dossier",
+      "file": "Fichier",
+      "preview": "Aperçu",
+      "delete": "Supprimer",
+      "empty": "Ce dossier est vide.",
+      "folderName": "Nom du dossier",
+      "create": "Créer",
+      "folderCreated": "Dossier créé avec succès.",
+      "fileUploaded": "Fichier téléversé avec succès.",
+      "deleted": "Élément supprimé avec succès.",
+      "deleteConfirm": "Supprimer « {name} » ?",
+      "deleteFolderWithChildrenWarning": "Ce dossier contient des éléments. Supprimer « {name} » et tout son contenu ?"
     }
   },
   "notifications": {

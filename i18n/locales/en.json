@@ -155,7 +155,8 @@
       "notifications": "Notifications",
       "sessions": "Sessions",
       "friends": "Friends",
-      "deleteAccount": "Delete Account"
+      "deleteAccount": "Delete Account",
+      "media": "Media"
     },
     "tabDescriptions": {
       "basicInfo": "This section is dedicated to basic profile information.",
@@ -165,7 +166,8 @@
       "notifications": "This section is dedicated to notification preferences.",
       "sessions": "This section is dedicated to active session management.",
       "friends": "This section is dedicated to friends and request management.",
-      "deleteAccount": "This section is dedicated to account deletion."
+      "deleteAccount": "This section is dedicated to account deletion.",
+      "media": "Browse your folders and files, upload new files, and manage your personal library."
     },
     "friends": {
       "title": "Friends",
@@ -213,6 +215,28 @@
       "skills": "Skills",
       "cancel": "Cancel",
       "add": "Add"
+    },
+    "media": {
+      "title": "Media Explorer",
+      "createFolder": "Create folder",
+      "uploadFile": "Upload file",
+      "parentFolder": "Parent folder",
+      "name": "Name",
+      "type": "Type",
+      "size": "Size",
+      "actions": "Actions",
+      "folder": "Folder",
+      "file": "File",
+      "preview": "Preview",
+      "delete": "Delete",
+      "empty": "This folder is empty.",
+      "folderName": "Folder name",
+      "create": "Create",
+      "folderCreated": "Folder created successfully.",
+      "fileUploaded": "File uploaded successfully.",
+      "deleted": "Item deleted successfully.",
+      "deleteConfirm": "Delete \"{name}\"?",
+      "deleteFolderWithChildrenWarning": "This folder contains items. Delete \"{name}\" and all its content?"
     }
   },
   "notifications": {
