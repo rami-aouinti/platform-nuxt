@@ -20,7 +20,6 @@ onMounted(() => {
 
 <template>
   <v-container fluid class="pa-6 min-h-screen">
-
     <v-row v-if="loading && !applications.length">
       <v-col v-for="index in 6" :key="`platform-skeleton-${index}`" cols="12" md="6" lg="4">
         <v-skeleton-loader type="card" class="rounded-xl" />
@@ -85,17 +84,27 @@ onMounted(() => {
             Install
           </v-btn>
 
-          <v-btn
-            v-else
-            block
-            color="warning"
-            variant="outlined"
-            :loading="actionLoadingId === application.id"
-            :disabled="loading"
-            @click="platformApplicationsStore.uninstallApplication(application.id)"
-          >
-            Désinstaller
-          </v-btn>
+          <div v-else class="d-flex ga-3">
+            <v-btn
+              color="warning"
+              variant="outlined"
+              class="flex-grow-1"
+              :loading="actionLoadingId === application.id"
+              :disabled="loading"
+              @click="platformApplicationsStore.uninstallApplication(application.id)"
+            >
+              Désinstaller
+            </v-btn>
+
+            <v-btn
+              color="primary"
+              variant="tonal"
+              class="flex-grow-1"
+              :to="`/platform/${application.id}/setup`"
+            >
+              Open
+            </v-btn>
+          </div>
         </v-card>
       </v-col>
     </v-row>
