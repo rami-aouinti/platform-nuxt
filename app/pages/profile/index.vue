@@ -547,9 +547,9 @@ onMounted(async () => {
   <v-container fluid>
     <v-row class="px-4">
       <v-col lg="3">
-        <v-card class="card-shadow border-radius-xl position-sticky top-1">
+        <v-card class="profile-block" rounded="xl" elevation="0" style="height: 530px; min-width: 280px; overflow-y: auto; position: fixed">
           <div class="px-4 pt-3 pb-0">
-            <v-list class="border-radius-sm" nav>
+            <v-list class="border-radius-sm" nav density="compact">
               <v-list-item
                 v-for="item in menuItems"
                 :key="item.id"
