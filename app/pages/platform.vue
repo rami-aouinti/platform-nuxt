@@ -249,8 +249,7 @@ onMounted(() => {
         <v-card
           rounded="xl"
           elevation="2"
-          class="h-100 pa-6 d-flex flex-column justify-center align-center text-center border-dashed"
-          style="min-height: 260px; cursor: pointer;"
+          class="platform-card platform-card--create h-100 pa-6 d-flex flex-column justify-center align-center text-center border-dashed"
           @click="openCreationDialog"
         >
           <v-icon size="56" color="primary" icon="mdi-plus-circle-outline" />
@@ -268,7 +267,7 @@ onMounted(() => {
         md="6"
         lg="4"
       >
-        <v-card rounded="xl" elevation="4" class="h-100 pa-6 position-relative">
+        <v-card rounded="xl" elevation="4" class="platform-card h-100 pa-6 position-relative">
           <div v-if="application.owner" class="position-absolute" style="top: 8px; right: 8px; z-index: 2">
             <v-menu>
               <template #activator="{ props }">
@@ -544,3 +543,30 @@ onMounted(() => {
 
   <NuxtPage v-else />
 </template>
+
+<style scoped>
+.platform-card {
+  border: 1px solid rgb(var(--v-theme-primary), 0.16);
+  background:
+    radial-gradient(circle at top right, rgb(var(--v-theme-primary), 0.18), transparent 52%),
+    linear-gradient(135deg, rgb(var(--v-theme-surface), 1), rgb(var(--v-theme-surface-bright), 1));
+  backdrop-filter: blur(4px);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.platform-card:hover {
+  transform: translateY(-6px);
+  border-color: rgb(var(--v-theme-primary), 0.4);
+  box-shadow: 0 16px 36px rgb(12 17 29 / 18%);
+}
+
+.platform-card--create {
+  min-height: 260px;
+  cursor: pointer;
+  border-style: dashed;
+  border-width: 2px;
+  background:
+    radial-gradient(circle at top, rgb(var(--v-theme-primary), 0.3), transparent 62%),
+    linear-gradient(160deg, rgb(var(--v-theme-primary), 0.08), rgb(var(--v-theme-surface), 1));
+}
+</style>
