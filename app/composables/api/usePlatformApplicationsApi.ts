@@ -91,25 +91,32 @@ export function usePlatformApplicationsApi() {
 
     updateUserApplicationMetadata: async (
       id: string,
-      payload: { name?: string; logo?: File | null },
+      payload: { name?: string; description?: string },
     ) => {
-      const formData = new FormData()
+      const body: Record<string, string> = {}
 
       if (payload.name && payload.name.trim().length > 0) {
-        formData.append('name', payload.name.trim())
+        body.name = payload.name.trim()
       }
 
-      if (payload.logo) {
-        formData.append('logo', payload.logo)
+      if (payload.description !== undefined) {
+        body.description = payload.description.trim()
       }
 
       const response = await apiRequest<PlatformApplication>(
         'PATCH',
         `/api/v1/profile/user-applications/${id}`,
-        { body: formData },
+        { body },
       )
 
       return normalizeApplication(response)
+    },
+
+    deleteUserApplication: async (id: string) => {
+      await apiRequest<unknown>(
+        'DELETE',
+        `/api/v1/profile/user-applications/${id}`,
+      )
     },
   }
 }
