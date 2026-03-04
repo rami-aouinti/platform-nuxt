@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-container fluid class="px-6 py-6">
+    <v-container fluid class="md-page px-6 py-6">
       <v-row>
         <v-col md="12">
           <v-row>
@@ -10,7 +10,7 @@
               sm="4"
               cols="12"
             >
-              <v-card class="card-shadow border-radius-xl py-4">
+              <v-card class="card-shadow border-radius-xl md-card-elevated py-4">
                 <v-row no-gutters class="px-4">
                   <v-col sm="4">
                     <p
@@ -119,7 +119,7 @@
           <card-chart-sales-age></card-chart-sales-age>
         </v-col>
         <v-col md="4">
-          <v-card class="card-shadow border-radius-xl px-4 py-4">
+          <v-card class="card-shadow border-radius-xl md-card-elevated px-4 py-4">
             <h6 class="mb-0 text-h6 text-typo font-weight-bold">
               Sales by Country
             </h6>
@@ -175,7 +175,7 @@
       </v-row>
       <v-row>
         <v-col cols="12">
-          <v-card class="card-shadow border-radius-xl py-4">
+          <v-card class="card-shadow border-radius-xl md-card-elevated py-4">
             <h6 class="mb-0 text-h6 text-typo font-weight-bold px-4">
               Top Selling Products
             </h6>
