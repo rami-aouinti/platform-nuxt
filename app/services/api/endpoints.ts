@@ -59,6 +59,7 @@ export const apiEndpoints = {
       companyById: (companyId: ApiId) => `${ME_PROFILE_BASE}/companies/${companyId}`,
       membership: (companyId: ApiId) => `${ME_BASE}/companies/${companyId}/membership`,
       projects: (companyId: ApiId) => `${ME_PROFILE_BASE}/companies/${companyId}/projects`,
+      members: (companyId: ApiId) => `${FRONTEND_API_BASE}/companies/${companyId}/members`,
     },
     media: {
       folders: `${ME_BASE}/media/folders`,

@@ -43,6 +43,20 @@ export type CompanyProjectSummary = {
   [key: string]: unknown
 }
 
+export type CreateCompanyProjectPayload = {
+  name: string
+  description?: string
+  status?: string
+  companyId: Id
+  photoUrl?: string
+}
+
+export type AddCompanyMemberPayload = {
+  email: string
+  role: string
+  status: string
+}
+
 type CollectionPayload<T> = T[] | { data?: T[]; items?: T[]; results?: T[] | { data?: T[]; items?: T[] } }
 
 function normalizeCollectionPayload<T>(payload: CollectionPayload<T>): T[] {
@@ -75,5 +89,11 @@ export function useCompanyWorkspaceApi() {
       )
       return normalizeCollectionPayload(payload)
     },
+
+    createProject: (payload: CreateCompanyProjectPayload) =>
+      apiRequest<CompanyProjectSummary>('POST', apiEndpoints.frontend.projects.base, { body: payload }),
+
+    addCompanyMember: (companyId: Id, payload: AddCompanyMemberPayload) =>
+      apiRequest<unknown>('POST', apiEndpoints.frontend.companyWorkspace.members(companyId), { body: payload }),
   }
 }
