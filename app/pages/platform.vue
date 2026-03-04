@@ -27,6 +27,10 @@ const creationDialog = ref(false)
 const creationStep = ref(1)
 const creatingUserApplication = ref(false)
 const savingMetadata = ref(false)
+const deletingUserApplicationId = ref<string | null>(null)
+const editingUserApplication = ref<PlatformApplication | null>(null)
+const editDialog = ref(false)
+const editingUserApplicationLoading = ref(false)
 const loadingCatalogApplications = ref(false)
 const loadingPlugins = ref(false)
 const pluginActionLoadingId = ref<string | null>(null)
@@ -38,6 +42,8 @@ const selectedPluginIds = ref<Set<string>>(new Set())
 const createdUserApplication = ref<PlatformApplication | null>(null)
 const metadataName = ref('')
 const metadataLogo = ref<File | null>(null)
+const editName = ref('')
+const editDescription = ref('')
 
 const canMoveToStep2 = computed(() => Boolean(createdUserApplication.value?.id))
 
@@ -119,7 +125,6 @@ async function goToPluginsStep(saveMetadata: boolean) {
         createdUserApplication.value.id,
         {
           name: metadataName.value,
-          logo: metadataLogo.value,
         },
       )
       Notify.success('Métadonnées enregistrées')
@@ -136,6 +141,59 @@ async function goToPluginsStep(saveMetadata: boolean) {
 
   creationStep.value = 3
   await fetchPluginsCatalog()
+}
+
+function openEditDialog(application: PlatformApplication) {
+  editingUserApplication.value = application
+  editName.value = application.name
+  editDescription.value = application.description ?? ''
+  editDialog.value = true
+}
+
+async function saveUserApplicationEdit() {
+  if (!editingUserApplication.value) {
+    return
+  }
+
+  editingUserApplicationLoading.value = true
+
+  try {
+    await applicationsApi.updateUserApplicationMetadata(editingUserApplication.value.id, {
+      name: editName.value,
+      description: editDescription.value,
+    })
+    Notify.success('Application mise à jour')
+    editDialog.value = false
+    await platformApplicationsStore.fetchApplications()
+  }
+  catch (error) {
+    Notify.error(error)
+  }
+  finally {
+    editingUserApplicationLoading.value = false
+  }
+}
+
+async function deleteUserApplication(application: PlatformApplication) {
+  const confirmed = globalThis.confirm(`Supprimer ${application.name} ?`)
+
+  if (!confirmed) {
+    return
+  }
+
+  deletingUserApplicationId.value = application.id
+
+  try {
+    await applicationsApi.deleteUserApplication(application.id)
+    Notify.success('Application supprimée')
+    await platformApplicationsStore.fetchApplications()
+  }
+  catch (error) {
+    Notify.error(error)
+  }
+  finally {
+    deletingUserApplicationId.value = null
+  }
 }
 
 async function togglePlugin(plugin: PlatformPlugin) {
@@ -210,7 +268,31 @@ onMounted(() => {
         md="6"
         lg="4"
       >
-        <v-card rounded="xl" elevation="4" class="h-100 pa-6">
+        <v-card rounded="xl" elevation="4" class="h-100 pa-6 position-relative">
+          <div v-if="application.owner" class="position-absolute" style="top: 8px; right: 8px; z-index: 2">
+            <v-menu>
+              <template #activator="{ props }">
+                <v-btn
+                  v-bind="props"
+                  icon="mdi-dots-vertical"
+                  variant="text"
+                  size="small"
+                  :loading="deletingUserApplicationId === application.id"
+                />
+              </template>
+
+              <v-list density="compact">
+                <v-list-item prepend-icon="mdi-pencil-outline" title="Edit" @click="openEditDialog(application)" />
+                <v-list-item
+                  prepend-icon="mdi-delete-outline"
+                  title="Delete"
+                  base-color="error"
+                  @click="deleteUserApplication(application)"
+                />
+              </v-list>
+            </v-menu>
+          </div>
+
           <div class="d-flex align-start ga-4">
             <v-avatar size="64" rounded="lg">
               <v-img
@@ -252,7 +334,7 @@ onMounted(() => {
       </v-col>
     </v-row>
 
-    <v-dialog v-model="creationDialog" max-width="960" persistent>
+    <v-dialog v-model="creationDialog" width="95vw" max-width="1400" persistent>
       <v-card rounded="xl">
         <v-card-title class="d-flex align-center justify-space-between">
           <span class="text-h6">New Platform</span>
@@ -278,13 +360,13 @@ onMounted(() => {
                 </p>
 
                 <v-row v-if="loadingCatalogApplications">
-                  <v-col v-for="index in 4" :key="`catalog-skeleton-${index}`" cols="12" md="6">
+                  <v-col v-for="index in 6" :key="`catalog-skeleton-${index}`" cols="12" md="6" lg="4">
                     <v-skeleton-loader type="card" class="rounded-xl" />
                   </v-col>
                 </v-row>
 
                 <v-row v-else>
-                  <v-col v-for="catalogApp in catalogApplications" :key="catalogApp.id" cols="12" md="6">
+                  <v-col v-for="catalogApp in catalogApplications" :key="catalogApp.id" cols="12" md="6" lg="4">
                     <v-card
                       rounded="xl"
                       elevation="1"
@@ -377,13 +459,13 @@ onMounted(() => {
                 </p>
 
                 <v-row v-if="loadingPlugins">
-                  <v-col v-for="index in 6" :key="`plugins-skeleton-${index}`" cols="12" md="6">
+                  <v-col v-for="index in 6" :key="`plugins-skeleton-${index}`" cols="12" md="6" lg="4">
                     <v-skeleton-loader type="card" class="rounded-xl" />
                   </v-col>
                 </v-row>
 
                 <v-row v-else>
-                  <v-col v-for="plugin in allPlugins" :key="plugin.id" cols="12" md="6">
+                  <v-col v-for="plugin in allPlugins" :key="plugin.id" cols="12" md="6" lg="4">
                     <v-card rounded="xl" elevation="1" class="pa-4 h-100">
                       <div class="d-flex align-start ga-4">
                         <v-avatar size="56" rounded="lg">
@@ -428,6 +510,34 @@ onMounted(() => {
             </v-stepper-window-item>
           </v-stepper-window>
         </v-stepper>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="editDialog" max-width="560">
+      <v-card rounded="xl">
+        <v-card-title class="text-h6">Edit user-application</v-card-title>
+        <v-card-text>
+          <v-text-field
+            v-model="editName"
+            label="Name"
+            variant="outlined"
+            prepend-inner-icon="mdi-format-title"
+            class="mb-4"
+          />
+
+          <v-textarea
+            v-model="editDescription"
+            label="Description"
+            variant="outlined"
+            rows="3"
+            auto-grow
+          />
+        </v-card-text>
+        <v-card-actions class="px-6 pb-6">
+          <v-spacer />
+          <v-btn variant="text" :disabled="editingUserApplicationLoading" @click="editDialog = false">Cancel</v-btn>
+          <v-btn color="primary" :loading="editingUserApplicationLoading" @click="saveUserApplicationEdit">Save</v-btn>
+        </v-card-actions>
       </v-card>
     </v-dialog>
   </v-container>
