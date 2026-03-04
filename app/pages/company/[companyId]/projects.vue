@@ -185,12 +185,17 @@ async function deleteProject(project: CompanyProjectSummary) {
 
 <template>
   <CompanyWorkspaceLayout active-page="projects">
-    <div class="mb-4 flex items-center justify-between gap-3">
+    <div class="relative mb-4 min-h-[56px]">
       <h1 class="text-2xl font-semibold text-gray-900 dark:text-white mb-0">
         Company projects
       </h1>
 
-      <v-btn color="primary" prepend-icon="mdi-plus" class="ml-auto" @click="openCreateProjectDialog">
+      <v-btn
+        color="primary"
+        prepend-icon="mdi-plus"
+        class="absolute right-0 top-0"
+        @click="openCreateProjectDialog"
+      >
         Add project
       </v-btn>
     </div>
@@ -222,70 +227,70 @@ async function deleteProject(project: CompanyProjectSummary) {
       Aucun projet trouvé pour cette société.
     </v-alert>
 
-    <div v-else class="grid gap-4 md:grid-cols-3">
-      <v-card
-        v-for="project in projects"
-        :key="project.id"
-        rounded="lg"
-        class="relative h-100 border border-gray-200 transition-all hover:-translate-y-1 hover:border-primary dark:border-gray-700"
-      >
-        <div class="absolute right-2 top-2 z-10">
-          <v-menu>
-            <template #activator="{ props }">
-              <v-btn
-                v-bind="props"
-                icon="mdi-dots-vertical"
-                size="small"
-                variant="text"
-                @click.stop
-              />
-            </template>
+    <v-row v-else dense>
+      <v-col v-for="project in projects" :key="project.id" cols="12" md="4">
+        <v-card
+          rounded="lg"
+          class="relative h-100 border border-gray-200 transition-all hover:-translate-y-1 hover:border-primary dark:border-gray-700"
+        >
+          <div class="absolute right-0 top-0 z-10 pa-1">
+            <v-menu>
+              <template #activator="{ props }">
+                <v-btn
+                  v-bind="props"
+                  icon="mdi-dots-vertical"
+                  size="small"
+                  variant="text"
+                  @click.stop
+                />
+              </template>
 
-            <v-list density="compact">
-              <v-list-item prepend-icon="mdi-pencil" title="Edit" @click="openEditProjectDialog(project)" />
-              <v-list-item
-                prepend-icon="mdi-delete"
-                title="Delete"
-                :disabled="deletingProjectId === project.id"
-                @click="deleteProject(project)"
-              />
-            </v-list>
-          </v-menu>
-        </div>
-
-        <NuxtLink :to="getProjectPath(project)" class="block text-decoration-none">
-          <div class="d-flex align-center ga-3 px-4 pt-4 pr-10">
-            <v-avatar size="44" rounded="lg" color="surface-variant">
-              <v-img
-                v-if="getProjectImage(project)"
-                :src="getProjectImage(project)"
-                :alt="getProjectLabel(project)"
-                cover
-              />
-              <span v-else class="text-caption font-weight-bold">{{ getProjectLabel(project).charAt(0) }}</span>
-            </v-avatar>
-
-            <div class="min-w-0 flex-1">
-              <p class="text-subtitle-1 font-weight-bold text-high-emphasis mb-1 truncate">
-                {{ getProjectLabel(project) }}
-              </p>
-              <v-chip size="small" color="primary" variant="tonal">{{ project.status || '-' }}</v-chip>
-            </div>
+              <v-list density="compact">
+                <v-list-item prepend-icon="mdi-pencil" title="Edit" @click="openEditProjectDialog(project)" />
+                <v-list-item
+                  prepend-icon="mdi-delete"
+                  title="Delete"
+                  :disabled="deletingProjectId === project.id"
+                  @click="deleteProject(project)"
+                />
+              </v-list>
+            </v-menu>
           </div>
 
-          <v-card-text class="pt-3">
-            <p class="text-body-2 text-medium-emphasis mb-3 min-h-[44px] line-clamp-2">
-              {{ getProjectDescription(project) }}
-            </p>
+          <NuxtLink :to="getProjectPath(project)" class="block text-decoration-none">
+            <div class="d-flex align-center ga-3 px-4 pt-4 pr-10">
+              <v-avatar size="44" rounded="lg" color="surface-variant">
+                <v-img
+                  v-if="getProjectImage(project)"
+                  :src="getProjectImage(project)"
+                  :alt="getProjectLabel(project)"
+                  cover
+                />
+                <span v-else class="text-caption font-weight-bold">{{ getProjectLabel(project).charAt(0) }}</span>
+              </v-avatar>
+
+              <div class="min-w-0 flex-1">
+                <p class="text-subtitle-1 font-weight-bold text-high-emphasis mb-1 truncate">
+                  {{ getProjectLabel(project) }}
+                </p>
+                <v-chip size="small" color="primary" variant="tonal">{{ project.status || '-' }}</v-chip>
+              </div>
+            </div>
+
+            <v-card-text class="pt-3">
+              <p class="text-body-2 text-medium-emphasis mb-3 min-h-[44px] line-clamp-2">
+                {{ getProjectDescription(project) }}
+              </p>
 
             <div class="d-flex flex-column ga-1 text-caption text-medium-emphasis">
               <span><strong>ID:</strong> {{ project.id || '-' }}</span>
               <span><strong>Owner(s):</strong> {{ Array.isArray(project.owner) ? project.owner.length : 0 }}</span>
             </div>
-          </v-card-text>
-        </NuxtLink>
-      </v-card>
-    </div>
+            </v-card-text>
+          </NuxtLink>
+        </v-card>
+      </v-col>
+    </v-row>
 
     <v-dialog v-model="showCreateDialog" max-width="640">
       <v-card rounded="lg">
