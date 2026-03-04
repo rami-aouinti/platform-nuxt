@@ -4,7 +4,10 @@ import {
   usePlatformApplicationsApi,
   type PlatformApplication,
 } from '~/composables/api/usePlatformApplicationsApi'
-import { usePlatformPluginsApi, type PlatformPlugin } from '~/composables/api/usePlatformPluginsApi'
+import {
+  usePlatformPluginsApi,
+  type PlatformPlugin,
+} from '~/composables/api/usePlatformPluginsApi'
 import { Notify } from '~/stores/notification'
 import { usePlatformApplicationsStore } from '~/stores/platformApplications'
 
@@ -47,6 +50,10 @@ const editDescription = ref('')
 
 const canMoveToStep2 = computed(() => Boolean(createdUserApplication.value?.id))
 
+function goToApplicationSetup(applicationId: string) {
+  void navigateTo(`/platform/${applicationId}/setup`)
+}
+
 function resetCreationState() {
   creationStep.value = 1
   creatingUserApplication.value = false
@@ -65,11 +72,9 @@ async function fetchCatalogApplications() {
 
   try {
     catalogApplications.value = await applicationsApi.listCatalogApplications()
-  }
-  catch (error) {
+  } catch (error) {
     Notify.error(error)
-  }
-  finally {
+  } finally {
     loadingCatalogApplications.value = false
   }
 }
@@ -79,11 +84,9 @@ async function fetchPluginsCatalog() {
 
   try {
     allPlugins.value = await pluginsApi.listAll()
-  }
-  catch (error) {
+  } catch (error) {
     Notify.error(error)
-  }
-  finally {
+  } finally {
     loadingPlugins.value = false
   }
 }
@@ -103,11 +106,9 @@ async function selectCatalogApplication(applicationId: string) {
     metadataName.value = created.name
     creationStep.value = 2
     Notify.success('Platform créée avec succès')
-  }
-  catch (error) {
+  } catch (error) {
     Notify.error(error)
-  }
-  finally {
+  } finally {
     creatingUserApplication.value = false
   }
 }
@@ -121,20 +122,19 @@ async function goToPluginsStep(saveMetadata: boolean) {
     savingMetadata.value = true
 
     try {
-      createdUserApplication.value = await applicationsApi.updateUserApplicationMetadata(
-        createdUserApplication.value.id,
-        {
-          name: metadataName.value,
-        },
-      )
+      createdUserApplication.value =
+        await applicationsApi.updateUserApplicationMetadata(
+          createdUserApplication.value.id,
+          {
+            name: metadataName.value,
+          },
+        )
       Notify.success('Métadonnées enregistrées')
-    }
-    catch (error) {
+    } catch (error) {
       Notify.error(error)
       savingMetadata.value = false
       return
-    }
-    finally {
+    } finally {
       savingMetadata.value = false
     }
   }
@@ -158,18 +158,19 @@ async function saveUserApplicationEdit() {
   editingUserApplicationLoading.value = true
 
   try {
-    await applicationsApi.updateUserApplicationMetadata(editingUserApplication.value.id, {
-      name: editName.value,
-      description: editDescription.value,
-    })
+    await applicationsApi.updateUserApplicationMetadata(
+      editingUserApplication.value.id,
+      {
+        name: editName.value,
+        description: editDescription.value,
+      },
+    )
     Notify.success('Application mise à jour')
     editDialog.value = false
     await platformApplicationsStore.fetchApplications()
-  }
-  catch (error) {
+  } catch (error) {
     Notify.error(error)
-  }
-  finally {
+  } finally {
     editingUserApplicationLoading.value = false
   }
 }
@@ -187,11 +188,9 @@ async function deleteUserApplication(application: PlatformApplication) {
     await applicationsApi.deleteUserApplication(application.id)
     Notify.success('Application supprimée')
     await platformApplicationsStore.fetchApplications()
-  }
-  catch (error) {
+  } catch (error) {
     Notify.error(error)
-  }
-  finally {
+  } finally {
     deletingUserApplicationId.value = null
   }
 }
@@ -210,17 +209,14 @@ async function togglePlugin(plugin: PlatformPlugin) {
       await pluginsApi.detach(userApplicationId, plugin.id)
       selectedPluginIds.value.delete(plugin.id)
       Notify.success('Plugin détaché')
-    }
-    else {
+    } else {
       await pluginsApi.attach(userApplicationId, plugin.id)
       selectedPluginIds.value.add(plugin.id)
       Notify.success('Plugin attaché')
     }
-  }
-  catch (error) {
+  } catch (error) {
     Notify.error(error)
-  }
-  finally {
+  } finally {
     pluginActionLoadingId.value = null
   }
 }
@@ -239,7 +235,13 @@ onMounted(() => {
 <template>
   <v-container v-if="isPlatformIndexRoute" fluid class="pa-6 min-h-screen">
     <v-row v-if="loading && !applications.length">
-      <v-col v-for="index in 6" :key="`platform-skeleton-${index}`" cols="12" md="6" lg="4">
+      <v-col
+        v-for="index in 6"
+        :key="`platform-skeleton-${index}`"
+        cols="12"
+        md="6"
+        lg="4"
+      >
         <v-skeleton-loader type="card" class="rounded-xl" />
       </v-col>
     </v-row>
@@ -267,8 +269,18 @@ onMounted(() => {
         md="6"
         lg="4"
       >
-        <v-card rounded="xl" elevation="4" class="platform-card h-100 pa-6 position-relative">
-          <div v-if="application.owner" class="position-absolute" style="top: 8px; right: 8px; z-index: 2">
+        <v-card
+          rounded="xl"
+          elevation="4"
+          class="platform-card h-100 pa-6 position-relative cursor-pointer"
+          @click="goToApplicationSetup(application.id)"
+        >
+          <div
+            v-if="application.owner"
+            class="position-absolute"
+            style="top: 8px; right: 8px; z-index: 2"
+            @click.stop
+          >
             <v-menu>
               <template #activator="{ props }">
                 <v-btn
@@ -281,7 +293,11 @@ onMounted(() => {
               </template>
 
               <v-list density="compact">
-                <v-list-item prepend-icon="mdi-pencil-outline" title="Edit" @click="openEditDialog(application)" />
+                <v-list-item
+                  prepend-icon="mdi-pencil-outline"
+                  title="Edit"
+                  @click="openEditDialog(application)"
+                />
                 <v-list-item
                   prepend-icon="mdi-delete-outline"
                   title="Delete"
@@ -305,7 +321,9 @@ onMounted(() => {
             </v-avatar>
 
             <div class="flex-grow-1">
-              <h2 class="text-h6 font-weight-bold mb-1">{{ application.name }}</h2>
+              <h2 class="text-h6 font-weight-bold mb-1">
+                {{ application.name }}
+              </h2>
               <v-chip
                 :color="application.active ? 'success' : 'grey'"
                 size="small"
@@ -316,19 +334,11 @@ onMounted(() => {
             </div>
           </div>
 
-          <p class="text-body-2 text-medium-emphasis mt-4 mb-6">
+          <p
+            class="platform-card__description text-body-2 text-medium-emphasis mt-4 mb-0"
+          >
             {{ application.description || 'Aucune description.' }}
           </p>
-
-          <v-btn
-            block
-            color="primary"
-            variant="tonal"
-            :to="`/platform/${application.id}/setup`"
-            :disabled="!application.id"
-          >
-            Open
-          </v-btn>
         </v-card>
       </v-col>
     </v-row>
@@ -337,7 +347,11 @@ onMounted(() => {
       <v-card rounded="xl">
         <v-card-title class="d-flex align-center justify-space-between">
           <span class="text-h6">New Platform</span>
-          <v-btn icon="mdi-close" variant="text" @click="creationDialog = false" />
+          <v-btn
+            icon="mdi-close"
+            variant="text"
+            @click="creationDialog = false"
+          />
         </v-card-title>
 
         <v-divider />
@@ -346,26 +360,47 @@ onMounted(() => {
           <v-stepper-header>
             <v-stepper-item :value="1" title="Application" />
             <v-divider />
-            <v-stepper-item :value="2" title="Metadata" :disabled="!canMoveToStep2" />
+            <v-stepper-item
+              :value="2"
+              title="Metadata"
+              :disabled="!canMoveToStep2"
+            />
             <v-divider />
-            <v-stepper-item :value="3" title="Plugins" :disabled="!canMoveToStep2" />
+            <v-stepper-item
+              :value="3"
+              title="Plugins"
+              :disabled="!canMoveToStep2"
+            />
           </v-stepper-header>
 
           <v-stepper-window>
             <v-stepper-window-item :value="1">
               <v-card-text>
                 <p class="text-body-2 text-medium-emphasis mb-4">
-                  Sélectionnez une application pour créer votre user-application.
+                  Sélectionnez une application pour créer votre
+                  user-application.
                 </p>
 
                 <v-row v-if="loadingCatalogApplications">
-                  <v-col v-for="index in 6" :key="`catalog-skeleton-${index}`" cols="12" md="6" lg="4">
+                  <v-col
+                    v-for="index in 6"
+                    :key="`catalog-skeleton-${index}`"
+                    cols="12"
+                    md="6"
+                    lg="4"
+                  >
                     <v-skeleton-loader type="card" class="rounded-xl" />
                   </v-col>
                 </v-row>
 
                 <v-row v-else>
-                  <v-col v-for="catalogApp in catalogApplications" :key="catalogApp.id" cols="12" md="6" lg="4">
+                  <v-col
+                    v-for="catalogApp in catalogApplications"
+                    :key="catalogApp.id"
+                    cols="12"
+                    md="6"
+                    lg="4"
+                  >
                     <v-card
                       rounded="xl"
                       elevation="1"
@@ -385,9 +420,13 @@ onMounted(() => {
                         </v-avatar>
 
                         <div class="flex-grow-1">
-                          <h3 class="text-subtitle-1 font-weight-bold mb-1">{{ catalogApp.name }}</h3>
+                          <h3 class="text-subtitle-1 font-weight-bold mb-1">
+                            {{ catalogApp.name }}
+                          </h3>
                           <p class="text-body-2 text-medium-emphasis mb-3">
-                            {{ catalogApp.description || 'Aucune description.' }}
+                            {{
+                              catalogApp.description || 'Aucune description.'
+                            }}
                           </p>
 
                           <v-btn
@@ -410,7 +449,8 @@ onMounted(() => {
             <v-stepper-window-item :value="2">
               <v-card-text>
                 <p class="text-body-2 text-medium-emphasis mb-4">
-                  Personnalisez votre user-application (nom et logo), puis passez à la configuration des plugins.
+                  Personnalisez votre user-application (nom et logo), puis
+                  passez à la configuration des plugins.
                 </p>
 
                 <v-text-field
@@ -454,17 +494,30 @@ onMounted(() => {
             <v-stepper-window-item :value="3">
               <v-card-text>
                 <p class="text-body-2 text-medium-emphasis mb-4">
-                  Attachez les plugins que vous souhaitez activer sur votre platform.
+                  Attachez les plugins que vous souhaitez activer sur votre
+                  platform.
                 </p>
 
                 <v-row v-if="loadingPlugins">
-                  <v-col v-for="index in 6" :key="`plugins-skeleton-${index}`" cols="12" md="6" lg="4">
+                  <v-col
+                    v-for="index in 6"
+                    :key="`plugins-skeleton-${index}`"
+                    cols="12"
+                    md="6"
+                    lg="4"
+                  >
                     <v-skeleton-loader type="card" class="rounded-xl" />
                   </v-col>
                 </v-row>
 
                 <v-row v-else>
-                  <v-col v-for="plugin in allPlugins" :key="plugin.id" cols="12" md="6" lg="4">
+                  <v-col
+                    v-for="plugin in allPlugins"
+                    :key="plugin.id"
+                    cols="12"
+                    md="6"
+                    lg="4"
+                  >
                     <v-card rounded="xl" elevation="1" class="pa-4 h-100">
                       <div class="d-flex align-start ga-4">
                         <v-avatar size="56" rounded="lg">
@@ -479,19 +532,33 @@ onMounted(() => {
                         </v-avatar>
 
                         <div class="flex-grow-1">
-                          <h3 class="text-subtitle-1 font-weight-bold mb-1">{{ plugin.name }}</h3>
+                          <h3 class="text-subtitle-1 font-weight-bold mb-1">
+                            {{ plugin.name }}
+                          </h3>
                           <p class="text-body-2 text-medium-emphasis mb-3">
                             {{ plugin.description || 'Aucune description.' }}
                           </p>
 
                           <v-btn
                             block
-                            :color="selectedPluginIds.has(plugin.id) ? 'warning' : 'primary'"
-                            :variant="selectedPluginIds.has(plugin.id) ? 'outlined' : 'flat'"
+                            :color="
+                              selectedPluginIds.has(plugin.id)
+                                ? 'warning'
+                                : 'primary'
+                            "
+                            :variant="
+                              selectedPluginIds.has(plugin.id)
+                                ? 'outlined'
+                                : 'flat'
+                            "
                             :loading="pluginActionLoadingId === plugin.id"
                             @click="togglePlugin(plugin)"
                           >
-                            {{ selectedPluginIds.has(plugin.id) ? 'Detach' : 'Attach' }}
+                            {{
+                              selectedPluginIds.has(plugin.id)
+                                ? 'Detach'
+                                : 'Attach'
+                            }}
                           </v-btn>
                         </div>
                       </div>
@@ -502,9 +569,7 @@ onMounted(() => {
 
               <v-card-actions class="px-6 pb-6">
                 <v-spacer />
-                <v-btn color="primary" @click="finishCreation">
-                  Finish
-                </v-btn>
+                <v-btn color="primary" @click="finishCreation"> Finish </v-btn>
               </v-card-actions>
             </v-stepper-window-item>
           </v-stepper-window>
@@ -534,8 +599,18 @@ onMounted(() => {
         </v-card-text>
         <v-card-actions class="px-6 pb-6">
           <v-spacer />
-          <v-btn variant="text" :disabled="editingUserApplicationLoading" @click="editDialog = false">Cancel</v-btn>
-          <v-btn color="primary" :loading="editingUserApplicationLoading" @click="saveUserApplicationEdit">Save</v-btn>
+          <v-btn
+            variant="text"
+            :disabled="editingUserApplicationLoading"
+            @click="editDialog = false"
+            >Cancel</v-btn
+          >
+          <v-btn
+            color="primary"
+            :loading="editingUserApplicationLoading"
+            @click="saveUserApplicationEdit"
+            >Save</v-btn
+          >
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -548,10 +623,21 @@ onMounted(() => {
 .platform-card {
   border: 1px solid rgb(var(--v-theme-primary), 0.16);
   background:
-    radial-gradient(circle at top right, rgb(var(--v-theme-primary), 0.18), transparent 52%),
-    linear-gradient(135deg, rgb(var(--v-theme-surface), 1), rgb(var(--v-theme-surface-bright), 1));
+    radial-gradient(
+      circle at top right,
+      rgb(var(--v-theme-primary), 0.18),
+      transparent 52%
+    ),
+    linear-gradient(
+      135deg,
+      rgb(var(--v-theme-surface), 1),
+      rgb(var(--v-theme-surface-bright), 1)
+    );
   backdrop-filter: blur(4px);
-  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
 }
 
 .platform-card:hover {
@@ -566,7 +652,23 @@ onMounted(() => {
   border-style: dashed;
   border-width: 2px;
   background:
-    radial-gradient(circle at top, rgb(var(--v-theme-primary), 0.3), transparent 62%),
-    linear-gradient(160deg, rgb(var(--v-theme-primary), 0.08), rgb(var(--v-theme-surface), 1));
+    radial-gradient(
+      circle at top,
+      rgb(var(--v-theme-primary), 0.3),
+      transparent 62%
+    ),
+    linear-gradient(
+      160deg,
+      rgb(var(--v-theme-primary), 0.08),
+      rgb(var(--v-theme-surface), 1)
+    );
+}
+
+.platform-card__description {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 </style>

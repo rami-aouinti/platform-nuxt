@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
-import { usePlatformPluginsApi, type PlatformPlugin } from '~/composables/api/usePlatformPluginsApi'
+import {
+  usePlatformPluginsApi,
+  type PlatformPlugin,
+} from '~/composables/api/usePlatformPluginsApi'
 import { usePlatformApplicationsStore } from '~/stores/platformApplications'
 import { Notify } from '~/stores/notification'
 
@@ -13,7 +16,9 @@ definePageMeta({
 })
 
 const route = useRoute()
-const userApplicationId = computed(() => String(route.params.userApplicationId ?? ''))
+const userApplicationId = computed(() =>
+  String(route.params.userApplicationId ?? ''),
+)
 
 const pluginsApi = usePlatformPluginsApi()
 const platformApplicationsStore = usePlatformApplicationsStore()
@@ -23,20 +28,23 @@ const loading = ref(false)
 const plugins = ref<PlatformPlugin[]>([])
 const pluginActionLoadingId = ref<string | null>(null)
 
-const application = computed(() =>
-  applications.value.find(item => item.userApplicationId === userApplicationId.value) ?? null,
+const application = computed(
+  () =>
+    applications.value.find(
+      (item) => item.userApplicationId === userApplicationId.value,
+    ) ?? null,
 )
 
 async function fetchPlugins() {
   loading.value = true
 
   try {
-    plugins.value = await pluginsApi.listByUserApplication(userApplicationId.value)
-  }
-  catch (error) {
+    plugins.value = await pluginsApi.listByUserApplication(
+      userApplicationId.value,
+    )
+  } catch (error) {
     Notify.error(error)
-  }
-  finally {
+  } finally {
     loading.value = false
   }
 }
@@ -46,7 +54,7 @@ async function installPlugin(pluginId: string) {
 
   try {
     const updated = await pluginsApi.attach(userApplicationId.value, pluginId)
-    const index = plugins.value.findIndex(item => item.id === pluginId)
+    const index = plugins.value.findIndex((item) => item.id === pluginId)
 
     if (index >= 0) {
       plugins.value[index] = {
@@ -57,11 +65,9 @@ async function installPlugin(pluginId: string) {
     }
 
     Notify.success('Plugin installé avec succès')
-  }
-  catch (error) {
+  } catch (error) {
     Notify.error(error)
-  }
-  finally {
+  } finally {
     pluginActionLoadingId.value = null
   }
 }
@@ -73,11 +79,9 @@ async function uninstallPlugin(pluginId: string) {
     await pluginsApi.detach(userApplicationId.value, pluginId)
     await fetchPlugins()
     Notify.success('Plugin désinstallé avec succès')
-  }
-  catch (error) {
+  } catch (error) {
     Notify.error(error)
-  }
-  finally {
+  } finally {
     pluginActionLoadingId.value = null
   }
 }
@@ -93,7 +97,12 @@ onMounted(async () => {
 
 <template>
   <v-container fluid class="pa-6 min-h-screen">
-    <v-btn variant="text" prepend-icon="mdi-arrow-left" to="/platform" class="mb-4">
+    <v-btn
+      variant="text"
+      prepend-icon="mdi-arrow-left"
+      to="/platform"
+      class="mb-4"
+    >
       Retour
     </v-btn>
 
@@ -111,7 +120,9 @@ onMounted(async () => {
         </v-avatar>
 
         <div>
-          <h1 class="text-h5 font-weight-bold mb-2">{{ application?.name || 'Platform' }}</h1>
+          <h1 class="text-h5 font-weight-bold mb-2">
+            {{ application?.name || 'Platform' }}
+          </h1>
           <p class="text-body-2 text-medium-emphasis mb-0">
             {{ application?.description || 'Aucune description.' }}
           </p>
@@ -120,18 +131,33 @@ onMounted(async () => {
     </v-card>
 
     <v-row v-if="loading">
-      <v-col v-for="index in 3" :key="`plugin-skeleton-${index}`" cols="12" md="6" lg="4">
+      <v-col
+        v-for="index in 3"
+        :key="`plugin-skeleton-${index}`"
+        cols="12"
+        md="6"
+        lg="4"
+      >
         <v-skeleton-loader type="card" class="rounded-xl" />
       </v-col>
     </v-row>
 
-    <v-alert v-else-if="!plugins.length" type="info" variant="tonal" border="start">
+    <v-alert
+      v-else-if="!plugins.length"
+      type="info"
+      variant="tonal"
+      border="start"
+    >
       Aucun plugin disponible pour cette application.
     </v-alert>
 
     <v-row v-else>
       <v-col v-for="plugin in plugins" :key="plugin.id" cols="12" md="6" lg="4">
-        <v-card rounded="xl" elevation="2" class="pa-6 h-100">
+        <v-card
+          rounded="xl"
+          elevation="4"
+          class="platform-plugin-card pa-6 h-100"
+        >
           <div class="d-flex align-start ga-4">
             <v-avatar size="56" rounded="lg">
               <v-img
@@ -146,13 +172,19 @@ onMounted(async () => {
 
             <div class="flex-grow-1">
               <h2 class="text-h6 font-weight-bold mb-1">{{ plugin.name }}</h2>
-              <v-chip :color="plugin.enabled ? 'success' : 'grey'" size="small" variant="tonal">
+              <v-chip
+                :color="plugin.enabled ? 'success' : 'grey'"
+                size="small"
+                variant="tonal"
+              >
                 {{ plugin.enabled ? 'Installé' : 'Non installé' }}
               </v-chip>
             </div>
           </div>
 
-          <p class="text-body-2 text-medium-emphasis mt-4 mb-6">
+          <p
+            class="platform-plugin-card__description text-body-2 text-medium-emphasis mt-4 mb-6"
+          >
             {{ plugin.description || 'Aucune description.' }}
           </p>
 
@@ -193,3 +225,38 @@ onMounted(async () => {
     </v-row>
   </v-container>
 </template>
+
+<style scoped>
+.platform-plugin-card {
+  border: 1px solid rgb(var(--v-theme-primary), 0.14);
+  background:
+    radial-gradient(
+      circle at top right,
+      rgb(var(--v-theme-primary), 0.14),
+      transparent 58%
+    ),
+    linear-gradient(
+      145deg,
+      rgb(var(--v-theme-surface), 1),
+      rgb(var(--v-theme-surface-bright), 1)
+    );
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease,
+    border-color 0.22s ease;
+}
+
+.platform-plugin-card:hover {
+  transform: translateY(-4px);
+  border-color: rgb(var(--v-theme-primary), 0.32);
+  box-shadow: 0 14px 28px rgb(12 17 29 / 14%);
+}
+
+.platform-plugin-card__description {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+</style>
