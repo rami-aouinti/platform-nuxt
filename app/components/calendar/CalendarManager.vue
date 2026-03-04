@@ -413,7 +413,6 @@ onBeforeUnmount(() => {
 
       <v-col cols="12" md="9">
         <v-card>
-          <v-card-title class="text-h6">Calendrier</v-card-title>
           <v-card-text>
             <div ref="calendarRoot" />
           </v-card-text>
