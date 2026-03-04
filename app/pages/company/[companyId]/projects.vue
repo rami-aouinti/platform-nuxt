@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { useCompanyWorkspaceApi, type CompanyProjectSummary } from '~/composables/useCompanyWorkspaceApi'
+import { apiRequest } from '~/composables/api/httpUiErrors'
+import { apiEndpoints } from '~/services/api/endpoints'
 
 definePageMeta({ middleware: ['auth'], requiresAuth: true })
 
@@ -14,6 +16,17 @@ const error = ref<string | null>(null)
 const showCreateDialog = ref(false)
 const creatingProject = ref(false)
 const createProjectError = ref<string | null>(null)
+const deletingProjectId = ref<string | number | null>(null)
+const showEditDialog = ref(false)
+const editingProject = ref(false)
+const editProjectError = ref<string | null>(null)
+const editProjectId = ref<string | number | null>(null)
+const editProject = reactive({
+  name: '',
+  description: '',
+  status: 'active',
+  photoUrl: '',
+})
 const newProject = reactive({
   name: '',
   description: '',
@@ -108,6 +121,66 @@ async function submitCreateProject() {
     creatingProject.value = false
   }
 }
+
+function openEditProjectDialog(project: CompanyProjectSummary) {
+  editProjectId.value = project.id
+  editProject.name = String(project.name || project.title || '')
+  editProject.description = String(project.description || '')
+  editProject.status = String(project.status || 'active')
+  editProject.photoUrl = String(project.photoUrl || project.photo || project.image || '')
+  editProjectError.value = null
+  showEditDialog.value = true
+}
+
+async function submitEditProject() {
+  if (!editProjectId.value) {
+    editProjectError.value = 'Projet invalide.'
+    return
+  }
+
+  if (!editProject.name.trim()) {
+    editProjectError.value = 'Le nom du projet est requis.'
+    return
+  }
+
+  editingProject.value = true
+  editProjectError.value = null
+
+  try {
+    await apiRequest('PATCH', apiEndpoints.frontend.projects.projectById(editProjectId.value), {
+      body: {
+        name: editProject.name.trim(),
+        description: editProject.description.trim() || undefined,
+        status: editProject.status.trim() || 'active',
+        photoUrl: editProject.photoUrl.trim() || undefined,
+      },
+    })
+
+    showEditDialog.value = false
+    await loadProjects()
+  } catch (errorValue) {
+    editProjectError.value = errorValue instanceof Error ? errorValue.message : 'Impossible de modifier le projet.'
+  } finally {
+    editingProject.value = false
+  }
+}
+
+async function deleteProject(project: CompanyProjectSummary) {
+  const projectLabel = getProjectLabel(project)
+  const confirmed = window.confirm(`Supprimer le projet "${projectLabel}" ?`)
+  if (!confirmed) return
+
+  deletingProjectId.value = project.id
+
+  try {
+    await apiRequest('DELETE', apiEndpoints.frontend.projects.projectById(project.id))
+    await loadProjects()
+  } catch (errorValue) {
+    error.value = errorValue instanceof Error ? errorValue.message : 'Impossible de supprimer le projet.'
+  } finally {
+    deletingProjectId.value = null
+  }
+}
 </script>
 
 <template>
@@ -117,7 +190,7 @@ async function submitCreateProject() {
         Company projects
       </h1>
 
-      <v-btn color="primary" prepend-icon="mdi-plus" @click="openCreateProjectDialog">
+      <v-btn color="primary" prepend-icon="mdi-plus" class="ml-auto" @click="openCreateProjectDialog">
         Add project
       </v-btn>
     </div>
@@ -149,18 +222,39 @@ async function submitCreateProject() {
       Aucun projet trouvé pour cette société.
     </v-alert>
 
-    <div v-else class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-      <NuxtLink
+    <div v-else class="grid gap-4 md:grid-cols-3">
+      <v-card
         v-for="project in projects"
         :key="project.id"
-        :to="getProjectPath(project)"
-        class="block text-decoration-none"
+        rounded="lg"
+        class="relative h-100 border border-gray-200 transition-all hover:-translate-y-1 hover:border-primary dark:border-gray-700"
       >
-        <v-card
-          rounded="lg"
-          class="h-100 border border-gray-200 transition-all hover:-translate-y-1 hover:border-primary dark:border-gray-700"
-        >
-          <div class="d-flex align-center ga-3 px-4 pt-4">
+        <div class="absolute right-2 top-2 z-10">
+          <v-menu>
+            <template #activator="{ props }">
+              <v-btn
+                v-bind="props"
+                icon="mdi-dots-vertical"
+                size="small"
+                variant="text"
+                @click.stop
+              />
+            </template>
+
+            <v-list density="compact">
+              <v-list-item prepend-icon="mdi-pencil" title="Edit" @click="openEditProjectDialog(project)" />
+              <v-list-item
+                prepend-icon="mdi-delete"
+                title="Delete"
+                :disabled="deletingProjectId === project.id"
+                @click="deleteProject(project)"
+              />
+            </v-list>
+          </v-menu>
+        </div>
+
+        <NuxtLink :to="getProjectPath(project)" class="block text-decoration-none">
+          <div class="d-flex align-center ga-3 px-4 pt-4 pr-10">
             <v-avatar size="44" rounded="lg" color="surface-variant">
               <v-img
                 v-if="getProjectImage(project)"
@@ -189,8 +283,8 @@ async function submitCreateProject() {
               <span><strong>Owner(s):</strong> {{ Array.isArray(project.owner) ? project.owner.length : 0 }}</span>
             </div>
           </v-card-text>
-        </v-card>
-      </NuxtLink>
+        </NuxtLink>
+      </v-card>
     </div>
 
     <v-dialog v-model="showCreateDialog" max-width="640">
@@ -229,6 +323,46 @@ async function submitCreateProject() {
         <v-card-actions class="justify-end">
           <v-btn variant="text" :disabled="creatingProject" @click="showCreateDialog = false">Cancel</v-btn>
           <v-btn color="primary" :loading="creatingProject" @click="submitCreateProject">Create</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="showEditDialog" max-width="640">
+      <v-card rounded="lg">
+        <v-card-title class="text-h6">Edit project</v-card-title>
+
+        <v-card-text>
+          <v-alert
+            v-if="editProjectError"
+            type="error"
+            variant="tonal"
+            density="comfortable"
+            rounded="lg"
+            class="mb-4"
+          >
+            {{ editProjectError }}
+          </v-alert>
+
+          <v-text-field v-model="editProject.name" label="Name" variant="outlined" density="comfortable" class="mb-3" />
+
+          <v-textarea
+            v-model="editProject.description"
+            label="Description"
+            variant="outlined"
+            density="comfortable"
+            auto-grow
+            rows="3"
+            class="mb-3"
+          />
+
+          <v-text-field v-model="editProject.status" label="Status" variant="outlined" density="comfortable" class="mb-3" />
+
+          <v-text-field v-model="editProject.photoUrl" label="Photo URL" variant="outlined" density="comfortable" />
+        </v-card-text>
+
+        <v-card-actions class="justify-end">
+          <v-btn variant="text" :disabled="editingProject" @click="showEditDialog = false">Cancel</v-btn>
+          <v-btn color="primary" :loading="editingProject" @click="submitEditProject">Save</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
