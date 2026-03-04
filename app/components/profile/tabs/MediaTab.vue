@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { apiEndpoints } from '~/services/api/endpoints'
+import { VFileUpload } from 'vuetify/labs/VFileUpload'
 
 const { t } = useI18n()
 
@@ -39,7 +40,7 @@ const createFolderDialog = ref(false)
 const imagePreviewDialog = ref(false)
 const imagePreviewTitle = ref('')
 const imagePreviewSrc = ref('')
-const uploadInput = ref<HTMLInputElement | null>(null)
+const uploadQueue = ref<File[]>([])
 
 const foldersEndpoint = apiEndpoints.frontend.media.folders
 const uploadFileEndpoint = apiEndpoints.frontend.media.uploadFile
@@ -164,14 +165,7 @@ async function createFolder() {
   }
 }
 
-function triggerUpload() {
-  uploadInput.value?.click()
-}
-
-async function onUpload(event: Event) {
-  const target = event.target as HTMLInputElement
-  const file = target.files?.[0]
-
+async function uploadFile(file: File | undefined) {
   if (!file) return
 
   const formData = new FormData()
@@ -196,9 +190,14 @@ async function onUpload(event: Event) {
     Notify.error(error)
   }
   finally {
-    target.value = ''
+    uploadQueue.value = []
     actionLoading.value = false
   }
+}
+
+function onUploadSelection(files: File[] | File | null) {
+  const firstFile = Array.isArray(files) ? files[0] : files
+  void uploadFile(firstFile ?? undefined)
 }
 
 function openImagePreview(file: MediaFile) {
@@ -254,14 +253,24 @@ onMounted(loadTree)
       </div>
 
       <div class="d-flex align-center ga-2 flex-wrap">
-        <input ref="uploadInput" type="file" class="d-none" @change="onUpload" />
         <v-btn color="primary" prepend-icon="mdi-folder-plus" :loading="actionLoading" @click="createFolderDialog = true">
           {{ t('profile.media.createFolder') }}
         </v-btn>
-        <v-btn color="secondary" prepend-icon="mdi-upload" :loading="actionLoading" @click="triggerUpload">
-          {{ t('profile.media.uploadFile') }}
-        </v-btn>
       </div>
+    </div>
+
+    <div class="upload-wrapper mb-4">
+      <v-file-upload
+        v-model="uploadQueue"
+        class="media-file-upload"
+        density="comfortable"
+        clearable
+        show-size
+        :disabled="actionLoading"
+        :title="t('profile.media.uploadFile')"
+        :browse-text="t('profile.media.uploadFile')"
+        @update:model-value="onUploadSelection"
+      />
     </div>
 
     <div class="d-flex align-center ga-2 flex-wrap mb-4">
@@ -406,5 +415,19 @@ onMounted(loadTree)
 .media-crumb {
   color: rgb(var(--v-theme-primary));
   cursor: pointer;
+}
+
+.upload-wrapper {
+  border: 1px dashed rgba(59, 130, 246, 0.45);
+  border-radius: 14px;
+  padding: 8px;
+  background: linear-gradient(135deg, rgba(239, 246, 255, 0.8), rgba(248, 250, 252, 0.7));
+}
+
+.media-file-upload {
+  --v-file-upload-border-color: transparent;
+  --v-file-upload-border-style: solid;
+  --v-file-upload-border-width: 1px;
+  border-radius: 12px;
 }
 </style>
