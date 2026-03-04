@@ -1,4 +1,5 @@
 import type { H3Event } from 'h3'
+import { getHeader, readRawBody } from 'h3'
 import { resolveAuthorizationHeader } from './authorization'
 import { getAuthApiUpstreamCandidates } from './auth-api-upstream'
 
@@ -112,9 +113,24 @@ export async function proxyAuthApiRequest(
   const upstreamCandidates = getUpstreamCandidates(event)
   const timeoutMs = getAuthApiTimeoutMs(event)
   const overrideBody = (event.context as { requestBodyOverride?: unknown }).requestBodyOverride
-  const body = ['GET', 'DELETE'].includes(method)
+  const requestContentType = getHeader(event, 'content-type') ?? ''
+  const hasRawBody =
+    requestContentType.includes('multipart/form-data') ||
+    requestContentType.includes('application/octet-stream')
+
+  const bodyType: 'none' | 'json' | 'raw' = ['GET', 'DELETE'].includes(method)
+    ? 'none'
+    : overrideBody !== undefined
+      ? 'json'
+      : hasRawBody
+        ? 'raw'
+        : 'json'
+
+  const body = bodyType === 'none'
     ? undefined
-    : (overrideBody ?? await readBody(event))
+    : bodyType === 'raw'
+      ? await readRawBody(event, false)
+      : (overrideBody ?? await readBody(event))
 
   let lastError: unknown
   let lastUnauthorizedError: unknown = null
@@ -128,15 +144,20 @@ export async function proxyAuthApiRequest(
         targetURL,
         {
           method,
-          headers: authorization
+          headers: {
+            ...(authorization ? { authorization } : {}),
+            ...(body && bodyType === 'json' ? { 'content-type': 'application/json' } : {}),
+            ...(body && bodyType === 'raw' && requestContentType.length > 0
+              ? { 'content-type': requestContentType }
+              : {}),
+          },
+          ...(body
             ? {
-                authorization,
-                ...(body ? { 'content-type': 'application/json' } : {}),
+                body: bodyType === 'json'
+                  ? JSON.stringify(body)
+                  : (body as BodyInit),
               }
-            : body
-              ? { 'content-type': 'application/json' }
-              : undefined,
-          ...(body ? { body: JSON.stringify(body) } : {}),
+            : {}),
         },
         timeoutMs,
       )
