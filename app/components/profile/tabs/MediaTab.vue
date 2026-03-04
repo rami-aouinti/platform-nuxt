@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { apiEndpoints } from '~/services/api/endpoints'
+import { readSessionCache, writeSessionCache } from '~/utils/session-cache'
 
 const { t } = useI18n()
 
@@ -43,6 +44,10 @@ const uploadInput = ref<HTMLInputElement | null>(null)
 
 const foldersEndpoint = apiEndpoints.frontend.media.folders
 const uploadFileEndpoint = apiEndpoints.frontend.media.uploadFile
+
+
+const MEDIA_TREE_CACHE_KEY = 'profile_media_tree'
+const MEDIA_TREE_CACHE_MAX_AGE_MS = 5 * 60 * 1000
 
 const currentFolder = computed<MediaFolder | null>(() => {
   if (!currentFolderId.value) return null
@@ -121,11 +126,26 @@ function goToParent() {
   currentFolderId.value = breadcrumbs.value[breadcrumbs.value.length - 1]?.id ?? null
 }
 
-async function loadTree() {
+async function loadTree(options: { force?: boolean } = {}) {
+  const shouldUseCache = !options.force
+
+  if (shouldUseCache) {
+    const cachedTree = readSessionCache<MediaFolder[]>(
+      MEDIA_TREE_CACHE_KEY,
+      MEDIA_TREE_CACHE_MAX_AGE_MS,
+    )
+
+    if (cachedTree) {
+      tree.value = cachedTree
+      return
+    }
+  }
+
   loading.value = true
 
   try {
     tree.value = await $fetch<MediaFolder[]>(foldersEndpoint)
+    writeSessionCache(MEDIA_TREE_CACHE_KEY, tree.value)
   }
   catch (error) {
     Notify.error(error)
@@ -153,7 +173,7 @@ async function createFolder() {
 
     createFolderName.value = ''
     createFolderDialog.value = false
-    await loadTree()
+    await loadTree({ force: true })
     Notify.success(t('profile.media.folderCreated'))
   }
   catch (error) {
@@ -190,7 +210,7 @@ async function onUpload(event: Event) {
     })
 
     Notify.success(t('profile.media.fileUploaded'))
-    await loadTree()
+    await loadTree({ force: true })
   }
   catch (error) {
     Notify.error(error)
@@ -232,7 +252,7 @@ async function deleteNode(node: MediaNode) {
       goToParent()
     }
 
-    await loadTree()
+    await loadTree({ force: true })
   }
   catch (error) {
     Notify.error(error)
