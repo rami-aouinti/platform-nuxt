@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-container fluid class="px-6 py-6">
+    <v-container fluid class="md-page px-6 py-6">
       <v-row class="mb-12">
         <v-col md="12">
           <sales-country></sales-country>
@@ -208,7 +208,7 @@
           class="pt-0 mb-lg-0 mb-10"
         >
           <v-card
-            class="card card-shadow border-radius-xl py-5 text-center"
+            class="card card-shadow border-radius-xl md-card-elevated py-5 text-center"
             data-animation="true"
           >
             <div class="mt-n11 mx-4 card-header position-relative z-index-2">

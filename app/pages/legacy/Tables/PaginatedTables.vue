@@ -1,15 +1,12 @@
 <template>
-  <div>
-    <v-container fluid class="pt-0 px-6 mt-n16">
-      <v-row>
-        <v-col cols="12" class="mt-n3">
-          <paginated-table></paginated-table>
-        </v-col>
-      </v-row>
-    </v-container>
-  </div>
+  <legacy-page-wrapper container-class="pt-0 px-6 mt-n16" content-class="mt-n3" :md="12">
+    <paginated-table />
+  </legacy-page-wrapper>
 </template>
 <script setup lang="ts">
+import LegacyPageWrapper from "../../../components/legacy-migration/layouts/LegacyPageWrapper.vue";
+import PaginatedTable from "./Tables/PaginatedTable.vue";
+
 definePageMeta({
   title: 'Legacy · Tables Paginated Tables',
   layout: 'administration',
@@ -17,5 +14,4 @@ definePageMeta({
   middleware: ['auth']
 })
 
-import PaginatedTable from "./Tables/PaginatedTable.vue";
 </script>

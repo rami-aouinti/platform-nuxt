@@ -22,3 +22,11 @@ La suppression finale démarre lorsque le KPI CI `legacy-pages-remaining` attein
 ## Avancement des suppressions
 
 - Lot 2026-03-02: 7 pages legacy supprimées après migration + validation UX + redirection (`Dashboard`, `Pages`, `Ecommerce`, `Applications`, `Tables`, `Layout`, `Components`).
+
+
+## Retrait des styles legacy redondants
+
+- Remplacer les usages `card-shadow`, `border-radius-xl` et shells ad hoc par `md-card-elevated` / `md-page` dans les pages migrées en priorité.
+- Exécuter un inventaire des classes legacy encore référencées avant chaque lot de suppression.
+- Supprimer les règles CSS uniquement après validation visuelle (desktop + mobile) des routes concernées.
+- Finaliser la purge quand toutes les routes legacy sont redirigées ou supprimées.
