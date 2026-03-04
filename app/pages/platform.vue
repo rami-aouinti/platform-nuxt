@@ -19,24 +19,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <v-container fluid class="pa-6 bg-grey-lighten-4 min-h-screen">
-    <div class="d-flex justify-space-between align-center mb-6">
-      <div>
-        <h1 class="text-h4 font-weight-bold mb-1">Platform</h1>
-        <p class="text-body-2 text-medium-emphasis mb-0">
-          Installez ou désinstallez vos applications depuis cette page.
-        </p>
-      </div>
-
-      <v-btn
-        prepend-icon="mdi-refresh"
-        variant="text"
-        :loading="loading"
-        @click="platformApplicationsStore.fetchApplications"
-      >
-        Recharger
-      </v-btn>
-    </div>
+  <v-container fluid class="pa-6 min-h-screen">
 
     <v-row v-if="loading && !applications.length">
       <v-col v-for="index in 6" :key="`platform-skeleton-${index}`" cols="12" md="6" lg="4">
@@ -64,7 +47,7 @@ onMounted(() => {
       >
         <v-card rounded="xl" elevation="4" class="h-100 pa-6">
           <div class="d-flex align-start ga-4">
-            <v-avatar size="64" rounded="lg" color="grey-lighten-2">
+            <v-avatar size="64" rounded="lg">
               <v-img
                 v-if="application.logo"
                 :src="application.logo"
