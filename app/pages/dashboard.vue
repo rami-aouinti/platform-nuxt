@@ -53,8 +53,8 @@ const stats = ref([
 </script>
 
 <template>
-  <v-container fluid>
-    <v-row>
+  <v-container fluid class="md-page md-surface-gradient">
+    <v-row class="md-page-section">
       <v-col
         v-for="stat in stats"
         :key="stat.title"
@@ -76,24 +76,24 @@ const stats = ref([
         </StatsCard>
       </v-col>
     </v-row>
-    <v-row>
+    <v-row class="md-page-section">
       <v-col cols="12" md="6" lg="12">
-        <v-card class="pa-2">
+        <v-card class="pa-2 md-card-elevated dashboard-chart-card">
           <ChartLine />
         </v-card>
       </v-col>
       <v-col cols="12" md="6" lg="4">
-        <v-card class="pa-2">
+        <v-card class="pa-2 md-card-elevated dashboard-chart-card">
           <ChartRadar />
         </v-card>
       </v-col>
       <v-col cols="12" md="6" lg="4">
-        <v-card class="pa-2">
+        <v-card class="pa-2 md-card-elevated dashboard-chart-card">
           <ChartPie />
         </v-card>
       </v-col>
       <v-col cols="12" md="6" lg="4">
-        <v-card class="pa-2">
+        <v-card class="pa-2 md-card-elevated dashboard-chart-card">
           <ChartBar />
         </v-card>
       </v-col>
@@ -102,7 +102,7 @@ const stats = ref([
 </template>
 
 <style scoped>
-.v-card:not(.stats-card) {
+.dashboard-chart-card {
   height: 340px;
 }
 </style>

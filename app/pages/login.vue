@@ -53,8 +53,8 @@ function logout() {
 </script>
 
 <template>
-  <v-container fluid class="login-page d-flex align-center justify-center pa-6">
-    <UiCard class="login-card" elevation="0" rounded="xl" shadow="xl">
+  <v-container fluid class="md-page md-surface-gradient d-flex align-center justify-center">
+    <UiCard class="login-card md-card-elevated" elevation="0" rounded="xl" shadow="xl">
       <v-card-text class="pa-8 pa-md-10">
         <div class="text-center mb-8">
           <UiAvatar size="xl" class="mx-auto mb-4 gradient-avatar">
@@ -139,19 +139,10 @@ function logout() {
 </template>
 
 <style scoped>
-.login-page {
-  min-height: 100%;
-  background:
-    radial-gradient(circle at 10% 20%, rgb(209 233 255 / 65%), transparent 42%),
-    radial-gradient(circle at 90% 15%, rgb(213 174 255 / 35%), transparent 38%),
-    linear-gradient(135deg, rgb(250 251 255 / 90%), rgb(238 244 255 / 95%));
-}
-
 .login-card {
   width: 100%;
   max-width: 460px;
   backdrop-filter: blur(12px);
-  border: 1px solid rgb(var(--v-theme-primary), 0.15);
   background: color-mix(in srgb, rgb(var(--v-theme-surface)) 92%, white 8%);
 }
 

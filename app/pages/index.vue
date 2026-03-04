@@ -30,8 +30,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <v-container fluid class="home-page pa-6 pa-md-10">
-    <v-row class="mb-8" align="center">
+  <v-container fluid class="md-page md-surface-gradient">
+    <v-row class="md-page-hero mb-8" align="center">
       <v-col cols="12" md="8" lg="7" class="hero-content">
         <v-chip color="primary" variant="tonal" class="mb-4">Bienvenue</v-chip>
         <h1 class="text-h3 text-md-h2 font-weight-bold mb-4">Une UI moderne pour piloter votre activité</h1>
@@ -58,7 +58,7 @@ onMounted(() => {
         </div>
       </v-col>
       <v-col cols="12" md="4" lg="5" class="hero-stat-col">
-        <v-card rounded="xl" elevation="10" class="pa-6 stat-card">
+        <v-card class="pa-6 stat-card md-card-elevated md-surface-gradient">
           <p class="text-overline text-primary mb-1">Performance opérationnelle</p>
           <p class="text-h3 font-weight-black mb-2">+42%</p>
           <p class="text-body-2 text-medium-emphasis mb-4">Gain moyen sur le traitement des workflows.</p>
@@ -87,10 +87,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.home-page {
-  min-height: calc(100vh - 72px);
-}
-
 .hero-content {
   min-height: 360px;
 }
@@ -101,7 +97,6 @@ onMounted(() => {
 
 .stat-card {
   min-height: 280px;
-  background: linear-gradient(160deg, rgb(var(--v-theme-surface)), rgb(var(--v-theme-primary), 0.06));
 }
 
 @media (min-width: 960px) {
@@ -113,13 +108,5 @@ onMounted(() => {
   .stat-card {
     min-height: 320px;
   }
-}
-
-.quick-link-card {
-  transition: transform 0.2s ease;
-}
-
-.quick-link-card:hover {
-  transform: translateY(-4px);
 }
 </style>
