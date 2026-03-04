@@ -243,13 +243,17 @@ const componentTabs = computed(() =>
   ),
 )
 
+const profileMenuTabIds = new Set(['overview', 'resumes', 'friends'])
+
 const menuItems = computed<MenuItem[]>(() =>
-  tabs.value.map((tab) => ({
+  tabs.value
+    .filter((tab) => profileMenuTabIds.has(tab.id))
+    .map((tab) => ({
     id: `tab-${tab.id}`,
     icon: tab.icon,
     label: tab.label,
     tabId: tab.id,
-  })),
+    })),
 )
 
 function isMenuItemActive(item: MenuItem) {

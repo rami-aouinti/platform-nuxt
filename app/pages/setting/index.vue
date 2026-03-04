@@ -160,7 +160,7 @@ type MenuItem = {
   tabId: string
 }
 
-const activeTab = ref('overview')
+const activeTab = ref('basic-info')
 const isSyncingTabWithRoute = ref(false)
 
 const tabDefinitions: TabDefinition[] = [
@@ -243,13 +243,17 @@ const componentTabs = computed(() =>
   ),
 )
 
+const settingHiddenTabIds = new Set(['overview', 'resumes', 'friends'])
+
 const menuItems = computed<MenuItem[]>(() =>
-  tabs.value.map((tab) => ({
-    id: `tab-${tab.id}`,
-    icon: tab.icon,
-    label: tab.label,
-    tabId: tab.id,
-  })),
+  tabs.value
+    .filter((tab) => !settingHiddenTabIds.has(tab.id))
+    .map((tab) => ({
+      id: `tab-${tab.id}`,
+      icon: tab.icon,
+      label: tab.label,
+      tabId: tab.id,
+    })),
 )
 
 function isMenuItemActive(item: MenuItem) {
@@ -520,7 +524,7 @@ function resolveTabFromRoute() {
   }
 
   isSyncingTabWithRoute.value = true
-  setActiveTab('overview')
+  setActiveTab('basic-info')
   isSyncingTabWithRoute.value = false
 }
 
