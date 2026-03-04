@@ -70,5 +70,46 @@ export function usePlatformApplicationsApi() {
 
       return normalizeList(payload)
     },
+
+    listCatalogApplications: async () => {
+      const payload = await apiRequest<ApiListResponse<PlatformApplication> | ApplicationsResponse>(
+        'GET',
+        '/api/v1/applications',
+      )
+
+      return normalizeList(payload)
+    },
+
+    createUserApplication: async (applicationId: string) => {
+      const payload = await apiRequest<PlatformApplication>(
+        'POST',
+        `/api/v1/profile/user-applications/${applicationId}`,
+      )
+
+      return normalizeApplication(payload)
+    },
+
+    updateUserApplicationMetadata: async (
+      id: string,
+      payload: { name?: string; logo?: File | null },
+    ) => {
+      const formData = new FormData()
+
+      if (payload.name && payload.name.trim().length > 0) {
+        formData.append('name', payload.name.trim())
+      }
+
+      if (payload.logo) {
+        formData.append('logo', payload.logo)
+      }
+
+      const response = await apiRequest<PlatformApplication>(
+        'PATCH',
+        `/api/v1/profile/user-applications/${id}`,
+        { body: formData },
+      )
+
+      return normalizeApplication(response)
+    },
   }
 }

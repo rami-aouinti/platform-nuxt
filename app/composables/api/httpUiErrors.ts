@@ -194,7 +194,11 @@ export function toUiApiError(errorValue: unknown): UiApiError {
 
 export async function apiRequest<T>(method: HttpMethod, path: string, options: { query?: ApiListQuery; body?: unknown } = {}) {
   const headers = new Headers()
-  headers.set('Content-Type', 'application/json')
+  const isFormData = options.body instanceof FormData
+
+  if (!isFormData) {
+    headers.set('Content-Type', 'application/json')
+  }
 
   try {
     return await httpRequest<T>(method, path, {
