@@ -1,4 +1,4 @@
-@use "variables" as *;
+@use 'variables' as *;
 
 .md-page {
   min-height: calc(100vh - 72px);
@@ -20,14 +20,6 @@
   border: 1px solid rgb(0 0 0 / 6%);
   background-color: rgb(var(--v-theme-surface));
 }
-
-.md-surface-gradient {
-  background:
-    radial-gradient(circle at 10% 20%, rgb(var(--v-theme-primary) / 14%), transparent 42%),
-    radial-gradient(circle at 90% 15%, rgb(var(--v-theme-secondary) / 12%), transparent 38%),
-    linear-gradient(150deg, rgb(var(--v-theme-surface)), rgb(var(--v-theme-primary) / 6%));
-}
-
 
 .md-page .v-btn {
   border-radius: $border-radius-lg;

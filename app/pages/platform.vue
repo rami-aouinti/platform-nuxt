@@ -252,7 +252,7 @@ onMounted(() => {
         <v-card
           rounded="xl"
           elevation="2"
-          class="platform-card platform-card--create h-100 pa-5 d-flex flex-column justify-center align-center text-center border-dashed"
+          class="platform-card platform-card--create md-theme-brand-gradient-soft h-100 pa-5 d-flex flex-column justify-center align-center text-center border-dashed"
           @click="openCreationDialog"
         >
           <v-icon size="48" color="primary" icon="mdi-plus-circle-outline" />
@@ -274,7 +274,7 @@ onMounted(() => {
         <v-card
           rounded="xl"
           elevation="4"
-          class="platform-card h-100 pa-5 position-relative cursor-pointer"
+          class="platform-card md-theme-premium-card h-100 pa-5 position-relative cursor-pointer"
           @click="goToApplicationSetup(application.id)"
         >
           <div
@@ -627,18 +627,7 @@ onMounted(() => {
 
 <style scoped>
 .platform-card {
-  border: 1px solid rgb(var(--v-theme-primary), 0.16);
-  background:
-    radial-gradient(
-      circle at top right,
-      rgb(var(--v-theme-primary), 0.18),
-      transparent 52%
-    ),
-    linear-gradient(
-      135deg,
-      rgb(var(--v-theme-surface), 1),
-      rgb(var(--v-theme-surface-bright), 1)
-    );
+  border: 1px solid rgb(var(--v-theme-primary) / 16%);
   backdrop-filter: blur(4px);
   transition:
     transform 0.25s ease,
@@ -648,25 +637,13 @@ onMounted(() => {
 
 .platform-card:hover {
   transform: translateY(-6px);
-  border-color: rgb(var(--v-theme-primary), 0.4);
-  box-shadow: 0 16px 36px rgb(12 17 29 / 18%);
+  border-color: rgb(var(--v-theme-primary) / 40%);
 }
 
 .platform-card--create {
   cursor: pointer;
   border-style: dashed;
   border-width: 2px;
-  background:
-    radial-gradient(
-      circle at top,
-      rgb(var(--v-theme-primary), 0.3),
-      transparent 62%
-    ),
-    linear-gradient(
-      160deg,
-      rgb(var(--v-theme-primary), 0.08),
-      rgb(var(--v-theme-surface), 1)
-    );
 }
 
 .platform-card__description {

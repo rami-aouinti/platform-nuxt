@@ -53,11 +53,19 @@ function logout() {
 </script>
 
 <template>
-  <v-container fluid class="md-page md-surface-gradient d-flex align-center justify-center">
-    <UiCard class="login-card md-card-elevated" elevation="0" rounded="xl" shadow="xl">
+  <v-container
+    fluid
+    class="md-page md-theme-page-bg d-flex align-center justify-center"
+  >
+    <UiCard
+      class="login-card md-card-elevated"
+      elevation="0"
+      rounded="xl"
+      shadow="xl"
+    >
       <v-card-text class="pa-8 pa-md-10">
         <div class="text-center mb-8">
-          <UiAvatar size="xl" class="mx-auto mb-4 gradient-avatar">
+          <UiAvatar size="xl" class="mx-auto mb-4 md-theme-brand-gradient">
             <v-icon icon="mdi-lock-check-outline" size="34" color="white" />
           </UiAvatar>
           <h1 class="text-h4 font-weight-bold mb-2">Connexion sécurisée</h1>
@@ -143,10 +151,10 @@ function logout() {
   width: 100%;
   max-width: 460px;
   backdrop-filter: blur(12px);
-  background: color-mix(in srgb, rgb(var(--v-theme-surface)) 92%, white 8%);
-}
-
-.gradient-avatar {
-  background: linear-gradient(140deg, rgb(var(--v-theme-primary)), #7f7bff);
+  background: color-mix(
+    in srgb,
+    rgb(var(--v-theme-surface)) 88%,
+    rgb(var(--v-theme-surface-bright)) 12%
+  );
 }
 </style>
