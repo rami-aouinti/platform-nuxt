@@ -510,7 +510,9 @@ watch(
 
 <style scoped>
 .app-bar--floating {
-  margin: 10px;
+  left: 10px !important;
+  right: 10px !important;
+  width: auto !important;
   border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 18px;
   backdrop-filter: blur(10px);
@@ -556,7 +558,8 @@ watch(
 @media (max-width: 960px) {
   .app-bar--floating {
     top: 8px;
-    width: calc(100% - 16px);
+    left: 8px !important;
+    right: 8px !important;
     border-radius: 14px;
   }
 }
