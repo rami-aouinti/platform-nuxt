@@ -239,23 +239,24 @@ onMounted(() => {
         v-for="index in 6"
         :key="`platform-skeleton-${index}`"
         cols="12"
-        md="6"
-        lg="4"
+        sm="6"
+        md="4"
+        lg="3"
       >
         <v-skeleton-loader type="card" class="rounded-xl" />
       </v-col>
     </v-row>
 
     <v-row v-else>
-      <v-col cols="12" md="6" lg="4">
+      <v-col cols="12" sm="6" md="4" lg="3">
         <v-card
           rounded="xl"
           elevation="2"
-          class="platform-card platform-card--create h-100 pa-6 d-flex flex-column justify-center align-center text-center border-dashed"
+          class="platform-card platform-card--create h-100 pa-5 d-flex flex-column justify-center align-center text-center border-dashed"
           @click="openCreationDialog"
         >
-          <v-icon size="56" color="primary" icon="mdi-plus-circle-outline" />
-          <h2 class="text-h6 font-weight-bold mt-4">+ New Platform</h2>
+          <v-icon size="48" color="primary" icon="mdi-plus-circle-outline" />
+          <h2 class="text-subtitle-1 font-weight-bold mt-3">+ New Platform</h2>
           <p class="text-body-2 text-medium-emphasis mt-2 mb-0">
             Créez une nouvelle user-application et configurez ses plugins.
           </p>
@@ -266,13 +267,14 @@ onMounted(() => {
         v-for="application in applications"
         :key="application.id"
         cols="12"
-        md="6"
-        lg="4"
+        sm="6"
+        md="4"
+        lg="3"
       >
         <v-card
           rounded="xl"
           elevation="4"
-          class="platform-card h-100 pa-6 position-relative cursor-pointer"
+          class="platform-card h-100 pa-5 position-relative cursor-pointer"
           @click="goToApplicationSetup(application.id)"
         >
           <div
@@ -308,8 +310,8 @@ onMounted(() => {
             </v-menu>
           </div>
 
-          <div class="d-flex align-start ga-4">
-            <v-avatar size="64" rounded="lg">
+          <div class="d-flex align-start ga-3">
+            <v-avatar size="56" rounded="lg">
               <v-img
                 v-if="application.logo"
                 :src="application.logo"
@@ -321,7 +323,7 @@ onMounted(() => {
             </v-avatar>
 
             <div class="flex-grow-1">
-              <h2 class="text-h6 font-weight-bold mb-1">
+              <h2 class="text-subtitle-1 font-weight-bold mb-1">
                 {{ application.name }}
               </h2>
               <v-chip
@@ -343,12 +345,7 @@ onMounted(() => {
       </v-col>
     </v-row>
 
-    <v-dialog
-      v-model="creationDialog"
-      persistent
-      fullscreen
-      scrollable
-    >
+    <v-dialog v-model="creationDialog" persistent fullscreen scrollable>
       <v-card class="creation-dialog-card">
         <v-card-title class="d-flex align-center justify-space-between">
           <span class="text-h6">New Platform</span>
@@ -630,7 +627,7 @@ onMounted(() => {
 
 <style scoped>
 .platform-card {
-  min-height: 260px;
+  min-height: 220px;
   border: 1px solid rgb(var(--v-theme-primary), 0.16);
   background:
     radial-gradient(
@@ -657,7 +654,7 @@ onMounted(() => {
 }
 
 .platform-card--create {
-  min-height: 230px;
+  min-height: 220px;
   cursor: pointer;
   border-style: dashed;
   border-width: 2px;
