@@ -68,14 +68,6 @@ export function useCompanyWorkspaceApi() {
     getMembership: (companyId: Id) =>
       apiRequest<CompanyMembership>('GET', apiEndpoints.frontend.companyWorkspace.membership(companyId)),
 
-    listMemberships: async (companyId: Id) => {
-      const payload = await apiRequest<CollectionPayload<CompanyMembership>>(
-        'GET',
-        apiEndpoints.frontend.companyWorkspace.memberships(companyId),
-      )
-      return normalizeCollectionPayload(payload)
-    },
-
     listCompanyProjects: async (companyId: Id) => {
       const payload = await apiRequest<CollectionPayload<CompanyProjectSummary>>(
         'GET',

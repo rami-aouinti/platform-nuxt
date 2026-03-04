@@ -55,11 +55,10 @@ export const apiEndpoints = {
       companyById: (id: ApiId) => `${ME_PROFILE_BASE}/companies/${id}`,
     },
     companyWorkspace: {
-      base: `${FRONTEND_API_BASE}/companies`,
-      companyById: (companyId: ApiId) => `${FRONTEND_API_BASE}/companies/${companyId}`,
-      memberships: (companyId: ApiId) => `${FRONTEND_API_BASE}/companies/${companyId}/memberships`,
-      membership: (companyId: ApiId) => `${FRONTEND_API_BASE}/companies/${companyId}/membership`,
-      projects: (companyId: ApiId) => `${FRONTEND_API_BASE}/companies/${companyId}/projects`,
+      base: `${ME_PROFILE_BASE}/companies`,
+      companyById: (companyId: ApiId) => `${ME_PROFILE_BASE}/companies/${companyId}`,
+      membership: (companyId: ApiId) => `${ME_BASE}/companies/${companyId}/membership`,
+      projects: (companyId: ApiId) => `${ME_PROFILE_BASE}/companies/${companyId}/projects`,
     },
     media: {
       folders: `${ME_BASE}/media/folders`,
