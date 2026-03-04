@@ -381,13 +381,23 @@ onMounted(loadTree)
 .media-explorer {
   border: 1px solid rgba(148, 163, 184, 0.25);
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08) !important;
+  background: transparent !important;
 }
 
 .media-table {
   border: 1px solid rgba(148, 163, 184, 0.2);
   border-radius: 14px;
   overflow: hidden;
-  background: linear-gradient(180deg, rgba(248, 250, 252, 0.95) 0%, rgba(255, 255, 255, 1) 45%);
+  background: transparent;
+}
+
+.media-table :deep(table),
+.media-table :deep(thead),
+.media-table :deep(tbody),
+.media-table :deep(tr),
+.media-table :deep(th),
+.media-table :deep(td) {
+  background: transparent !important;
 }
 
 .media-link {
