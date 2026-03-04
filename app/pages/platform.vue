@@ -12,6 +12,8 @@ definePageMeta({
 
 const platformApplicationsStore = usePlatformApplicationsStore()
 const { applications, loading, actionLoadingId } = storeToRefs(platformApplicationsStore)
+const route = useRoute()
+const isPlatformIndexRoute = computed(() => route.path === '/platform')
 
 onMounted(() => {
   void platformApplicationsStore.fetchApplications()
@@ -19,7 +21,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <v-container fluid class="pa-6 min-h-screen">
+  <v-container v-if="isPlatformIndexRoute" fluid class="pa-6 min-h-screen">
     <v-row v-if="loading && !applications.length">
       <v-col v-for="index in 6" :key="`platform-skeleton-${index}`" cols="12" md="6" lg="4">
         <v-skeleton-loader type="card" class="rounded-xl" />
@@ -109,4 +111,6 @@ onMounted(() => {
       </v-col>
     </v-row>
   </v-container>
+
+  <NuxtPage v-else />
 </template>
