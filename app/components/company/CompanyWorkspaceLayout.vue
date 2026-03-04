@@ -21,6 +21,7 @@ const menuItems = computed(() => [
 
 <template>
   <v-container fluid>
+
     <v-row class="px-4">
       <v-col cols="12" lg="3">
         <v-card rounded="xl" elevation="0" class="pa-4">
