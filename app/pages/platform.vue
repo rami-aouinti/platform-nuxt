@@ -11,7 +11,7 @@ definePageMeta({
 })
 
 const platformApplicationsStore = usePlatformApplicationsStore()
-const { applications, loading, actionLoadingId } = storeToRefs(platformApplicationsStore)
+const { applications, loading } = storeToRefs(platformApplicationsStore)
 const route = useRoute()
 const isPlatformIndexRoute = computed(() => route.path === '/platform')
 
@@ -62,11 +62,11 @@ onMounted(() => {
             <div class="flex-grow-1">
               <h2 class="text-h6 font-weight-bold mb-1">{{ application.name }}</h2>
               <v-chip
-                :color="application.enabled ? 'success' : 'grey'"
+                :color="application.active ? 'success' : 'grey'"
                 size="small"
                 variant="tonal"
               >
-                {{ application.enabled ? 'Installée' : 'Non installée' }}
+                {{ application.active ? 'Active' : 'Inactive' }}
               </v-chip>
             </div>
           </div>
@@ -76,38 +76,14 @@ onMounted(() => {
           </p>
 
           <v-btn
-            v-if="application.enabled !== true"
             block
             color="primary"
-            :loading="actionLoadingId === application.id"
-            :disabled="loading"
-            @click="platformApplicationsStore.installApplication(application.id)"
+            variant="tonal"
+            :to="`/platform/${application.id}/setup`"
+            :disabled="!application.id"
           >
-            Install
+            Open
           </v-btn>
-
-          <div v-else class="d-flex ga-3">
-            <v-btn
-              color="warning"
-              variant="outlined"
-              class="flex-grow-1"
-              :loading="actionLoadingId === application.id"
-              :disabled="loading"
-              @click="platformApplicationsStore.uninstallApplication(application.id)"
-            >
-              Désinstaller
-            </v-btn>
-
-            <v-btn
-              color="primary"
-              variant="tonal"
-              class="flex-grow-1"
-              :to="`/platform/${application.userApplicationId}/setup`"
-              :disabled="!application.userApplicationId"
-            >
-              Open
-            </v-btn>
-          </div>
         </v-card>
       </v-col>
     </v-row>
