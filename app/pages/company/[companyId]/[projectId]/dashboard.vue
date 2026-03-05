@@ -107,7 +107,7 @@ watch(projectId, loadProject, { immediate: true })
         {{ project.description || 'Aucune description disponible.' }}
       </p>
 
-      <v-card variant="tonal" rounded="lg">
+      <v-card variant="tonal" rounded="lg" class="workspace-sidebar-card">
         <v-card-text>
           <div class="grid gap-3 sm:grid-cols-2">
             <div v-for="row in projectRows" :key="row.label">

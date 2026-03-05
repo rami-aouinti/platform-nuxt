@@ -77,7 +77,7 @@ onMounted(async () => {
 
     <v-row class="ga-md-0 ga-4">
       <v-col cols="12" md="4">
-        <v-card rounded="xl" elevation="2" class="plugin-setup-card pa-6 h-100">
+        <v-card rounded="lg" elevation="2" class="plugin-setup-card pa-6 h-100 workspace-sidebar-card">
           <h1 class="text-h5 font-weight-bold mb-2">
             {{ currentPlugin?.name || 'Plugin' }}
           </h1>
@@ -104,7 +104,7 @@ onMounted(async () => {
       </v-col>
 
       <v-col cols="12" md="4">
-        <v-card rounded="xl" elevation="2" class="plugin-setup-card pa-6 h-100">
+        <v-card rounded="lg" elevation="2" class="plugin-setup-card pa-6 h-100 workspace-sidebar-card">
           <h2 class="text-h6 font-weight-bold mb-3">Configuration du plugin</h2>
           <p class="text-body-2 text-medium-emphasis mb-4">
             Zone de configuration dédiée au plugin sélectionné.
@@ -117,7 +117,7 @@ onMounted(async () => {
       </v-col>
 
       <v-col cols="12" md="4">
-        <v-card rounded="xl" elevation="2" class="plugin-setup-card pa-6 h-100">
+        <v-card rounded="lg" elevation="2" class="plugin-setup-card pa-6 h-100 workspace-sidebar-card">
           <h2 class="text-h6 font-weight-bold mb-3">Plugins installés</h2>
 
           <v-skeleton-loader

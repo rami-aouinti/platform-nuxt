@@ -132,7 +132,7 @@ async function submitAddUser() {
       Aucun membre trouvé.
     </v-alert>
 
-    <v-card v-else variant="tonal" rounded="lg">
+    <v-card v-else variant="tonal" rounded="lg" class="workspace-sidebar-card">
       <v-card-text>
         <v-row>
           <v-col cols="12" md="6">
@@ -160,7 +160,7 @@ async function submitAddUser() {
     </v-card>
 
     <v-dialog v-model="showAddUserDialog" max-width="520">
-      <v-card rounded="lg">
+      <v-card rounded="lg" class="workspace-sidebar-card">
         <v-card-title class="text-h6">Add user</v-card-title>
 
         <v-card-text>
