@@ -71,6 +71,10 @@ export const apiEndpoints = {
     projects: {
       base: `${ME_PROFILE_BASE}/projects`,
       projectById: (id: ApiId) => `${ME_PROFILE_BASE}/projects/${id}`,
+      tasks: (projectId: ApiId) => `${ME_PROFILE_BASE}/project/${projectId}/tasks`,
+      taskById: (projectId: ApiId, taskId: ApiId) => `${ME_PROFILE_BASE}/project/${projectId}/tasks/${taskId}`,
+      taskRequests: (projectId: ApiId) => `${ME_PROFILE_BASE}/project/${projectId}/task-requests`,
+      taskRequestById: (projectId: ApiId, taskRequestId: ApiId) => `${ME_PROFILE_BASE}/project/${projectId}/task-requests/${taskRequestId}`,
     },
     configurations: {
       base: `${FRONTEND_API_BASE}/configurations`,
