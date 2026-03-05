@@ -48,7 +48,7 @@ const values = [
         </div>
       </v-col>
       <v-col cols="12" md="5">
-        <v-card rounded="xl" elevation="8" class="pa-6 bg-primary text-white">
+        <v-card rounded="xl" elevation="8" class="pa-6 bg-primary text-white workspace-sidebar-card">
           <h2 class="text-h5 font-weight-bold mb-4">En quelques chiffres</h2>
           <v-row>
             <v-col cols="6">
@@ -74,7 +74,7 @@ const values = [
 
     <v-row>
       <v-col v-for="value in values" :key="value.title" cols="12" md="4">
-        <v-card rounded="xl" class="h-100 pa-5" variant="tonal" color="surface-light">
+        <v-card rounded="xl" class="h-100 pa-5 workspace-sidebar-card" variant="tonal" color="surface-light">
           <v-icon :icon="value.icon" color="primary" size="36" class="mb-4" />
           <h3 class="text-h6 font-weight-bold mb-2">{{ value.title }}</h3>
           <p class="text-body-2 text-medium-emphasis mb-0">{{ value.description }}</p>

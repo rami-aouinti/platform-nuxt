@@ -33,7 +33,7 @@ const faqItems = [
   <v-container fluid class="pa-6 pa-md-10">
     <v-row justify="center" class="mb-6">
       <v-col cols="12" md="10" lg="8">
-        <v-card rounded="xl" class="pa-6 pa-md-8" elevation="6">
+        <v-card rounded="xl" class="pa-6 pa-md-8 workspace-sidebar-card" elevation="6">
           <v-chip color="primary" variant="tonal" class="mb-4">Centre d'aide</v-chip>
           <h1 class="text-h3 font-weight-bold mb-3">Questions fréquentes</h1>
           <p class="text-body-1 text-medium-emphasis mb-0">

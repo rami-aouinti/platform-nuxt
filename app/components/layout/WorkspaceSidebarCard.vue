@@ -68,9 +68,5 @@ function handleSelect(item: SidebarItem) {
   border: 1px solid rgba(var(--v-theme-on-surface), .12);
   box-shadow: 0 2px 8px rgba(var(--v-theme-on-surface), .08);
   transition: transform .2s ease, box-shadow .2s ease;
-  background-color: transparent !important;
-}
-.workspace-sidebar-list {
-  background-color: transparent !important;
 }
 </style>

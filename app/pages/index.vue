@@ -77,7 +77,7 @@ onMounted(() => {
         </div>
       </v-col>
       <v-col cols="12" md="4" lg="5" class="hero-stat-col">
-        <v-card class="pa-6 stat-card md-card-elevated md-theme-premium-card">
+        <v-card class="pa-6 stat-card md-card-elevated md-theme-premium-card workspace-sidebar-card">
           <p class="text-overline text-primary mb-1">
             Performance opérationnelle
           </p>
