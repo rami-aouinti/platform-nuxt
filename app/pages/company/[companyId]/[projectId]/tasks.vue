@@ -174,7 +174,7 @@ watch(projectId, loadTasks, { immediate: true })
       Aucune task liée à ce projet.
     </v-alert>
 
-    <v-card v-else variant="outlined">
+    <v-card v-else variant="outlined" class="workspace-sidebar-card">
       <v-table>
         <thead>
           <tr>
@@ -203,7 +203,7 @@ watch(projectId, loadTasks, { immediate: true })
     </v-card>
 
     <v-dialog v-model="dialogOpen" max-width="640">
-      <v-card>
+      <v-card class="workspace-sidebar-card">
         <v-card-title>{{ saveMode === 'create' ? 'Ajouter une task' : 'Modifier la task' }}</v-card-title>
         <v-card-text>
           <v-text-field v-model="form.title" label="Title" required />

@@ -51,7 +51,7 @@ onMounted(loadNotifications)
 
 <template>
   <v-container fluid class="pa-6">
-    <v-card rounded="xl" elevation="4" class="pa-6">
+    <v-card rounded="lg" elevation="4" class="pa-6 workspace-sidebar-card">
       <div class="d-flex align-center justify-space-between mb-4">
         <h1 class="text-h4 font-weight-bold">Toutes les notifications</h1>
       </div>

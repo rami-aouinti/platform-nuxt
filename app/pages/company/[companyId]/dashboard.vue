@@ -43,7 +43,7 @@ const categories = [
 
     <v-row>
       <v-col v-for="metric in metricCards" :key="metric.title" cols="12" md="4">
-        <v-card rounded="lg" class="pa-4 company-kpi-card">
+        <v-card rounded="lg" class="pa-4 company-kpi-card workspace-sidebar-card">
           <div class="d-flex align-center justify-space-between mb-3">
             <div class="d-flex align-center ga-3">
               <v-avatar :color="metric.tone" variant="tonal" size="32">
@@ -68,7 +68,7 @@ const categories = [
 
     <v-row class="mt-1">
       <v-col cols="12" md="8">
-        <v-card rounded="lg" class="company-dashboard-card h-100">
+        <v-card rounded="lg" class="company-dashboard-card h-100 workspace-sidebar-card">
           <p class="company-dashboard-card__title">Planning de l'équipe</p>
           <v-sheet rounded="lg" border class="pa-6 text-center text-medium-emphasis">
             Vue mensuelle des jalons, revues et échéances de livraison
@@ -77,7 +77,7 @@ const categories = [
       </v-col>
 
       <v-col cols="12" md="4" class="d-flex flex-column ga-3 ga-md-4">
-        <v-card rounded="lg" class="company-dashboard-card">
+        <v-card rounded="lg" class="company-dashboard-card workspace-sidebar-card">
           <p class="company-dashboard-card__title">Suivi global</p>
           <v-list density="comfortable" class="pa-0 company-dashboard-list">
             <template v-for="(category, index) in categories" :key="category.title">
@@ -90,7 +90,7 @@ const categories = [
           </v-list>
         </v-card>
 
-        <v-card rounded="lg" class="company-dashboard-card">
+        <v-card rounded="lg" class="company-dashboard-card workspace-sidebar-card">
           <p class="company-dashboard-card__title">Actions rapides</p>
           <p class="text-body-2 text-medium-emphasis mb-3">Accédez directement aux tâches fréquentes de votre équipe.</p>
           <div class="d-flex flex-wrap ga-2">
@@ -104,7 +104,7 @@ const categories = [
 
     <v-row class="mt-1">
       <v-col cols="12" md="6">
-        <v-card rounded="lg" class="company-dashboard-card">
+        <v-card rounded="lg" class="company-dashboard-card workspace-sidebar-card">
           <div class="d-flex justify-space-between mb-2">
             <p class="company-dashboard-card__title mb-0">Activité équipe</p>
             <span class="company-dashboard-card__meta">Du 8 au 12 juillet 2024</span>
@@ -131,7 +131,7 @@ const categories = [
       </v-col>
 
       <v-col cols="12" md="6">
-        <v-card rounded="lg" class="company-dashboard-card">
+        <v-card rounded="lg" class="company-dashboard-card workspace-sidebar-card">
           <div class="d-flex justify-space-between mb-2">
             <p class="company-dashboard-card__title mb-0">Livraisons de la semaine</p>
             <span class="company-dashboard-card__meta">Dernières actions</span>

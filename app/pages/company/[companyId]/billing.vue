@@ -32,7 +32,7 @@ const getInitials = (name: string) => name
 
     <v-row>
       <v-col cols="12" md="8">
-        <v-card rounded="xl" class="pa-5 text-white billing-primary-card">
+        <v-card rounded="lg" class="pa-5 text-white billing-primary-card workspace-sidebar-card">
           <div class="d-flex align-center justify-space-between mb-8">
             <p class="text-overline mb-0 text-white">Premium account</p>
             <v-icon icon="mdi-credit-card-chip" />
@@ -52,7 +52,7 @@ const getInitials = (name: string) => name
       </v-col>
 
       <v-col cols="12" md="4">
-        <v-card rounded="xl" class="pa-4 h-100 card-surface">
+        <v-card rounded="lg" class="pa-4 h-100 card-surface workspace-sidebar-card">
           <p class="text-subtitle-1 font-weight-bold mb-3">Invoices</p>
           <v-list density="compact" class="pa-0">
             <v-list-item
@@ -72,7 +72,7 @@ const getInitials = (name: string) => name
       </v-col>
     </v-row>
 
-    <v-card rounded="xl" class="pa-4 mt-4 card-surface">
+    <v-card rounded="lg" class="pa-4 mt-4 card-surface workspace-sidebar-card">
       <div class="d-flex align-center justify-space-between mb-3">
         <p class="text-subtitle-1 font-weight-bold mb-0">Payment Method</p>
       </div>
@@ -100,7 +100,7 @@ const getInitials = (name: string) => name
 
     <v-row class="mt-1">
       <v-col cols="12" md="8">
-        <v-card rounded="xl" class="pa-4 card-surface">
+        <v-card rounded="lg" class="pa-4 card-surface workspace-sidebar-card">
           <p class="text-subtitle-1 font-weight-bold mb-3">Billing Information</p>
 
           <v-sheet
@@ -131,7 +131,7 @@ const getInitials = (name: string) => name
       </v-col>
 
       <v-col cols="12" md="4">
-        <v-card rounded="xl" class="pa-4 card-surface">
+        <v-card rounded="lg" class="pa-4 card-surface workspace-sidebar-card">
           <p class="text-subtitle-1 font-weight-bold mb-3">Your Transactions</p>
           <v-list density="comfortable" class="pa-0">
             <v-list-item title="Netflix" subtitle="27 March 2020, at 12:30 PM" append="- $ 2,500" class="px-0" />

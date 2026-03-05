@@ -157,9 +157,9 @@ onMounted(async () => {
     <v-row v-else class="ga-md-0 ga-4">
       <v-col cols="12" md="4">
         <v-card
-          rounded="xl"
+          rounded="lg"
           elevation="2"
-          class="plugin-layout-card pa-6 h-100"
+          class="plugin-layout-card pa-6 h-100 workspace-sidebar-card"
         >
           <div class="d-flex align-start ga-3 mb-4">
             <v-avatar size="56" rounded="lg">
@@ -205,9 +205,9 @@ onMounted(async () => {
 
       <v-col cols="12" md="4">
         <v-card
-          rounded="xl"
+          rounded="lg"
           elevation="2"
-          class="plugin-layout-card pa-6 h-100"
+          class="plugin-layout-card pa-6 h-100 workspace-sidebar-card"
         >
           <h2 class="text-h6 font-weight-bold mb-2">
             Configuration du platform
@@ -271,9 +271,9 @@ onMounted(async () => {
 
       <v-col cols="12" md="4">
         <v-card
-          rounded="xl"
+          rounded="lg"
           elevation="2"
-          class="plugin-layout-card pa-4 h-100"
+          class="plugin-layout-card pa-4 h-100 workspace-sidebar-card"
         >
           <h2 class="text-h6 font-weight-bold px-2 mb-3">Liste des plugins</h2>
 
@@ -282,7 +282,7 @@ onMounted(async () => {
               <v-card
                 rounded="lg"
                 elevation="1"
-                class="plugin-grid-card h-100 pa-3"
+                class="plugin-grid-card h-100 pa-3 workspace-sidebar-card"
                 :class="{
                   'plugin-grid-card--active': selectedPluginId === plugin.id,
                 }"
@@ -385,7 +385,7 @@ onMounted(async () => {
       max-width="560"
       @update:model-value="(isOpen) => !isOpen && (pluginInfoDialog = null)"
     >
-      <v-card rounded="xl">
+      <v-card rounded="lg" class="workspace-sidebar-card">
         <v-card-title class="text-h6">
           Infos plugin — {{ pluginInfoDialog?.name }}
         </v-card-title>
@@ -407,7 +407,7 @@ onMounted(async () => {
       max-width="640"
       @update:model-value="(isOpen) => !isOpen && (pluginSetupDialog = null)"
     >
-      <v-card rounded="xl">
+      <v-card rounded="lg" class="workspace-sidebar-card">
         <v-card-title class="text-h6">
           Setup plugin — {{ pluginSetupDialog?.name }}
         </v-card-title>
