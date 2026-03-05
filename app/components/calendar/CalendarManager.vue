@@ -372,19 +372,15 @@ onBeforeUnmount(() => {
 
     <v-row>
       <v-col cols="12" md="3">
-        <v-card class="mb-4">
-          <v-card-title class="text-h6">Actions</v-card-title>
-          <v-card-text>
-            <v-btn block color="primary" @click="openCreateDialog">Créer un nouvel événement</v-btn>
-          </v-card-text>
-        </v-card>
+        <LayoutWorkspaceSidebarCard>
+          <div class="pa-4">
+            <p class="text-h6 mb-3">Actions</p>
+            <v-btn block color="primary" class="mb-6" @click="openCreateDialog">Créer un nouvel événement</v-btn>
 
-        <v-card>
-          <v-card-title class="text-h6">Événements d'aujourd'hui</v-card-title>
-          <v-card-text>
+            <p class="text-h6 mb-3">Événements d'aujourd'hui</p>
             <v-progress-linear v-if="loading" indeterminate color="primary" class="mb-4" />
 
-            <v-list v-else-if="todaysEvents.length" lines="two" density="comfortable">
+            <v-list v-else-if="todaysEvents.length" lines="two" density="comfortable" class="pa-0">
               <v-list-item v-for="eventItem in todaysEvents" :key="eventItem.id" class="px-0">
                 <v-list-item-title>{{ eventItem.title }}</v-list-item-title>
                 <v-list-item-subtitle>{{ formatEventDate(eventItem.startAt) }}</v-list-item-subtitle>
@@ -407,8 +403,8 @@ onBeforeUnmount(() => {
             </v-list>
 
             <p v-else class="text-medium-emphasis mb-0">Aucun événement prévu aujourd'hui.</p>
-          </v-card-text>
-        </v-card>
+          </div>
+        </LayoutWorkspaceSidebarCard>
       </v-col>
 
       <v-col cols="12" md="9">

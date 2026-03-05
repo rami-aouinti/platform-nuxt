@@ -440,7 +440,7 @@ onBeforeUnmount(() => {
 <template>
   <v-row class="chat-workspace" no-gutters>
     <v-col cols="12" md="4" lg="3" class="chat-conversations-panel border-e">
-      <v-sheet class="pa-4 h-100" color="surface">
+      <LayoutWorkspaceSidebarCard :sticky="false" max-height="none" class="pa-4 h-100">
         <div class="d-flex align-center justify-space-between mb-4">
           <div>
             <p class="text-subtitle-1 font-weight-bold mb-1">Conversations</p>
@@ -564,7 +564,7 @@ onBeforeUnmount(() => {
           title="Aucune conversation"
           text="Dès qu'une conversation existe, elle apparaîtra ici."
         />
-      </v-sheet>
+      </LayoutWorkspaceSidebarCard>
     </v-col>
 
     <v-col cols="12" md="8" lg="9">

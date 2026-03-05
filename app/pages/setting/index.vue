@@ -257,19 +257,15 @@ const menuItems = computed<MenuItem[]>(() =>
   tabs.value
     .filter((tab) => !settingHiddenTabIds.has(tab.id))
     .map((tab) => ({
-      id: `tab-${tab.id}`,
+      id: tab.id,
       icon: tab.icon,
       label: tab.label,
       tabId: tab.id,
     })),
 )
 
-function isMenuItemActive(item: MenuItem) {
-  return activeTab.value === item.tabId
-}
-
-function handleMenuItemClick(item: MenuItem) {
-  activeTab.value = item.tabId
+function handleMenuItemClick(item: MenuItem | { id: string }) {
+  activeTab.value = item.id.replace(/^tab-/, '')
 }
 
 function setActiveTab(tabId: string) {
@@ -558,32 +554,12 @@ onMounted(async () => {
 <template>
   <v-container fluid>
     <v-row class="px-4">
-      <v-col lg="3">
-        <v-card class="profile-block" rounded="xl" elevation="0" style="height: 530px; min-width: 280px; overflow-y: auto; position: fixed">
-          <div class="px-4 pt-3 pb-0">
-            <v-list class="border-radius-sm" nav density="compact">
-              <v-list-item
-                v-for="item in menuItems"
-                :key="item.id"
-                class="px-3 py-1 border-radius-lg mb-2"
-                :active="isMenuItemActive(item)"
-                :to="item.type === 'route' ? item.to : undefined"
-                @click="handleMenuItemClick(item)"
-              >
-                <template #prepend>
-                  <v-icon
-                    size="18"
-                    class="material-icons-round me-2 text-dark"
-                    >{{ item.icon }}</v-icon
-                  >
-                </template>
-                <v-list-item-title class="text-dark text-sm">{{
-                  item.label
-                }}</v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </div>
-        </v-card>
+      <v-col cols="12" lg="3">
+        <LayoutWorkspaceSidebarCard
+          :items="menuItems"
+          :active-id="activeTab"
+          @select="handleMenuItemClick"
+        />
       </v-col>
       <v-col lg="9">
         <v-window v-model="activeTab" class="mt-2">
@@ -660,7 +636,7 @@ onMounted(async () => {
               Aucune donnée de profil disponible.
             </v-alert>
 
-            <v-row class="mt-6" v-if="hasData">
+            <v-row v-if="hasData" class="mt-6">
               <v-col cols="12" lg="6" class="position-relative">
                 <v-card
                   class="profile-block h-100 pa-4"
