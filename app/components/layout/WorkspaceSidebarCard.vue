@@ -41,7 +41,7 @@ function handleSelect(item: SidebarItem) {
   <v-card rounded="xl" elevation="0" class="workspace-sidebar-card" :style="cardStyle">
     <slot>
       <div class="px-4 pt-3 pb-0">
-        <v-list class="border-radius-sm" nav density="compact">
+        <v-list class="border-radius-sm workspace-sidebar-list" nav density="compact">
           <v-list-item
             v-for="item in props.items"
             :key="item.id"
@@ -62,3 +62,10 @@ function handleSelect(item: SidebarItem) {
     </slot>
   </v-card>
 </template>
+
+<style scoped>
+.workspace-sidebar-card,
+.workspace-sidebar-list {
+  background-color: transparent !important;
+}
+</style>
