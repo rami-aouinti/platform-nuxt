@@ -12,11 +12,11 @@ const companyId = computed(() => {
 })
 
 const menuItems = computed(() => [
-  { label: 'Dashboard', page: 'dashboard', to: `/company/${companyId.value}/dashboard` },
-  { label: 'Setting', page: 'setting', to: `/company/${companyId.value}/setting` },
-  { label: 'Projects', page: 'projects', to: `/company/${companyId.value}/projects` },
-  { label: 'Teams', page: 'teams', to: `/company/${companyId.value}/teams` },
-  { label: 'Billing', page: 'billing', to: `/company/${companyId.value}/billing` },
+  { id: 'dashboard', label: 'Dashboard', to: `/company/${companyId.value}/dashboard`, icon: 'mdi-view-dashboard-outline' },
+  { id: 'setting', label: 'Setting', to: `/company/${companyId.value}/setting`, icon: 'mdi-cog-outline' },
+  { id: 'projects', label: 'Projects', to: `/company/${companyId.value}/projects`, icon: 'mdi-briefcase-outline' },
+  { id: 'teams', label: 'Teams', to: `/company/${companyId.value}/teams`, icon: 'mdi-account-group-outline' },
+  { id: 'billing', label: 'Billing', to: `/company/${companyId.value}/billing`, icon: 'mdi-credit-card-outline' },
 ])
 </script>
 
@@ -24,21 +24,10 @@ const menuItems = computed(() => [
   <v-container fluid>
     <v-row class="px-4">
       <v-col cols="12" lg="3">
-        <v-card rounded="xl" elevation="0" class="pa-4">
-          <v-list nav density="compact" class="pa-0">
-            <v-list-item
-              v-for="item in menuItems"
-              :key="item.page"
-              :to="item.to"
-              rounded="lg"
-              class="mb-2"
-              :active="item.page === props.activePage"
-              color="primary"
-            >
-              <v-list-item-title>{{ item.label }}</v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </v-card>
+        <LayoutWorkspaceSidebarCard
+          :items="menuItems"
+          :active-id="props.activePage"
+        />
       </v-col>
 
       <v-col cols="12" lg="9">
