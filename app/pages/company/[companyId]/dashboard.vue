@@ -25,6 +25,11 @@ const revenues = [
   { title: 'Services', date: '07 June 2021, at 07:10 PM', value: '- $ 1,800', color: 'error' },
 ]
 
+const statusIconByColor = {
+  success: 'mdi-trending-up',
+  error: 'mdi-trending-down',
+} as const
+
 const categories = [
   { title: 'Devices', subtitle: '250 in stock, 346 sold' },
   { title: 'Tickets', subtitle: '123 closed, 15 open' },
@@ -63,27 +68,30 @@ const categories = [
 
     <v-row class="mt-1">
       <v-col cols="12" md="8">
-        <v-card rounded="lg" class="pa-4 h-100">
-          <p class="text-subtitle-1 font-weight-bold mb-2">Calendar</p>
+        <v-card rounded="lg" class="company-dashboard-card h-100">
+          <p class="company-dashboard-card__title">Calendar</p>
           <v-sheet rounded="lg" border class="pa-6 text-center text-medium-emphasis">
             Monthly planning view (CRM style)
           </v-sheet>
         </v-card>
       </v-col>
 
-      <v-col cols="12" md="4">
-        <v-card rounded="lg" class="pa-4 mb-4">
-          <p class="text-subtitle-1 font-weight-bold mb-3">Categories</p>
-          <v-list density="compact" class="pa-0">
-            <v-list-item v-for="category in categories" :key="category.title" class="px-0">
-              <v-list-item-title>{{ category.title }}</v-list-item-title>
-              <v-list-item-subtitle>{{ category.subtitle }}</v-list-item-subtitle>
-            </v-list-item>
+      <v-col cols="12" md="4" class="d-flex flex-column ga-3 ga-md-4">
+        <v-card rounded="lg" class="company-dashboard-card">
+          <p class="company-dashboard-card__title">Categories</p>
+          <v-list density="comfortable" class="pa-0 company-dashboard-list">
+            <template v-for="(category, index) in categories" :key="category.title">
+              <v-list-item class="px-0 company-dashboard-list-item">
+                <v-list-item-title class="company-dashboard-list-item__title">{{ category.title }}</v-list-item-title>
+                <v-list-item-subtitle class="company-dashboard-list-item__subtitle">{{ category.subtitle }}</v-list-item-subtitle>
+              </v-list-item>
+              <v-divider v-if="index < categories.length - 1" class="company-dashboard-divider" />
+            </template>
           </v-list>
         </v-card>
 
-        <v-card rounded="lg" class="pa-4">
-          <p class="text-subtitle-1 font-weight-bold mb-2">Message</p>
+        <v-card rounded="lg" class="company-dashboard-card">
+          <p class="company-dashboard-card__title">Message</p>
           <p class="text-body-2 text-medium-emphasis mb-3">Today is Mike's birthday. Wish her the best of luck!</p>
           <v-btn color="primary" variant="flat">Send Message</v-btn>
         </v-card>
@@ -92,45 +100,55 @@ const categories = [
 
     <v-row class="mt-1">
       <v-col cols="12" md="6">
-        <v-card rounded="lg" class="pa-4">
+        <v-card rounded="lg" class="company-dashboard-card">
           <div class="d-flex justify-space-between mb-2">
-            <p class="text-subtitle-1 font-weight-bold mb-0">Transactions</p>
-            <span class="text-caption text-medium-emphasis">23 - 30 March 2021</span>
+            <p class="company-dashboard-card__title mb-0">Transactions</p>
+            <span class="company-dashboard-card__meta">23 - 30 March 2021</span>
           </div>
 
-          <v-list density="comfortable" class="pa-0">
-            <v-list-item v-for="item in transactions" :key="item.title" class="px-0">
-              <template #prepend>
-                <v-icon :color="item.color" class="me-3">mdi-circle-small</v-icon>
-              </template>
-              <v-list-item-title>{{ item.title }}</v-list-item-title>
-              <v-list-item-subtitle>{{ item.date }}</v-list-item-subtitle>
-              <template #append>
-                <span :class="`text-${item.color}`" class="text-body-2">{{ item.value }}</span>
-              </template>
-            </v-list-item>
+          <v-list density="comfortable" class="pa-0 company-dashboard-list">
+            <template v-for="(item, index) in transactions" :key="item.title">
+              <v-list-item class="px-0 company-dashboard-list-item">
+                <template #prepend>
+                  <v-avatar :color="item.color" size="24" variant="tonal" class="company-dashboard-list-item__prepend">
+                    <v-icon size="14">{{ statusIconByColor[item.color as keyof typeof statusIconByColor] }}</v-icon>
+                  </v-avatar>
+                </template>
+                <v-list-item-title class="company-dashboard-list-item__title">{{ item.title }}</v-list-item-title>
+                <v-list-item-subtitle class="company-dashboard-list-item__subtitle">{{ item.date }}</v-list-item-subtitle>
+                <template #append>
+                  <span :class="`text-${item.color}`" class="text-body-2 font-weight-medium company-dashboard-list-item__append">{{ item.value }}</span>
+                </template>
+              </v-list-item>
+              <v-divider v-if="index < transactions.length - 1" class="company-dashboard-divider" />
+            </template>
           </v-list>
         </v-card>
       </v-col>
 
       <v-col cols="12" md="6">
-        <v-card rounded="lg" class="pa-4">
+        <v-card rounded="lg" class="company-dashboard-card">
           <div class="d-flex justify-space-between mb-2">
-            <p class="text-subtitle-1 font-weight-bold mb-0">Revenue</p>
-            <span class="text-caption text-medium-emphasis">01 - 07 June 2021</span>
+            <p class="company-dashboard-card__title mb-0">Revenue</p>
+            <span class="company-dashboard-card__meta">01 - 07 June 2021</span>
           </div>
 
-          <v-list density="comfortable" class="pa-0">
-            <v-list-item v-for="item in revenues" :key="item.title" class="px-0">
-              <template #prepend>
-                <v-icon :color="item.color" class="me-3">mdi-circle-small</v-icon>
-              </template>
-              <v-list-item-title>{{ item.title }}</v-list-item-title>
-              <v-list-item-subtitle>{{ item.date }}</v-list-item-subtitle>
-              <template #append>
-                <span :class="`text-${item.color}`" class="text-body-2">{{ item.value }}</span>
-              </template>
-            </v-list-item>
+          <v-list density="comfortable" class="pa-0 company-dashboard-list">
+            <template v-for="(item, index) in revenues" :key="item.title">
+              <v-list-item class="px-0 company-dashboard-list-item">
+                <template #prepend>
+                  <v-avatar :color="item.color" size="24" variant="tonal" class="company-dashboard-list-item__prepend">
+                    <v-icon size="14">{{ statusIconByColor[item.color as keyof typeof statusIconByColor] }}</v-icon>
+                  </v-avatar>
+                </template>
+                <v-list-item-title class="company-dashboard-list-item__title">{{ item.title }}</v-list-item-title>
+                <v-list-item-subtitle class="company-dashboard-list-item__subtitle">{{ item.date }}</v-list-item-subtitle>
+                <template #append>
+                  <span :class="`text-${item.color}`" class="text-body-2 font-weight-medium company-dashboard-list-item__append">{{ item.value }}</span>
+                </template>
+              </v-list-item>
+              <v-divider v-if="index < revenues.length - 1" class="company-dashboard-divider" />
+            </template>
           </v-list>
         </v-card>
       </v-col>
@@ -148,5 +166,48 @@ const categories = [
 .company-kpi-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 16px rgba(var(--v-theme-on-surface), 0.12);
+}
+
+.company-dashboard-card {
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.company-dashboard-card__title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.company-dashboard-card__meta {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgba(var(--v-theme-on-surface), 0.62);
+}
+
+.company-dashboard-list-item {
+  min-height: 52px;
+  padding-block: 0.35rem;
+}
+
+.company-dashboard-list-item__title {
+  font-weight: 600;
+}
+
+.company-dashboard-list-item__subtitle {
+  color: rgba(var(--v-theme-on-surface), 0.62);
+}
+
+.company-dashboard-list-item__prepend {
+  margin-inline-end: 0.75rem;
+}
+
+.company-dashboard-list-item__append {
+  margin-inline-start: 0.75rem;
+}
+
+.company-dashboard-divider {
+  opacity: 0.55;
 }
 </style>
