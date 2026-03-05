@@ -122,9 +122,10 @@ const currentLanguageFlag = computed(() => {
 })
 
 const centeredNavigationLinks = [
-  { label: 'Platform', to: '/platform' },
-  { label: 'About', to: '/about' },
-  { label: 'Contact', to: '/contact' },
+  { label: 'Platform', to: '/platform', icon: 'mdi-view-grid-outline' },
+  { label: 'About', to: '/about', icon: 'mdi-information-outline' },
+  { label: 'Contact', to: '/contact', icon: 'mdi-email-outline' },
+  { label: 'FAQ', to: '/faq', icon: 'mdi-frequently-asked-questions' },
 ]
 
 const userDisplayName = computed(() => {
@@ -323,6 +324,7 @@ watch(
         variant="text"
         size="sm"
       >
+        <v-icon :icon="link.icon" size="18" class="mr-1" aria-hidden="true" />
         {{ link.label }}
       </UiButton>
     </div>
