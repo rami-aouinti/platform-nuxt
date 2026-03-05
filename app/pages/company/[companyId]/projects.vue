@@ -185,17 +185,12 @@ async function deleteProject(project: CompanyProjectSummary) {
 
 <template>
   <CompanyWorkspaceLayout active-page="projects">
-    <div class="relative mb-4 min-h-[56px]">
+    <div class="mb-4 d-flex flex-wrap align-center justify-space-between ga-3">
       <h1 class="text-2xl font-semibold text-gray-900 dark:text-white mb-0">
         Company projects
       </h1>
 
-      <v-btn
-        color="primary"
-        prepend-icon="mdi-plus"
-        class="absolute right-0 top-0"
-        @click="openCreateProjectDialog"
-      >
+      <v-btn color="primary" prepend-icon="mdi-plus" @click="openCreateProjectDialog">
         Add project
       </v-btn>
     </div>
@@ -231,34 +226,10 @@ async function deleteProject(project: CompanyProjectSummary) {
       <v-col v-for="project in projects" :key="project.id" cols="12" md="4">
         <v-card
           rounded="lg"
-          class="relative h-100 border border-gray-200 transition-all hover:-translate-y-1 hover:border-primary dark:border-gray-700"
+          class="h-100 border border-gray-200 transition-all hover:-translate-y-1 hover:border-primary dark:border-gray-700"
         >
-          <div class="absolute right-0 top-0 z-10 pa-1">
-            <v-menu>
-              <template #activator="{ props }">
-                <v-btn
-                  v-bind="props"
-                  icon="mdi-dots-vertical"
-                  size="small"
-                  variant="text"
-                  @click.stop
-                />
-              </template>
-
-              <v-list density="compact">
-                <v-list-item prepend-icon="mdi-pencil" title="Edit" @click="openEditProjectDialog(project)" />
-                <v-list-item
-                  prepend-icon="mdi-delete"
-                  title="Delete"
-                  :disabled="deletingProjectId === project.id"
-                  @click="deleteProject(project)"
-                />
-              </v-list>
-            </v-menu>
-          </div>
-
           <NuxtLink :to="getProjectPath(project)" class="block text-decoration-none">
-            <div class="d-flex align-center ga-3 px-4 pt-4 pr-10">
+            <div class="d-flex align-start ga-3 px-4 pt-4">
               <v-avatar size="44" rounded="lg" color="surface-variant">
                 <v-img
                   v-if="getProjectImage(project)"
@@ -275,6 +246,30 @@ async function deleteProject(project: CompanyProjectSummary) {
                 </p>
                 <v-chip size="small" color="primary" variant="tonal">{{ project.status || '-' }}</v-chip>
               </div>
+
+              <div class="mt-n1 mr-n1" @click.stop>
+                <v-menu>
+                  <template #activator="{ props }">
+                    <v-btn
+                      v-bind="props"
+                      icon="mdi-dots-vertical"
+                      size="small"
+                      variant="text"
+                      color="medium-emphasis"
+                    />
+                  </template>
+
+                  <v-list density="compact">
+                    <v-list-item prepend-icon="mdi-pencil" title="Edit" @click="openEditProjectDialog(project)" />
+                    <v-list-item
+                      prepend-icon="mdi-delete"
+                      title="Delete"
+                      :disabled="deletingProjectId === project.id"
+                      @click="deleteProject(project)"
+                    />
+                  </v-list>
+                </v-menu>
+              </div>
             </div>
 
             <v-card-text class="pt-3">
@@ -282,10 +277,10 @@ async function deleteProject(project: CompanyProjectSummary) {
                 {{ getProjectDescription(project) }}
               </p>
 
-            <div class="d-flex flex-column ga-1 text-caption text-medium-emphasis">
-              <span><strong>ID:</strong> {{ project.id || '-' }}</span>
-              <span><strong>Owner(s):</strong> {{ Array.isArray(project.owner) ? project.owner.length : 0 }}</span>
-            </div>
+              <div class="d-flex flex-column ga-1 text-caption text-medium-emphasis">
+                <span><strong>ID:</strong> {{ project.id || '-' }}</span>
+                <span><strong>Owner(s):</strong> {{ Array.isArray(project.owner) ? project.owner.length : 0 }}</span>
+              </div>
             </v-card-text>
           </NuxtLink>
         </v-card>
