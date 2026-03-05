@@ -61,7 +61,7 @@ const menuItems = computed(() => [
       </v-col>
 
       <v-col cols="12" lg="9">
-        <v-card rounded="xl" elevation="0" class="pa-6">
+        <v-card rounded="lg" class="pa-6 workspace-sidebar-card">
           <slot />
         </v-card>
       </v-col>

@@ -564,7 +564,7 @@ onMounted(async () => {
       <v-col lg="9">
         <v-window v-model="activeTab" class="mt-2">
           <v-window-item value="overview">
-            <v-sheet rounded="xl">
+            <v-sheet rounded="lg">
               <div
                 class="d-flex flex-column flex-md-row align-md-center justify-space-between ga-4"
                 style="padding: 15px;"

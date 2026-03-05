@@ -64,7 +64,7 @@ async function updatePassword() {
 </script>
 
 <template>
-  <v-card class="profile-block pa-4 pa-md-6" rounded="xl" elevation="0">
+  <v-card class="profile-block workspace-sidebar-card pa-4 pa-md-6" rounded="lg">
     <h3 class="text-h4 text-typo mb-6">Change Password</h3>
 
     <v-form @submit.prevent="updatePassword">

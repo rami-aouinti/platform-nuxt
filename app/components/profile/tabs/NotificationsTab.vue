@@ -92,7 +92,7 @@ onMounted(loadSettings)
 </script>
 
 <template>
-  <v-card class="profile-block pa-4 pa-md-6" rounded="xl" elevation="0">
+  <v-card class="profile-block workspace-sidebar-card pa-4 pa-md-6" rounded="lg">
     <h3 class="text-h4 text-typo mb-2">Notifications</h3>
     <p class="text-body-1 text-medium-emphasis mb-6">Choose how you receive notifications. These notification settings apply to the things you're watching.</p>
 

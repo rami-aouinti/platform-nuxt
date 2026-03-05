@@ -75,7 +75,7 @@ onMounted(loadFriendsData)
 </script>
 
 <template>
-  <v-card class="profile-block friends-card pa-4 pa-md-6" rounded="xl" elevation="0">
+  <v-card class="profile-block workspace-sidebar-card friends-card pa-4 pa-md-6" rounded="lg">
     <div class="d-flex align-center justify-space-between flex-wrap ga-3 mb-6">
       <h3 class="text-h4 text-typo mb-0">{{ t('profile.friends.title') }}</h3>
       <v-btn

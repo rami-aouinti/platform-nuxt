@@ -35,7 +35,7 @@ const getQuickLinkAriaLabel = (title: string) => `Ouvrir la page ${title}`
       cols="12"
       md="4"
     >
-      <v-card rounded="xl" class="h-100 pa-5 quick-link-card" elevation="4">
+      <v-card rounded="lg" class="h-100 pa-5 quick-link-card" elevation="4">
         <v-avatar :color="`${link.color}-lighten-5`" size="48" class="mb-4">
           <v-icon :icon="link.icon" :color="link.color" />
         </v-avatar>
