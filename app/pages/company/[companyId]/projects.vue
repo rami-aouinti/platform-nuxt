@@ -226,10 +226,10 @@ async function deleteProject(project: CompanyProjectSummary) {
       <v-col v-for="project in projects" :key="project.id" cols="12" md="4">
         <v-card
           rounded="lg"
-          class="h-100 border border-gray-200 transition-all hover:-translate-y-1 hover:border-primary dark:border-gray-700"
+          class="h-100 position-relative border border-gray-200 transition-all hover:-translate-y-1 hover:border-primary dark:border-gray-700"
         >
 
-            <div class="d-flex align-start px-4 pt-4">
+            <div class="d-flex align-start px-4 pt-4 pe-10">
               <NuxtLink :to="getProjectPath(project)" class="d-flex align-start ga-3 min-w-0 flex-1 text-decoration-none">
                 <v-avatar size="44" rounded="lg" color="surface-variant">
                   <v-img
@@ -248,30 +248,32 @@ async function deleteProject(project: CompanyProjectSummary) {
                   <v-chip size="small" color="primary" variant="tonal">{{ project.status || '-' }}</v-chip>
                 </div>
               </NuxtLink>
-              <div class="mt-n1 mr-n1" @click.stop>
-                <v-menu>
-                  <template #activator="{ props }">
-                    <v-btn
-                      v-bind="props"
-                      icon="mdi-dots-vertical"
-                      size="small"
-                      variant="text"
-                      color="medium-emphasis"
-                    />
-                  </template>
-
-                  <v-list density="compact">
-                    <v-list-item prepend-icon="mdi-pencil" title="Edit" @click="openEditProjectDialog(project)" />
-                    <v-list-item
-                      prepend-icon="mdi-delete"
-                      title="Delete"
-                      :disabled="deletingProjectId === project.id"
-                      @click="deleteProject(project)"
-                    />
-                  </v-list>
-                </v-menu>
-              </div>
             </div>
+
+            <div class="position-absolute" style="top: 12px; right: 12px; z-index: 1" @click.stop>
+              <v-menu>
+                <template #activator="{ props }">
+                  <v-btn
+                    v-bind="props"
+                    icon="mdi-dots-vertical"
+                    size="small"
+                    variant="text"
+                    color="medium-emphasis"
+                  />
+                </template>
+
+                <v-list density="compact">
+                  <v-list-item prepend-icon="mdi-pencil" title="Edit" @click="openEditProjectDialog(project)" />
+                  <v-list-item
+                    prepend-icon="mdi-delete"
+                    title="Delete"
+                    :disabled="deletingProjectId === project.id"
+                    @click="deleteProject(project)"
+                  />
+                </v-list>
+              </v-menu>
+            </div>
+
 
             <v-card-text class="pt-3">
               <p class="text-body-2 text-medium-emphasis mb-3 min-h-[44px] line-clamp-2">
