@@ -14,6 +14,13 @@ const billingContacts = [
   { name: 'Lucas Harper', company: 'Stone Tech Zone', email: 'lucas@stone-tech.com', vat: 'FRB1235476' },
   { name: 'Fiber Notion', company: 'Stone Tech Zone', email: 'ethan@fiber.com', vat: 'FRB1235476' },
 ]
+
+const getInitials = (name: string) => name
+  .split(' ')
+  .map(part => part.charAt(0))
+  .join('')
+  .slice(0, 2)
+  .toUpperCase()
 </script>
 
 <template>
@@ -25,15 +32,19 @@ const billingContacts = [
 
     <v-row>
       <v-col cols="12" md="8">
-        <v-card rounded="lg" color="grey-darken-4" class="pa-5 text-white">
-          <p class="text-body-2 mb-8">4562 1122 4594 7852</p>
-          <div class="d-flex justify-space-between">
+        <v-card rounded="xl" class="pa-5 text-white billing-primary-card">
+          <div class="d-flex align-center justify-space-between mb-8">
+            <p class="text-overline mb-0 text-white">Premium account</p>
+            <v-icon icon="mdi-credit-card-chip" />
+          </div>
+          <p class="text-h6 mb-8 tracking-wide">4562 1122 4594 7852</p>
+          <div class="d-flex justify-space-between align-end">
             <div>
-              <p class="text-caption mb-1">Card Holder</p>
+              <p class="text-caption mb-1 text-white">Card Holder</p>
               <p class="text-body-1 mb-0">Jack Peterson</p>
             </div>
             <div>
-              <p class="text-caption mb-1">Expires</p>
+              <p class="text-caption mb-1 text-white">Expires</p>
               <p class="text-body-1 mb-0">11/22</p>
             </div>
           </div>
@@ -41,14 +52,19 @@ const billingContacts = [
       </v-col>
 
       <v-col cols="12" md="4">
-        <v-card rounded="lg" class="pa-4 h-100">
+        <v-card rounded="xl" class="pa-4 h-100 card-surface">
           <p class="text-subtitle-1 font-weight-bold mb-3">Invoices</p>
           <v-list density="compact" class="pa-0">
-            <v-list-item v-for="invoice in invoices" :key="invoice.id" class="px-0">
+            <v-list-item
+              v-for="invoice in invoices"
+              :key="invoice.id"
+              rounded="lg"
+              class="px-3 py-2 mb-2 invoice-item"
+            >
               <v-list-item-title>{{ invoice.date }}</v-list-item-title>
               <v-list-item-subtitle>{{ invoice.id }}</v-list-item-subtitle>
               <template #append>
-                <span class="text-body-2">{{ invoice.value }}</span>
+                <v-chip size="small" color="primary" variant="tonal">{{ invoice.value }}</v-chip>
               </template>
             </v-list-item>
           </v-list>
@@ -56,21 +72,27 @@ const billingContacts = [
       </v-col>
     </v-row>
 
-    <v-card rounded="lg" class="pa-4 mt-4">
+    <v-card rounded="xl" class="pa-4 mt-4 card-surface">
       <div class="d-flex align-center justify-space-between mb-3">
         <p class="text-subtitle-1 font-weight-bold mb-0">Payment Method</p>
       </div>
       <v-row>
         <v-col cols="12" md="6">
-          <v-sheet rounded="lg" border class="pa-4 d-flex justify-space-between align-center">
-            <span>Mastercard **** **** **** 7852</span>
-            <v-btn icon="mdi-pencil" variant="text" density="comfortable" />
+          <v-sheet rounded="lg" class="pa-4 d-flex justify-space-between align-center payment-method-sheet">
+            <div>
+              <p class="text-body-2 font-weight-medium mb-1">Mastercard **** **** **** 7852</p>
+              <v-chip size="x-small" color="success" variant="tonal">Primary</v-chip>
+            </div>
+            <v-btn icon="mdi-pencil" variant="text" color="primary" density="comfortable" />
           </v-sheet>
         </v-col>
         <v-col cols="12" md="6">
-          <v-sheet rounded="lg" border class="pa-4 d-flex justify-space-between align-center">
-            <span>Visa **** **** **** 5248</span>
-            <v-btn icon="mdi-pencil" variant="text" density="comfortable" />
+          <v-sheet rounded="lg" class="pa-4 d-flex justify-space-between align-center payment-method-sheet">
+            <div>
+              <p class="text-body-2 font-weight-medium mb-1">Visa **** **** **** 5248</p>
+              <v-chip size="x-small" color="info" variant="tonal">Backup</v-chip>
+            </div>
+            <v-btn icon="mdi-pencil" variant="text" color="primary" density="comfortable" />
           </v-sheet>
         </v-col>
       </v-row>
@@ -78,22 +100,26 @@ const billingContacts = [
 
     <v-row class="mt-1">
       <v-col cols="12" md="8">
-        <v-card rounded="lg" class="pa-4">
+        <v-card rounded="xl" class="pa-4 card-surface">
           <p class="text-subtitle-1 font-weight-bold mb-3">Billing Information</p>
 
           <v-sheet
             v-for="contact in billingContacts"
             :key="contact.email"
             rounded="lg"
-            border
-            class="pa-4 mb-3"
+            class="pa-4 mb-3 billing-contact-sheet"
           >
             <div class="d-flex justify-space-between align-start">
-              <div>
-                <p class="text-body-1 font-weight-medium mb-1">{{ contact.name }}</p>
-                <p class="text-caption text-medium-emphasis mb-1">Company Name: {{ contact.company }}</p>
-                <p class="text-caption text-medium-emphasis mb-1">Email Address: {{ contact.email }}</p>
-                <p class="text-caption text-medium-emphasis mb-0">VAT Number: {{ contact.vat }}</p>
+              <div class="d-flex ga-3">
+                <v-avatar color="primary" variant="tonal" size="40" class="mt-1">
+                  {{ getInitials(contact.name) }}
+                </v-avatar>
+                <div>
+                  <p class="text-body-1 font-weight-medium mb-1">{{ contact.name }}</p>
+                  <p class="text-caption text-medium-emphasis mb-1">Company Name: {{ contact.company }}</p>
+                  <p class="text-caption text-medium-emphasis mb-1">Email Address: {{ contact.email }}</p>
+                  <p class="text-caption text-medium-emphasis mb-0">VAT Number: {{ contact.vat }}</p>
+                </div>
               </div>
               <div class="d-flex ga-2">
                 <v-btn variant="text" color="error" size="small">Delete</v-btn>
@@ -105,7 +131,7 @@ const billingContacts = [
       </v-col>
 
       <v-col cols="12" md="4">
-        <v-card rounded="lg" class="pa-4">
+        <v-card rounded="xl" class="pa-4 card-surface">
           <p class="text-subtitle-1 font-weight-bold mb-3">Your Transactions</p>
           <v-list density="comfortable" class="pa-0">
             <v-list-item title="Netflix" subtitle="27 March 2020, at 12:30 PM" append="- $ 2,500" class="px-0" />
@@ -120,3 +146,30 @@ const billingContacts = [
     </v-row>
   </CompanyWorkspaceLayout>
 </template>
+
+<style scoped>
+.billing-primary-card {
+  background: linear-gradient(135deg, #111827 0%, #1e3a8a 100%);
+  box-shadow: 0 20px 45px rgb(15 23 42 / 35%);
+}
+
+.card-surface {
+  border: 1px solid rgb(var(--v-theme-on-surface), 0.08);
+  box-shadow: 0 8px 24px rgb(15 23 42 / 8%);
+}
+
+.payment-method-sheet,
+.billing-contact-sheet,
+.invoice-item {
+  border: 1px solid rgb(var(--v-theme-on-surface), 0.1);
+  background: rgb(var(--v-theme-surface));
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.payment-method-sheet:hover,
+.billing-contact-sheet:hover,
+.invoice-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgb(15 23 42 / 10%);
+}
+</style>
