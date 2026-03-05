@@ -2,27 +2,27 @@
 definePageMeta({ middleware: ['auth'], requiresAuth: true })
 
 const metricCards = [
-  { title: 'Visitors', value: '5,927', trend: '+55%', tone: 'success', icon: 'mdi-account-group' },
-  { title: 'Income', value: '$130,832', trend: '+90%', tone: 'primary', icon: 'mdi-currency-usd' },
+  { title: 'Projets actifs', value: '18', trend: '+3 ce mois', tone: 'success', icon: 'mdi-briefcase-outline' },
+  { title: 'Tickets ouverts', value: '27', trend: '-12%', tone: 'primary', icon: 'mdi-ticket-outline' },
   {
-    title: 'New tab',
-    value: 'Press the button above and complete the new tab data.',
-    trend: '',
+    title: 'MR en attente',
+    value: '9',
+    trend: '2 urgentes',
     tone: 'warning',
-    icon: 'mdi-file-document-plus',
+    icon: 'mdi-source-pull',
   },
 ]
 
 const transactions = [
-  { title: 'Netflix', date: '27 March 2020, at 12:30 PM', value: '- $ 2,500', color: 'error' },
-  { title: 'Apple', date: '23 March 2020, at 04:30 AM', value: '+ $ 2,000', color: 'success' },
-  { title: 'Partner #22213', date: '19 March 2020, at 02:50 AM', value: '+ $ 1,400', color: 'success' },
+  { title: 'Sprint Frontend - v2.4 validé', date: 'Lundi 8 juillet, 09:20', value: '+ 4 tâches', color: 'success' },
+  { title: 'Incident API paiement ouvert', date: 'Mardi 9 juillet, 11:45', value: '- 1 incident', color: 'error' },
+  { title: 'Revue design terminée', date: 'Mercredi 10 juillet, 16:10', value: '+ 2 livrables', color: 'success' },
 ]
 
 const revenues = [
-  { title: 'via PayPal', date: '07 June 2021, at 09:00 AM', value: '+ $ 4,999', color: 'success' },
-  { title: 'Partner #90211', date: '07 June 2021, at 05:50 AM', value: '+ $ 700', color: 'success' },
-  { title: 'Services', date: '07 June 2021, at 07:10 PM', value: '- $ 1,800', color: 'error' },
+  { title: 'Export client ACME envoyé', date: 'Jeudi 11 juillet, 08:55', value: '+ 1 livraison', color: 'success' },
+  { title: 'Backlog produit priorisé', date: 'Jeudi 11 juillet, 14:05', value: '+ 6 éléments', color: 'success' },
+  { title: 'Hotfix authentification appliqué', date: 'Vendredi 12 juillet, 18:20', value: '- 1 blocage', color: 'error' },
 ]
 
 const statusIconByColor = {
@@ -31,15 +31,15 @@ const statusIconByColor = {
 } as const
 
 const categories = [
-  { title: 'Devices', subtitle: '250 in stock, 346 sold' },
-  { title: 'Tickets', subtitle: '123 closed, 15 open' },
-  { title: 'Error logs', subtitle: '1 is active, 40 closed' },
+  { title: 'Projets', subtitle: '18 actifs, 5 en cadrage' },
+  { title: 'Support', subtitle: '42 résolus, 27 en cours' },
+  { title: 'Déploiements', subtitle: '3 cette semaine, 1 en attente QA' },
 ]
 </script>
 
 <template>
   <CompanyWorkspaceLayout active-page="dashboard">
-    <h1 class="text-h4 mb-4">Company dashboard</h1>
+    <h1 class="text-h4 mb-4">Tableau de bord entreprise</h1>
 
     <v-row>
       <v-col v-for="metric in metricCards" :key="metric.title" cols="12" md="4">
@@ -69,16 +69,16 @@ const categories = [
     <v-row class="mt-1">
       <v-col cols="12" md="8">
         <v-card rounded="lg" class="company-dashboard-card h-100">
-          <p class="company-dashboard-card__title">Calendar</p>
+          <p class="company-dashboard-card__title">Planning de l'équipe</p>
           <v-sheet rounded="lg" border class="pa-6 text-center text-medium-emphasis">
-            Monthly planning view (CRM style)
+            Vue mensuelle des jalons, revues et échéances de livraison
           </v-sheet>
         </v-card>
       </v-col>
 
       <v-col cols="12" md="4" class="d-flex flex-column ga-3 ga-md-4">
         <v-card rounded="lg" class="company-dashboard-card">
-          <p class="company-dashboard-card__title">Categories</p>
+          <p class="company-dashboard-card__title">Suivi global</p>
           <v-list density="comfortable" class="pa-0 company-dashboard-list">
             <template v-for="(category, index) in categories" :key="category.title">
               <v-list-item class="px-0 company-dashboard-list-item">
@@ -91,9 +91,13 @@ const categories = [
         </v-card>
 
         <v-card rounded="lg" class="company-dashboard-card">
-          <p class="company-dashboard-card__title">Message</p>
-          <p class="text-body-2 text-medium-emphasis mb-3">Today is Mike's birthday. Wish her the best of luck!</p>
-          <v-btn color="primary" variant="flat">Send Message</v-btn>
+          <p class="company-dashboard-card__title">Actions rapides</p>
+          <p class="text-body-2 text-medium-emphasis mb-3">Accédez directement aux tâches fréquentes de votre équipe.</p>
+          <div class="d-flex flex-wrap ga-2">
+            <v-btn color="primary" variant="tonal">Créer projet</v-btn>
+            <v-btn color="primary" variant="tonal">Inviter membre</v-btn>
+            <v-btn color="primary" variant="tonal">Ouvrir backlog</v-btn>
+          </div>
         </v-card>
       </v-col>
     </v-row>
@@ -102,8 +106,8 @@ const categories = [
       <v-col cols="12" md="6">
         <v-card rounded="lg" class="company-dashboard-card">
           <div class="d-flex justify-space-between mb-2">
-            <p class="company-dashboard-card__title mb-0">Transactions</p>
-            <span class="company-dashboard-card__meta">23 - 30 March 2021</span>
+            <p class="company-dashboard-card__title mb-0">Activité équipe</p>
+            <span class="company-dashboard-card__meta">Du 8 au 12 juillet 2024</span>
           </div>
 
           <v-list density="comfortable" class="pa-0 company-dashboard-list">
@@ -129,8 +133,8 @@ const categories = [
       <v-col cols="12" md="6">
         <v-card rounded="lg" class="company-dashboard-card">
           <div class="d-flex justify-space-between mb-2">
-            <p class="company-dashboard-card__title mb-0">Revenue</p>
-            <span class="company-dashboard-card__meta">01 - 07 June 2021</span>
+            <p class="company-dashboard-card__title mb-0">Livraisons de la semaine</p>
+            <span class="company-dashboard-card__meta">Dernières actions</span>
           </div>
 
           <v-list density="comfortable" class="pa-0 company-dashboard-list">
