@@ -385,7 +385,7 @@ watch(
               >
                 <v-icon
                   icon="mdi-account-circle"
-                  size="36"
+                  size="26"
                   aria-hidden="true"
                 />
               </UiButton>
