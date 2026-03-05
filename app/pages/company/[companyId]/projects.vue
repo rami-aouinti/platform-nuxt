@@ -229,24 +229,24 @@ async function deleteProject(project: CompanyProjectSummary) {
           class="h-100 border border-gray-200 transition-all hover:-translate-y-1 hover:border-primary dark:border-gray-700"
         >
 
-            <div class="d-flex align-start ga-3 px-4 pt-4">
-              <NuxtLink :to="getProjectPath(project)" class="block text-decoration-none">
-              <v-avatar size="44" rounded="lg" color="surface-variant">
-                <v-img
-                  v-if="getProjectImage(project)"
-                  :src="getProjectImage(project)"
-                  :alt="getProjectLabel(project)"
-                  cover
-                />
-                <span v-else class="text-caption font-weight-bold">{{ getProjectLabel(project).charAt(0) }}</span>
-              </v-avatar>
+            <div class="d-flex align-start px-4 pt-4">
+              <NuxtLink :to="getProjectPath(project)" class="d-flex align-start ga-3 min-w-0 flex-1 text-decoration-none">
+                <v-avatar size="44" rounded="lg" color="surface-variant">
+                  <v-img
+                    v-if="getProjectImage(project)"
+                    :src="getProjectImage(project)"
+                    :alt="getProjectLabel(project)"
+                    cover
+                  />
+                  <span v-else class="text-caption font-weight-bold">{{ getProjectLabel(project).charAt(0) }}</span>
+                </v-avatar>
 
-              <div class="min-w-0 flex-1">
-                <p class="text-subtitle-1 font-weight-bold text-high-emphasis mb-1 truncate">
-                  {{ getProjectLabel(project) }}
-                </p>
-                <v-chip size="small" color="primary" variant="tonal">{{ project.status || '-' }}</v-chip>
-              </div>
+                <div class="min-w-0 flex-1">
+                  <p class="text-subtitle-1 font-weight-bold text-high-emphasis mb-1 truncate">
+                    {{ getProjectLabel(project) }}
+                  </p>
+                  <v-chip size="small" color="primary" variant="tonal">{{ project.status || '-' }}</v-chip>
+                </div>
               </NuxtLink>
               <div class="mt-n1 mr-n1" @click.stop>
                 <v-menu>
