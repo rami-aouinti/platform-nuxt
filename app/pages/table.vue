@@ -134,7 +134,7 @@ const desserts = ref([
   <v-container fluid>
     <v-row>
       <v-col>
-        <v-card>
+        <v-card class="workspace-sidebar-card">
           <client-only>
             <teleport to="#app-bar">
               <v-text-field
