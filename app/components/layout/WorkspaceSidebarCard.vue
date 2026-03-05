@@ -38,7 +38,7 @@ function handleSelect(item: SidebarItem) {
 </script>
 
 <template>
-  <v-card rounded="xl" elevation="0" class="workspace-sidebar-card" :style="cardStyle">
+  <v-card rounded="lg" class="workspace-sidebar-card" :style="cardStyle">
     <slot>
       <div class="px-4 pt-3 pb-0">
         <v-list class="border-radius-sm workspace-sidebar-list" nav density="compact">
@@ -64,7 +64,12 @@ function handleSelect(item: SidebarItem) {
 </template>
 
 <style scoped>
-.workspace-sidebar-card,
+.workspace-sidebar-card {
+  border: 1px solid rgba(var(--v-theme-on-surface), .12);
+  box-shadow: 0 2px 8px rgba(var(--v-theme-on-surface), .08);
+  transition: transform .2s ease, box-shadow .2s ease;
+  background-color: transparent !important;
+}
 .workspace-sidebar-list {
   background-color: transparent !important;
 }
