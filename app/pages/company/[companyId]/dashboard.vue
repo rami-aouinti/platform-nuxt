@@ -2,9 +2,15 @@
 definePageMeta({ middleware: ['auth'], requiresAuth: true })
 
 const metricCards = [
-  { title: 'Visitors', value: '5,927', trend: '+55%', color: 'success' },
-  { title: 'Income', value: '$130,832', trend: '+90%', color: 'pink' },
-  { title: 'New tab', value: 'Press the button above and complete the new tab data.', trend: '', color: 'dark' },
+  { title: 'Visitors', value: '5,927', trend: '+55%', tone: 'success', icon: 'mdi-account-group' },
+  { title: 'Income', value: '$130,832', trend: '+90%', tone: 'primary', icon: 'mdi-currency-usd' },
+  {
+    title: 'New tab',
+    value: 'Press the button above and complete the new tab data.',
+    trend: '',
+    tone: 'warning',
+    icon: 'mdi-file-document-plus',
+  },
 ]
 
 const transactions = [
@@ -32,10 +38,25 @@ const categories = [
 
     <v-row>
       <v-col v-for="metric in metricCards" :key="metric.title" cols="12" md="4">
-        <v-card rounded="lg" class="pa-4">
-          <p class="text-body-2 text-medium-emphasis mb-1">{{ metric.title }}</p>
-          <p class="text-h5 mb-0">{{ metric.value }}</p>
-          <p v-if="metric.trend" :class="`text-${metric.color}`" class="text-caption mb-0">{{ metric.trend }}</p>
+        <v-card rounded="lg" class="pa-4 company-kpi-card">
+          <div class="d-flex align-center justify-space-between mb-3">
+            <div class="d-flex align-center ga-3">
+              <v-avatar :color="metric.tone" variant="tonal" size="32">
+                <v-icon size="18">{{ metric.icon }}</v-icon>
+              </v-avatar>
+              <p class="text-overline text-medium-emphasis mb-0">{{ metric.title }}</p>
+            </div>
+            <v-chip
+              v-if="metric.trend"
+              :color="metric.tone"
+              size="small"
+              variant="tonal"
+              class="text-caption font-weight-medium"
+            >
+              {{ metric.trend }}
+            </v-chip>
+          </div>
+          <p class="text-h4 font-weight-bold mb-0">{{ metric.value }}</p>
         </v-card>
       </v-col>
     </v-row>
@@ -116,3 +137,16 @@ const categories = [
     </v-row>
   </CompanyWorkspaceLayout>
 </template>
+
+<style scoped>
+.company-kpi-card {
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  box-shadow: 0 2px 8px rgba(var(--v-theme-on-surface), 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.company-kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(var(--v-theme-on-surface), 0.12);
+}
+</style>
