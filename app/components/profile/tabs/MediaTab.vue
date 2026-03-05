@@ -266,7 +266,7 @@ onMounted(loadTree)
 </script>
 
 <template>
-  <v-card class="profile-block media-explorer pa-4 pa-md-6" rounded="xl" elevation="0">
+  <v-card class="profile-block media-explorer pa-4 pa-md-6" rounded="xl">
     <div class="d-flex align-center justify-space-between ga-3 flex-wrap mb-4">
       <div>
         <h3 class="text-h4 text-typo mb-1">{{ t('profile.media.title') }}</h3>

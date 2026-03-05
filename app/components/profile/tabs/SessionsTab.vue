@@ -50,7 +50,7 @@ onMounted(loadSessions)
 </script>
 
 <template>
-  <v-card class="profile-block pa-4 pa-md-6" rounded="xl" elevation="0">
+  <v-card class="profile-block pa-4 pa-md-6" rounded="xl">
     <h3 class="text-h4 text-typo mb-2">Sessions</h3>
     <p class="text-body-1 text-medium-emphasis mb-6">This is a list of devices that have logged into your account. Remove those that you do not recognize.</p>
 
