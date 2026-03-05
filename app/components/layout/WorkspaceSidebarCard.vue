@@ -29,7 +29,7 @@ const cardStyle = computed(() => ({
   maxHeight: props.maxHeight,
   overflowY: 'auto',
   position: props.sticky ? 'sticky' : 'static',
-  top: props.sticky ? '24px' : 'auto',
+  top: props.sticky ? '80px' : 'auto',
 }))
 
 function handleSelect(item: SidebarItem) {
