@@ -46,7 +46,7 @@ async function submit() {
       <v-btn variant="text" to="/profile/resumes">{{ t('profile.resumePages.backToList') }}</v-btn>
     </div>
 
-    <v-card>
+    <v-card class="workspace-sidebar-card">
       <v-card-text>
         <v-form ref="resumeFormRef" v-model="isResumeFormValid">
           <ResumeForm v-model="form" :disabled="loading" />

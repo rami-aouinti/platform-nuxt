@@ -639,9 +639,8 @@ onMounted(async () => {
             <v-row v-if="hasData" class="mt-6">
               <v-col cols="12" lg="6" class="position-relative">
                 <v-card
-                  class="profile-block h-100 pa-4"
-                  rounded="xl"
-                  elevation="0"
+                  class="profile-block h-100 pa-4 workspace-sidebar-card"
+                  rounded="lg"
                 >
                   <h3 class="text-h5 text-typo mb-4">
                     {{ t('profile.platformSettings') }}
@@ -700,9 +699,8 @@ onMounted(async () => {
 
               <v-col cols="12" lg="6" class="position-relative">
                 <v-card
-                  class="profile-block h-100 pa-4"
-                  rounded="xl"
-                  elevation="0"
+                  class="profile-block h-100 pa-4 workspace-sidebar-card"
+                  rounded="lg"
                 >
                   <h3 class="text-h5 text-typo mb-4">
                     {{ t('profile.profileInformation') }}
@@ -758,9 +756,8 @@ onMounted(async () => {
 
               <v-col cols="12" lg="6" class="position-relative">
                 <v-card
-                  class="profile-block h-100 pa-4"
-                  rounded="xl"
-                  elevation="0"
+                  class="profile-block h-100 pa-4 workspace-sidebar-card"
+                  rounded="lg"
                 >
                   <h3 class="text-h5 text-typo mb-4">Conversations</h3>
 
@@ -798,9 +795,8 @@ onMounted(async () => {
               <v-col cols="12" lg="6" class="position-relative">
                 <v-card
                   v-if="hasData"
-                  class="profile-block h-100 pa-4"
-                  rounded="xl"
-                  elevation="0"
+                  class="profile-block h-100 pa-4 workspace-sidebar-card"
+                  rounded="lg"
                 >
                   <h3 class="text-h4 text-typo mb-1">Mes companies</h3>
                   <p class="text-h6 text-medium-emphasis mb-4">
@@ -840,7 +836,7 @@ onMounted(async () => {
                     v-model="showCreateCompanyModal"
                     max-width="720"
                   >
-                    <v-card rounded="lg">
+                    <v-card rounded="lg" class="workspace-sidebar-card">
                       <v-card-title class="d-flex align-center justify-space-between">
                         <span>Créer une company</span>
                         <v-btn icon="mdi-close" variant="text" @click="showCreateCompanyModal = false" />
@@ -938,7 +934,7 @@ onMounted(async () => {
                       md="6"
                       xl="4"
                     >
-                      <v-card variant="tonal" rounded="lg" class="h-100 pa-4">
+                      <v-card variant="tonal" rounded="lg" class="h-100 pa-4 workspace-sidebar-card">
                         <p class="text-h6 text-typo mb-1">{{ company.name || company.legalName || 'Company sans nom' }}</p>
                         <p class="text-body-2 text-medium-emphasis mb-3">
                           {{ company.role || company.status || 'Rôle non défini' }}

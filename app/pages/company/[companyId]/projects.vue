@@ -226,7 +226,7 @@ async function deleteProject(project: CompanyProjectSummary) {
       <v-col v-for="project in projects" :key="project.id" cols="12" md="4">
         <v-card
           rounded="lg"
-          class="h-100 position-relative border border-gray-200 transition-all hover:-translate-y-1 hover:border-primary dark:border-gray-700"
+          class="h-100 position-relative border border-gray-200 transition-all hover:-translate-y-1 hover:border-primary dark:border-gray-700 workspace-sidebar-card"
         >
 
             <div class="d-flex align-start px-4 pt-4 pe-10">
@@ -285,7 +285,7 @@ async function deleteProject(project: CompanyProjectSummary) {
     </v-row>
 
     <v-dialog v-model="showCreateDialog" max-width="640">
-      <v-card rounded="lg">
+      <v-card rounded="lg" class="workspace-sidebar-card">
         <v-card-title class="text-h6">Add project</v-card-title>
 
         <v-card-text>
@@ -325,7 +325,7 @@ async function deleteProject(project: CompanyProjectSummary) {
     </v-dialog>
 
     <v-dialog v-model="showEditDialog" max-width="640">
-      <v-card rounded="lg">
+      <v-card rounded="lg" class="workspace-sidebar-card">
         <v-card-title class="text-h6">Edit project</v-card-title>
 
         <v-card-text>
