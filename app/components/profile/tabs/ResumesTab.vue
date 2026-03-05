@@ -23,7 +23,7 @@ onMounted(loadResumes)
 </script>
 
 <template>
-  <v-card class="profile-block pa-4 pa-md-6" rounded="xl" elevation="0">
+  <v-card class="profile-block workspace-sidebar-card pa-4 pa-md-6" rounded="lg">
     <div class="d-flex align-center justify-space-between mb-4 ga-3 flex-wrap">
       <h3 class="text-h4 text-typo mb-0">{{ t('profile.resumePages.listTitle') }}</h3>
       <div class="d-flex ga-2">

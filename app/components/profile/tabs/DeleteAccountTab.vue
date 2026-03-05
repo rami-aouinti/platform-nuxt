@@ -45,7 +45,7 @@ async function runAction(action: 'deactivate' | 'delete') {
 </script>
 
 <template>
-  <v-card class="profile-block pa-4 pa-md-6" rounded="xl" elevation="0">
+  <v-card class="profile-block workspace-sidebar-card pa-4 pa-md-6" rounded="lg">
     <div class="d-flex flex-wrap align-center justify-space-between ga-4">
       <div>
         <h3 class="text-h4 text-typo mb-2">Delete Account</h3>

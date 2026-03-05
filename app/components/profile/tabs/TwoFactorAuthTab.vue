@@ -75,7 +75,7 @@ onMounted(loadTwoFactorSettings)
 </script>
 
 <template>
-  <v-card class="profile-block pa-4 pa-md-6" rounded="xl" elevation="0">
+  <v-card class="profile-block workspace-sidebar-card pa-4 pa-md-6" rounded="lg">
     <div class="d-flex align-center justify-space-between mb-8">
       <h3 class="text-h4 text-typo">Two-factor authentication</h3>
       <v-chip :color="setting.enabled ? 'success' : 'grey'" variant="tonal">{{ setting.enabled ? 'Enabled' : 'Disabled' }}</v-chip>

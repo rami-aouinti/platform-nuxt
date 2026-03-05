@@ -139,7 +139,7 @@ onMounted(loadProfile)
 </script>
 
 <template>
-  <v-card class="profile-block pa-4 pa-md-6" rounded="xl" elevation="0">
+  <v-card class="profile-block workspace-sidebar-card pa-4 pa-md-6" rounded="lg">
     <h3 class="text-h4 text-typo mb-6">Basic Info</h3>
 
     <div v-if="loading" class="d-flex align-center ga-3">

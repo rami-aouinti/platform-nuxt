@@ -250,9 +250,9 @@ onMounted(() => {
     <v-row v-else>
       <v-col cols="12" sm="6" md="4" lg="3">
         <v-card
-          rounded="xl"
+          rounded="lg"
           elevation="2"
-          class="platform-card platform-card--create md-theme-brand-gradient-soft h-100 pa-5 d-flex flex-column justify-center align-center text-center border-dashed"
+          class="platform-card platform-card--create md-theme-brand-gradient-soft h-100 pa-5 d-flex flex-column justify-center align-center text-center border-dashed workspace-sidebar-card"
           @click="openCreationDialog"
         >
           <v-icon size="48" color="primary" icon="mdi-plus-circle-outline" />
@@ -272,9 +272,9 @@ onMounted(() => {
         lg="3"
       >
         <v-card
-          rounded="xl"
+          rounded="lg"
           elevation="4"
-          class="platform-card md-theme-premium-card h-100 pa-5 position-relative cursor-pointer"
+          class="platform-card md-theme-premium-card h-100 pa-5 position-relative cursor-pointer workspace-sidebar-card"
           @click="goToApplicationSetup(application.id)"
         >
           <div
@@ -346,7 +346,7 @@ onMounted(() => {
     </v-row>
 
     <v-dialog v-model="creationDialog" persistent fullscreen scrollable>
-      <v-card class="creation-dialog-card">
+      <v-card class="creation-dialog-card workspace-sidebar-card">
         <v-card-title class="d-flex align-center justify-space-between">
           <span class="text-h6">New Platform</span>
           <v-btn
@@ -408,9 +408,9 @@ onMounted(() => {
                     lg="4"
                   >
                     <v-card
-                      rounded="xl"
+                      rounded="lg"
                       elevation="1"
-                      class="pa-4 h-100"
+                      class="pa-4 h-100 workspace-sidebar-card"
                       :class="{ 'opacity-75': creatingUserApplication }"
                     >
                       <div class="d-flex align-start ga-4">
@@ -524,7 +524,7 @@ onMounted(() => {
                     md="6"
                     lg="4"
                   >
-                    <v-card rounded="xl" elevation="1" class="pa-4 h-100">
+                    <v-card rounded="lg" elevation="1" class="pa-4 h-100 workspace-sidebar-card">
                       <div class="d-flex align-start ga-4">
                         <v-avatar size="56" rounded="lg">
                           <v-img
@@ -584,7 +584,7 @@ onMounted(() => {
     </v-dialog>
 
     <v-dialog v-model="editDialog" max-width="560">
-      <v-card rounded="xl">
+      <v-card rounded="lg" class="workspace-sidebar-card">
         <v-card-title class="text-h6">Edit user-application</v-card-title>
         <v-card-text>
           <v-text-field
