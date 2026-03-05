@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const props = defineProps<{
-  activePage: 'dashboard' | 'setting' | 'projects' | 'teams'
+  activePage: 'dashboard' | 'setting' | 'projects' | 'teams' | 'billing'
 }>()
 
 const route = useRoute()
@@ -16,6 +16,7 @@ const menuItems = computed(() => [
   { label: 'Setting', page: 'setting', to: `/company/${companyId.value}/setting` },
   { label: 'Projects', page: 'projects', to: `/company/${companyId.value}/projects` },
   { label: 'Teams', page: 'teams', to: `/company/${companyId.value}/teams` },
+  { label: 'Billing', page: 'billing', to: `/company/${companyId.value}/billing` },
 ])
 </script>
 
