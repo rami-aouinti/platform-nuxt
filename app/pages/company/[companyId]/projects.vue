@@ -197,7 +197,7 @@ async function deleteProject(project: CompanyProjectSummary) {
 
     <div v-if="loading" class="d-flex align-center ga-3">
       <v-progress-circular indeterminate color="primary" />
-      <span>Chargement des projets...</span>
+      <span>Loading ...</span>
     </div>
 
     <v-alert
@@ -228,8 +228,9 @@ async function deleteProject(project: CompanyProjectSummary) {
           rounded="lg"
           class="h-100 border border-gray-200 transition-all hover:-translate-y-1 hover:border-primary dark:border-gray-700"
         >
-          <NuxtLink :to="getProjectPath(project)" class="block text-decoration-none">
+
             <div class="d-flex align-start ga-3 px-4 pt-4">
+              <NuxtLink :to="getProjectPath(project)" class="block text-decoration-none">
               <v-avatar size="44" rounded="lg" color="surface-variant">
                 <v-img
                   v-if="getProjectImage(project)"
@@ -246,7 +247,7 @@ async function deleteProject(project: CompanyProjectSummary) {
                 </p>
                 <v-chip size="small" color="primary" variant="tonal">{{ project.status || '-' }}</v-chip>
               </div>
-
+              </NuxtLink>
               <div class="mt-n1 mr-n1" @click.stop>
                 <v-menu>
                   <template #activator="{ props }">
@@ -276,13 +277,7 @@ async function deleteProject(project: CompanyProjectSummary) {
               <p class="text-body-2 text-medium-emphasis mb-3 min-h-[44px] line-clamp-2">
                 {{ getProjectDescription(project) }}
               </p>
-
-              <div class="d-flex flex-column ga-1 text-caption text-medium-emphasis">
-                <span><strong>ID:</strong> {{ project.id || '-' }}</span>
-                <span><strong>Owner(s):</strong> {{ Array.isArray(project.owner) ? project.owner.length : 0 }}</span>
-              </div>
             </v-card-text>
-          </NuxtLink>
         </v-card>
       </v-col>
     </v-row>
