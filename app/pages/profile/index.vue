@@ -10,12 +10,6 @@ import imageMarie from '~/assets/img/marie.jpg'
 import imageIvanaSquare from '~/assets/img/ivana-square.jpg'
 import imageTeam4 from '~/assets/img/team-4.jpg'
 import imageTeam3 from '~/assets/img/team-3.jpg'
-import imageHomeDecor1 from '~/assets/img/home-decor-1.jpg'
-import imageHomeDecor2 from '~/assets/img/home-decor-2.jpg'
-import imageHomeDecor3 from '~/assets/img/home-decor-3.jpg'
-import imageHomeDecor4 from '~/assets/img/home-decor-4.jpg'
-import imageTeam1 from '~/assets/img/team-1.jpg'
-import imageTeam2 from '~/assets/img/team-2.jpg'
 import BasicInfoTab from '~/components/profile/tabs/BasicInfoTab.vue'
 import AccountsTab from '~/components/profile/tabs/AccountsTab.vue'
 import ChangePasswordTab from '~/components/profile/tabs/ChangePasswordTab.vue'
@@ -45,13 +39,6 @@ type SocialAccount = {
   email?: string
 }
 
-type ProfileProject = {
-  id: string
-  title: string
-  style?: string | null
-  description?: string | null
-}
-
 const { t } = useI18n()
 const auth = useAuthStore()
 const profileCompaniesStore = useProfileCompaniesStore()
@@ -70,9 +57,6 @@ const route = useRoute()
 const isLoading = ref(false)
 const errorMessage = ref<string | null>(null)
 const socialAccounts = ref<SocialAccount[]>([])
-const projects = ref<ProfileProject[]>([])
-const projectsLoading = ref(false)
-const projectsError = ref<string | null>(null)
 
 const createCompanyForm = ref({
   name: '',
@@ -137,14 +121,6 @@ const conversationFallback = [
     message: 'Hi! I need more information..',
   },
 ]
-
-const projectImages = [
-  imageHomeDecor1,
-  imageHomeDecor2,
-  imageHomeDecor3,
-  imageHomeDecor4,
-]
-const projectAvatars = [imageTeam1, imageTeam2, imageTeam3, imageTeam4]
 
 type TabDefinition = {
   id: string
@@ -282,22 +258,8 @@ const hasData = computed(() => {
     roles.value.length > 0 ||
     groups.value.length > 0 ||
     socialAccounts.value.length > 0 ||
-    companies.value.length > 0 ||
-    projects.value.length > 0
+    companies.value.length > 0
   )
-})
-
-const decoratedProjects = computed(() => {
-  return projects.value.map((project, index) => ({
-    ...project,
-    image: projectImages[index % projectImages.length],
-    avatars: [
-      projectAvatars[index % projectAvatars.length],
-      projectAvatars[(index + 1) % projectAvatars.length],
-      projectAvatars[(index + 2) % projectAvatars.length],
-      projectAvatars[(index + 3) % projectAvatars.length],
-    ],
-  }))
 })
 
 const displayName = computed(() => {
@@ -388,28 +350,6 @@ function formatGroupRole(group: (typeof groups.value)[number]) {
   return '-'
 }
 
-function normalizeItems<T>(
-  response: T[] | { items?: T[] } | null | undefined,
-): T[] {
-  if (Array.isArray(response)) {
-    return response
-  }
-
-  return response?.items ?? []
-}
-
-function parseProject(
-  item: Record<string, unknown>,
-  index: number,
-): ProfileProject {
-  return {
-    id: String(item.id ?? item.projectId ?? index),
-    title: String(item.title ?? item.name ?? `Project #${index + 1}`),
-    style: typeof item.style === 'string' ? item.style : null,
-    description: typeof item.description === 'string' ? item.description : null,
-  }
-}
-
 async function loadProfileDataIfNeeded() {
   if (!isAuthenticated.value) {
     return
@@ -491,32 +431,6 @@ async function createCompany() {
   }
 }
 
-async function loadProjects() {
-  if (!isAuthenticated.value) {
-    return
-  }
-
-  projectsLoading.value = true
-  projectsError.value = null
-
-  try {
-    const projectsResponse = await $fetch<
-      Record<string, unknown>[] | { items?: Record<string, unknown>[] }
-    >(apiEndpoints.frontend.projects.base, {
-      headers: auth.token
-        ? { Authorization: `Bearer ${auth.token}` }
-        : undefined,
-    })
-
-    projects.value = normalizeItems(projectsResponse).map(parseProject)
-  } catch {
-    projectsError.value = 'Impossible de charger vos projects.'
-    projects.value = []
-  } finally {
-    projectsLoading.value = false
-  }
-}
-
 function resolveTabFromRoute() {
   const queryTab = typeof route.query.tab === 'string' ? route.query.tab : null
   const hashTab = route.hash.startsWith('#tab-')
@@ -550,7 +464,6 @@ onMounted(async () => {
     loadProfileDataIfNeeded(),
     loadCompanySchema(),
     loadCompanies(),
-    loadProjects(),
   ])
 })
 </script>
@@ -660,7 +573,7 @@ onMounted(async () => {
               Aucune donnée de profil disponible.
             </v-alert>
 
-            <v-row class="mt-6" v-if="hasData">
+            <v-row v-if="hasData" class="mt-6">
               <v-col cols="12" lg="6" class="position-relative">
                 <v-card
                   class="profile-block h-100 pa-4"
@@ -826,10 +739,14 @@ onMounted(async () => {
                   rounded="xl"
                   elevation="0"
                 >
-                  <h3 class="text-h4 text-typo mb-1">Mes companies</h3>
-                  <p class="text-h6 text-medium-emphasis mb-4">
-                    Vos entreprises associées
-                  </p>
+                  <div class="d-flex align-start justify-space-between mb-4">
+                    <h3 class="text-h4 text-typo mb-0">Mes Comapanies</h3>
+                    <v-btn
+                      color="primary"
+                      icon="mdi-plus"
+                      @click="showCreateCompanyModal = true"
+                    />
+                  </div>
 
                   <v-alert
                     v-if="companySchemaError"
@@ -849,15 +766,6 @@ onMounted(async () => {
                       color="warning"
                       variant="tonal"
                     >Fallback</v-chip>
-                    <div class="ms-auto">
-                      <v-btn
-                        color="primary"
-                        prepend-icon="mdi-plus"
-                        @click="showCreateCompanyModal = true"
-                      >
-                        Add company
-                      </v-btn>
-                    </div>
                   </div>
 
                   <v-dialog
@@ -982,91 +890,6 @@ onMounted(async () => {
                     </v-col>
                   </v-row>
 
-                  <v-divider class="my-6" />
-
-                  <h3 class="text-h4 text-typo mb-1">
-                    {{ t('profile.projects') }}
-                  </h3>
-                  <p class="text-h6 text-medium-emphasis mb-6">
-                    Architects design houses
-                  </p>
-
-                  <div v-if="projectsLoading" class="d-flex align-center ga-3">
-                    <v-progress-circular indeterminate color="primary" />
-                    <span>Chargement des projects...</span>
-                  </div>
-
-                  <v-alert
-                    v-else-if="projectsError"
-                    type="error"
-                    variant="tonal"
-                    density="comfortable"
-                    rounded="lg"
-                    class="mb-4"
-                  >
-                    {{ projectsError }}
-                  </v-alert>
-
-                  <v-alert
-                    v-else-if="decoratedProjects.length === 0"
-                    type="info"
-                    variant="tonal"
-                    density="comfortable"
-                    rounded="lg"
-                    class="mb-4"
-                  >
-                    Aucun project associé à ce profil.
-                  </v-alert>
-
-                  <v-row v-else>
-                    <v-col
-                      v-for="project in decoratedProjects"
-                      :key="project.id"
-                      cols="12"
-                      md="6"
-                      xl="3"
-                    >
-                      <div class="project-card h-100">
-                        <v-img
-                          :src="project.image"
-                          height="190"
-                          cover
-                          class="rounded-xl mb-4"
-                        />
-                        <p class="text-body-1 text-medium-emphasis mb-1">
-                          {{ project.title }}
-                        </p>
-                        <p class="text-h4 text-typo font-weight-bold mb-3">
-                          {{ project.style || '-' }}
-                        </p>
-                        <p class="text-body-1 text-medium-emphasis mb-5">
-                          {{
-                            project.description || 'Aucune description disponible.'
-                          }}
-                        </p>
-
-                        <div class="d-flex align-center justify-space-between">
-                          <v-btn
-                            color="pink"
-                            variant="outlined"
-                            rounded="pill"
-                            class="project-btn"
-                          >{{ t('profile.viewProject') }}</v-btn
-                          >
-                          <div class="avatar-group d-flex">
-                            <v-avatar
-                              v-for="avatar in project.avatars"
-                              :key="avatar"
-                              size="32"
-                              class="ms-n2 border border-white"
-                            >
-                              <v-img :src="avatar" alt="Project member" />
-                            </v-avatar>
-                          </div>
-                        </div>
-                      </div>
-                    </v-col>
-                  </v-row>
                 </v-card>
               </v-col>
             </v-row>
